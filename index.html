@@ -1,0 +1,25 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+	<title>Cloogle</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	<script src="api.js" type="text/javascript" defer="defer"></script>
+</head>
+<body>
+<form id="search_form" action="#">
+	<table>
+		<tr>
+			<td colspan="3">
+				<input type="text" id="search_str" />
+			</td>
+		</tr>
+		<tr>
+			<td>Function: <input type="checkbox" id="cb_func" checked="checked" /></td>
+			<td>Type: <input type="checkbox" id="cb_type" checked="checked" /></td>
+			<td><input type="submit" value="Search" onchange="js_sub()" /></td>
+		</tr>
+	</table>
+</form>
+<div id='search_results'></div>
+</body>
+</html>

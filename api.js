@@ -4,6 +4,33 @@ var cb_func = document.getElementById('cb_type');
 var sform = document.getElementById('search_form');
 var sresults = document.getElementById('search_results');
 
+function highlight(type) {
+	str = '';
+
+	var lex = [
+			[/^(.+)(::.*)/, 'name'],
+			[/^([a-z]+)(.*)/, 'typevar'],
+			[/^([A-Z]\w*)(.*)/, 'type'],
+			[/^(\/\/.*)(.*?)/, 'comment'],
+			[/^(\W)(.*)/, 'punctuation']
+		];
+
+	while (true) {
+		var found = false;
+		for (i in lex) {
+			if (type.match(lex[i][0])) {
+				parts = lex[i][0].exec(type);
+				str += '<span class="' + lex[i][1] + '">' + parts[1] + '</span>';
+				type = parts[2];
+				found = true;
+				break;
+			}
+		}
+		if (!found || type == '')
+			return str;
+	}
+}
+
 cb_type.onchange = function(){
 	if(!cb_type.checked && !cb_func.checked){
 		cb_type.checked = true;
@@ -39,7 +66,7 @@ sform.onsubmit = function(){
 							'<tr><th>Filename: </th><td>' + c['filename'] + '</td></tr>' +
 							'<tr><th>Module: </th><td>' + c['module'] + '</td></tr>' +
 							'</table>' + 
-							'<code>' + c['func'] + '</code>';
+							'<code>' + highlight(c['func']) + '</code>';
 					}
 				}
 			}

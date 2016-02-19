@@ -28,7 +28,7 @@ function highlight(type) {
 		contextType: [
 			[/^(\s+)(.*)/, ['whitespace']],
 			[/^(\/\/.*)(.*?)/, ['comment']],
-			[/^(,)(.*)/, ['punctuation'], 'context'],
+			[/^([,&])(.*)/, ['punctuation'], 'context'],
 			[/^([^\s,]+)(.*)/, ['typevar']]
 		]
 	};

@@ -77,7 +77,7 @@ sform.onsubmit = function(){
 		sresults.innerHTML = 'Can\'t search for the empty string';
 	} else {
 		sresults.innerHTML = 'Proccessing...';
-		var url = 'http://martlubbers.net/cloogle/api.php?str=' +
+		var url = 'api.php?str=' +
 			encodeURIComponent(form_str.value);
 		console.log('Async: ' + url);
 		var xmlHttp = new XMLHttpRequest();

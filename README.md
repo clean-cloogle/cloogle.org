@@ -6,8 +6,33 @@ A clean hoogle clone. Use at your own risk. Live version available
 ### Current features
 - Search for function/operator/class names.
 
+### How to setup
+
+- Put a folder containing `StdEnv` in a directory called `stdenv` in the same
+  directory as the code. You can also change the `STDENV_PATH` variable which
+	is set in `api.php` if you want it loaded from somewhere else.
+
+### Api specification
+`api.php` should be called with a `GET` request where the `str` variable
+contains the search string. The api will return a JSON formatted datastructure
+containing the following fields
+
+- return
+
+	Return code, `0` for success, `1` for wrongly called api, `127` for no
+	results.
+- msg
+
+	A human friendly message representing the return code.
+- data
+
+	An array of search results. Every items contains the following fields:
+	`filename`, `module`, `func` and `distance` representing the filename, the
+	module name, the matched function signature and the levenshtein distance.
+
 ### Todo
 
+- Search in not only `StdEnv` but also in `clean-platform`
 - Search on type definitions
 - Search for function signatures
 - Maybe search for instances of classes?

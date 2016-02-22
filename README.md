@@ -12,19 +12,19 @@ A clean hoogle clone. Use at your own risk. Live version available
   directory as the code. You can also change the `STDENV_PATH` variable which
 	is set in `api.php` if you want it loaded from somewhere else.
 
-### Api specification
+### Api specification for developers
 `api.php` should be called with a `GET` request where the `str` variable
 contains the search string. The api will return a JSON formatted datastructure
 containing the following fields
 
-- return
+- `return`
 
 	Return code, `0` for success, `1` for wrongly called api, `127` for no
 	results.
-- msg
+- `msg`
 
 	A human friendly message representing the return code.
-- data
+- `data`
 
 	An array of search results. Every items contains the following fields:
 	`filename`, `module`, `func` and `distance` representing the filename, the
@@ -32,7 +32,7 @@ containing the following fields
 
 ### Todo
 
-- Search in not only `StdEnv` but also in `clean-platform`
+- Search in not only `StdEnv` but also in `clean-platform` and other libraries
 - Search on type definitions
 - Search for function signatures
 - Maybe search for instances of classes?

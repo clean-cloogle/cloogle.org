@@ -1,7 +1,7 @@
 # cloogle
 
 A clean hoogle clone. Use at your own risk. Live version available
-(here)[martlubbers.net/cloogle]
+[here](martlubbers.net/cloogle)
 
 ### Current features
 - Search for function/operator/class names.

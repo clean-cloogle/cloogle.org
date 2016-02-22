@@ -3,10 +3,11 @@ error_reporting(E_ALL);
 ini_set('display_errors', '1');
 
 define('STDENV_PATH', './stdenv/');
+define('PRE_IDENT', '[\w~@#$%^?!+\-*<>\/|&=:`]+');
 define('PRE_MODULE', 
 	"/\s*(?:definition\s*|system\s*|implementation\s*)module\s+(\S+)\s*[\n;]/");
 define('PRE_FUNC', 
-	'/^\s*(\S+)\s*::.*$/mi');
+	'/^\s*(?:instance|class)?\s*\(?(' . PRE_IDENT . ')\)?\s*(?:infix[lr]?\s+\d\s*)?(?:\s+a\s+)?::.*$/mi');
 
 function search_doc(&$r, $name){
 	$files = glob(STDENV_PATH . "*.dcl", GLOB_NOSORT | GLOB_MARK);
@@ -17,17 +18,16 @@ function search_doc(&$r, $name){
 			$contents = file_get_contents($filepath);
 			$module = preg_match(PRE_MODULE, $contents, $modules) == 1 ?
 				$modules[1] : NULL;
-			$pattern = sprintf(PRE_FUNC);
 			$namelen = strlen($name);
-			if(preg_match_all($pattern, $contents, $funcs) !== false){
+			if(preg_match_all(PRE_FUNC, $contents, $funcs) !== false){
 				for($i=0; $i<count($funcs[1]); $i++){
-					$funcname = trim($funcs[1][$i]);
-					$funcsig = trim($funcs[0][$i]);
+					$funcname = $funcs[1][$i];
+					$funcsig = $funcs[0][$i];
 					$score = levenshtein(strtolower($name), $funcname);
-					if($score < 3){
+					if($score < $namelen/2+1){
 						array_push($r, array(
 							"filename" => $filename,
-							"func" => $funcsig,
+							"func" => str_replace("\n", "", $funcsig),
 							"module" => $module,
 							"distance" => $score));
 					}

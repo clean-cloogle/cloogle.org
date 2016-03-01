@@ -92,6 +92,7 @@ sform.onsubmit = function(){
 					for(var i = 0; i<responsedata['data'].length; i++){
 						var c = responsedata['data'][i];
 						sresults.innerHTML += '<hr /><table>' +
+							'<tr><th>Library: </th><td>' + c['library'] + '</td></tr>' +
 							'<tr><th>Filename: </th><td>' + c['filename'] + '</td></tr>' +
 							'<tr><th>Module: </th><td>' + c['module'] + '</td>' +
 							'<td>' + c['distance'] + '</td></tr>' +

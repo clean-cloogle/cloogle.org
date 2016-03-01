@@ -27,15 +27,17 @@ containing the following fields
 - `data`
 
 	An array of search results. Every items contains the following fields:
-	`filename`, `module`, `func` and `distance` representing the filename, the
-	module name, the matched function signature and the levenshtein distance.
+	`library`, `filename`, `module`, `func` and `distance` representing the name
+	of the library, filename, the module name, the matched function signature and
+	the levenshtein distance.
 
-### Todo
+### Todo in order of importance
 
-- Search in not only `StdEnv` but also in `clean-platform` and other libraries
 - Search on type definitions
 - Search for function signatures
-- Maybe search for instances of classes?
+- Also grab possible comments above the function signature
+- Search also in `clean-platform`
+- Search for instances of classes
 
 ### Licence
 

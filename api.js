@@ -1,6 +1,4 @@
 var form_str = document.getElementById('search_str');
-var cb_type = document.getElementById('cb_func');
-var cb_func = document.getElementById('cb_type');
 var sform = document.getElementById('search_form');
 var sresults = document.getElementById('search_results');
 
@@ -59,18 +57,6 @@ function highlight(type) {
 			return str;
 	}
 }
-
-cb_type.onchange = function(){
-	if(!cb_type.checked && !cb_func.checked){
-		cb_type.checked = true;
-	}
-};
-
-cb_func.onchange = function(){
-	if(!cb_type.checked && !cb_func.checked){
-		cb_func.checked = true;
-	}
-};
 
 sform.onsubmit = function(){
 	if(form_str.value === ''){

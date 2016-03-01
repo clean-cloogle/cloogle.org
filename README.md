@@ -8,6 +8,8 @@ A clean hoogle clone. Use at your own risk. Live version available
 
 ### How to setup
 
+- The frontend heavily depends on [VanillaJS](http://vanilla-js.com/) so you
+  should have a webbrowsers that supports it.
 - Put a folder containing `StdEnv` in a directory called `stdenv` in the same
   directory as the code. You can also change the `STDENV_PATH` variable which
 	is set in `api.php` if you want it loaded from somewhere else.
@@ -33,6 +35,7 @@ containing the following fields
 
 ### Todo in order of importance
 
+- Also match item when the search string is an exact substring
 - Search on type definitions
 - Search for function signatures
 - Also grab possible comments above the function signature

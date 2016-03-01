@@ -6,7 +6,8 @@ define('PRE_IDENT', '[\w~@#$%^?!+\-*<>\/|&=:`]+');
 define('PRE_MODULE', 
 	"/\s*(?:definition\s*|system\s*|implementation\s*)module\s+(\S+)\s*[\n;]/");
 define('PRE_FUNC', 
-	'/^\s*(?:instance|class)?\s*\(?(' . PRE_IDENT . ')\)?\s*(?:infix[lr]?\s+\d\s*)?(?:\s+a\s+)?::.*$/mi');
+  '/^(?:\\/\\/)?\s*(?:instance|class)?\s*\(?(' . PRE_IDENT . ')\)?\s*(?:infix[lr]?\s+\d\s*(?:\\/\\/)?)?(?:\s+a\s+)?::.*$/mi');
+
 
 function search_doc(&$r, $name, $libraries){
 	foreach($libraries as $library => $librarypath){
@@ -24,11 +25,12 @@ function search_doc(&$r, $name, $libraries){
 						$lowername = strtolower($name);
 						$lowerfuncname = strtolower($funcname);
 						if(strstr($lowerfuncname, $lowername) !== FALSE){
-							$score = -1;
+							$score = -1*strlen($funcname)+
+									levenshtein($lowername, $lowerfuncname);
 						} else {
 							$score = levenshtein($lowername, $lowerfuncname);
 						}
-						if($score < strlen($funcname)/2){
+						if($score < strlen($name)/2){
 							array_push($r, array(
 								"library" => $library,
 								"filename" => $filename,

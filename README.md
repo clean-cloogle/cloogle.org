@@ -35,7 +35,6 @@ containing the following fields
 
 ### Todo in order of importance
 
-- Also match item when the search string is an exact substring
 - Search on type definitions
 - Search for function signatures
 - Also grab possible comments above the function signature

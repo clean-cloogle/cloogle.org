@@ -21,7 +21,13 @@ function search_doc(&$r, $name, $libraries){
 					for($i=0; $i<count($funcs[1]); $i++){
 						$funcname = $funcs[1][$i];
 						$funcsig = $funcs[0][$i];
-						$score = levenshtein(strtolower($name), $funcname);
+						$lowername = strtolower($name);
+						$lowerfuncname = strtolower($funcname);
+						if(strstr($lowerfuncname, $lowername) !== FALSE){
+							$score = -1;
+						} else {
+							$score = levenshtein($lowername, $lowerfuncname);
+						}
 						if($score < strlen($funcname)/2){
 							array_push($r, array(
 								"library" => $library,

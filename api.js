@@ -58,18 +58,18 @@ function highlight(type) {
 	}
 }
 
-sform.onsubmit = function(){
+function formsubmit(){
 	if(form_str.value === ''){
 		sresults.innerHTML = 'Can\'t search for the empty string';
 	} else {
 		sresults.innerHTML = 'Proccessing...';
-		var url = 'api.php?str=' +
-			encodeURIComponent(form_str.value);
-		console.log('Async: ' + url);
+		var str = encodeURIComponent(form_str.value);
+		var url = 'api.php?str=' + str;
+		console.log('Apicall: ' + url);
 		var xmlHttp = new XMLHttpRequest();
 		xmlHttp.onreadystatechange = function() { 
 			if(xmlHttp.readyState == 4 && xmlHttp.status == 200){
-				console.log(xmlHttp.responseText);
+				console.log('Response: ' + xmlHttp.responseText);
 				var responsedata = JSON.parse(xmlHttp.responseText);
 				sresults.innerHTML =
 					'<p>Return code: ' + responsedata['return'] + '</p>' +
@@ -90,6 +90,18 @@ sform.onsubmit = function(){
 		};
 		xmlHttp.open('GET', url, true); // true for asynchronous 
 		xmlHttp.send(null);
+		document.location.hash = "#" + str;
 	}
 	return false;
 };
+
+window.onload = function(){
+	sform.onsubmit = formsubmit;
+	var str = document.location.hash;
+	if(str !== ''){
+		str = str.substring(1);
+		console.log('Detected hash, setting searchstring to ' + str);
+		form_str.value = str;
+		formsubmit();
+	}
+}

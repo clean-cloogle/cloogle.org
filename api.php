@@ -14,7 +14,8 @@ function search_doc(&$r, $name, $libraries){
 		$files = glob($librarypath . "*.dcl", GLOB_NOSORT | GLOB_MARK);
 		foreach($files as $filepath) {
 			if(mb_substr($filepath, -1) !== DIRECTORY_SEPARATOR){
-				$filename = end(explode(DIRECTORY_SEPARATOR, $filepath));
+				$path_segments = explode(DIRECTORY_SEPARATOR, $filepath);
+				$filename = end($path_segments);
 				$contents = file_get_contents($filepath);
 				$module = preg_match(PRE_MODULE, $contents, $modules) == 1 ?
 					$modules[1] : NULL;

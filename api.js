@@ -65,11 +65,9 @@ function formsubmit(){
 		sresults.innerHTML = 'Proccessing...';
 		var str = encodeURIComponent(form_str.value);
 		var url = 'api.php?str=' + str;
-		console.log('Apicall: ' + url);
 		var xmlHttp = new XMLHttpRequest();
 		xmlHttp.onreadystatechange = function() { 
 			if(xmlHttp.readyState == 4 && xmlHttp.status == 200){
-				console.log('Response: ' + xmlHttp.responseText);
 				var responsedata = JSON.parse(xmlHttp.responseText);
 				sresults.innerHTML =
 					'<p>Return code: ' + responsedata['return'] + '</p>' +
@@ -100,8 +98,9 @@ window.onload = function(){
 	var str = document.location.hash;
 	if(str !== ''){
 		str = str.substring(1);
-		console.log('Detected hash, setting searchstring to ' + str);
 		form_str.value = str;
 		formsubmit();
 	}
+
+	document.getElementById('search_str').focus();
 }

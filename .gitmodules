@@ -1,0 +1,3 @@
+[submodule "CleanTypeUnifier"]
+	path = CleanTypeUnifier
+	url = https://github.com/camilstaps/CleanTypeUnifier

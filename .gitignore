@@ -8,3 +8,8 @@ StdEnv
 StdLib
 TCPIP
 clean-platform
+
+Clean System Files/
+search
+builddb
+types.db

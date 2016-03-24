@@ -12,11 +12,21 @@ Start w
 # (db, io) = openDb io
 | isNothing db = abort "stdin does not have a TypeDB\n"
 # db = fromJust db
-# types = searchUnifiable (Func [Var "a"] (Type "Int" []) []) db
-# types = sortBy (\(_,_,a,b)(_,_,x,y)->length (a++b) < length (x++y)) types
-# io = fwrites (concat (join "\n" [alignl 42 (concat (print t)) <+ "\t" <+ n \\ (FL _ _ n, t, _, _) <- types]) +++ "\n") io
+//# io = uniSearch (Func [Var "a"] (Type "Int" []) []) db io
+# io = instanceSearch "toReal" db io
 # (ok, w) = fclose io w
 = w
+where
+    uniSearch :: Type TypeDB *File -> *File
+    uniSearch t db f
+    # ts = searchUnifiable t db
+    # ts = sortBy (\(_,_,a,b)(_,_,x,y)->length (a++b) < length (x++y)) ts
+    = fwrites (concat (join "\n" [alignl 42 (concat (print t)) <+ "\t" <+ n \\ (FL _ _ n, t, _, _) <- ts]) +++ "\n") f
+
+    instanceSearch :: Class TypeDB *File -> *File
+    instanceSearch cls db f 
+    # ts = getInstances cls db
+    = fwrites (concat (join "\n" ts) +++ "\n") f
 
 (<+) infixr 5 :: a b -> [String] | print a & print b
 (<+) a b = print a ++ print b

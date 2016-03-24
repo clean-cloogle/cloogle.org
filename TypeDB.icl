@@ -13,7 +13,6 @@ import Type
 :: TypeDB = { typemap :: Map FunctionLocation Type
             , classmap :: Map ClassLocation ([TypeVar],[(FunctionName, Type)])
             , instancemap :: Map Class [Type]
-            , instancemap_r :: Map Type [Class]
             }
 
 (<+) infixr 5 :: a b -> [String] | print a & print b
@@ -29,7 +28,7 @@ derive JSONDecode ClassOrGeneric, ArrayKind, Strict, SpineStrictness, ListKind,
 instance zero TypeDB where zero = { typemap       = newMap
                                   , classmap      = newMap
                                   , instancemap   = newMap
-                                  , instancemap_r = newMap }
+                                  }
 
 instance < FunctionLocation where (<) (FL a b c) (FL d e f) = (a,b,c) < (d,e,f)
 instance print FunctionLocation
@@ -42,7 +41,22 @@ putType :: FunctionLocation Type TypeDB -> TypeDB
 putType fl t tdb=:{typemap} = { tdb & typemap = put fl t typemap }
 
 putTypes :: [(FunctionLocation, Type)] TypeDB -> TypeDB
-putTypes ts tdb = foldr (\(loc,t) db=:{typemap} -> {db & typemap=put loc t typemap}) tdb ts
+putTypes ts tdb = foldr (\(loc,t) db -> putType loc t db) tdb ts
+
+getInstances :: Class TypeDB -> [Type]
+getInstances c {instancemap} = if (isNothing ts) [] (fromJust ts)
+where ts = get c instancemap
+
+putInstance :: Class Type TypeDB -> TypeDB
+putInstance c t db=:{instancemap} = {db & instancemap=put c ts instancemap}
+where
+    ts = removeDup [t : getInstances  c db]
+
+putInstances :: Class [Type] TypeDB -> TypeDB
+putInstances c ts db = foldr (\t db -> putInstance c t db) db ts
+
+putInstancess :: [(Class, [Type])] TypeDB -> TypeDB
+putInstancess is db = foldr (\(c,ts) db -> putInstances c ts db) db is
 
 searchExact :: Type TypeDB -> [(FunctionLocation, Type)]
 searchExact t db = filter ((==)t o snd) $ toList db.typemap

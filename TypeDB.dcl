@@ -31,6 +31,11 @@ getType :: FunctionLocation TypeDB -> Maybe Type
 putType :: FunctionLocation Type TypeDB -> TypeDB
 putTypes :: [(FunctionLocation, Type)] TypeDB -> TypeDB
 
+getInstances :: Class TypeDB -> [Type]
+putInstance :: Class Type TypeDB -> TypeDB
+putInstances :: Class [Type] TypeDB -> TypeDB
+putInstancess :: [(Class, [Type])] TypeDB -> TypeDB
+
 searchExact :: Type TypeDB -> [(FunctionLocation, Type)]
 searchUnifiable :: Type TypeDB -> [(FunctionLocation, Type, [TypeVarAssignment], [TypeVarAssignment])]
 

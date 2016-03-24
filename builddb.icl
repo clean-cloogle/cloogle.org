@@ -2,7 +2,6 @@ module builddb
 
 // Project libraries
 import qualified TypeDB as DB
-from TypeDB import instance print FunctionLocation
 
 // Standard libraries
 import StdArray, StdBool, StdFile, StdList, StdMisc, StdString, StdFunc, StdTuple
@@ -11,7 +10,8 @@ import System.Directory, Data.Error, Data.Func, Data.Tuple
 import GenEq
 
 // CleanTypeUnifier
-import Type
+import qualified Type as T
+from Type import class print(print), instance print [a], instance print String
 import CoclUtils
 
 // frontend
@@ -21,7 +21,7 @@ from hashtable import ::HashTable, ::QualifiedIdents(NoQualifiedIdents), ::Ident
 from predef import init_identifiers
 from compile import empty_cache, ::DclCache{hash_table}
 from general import ::Optional(..)
-from syntax import ::SymbolTable, ::SymbolTableEntry, ::Ident{..}, ::SymbolPtr, ::Position(NoPos), ::Module{mod_defs}, ::ParsedDefinition(PD_TypeSpec), ::FunSpecials, ::Priority, ::ParsedModule, ::SymbolType
+from syntax import ::SymbolTable, ::SymbolTableEntry, ::Ident{..}, ::SymbolPtr, ::Position(NoPos), ::Module{mod_defs}, ::ParsedDefinition(PD_TypeSpec,PD_Instance), ::FunSpecials, ::Priority, ::ParsedModule, ::SymbolType, ::ParsedInstanceAndMembers{..}, ::ParsedInstance{pi_ident,pi_types}, ::Type
 from parse import wantModule
 
 CLEAN_LIB :== "/opt/clean/lib/"
@@ -60,8 +60,8 @@ where
     loop :: [(String,String)] 'DB'.TypeDB *DclCache *World -> *('DB'.TypeDB, *World)
     loop [] db _ w = (db,w)
     loop [(lib,mod):list] db cache w
-    # (sts, cache, w) = getModuleTypes mod lib cache w
-    # db = 'DB'.putTypes sts db
+    # (db, cache, w) = getModuleTypes mod lib cache db w
+    //# db = 'DB'.putTypes sts db
     = loop list db cache w
 
 //              Libraries                Library Module
@@ -87,8 +87,8 @@ where
     isDirectory :: String -> Bool
     isDirectory s = not $ isMember '.' $ fromString s
 
-getModuleTypes :: String String *DclCache *World -> *([('DB'.FunctionLocation,Type)], *DclCache, *World)
-getModuleTypes mod lib cache w
+getModuleTypes :: String String *DclCache 'DB'.TypeDB *World -> *('DB'.TypeDB, *DclCache, *World)
+getModuleTypes mod lib cache db w
 # filename = CLEAN_LIB +++ lib +++ "/" +++ mkdir mod +++ ".dcl"
 # (ok,f,w) = fopen filename FReadText w
 | not ok = abort ("Couldn't open file " +++ filename +++ ".\n")
@@ -98,14 +98,25 @@ getModuleTypes mod lib cache w
   cache = {cache & hash_table=ht}
 # (ok,w) = fclose f w
 | not ok = abort ("Couldn't close file " +++ filename +++ ".\n")
-# pds = filter (\pd->case pd of (PD_TypeSpec _ _ _ _ _)=True; _=False) pm.mod_defs
-# sts = map (\(PD_TypeSpec pos id prio st funspecs) -> ('DB'.FL lib mod id.id_name,st)) pds
-# sts = filter (\st->case st of (_,(Yes _))=True; _=False) sts
-# sts = map (\(loc,Yes x)->(loc,toType x)) sts
-= (sts,cache,w)
+# db = 'DB'.putTypes (pd_typespecs pm.mod_defs) db
+# db = 'DB'.putInstancess (pd_instances pm.mod_defs) db
+= (db,cache,w)
 where
     mkdir :: String -> String
     mkdir s = toString (map (\c.case c of '.'='/'; c=c) (fromString s))
+
+    pd_typespecs :: [ParsedDefinition] -> [('DB'.FunctionLocation, 'DB'.Type)]
+    pd_typespecs pdefs
+    # pds = filter (\pd->case pd of (PD_TypeSpec _ _ _ _ _)=True; _=False) pdefs
+    # sts = map (\(PD_TypeSpec pos id prio st funspecs) -> ('DB'.FL lib mod id.id_name,st)) pds
+    # sts = filter (\st->case st of (_,(Yes _))=True; _=False) sts
+    # sts = map (\(loc,Yes x)->(loc,'T'.toType x)) sts
+    = sts
+
+    pd_instances :: [ParsedDefinition] -> [('DB'.Class, ['DB'.Type])]
+    pd_instances pdefs
+    # pds = filter (\pd->case pd of (PD_Instance _)=True; _=False) pdefs
+    = map (\(PD_Instance {pim_pi={pi_ident,pi_types}}) -> (pi_ident.id_name, map 'T'.toType pi_types)) pds
 
 unigroups :: (Type Type -> Bool) [(a,Type)] -> [([a],Type)]
 unigroups f ts = unigroups` ts []

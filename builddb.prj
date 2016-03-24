@@ -24,7 +24,7 @@ Global
 			Time:	False
 			Stack:	False
 		Output
-			Output:	ShowConstructors
+			Output:	NoReturnType
 			Font:	Monaco
 			FontSize:	9
 			WriteStdErr:	False

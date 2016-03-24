@@ -20,10 +20,11 @@ derive gEq TypeDB
 instance < FunctionLocation
 instance print FunctionLocation
 
+:: ClassLocation = CL Library Module Class
+
 :: Library :== String
 :: Module :== String
 :: FunctionName :== String
-
 :: Class :== String
 
 getType :: FunctionLocation TypeDB -> Maybe Type

@@ -47,44 +47,22 @@ libraries :== [
               ]
 
 Start w
-# (mods, w) = findModules` libraries w //libraries w
-
+# (mods, w) = findModules` libraries w
 # (st, w) = init_identifiers newHeap w
 # cache = empty_cache st
-
 # (db, w) = loop mods 'DB'.newDb cache w
-
-# (ok, f, w) = fopen "types.db" FReadText w
-| not ok = abort "Couldn't open types.db for reading\n"
-# (db`, f) = 'DB'.openDb f
-| isNothing db` = abort "types.db does not contain a TypeDB\n"
-# db` = fromJust db`
-# msg = if (db===db`) "databases are equal" "databases are not equal"
-
-# (ok, f) = freopen f FWriteText
-| not ok = abort "Couldn't open types.db for writing\n"
+# (f, w) = stdio w
 # f = 'DB'.saveDb db f
 # (ok, w) = fclose f w
-| not ok = abort "Couldn't close types.db after writing\n"
-
-= (msg, ok)
+| not ok = abort "Couldn't close stdio after writing\n"
+= w
 where
     loop :: [(String,String)] 'DB'.TypeDB *DclCache *World -> *('DB'.TypeDB, *World)
     loop [] db _ w = (db,w)
     loop [(lib,mod):list] db cache w
     # (sts, cache, w) = getModuleTypes mod lib cache w
-    # (io, w) = stdio w
-    | isEmpty sts
-        # io = fwrites (line +++ "\nSkipping " +++ mod +++ " in " +++ lib +++ " (no function types found)\n") io
-        = loop list db cache (snd (fclose io w))
-    # io = fwrites (line +++ "\nParsing " +++ mod +++ " in " +++ lib +++ "\n" +++ line +++ "\n") io
-    # io = fwrites (concat (join "\n" [alignl 42 (concat (print t)) <+ "\t" <+ n \\ ('DB'.FL _ _ n, t) <- sts]) +++ "\n") io
-    # (ok, w) = fclose io w
-    | not ok = abort "Couldn't close stdio\n"
     # db = 'DB'.putTypes sts db
     = loop list db cache w
-
-    line = {c \\ c <- repeatn 80 '-'}
 
 //              Libraries                Library Module
 findModules` :: ![String] !*World -> *(![(String,String)], !*World)

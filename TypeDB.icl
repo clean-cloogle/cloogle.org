@@ -11,19 +11,25 @@ import Text.JSON
 import Type
 
 :: TypeDB = { typemap :: Map FunctionLocation Type
-            , instancemap :: Map Class Type
+            , classmap :: Map ClassLocation ([TypeVar],[(FunctionName, Type)])
+            , instancemap :: Map Class [Type]
+            , instancemap_r :: Map Type [Class]
             }
 
 (<+) infixr 5 :: a b -> [String] | print a & print b
 (<+) a b = print a ++ print b
 
-instance zero TypeDB where zero = {typemap=newMap, instancemap=newMap}
 derive gEq ClassOrGeneric, ArrayKind, Strict, SpineStrictness, ListKind,
-        FunctionLocation, Type, TypeDB
+        FunctionLocation, ClassLocation, Type, TypeDB
 derive JSONEncode ClassOrGeneric, ArrayKind, Strict, SpineStrictness, ListKind,
-        FunctionLocation, Type, TypeDB
+        FunctionLocation, ClassLocation, Type, TypeDB
 derive JSONDecode ClassOrGeneric, ArrayKind, Strict, SpineStrictness, ListKind,
-        FunctionLocation, Type, TypeDB
+        FunctionLocation, ClassLocation, Type, TypeDB
+
+instance zero TypeDB where zero = { typemap       = newMap
+                                  , classmap      = newMap
+                                  , instancemap   = newMap
+                                  , instancemap_r = newMap }
 
 instance < FunctionLocation where (<) (FL a b c) (FL d e f) = (a,b,c) < (d,e,f)
 instance print FunctionLocation

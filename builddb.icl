@@ -21,7 +21,7 @@ from hashtable import ::HashTable, ::QualifiedIdents(NoQualifiedIdents), ::Ident
 from predef import init_identifiers
 from compile import empty_cache, ::DclCache{hash_table}
 from general import ::Optional(..)
-from syntax import ::SymbolTable, ::SymbolTableEntry, ::Ident{..}, ::SymbolPtr, ::Position(NoPos), ::Module{mod_defs}, ::ParsedDefinition(PD_TypeSpec,PD_Instance), ::FunSpecials, ::Priority, ::ParsedModule, ::SymbolType, ::ParsedInstanceAndMembers{..}, ::ParsedInstance{pi_ident,pi_types}, ::Type
+from syntax import ::SymbolTable, ::SymbolTableEntry, ::Ident{..}, ::SymbolPtr, ::Position(NoPos), ::Module{mod_defs}, ::ParsedDefinition(PD_TypeSpec,PD_Instance,PD_Class), ::FunSpecials, ::Priority, ::ParsedModule, ::SymbolType, ::ParsedInstanceAndMembers{..}, ::ParsedInstance{pi_ident,pi_types}, ::Type, ::ClassDef{class_ident,class_args}, ::TypeVar
 from parse import wantModule
 
 CLEAN_LIB :== "/opt/clean/lib/"
@@ -100,23 +100,34 @@ getModuleTypes mod lib cache db w
 | not ok = abort ("Couldn't close file " +++ filename +++ ".\n")
 # db = 'DB'.putTypes (pd_typespecs pm.mod_defs) db
 # db = 'DB'.putInstancess (pd_instances pm.mod_defs) db
+# db = 'DB'.putClasses (pd_classes pm.mod_defs) db
 = (db,cache,w)
 where
     mkdir :: String -> String
     mkdir s = toString (map (\c.case c of '.'='/'; c=c) (fromString s))
 
     pd_typespecs :: [ParsedDefinition] -> [('DB'.FunctionLocation, 'DB'.Type)]
-    pd_typespecs pdefs
-    # pds = filter (\pd->case pd of (PD_TypeSpec _ _ _ _ _)=True; _=False) pdefs
+    pd_typespecs pds
+    # pds = filter (\pd->case pd of (PD_TypeSpec _ _ _ _ _)=True; _=False) pds
     # sts = map (\(PD_TypeSpec pos id prio st funspecs) -> ('DB'.FL lib mod id.id_name,st)) pds
     # sts = filter (\st->case st of (_,(Yes _))=True; _=False) sts
     # sts = map (\(loc,Yes x)->(loc,'T'.toType x)) sts
     = sts
 
     pd_instances :: [ParsedDefinition] -> [('DB'.Class, ['DB'.Type])]
-    pd_instances pdefs
-    # pds = filter (\pd->case pd of (PD_Instance _)=True; _=False) pdefs
-    = map (\(PD_Instance {pim_pi={pi_ident,pi_types}}) -> (pi_ident.id_name, map 'T'.toType pi_types)) pds
+    pd_instances pds
+    # pds = filter (\pd->case pd of (PD_Instance _)=True; _=False) pds
+    = map (\(PD_Instance {pim_pi={pi_ident,pi_types}})
+            -> (pi_ident.id_name, map 'T'.toType pi_types)) pds
+
+    pd_classes :: [ParsedDefinition]
+            -> [('DB'.ClassLocation, ['T'.TypeVar], [('DB'.FunctionName, 'T'.Type)])]
+    pd_classes pds
+    # pds = filter (\pd->case pd of (PD_Class _ _)=True; _=False) pds
+    = map (\(PD_Class {class_ident={id_name},class_args} pds)
+            -> let typespecs = pd_typespecs pds
+            in ('DB'.CL lib mod id_name, map 'T'.toTypeVar class_args, 
+                [(f,t) \\ ('DB'.FL _ _ f, t) <- typespecs])) pds
 
 unigroups :: (Type Type -> Bool) [(a,Type)] -> [([a],Type)]
 unigroups f ts = unigroups` ts []

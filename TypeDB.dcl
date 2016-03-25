@@ -30,14 +30,24 @@ instance print FunctionLocation
 getType :: FunctionLocation TypeDB -> Maybe Type
 putType :: FunctionLocation Type TypeDB -> TypeDB
 putTypes :: [(FunctionLocation, Type)] TypeDB -> TypeDB
+findType :: FunctionName TypeDB -> [(FunctionLocation, Type)]
+findType` :: (FunctionLocation Type -> Bool) TypeDB -> [(FunctionLocation, Type)]
 
 getInstances :: Class TypeDB -> [Type]
 putInstance :: Class Type TypeDB -> TypeDB
 putInstances :: Class [Type] TypeDB -> TypeDB
 putInstancess :: [(Class, [Type])] TypeDB -> TypeDB
 
+getClass :: ClassLocation TypeDB -> Maybe ([TypeVar],[(FunctionName,Type)])
+putClass :: ClassLocation [TypeVar] [(FunctionName, Type)] TypeDB -> TypeDB
+putClasses :: [(ClassLocation, [TypeVar], [(FunctionName, Type)])] TypeDB -> TypeDB
+findClass :: Class TypeDB -> [(ClassLocation, [TypeVar], [(FunctionName, Type)])]
+findClass` :: (ClassLocation [TypeVar] [(FunctionName,Type)] -> Bool) TypeDB
+        -> [(ClassLocation, [TypeVar], [(FunctionName, Type)])]
+
 searchExact :: Type TypeDB -> [(FunctionLocation, Type)]
-searchUnifiable :: Type TypeDB -> [(FunctionLocation, Type, [TypeVarAssignment], [TypeVarAssignment])]
+searchUnifiable :: Type TypeDB
+        -> [(FunctionLocation, Type, [TypeVarAssignment], [TypeVarAssignment])]
 
 newDb :: TypeDB
 openDb :: *File -> *(Maybe TypeDB, *File)

@@ -44,6 +44,7 @@ Global
 		Path:	{Project}/CleanTypeUnifier/clean-compiler/frontend/
 		Path:	{Project}/CleanTypeUnifier/clean-compiler/backend
 		Path:	{Project}/CleanTypeUnifier/clean-compiler/main/Unix/
+		Path:	{Project}/CleanLevenshtein
 		Path:	{Application}/lib/StdLib/
 		Path:	{Application}/lib/ArgEnv/
 		Path:	{Application}/lib/clean-platform/OS-Independent
@@ -141,6 +142,20 @@ OtherModules
 	Module
 		Name:	TypeUtil
 		Dir:	{Project}/CleanTypeUnifier
+		Compiler
+			NeverMemoryProfile:	False
+			NeverTimeProfile:	False
+			StrictnessAnalysis:	True
+			ListTypes:	StrictExportTypes
+			ListAttributes:	True
+			Warnings:	True
+			Verbose:	True
+			ReadableABC:	False
+			ReuseUniqueNodes:	True
+			Fusion:	False
+	Module
+		Name:	Levenshtein
+		Dir:	{Project}/CleanLevenshtein
 		Compiler
 			NeverMemoryProfile:	False
 			NeverTimeProfile:	False

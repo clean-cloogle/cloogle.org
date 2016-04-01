@@ -18,12 +18,9 @@ import Type
 (<+) infixr 5 :: a b -> [String] | print a & print b
 (<+) a b = print a ++ print b
 
-derive gEq ClassOrGeneric, ArrayKind, Strict, SpineStrictness, ListKind,
-        FunctionLocation, ClassLocation, Type, TypeDB
-derive JSONEncode ClassOrGeneric, ArrayKind, Strict, SpineStrictness, ListKind,
-        FunctionLocation, ClassLocation, Type, TypeDB
-derive JSONDecode ClassOrGeneric, ArrayKind, Strict, SpineStrictness, ListKind,
-        FunctionLocation, ClassLocation, Type, TypeDB
+derive gEq ClassOrGeneric, FunctionLocation, ClassLocation, Type, TypeDB
+derive JSONEncode ClassOrGeneric, FunctionLocation, ClassLocation, Type, TypeDB
+derive JSONDecode ClassOrGeneric, FunctionLocation, ClassLocation, Type, TypeDB
 
 instance zero TypeDB where zero = { typemap       = newMap
                                   , classmap      = newMap
@@ -90,11 +87,11 @@ searchExact :: Type TypeDB -> [(FunctionLocation, Type)]
 searchExact t db = filter ((==)t o snd) $ toList db.typemap
 
 searchUnifiable :: Type TypeDB 
-        -> [(FunctionLocation, Type, [TypeVarAssignment], [TypeVarAssignment])]
+        -> [(FunctionLocation, Type, [TVAssignment], [TVAssignment])]
 searchUnifiable t db = search` $ toList db.typemap
 where
     search` :: [(FunctionLocation,Type)] 
-            -> [(FunctionLocation,Type,[TypeVarAssignment],[TypeVarAssignment])]
+            -> [(FunctionLocation,Type,[TVAssignment],[TVAssignment])]
     search` [] = []
     search` [(l,t`):list]
     # tvas = unify [] t t`

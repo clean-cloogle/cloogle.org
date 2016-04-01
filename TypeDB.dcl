@@ -10,7 +10,7 @@ from Data.Maybe import ::Maybe
 from GenEq import generic gEq
 
 // CleanTypeUnifier
-from Type import ::Type, ::TypeVar, ::TypeVarAssignment, class print(..)
+from Type import ::Type, ::TypeVar, ::TVAssignment, class print(..)
 
 :: TypeDB
 instance zero TypeDB
@@ -47,7 +47,7 @@ findClass` :: (ClassLocation [TypeVar] [(FunctionName,Type)] -> Bool) TypeDB
 
 searchExact :: Type TypeDB -> [(FunctionLocation, Type)]
 searchUnifiable :: Type TypeDB
-        -> [(FunctionLocation, Type, [TypeVarAssignment], [TypeVarAssignment])]
+        -> [(FunctionLocation, Type, [TVAssignment], [TVAssignment])]
 
 newDb :: TypeDB
 openDb :: *File -> *(Maybe TypeDB, *File)

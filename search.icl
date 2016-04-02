@@ -8,21 +8,52 @@ import Levenshtein
 import StdArray, StdBool, StdFile, StdList, StdOrdList, StdMisc, StdString,
     StdFunc, StdTuple
 import Data.Maybe
+from Data.Func import $
 import Text
+import System.CommandLine
 
 Start w
 # (io, w) = stdio w
+# (cmdline, w) = getCommandLine w
+| length cmdline <> 3 = help io w
+# [_,cmd,search:_] = cmdline
 # (db, io) = openDb io
 | isNothing db = abort "stdin does not have a TypeDB\n"
 # db = fromJust db
-//# io = uniSearch (Func [Var "a"] (Type "Int" []) []) db io
-//# io = instanceSearch "<" db io
-# io = classSearch "to" db io
-//# io = funcSearch "length" db io
-//# io = nameSearch "map" db io
-# (ok, w) = fclose io w
-= w
+| cmd == "unify"
+    # type = parseType (fromString search)
+    | isNothing type
+        # io = io <<< "Couldn't parse type: " <<< search <<< "\n"
+        = snd $ fclose io w
+    # type = fromJust type
+    # io = io <<< "Searching for type: " <<< concat (print type) <<< "\n"
+    # io = uniSearch type db io
+    = snd $ fclose io w
+| cmd == "instance"
+    # io = io <<< "Searching for instance: " <<< search <<< "\n"
+    # io = instanceSearch search db io
+    = snd $ fclose io w
+| cmd == "class"
+    # io = io <<< "Searching for class: " <<< search <<< "\n"
+    # io = classSearch search db io
+    = snd $ fclose io w
+| cmd == "func"
+    # io = io <<< "Searching for function: " <<< search <<< "\n"
+    # io = funcSearch search db io
+    = snd $ fclose io w
+| cmd == "name"
+    # io = io <<< "Searching for name: " <<< search <<< "\n"
+    # io = nameSearch search db io
+    = snd $ fclose io w
+= help io w
 where
+    help :: *File *World -> *World
+    help io w
+    # io = io <<< "Usage: ./search <cmd> <search-string>\n\n"
+    # io = io <<< "  <cmd> = unify | instance | class | func | name\n"
+    # (ok, w) = fclose io w
+    = w
+
     nameSearch :: FunctionName TypeDB *File -> *File
     nameSearch n db f
     # f = fwrites "=== FUNCTIONS ===\n\n" f
@@ -34,10 +65,10 @@ where
     funcSearch :: FunctionName TypeDB *File -> *File
     funcSearch func db f
     # fs = findType` (\(FL _ _ f) _->indexOf func f <> -1) db
-    # fs = sortBy (levsort (\(FL _ _ f,_)->f) func) fs
+    # fs = levsort (\(FL _ _ f,_)->f) func fs
     # cs = findClass` (\_ _ fs -> any (\f -> indexOf func f <> -1) (map fst fs)) db
     # cfs = [(loc,tvs,f,t) \\ (loc, tvs, fs) <- cs, (f, t) <- fs | indexOf func f <> -1]
-    # cfs = sortBy (levsort (\(_,_,f,_)->f) func) cfs
+    # cfs = levsort (\(_,_,f,_)->f) func cfs
     # f = fwrites (concat (join "\n"
         [f <+ " in " <+ m <+ " in " <+ l <+ ":\t" <+ t \\ (FL l m f,t) <- fs]) +++ "\n\n") f
     = fwrites (concat (join "\n"
@@ -57,15 +88,15 @@ where
     classSearch :: Class TypeDB *File -> *File
     classSearch cls db f
     # cs = findClass` (\(CL _ _ c) _ fs -> indexOf cls c <> -1) db
-    # cs = sortBy (levsort (\(CL _ _ c,_,_)->c) cls) cs
+    # cs = levsort (\(CL _ _ c,_,_)->c) cls cs
     = fwrites (concat (join "\n"
         [c <+ " " <+ join " " vs <+ " in " <+ m <+ " in " <+ l <+ ":\n    "
             <+ join "\n    "
                 [alignl 12 (concat (print f)) <+ "\t" <+ t \\ (f,t) <- fs]
         \\ (CL l m c,vs,fs) <- cs]) +++ "\n") f
 
-    levsort :: (a -> b) b a a -> Bool | levenshtein b
-    levsort f e a b = levenshtein e (f a) < levenshtein e (f b)
+    levsort :: (a -> b) b -> [a] -> [a] | levenshtein b
+    levsort f e = sortBy (\a b -> levenshtein e (f a) < levenshtein e (f b))
 
 (<+) infixr 5 :: a b -> [String] | print a & print b
 (<+) a b = print a ++ print b

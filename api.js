@@ -101,7 +101,7 @@ window.onload = function(){
 	if(str !== ''){
 		str = str.substring(1);
 		console.log('Detected hash, setting searchstring to ' + str);
-		form_str.value = str;
+		form_str.value = decodeURIComponent(str);
 		formsubmit();
 	}
 }

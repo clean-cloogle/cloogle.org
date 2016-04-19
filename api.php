@@ -8,7 +8,6 @@ define('PRE_MODULE',
 define('PRE_FUNC', 
   '/^(?:\\/\\/)?\s*(?:instance|class)?\s*\(?(' . PRE_IDENT . ')\)?\s*(?:infix[lr]?\s+\d\s*(?:\\/\\/)?)?(?:\s+a\s+)?::.*$/mi');
 
-
 function search_doc(&$r, $name, $libraries){
 	foreach($libraries as $library => $librarypath){
 		$files = glob($librarypath . "*.dcl", GLOB_NOSORT | GLOB_MARK);
@@ -131,6 +130,11 @@ if($_SERVER['REQUEST_METHOD'] !== 'GET'){
 
 	$res = array();
 	$msg = search_doc($res, $_GET['str'], $libraries);
+    if(isset($_GET['mod'])){
+        $res = array_filter($res, function($val){
+            return strtolower($val['module']) == strtolower($_GET['mod']);
+        });
+    }
 	sort_results($res);
 	if(!$res){
 		echo json_encode(array(

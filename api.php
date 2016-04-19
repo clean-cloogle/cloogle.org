@@ -8,8 +8,7 @@ define('PRE_MODULE',
 define('PRE_FUNC', 
   '/^(?:\\/\\/)?\s*(?:instance|class)?\s*\(?(' . PRE_IDENT . ')\)?\s*(?:infix[lr]?\s+\d\s*(?:\\/\\/)?)?(?:\s+a\s+)?::.*$/mi');
 
-function search_doc(&$r, $name, $libraries){
-	$filtermod = isset($_GET['mod']);
+function search_doc(&$r, $name, $libraries, $modules){
 	foreach($libraries as $library => $librarypath){
 		$files = glob($librarypath . "*.dcl", GLOB_NOSORT | GLOB_MARK);
 		foreach($files as $filepath) {
@@ -19,7 +18,7 @@ function search_doc(&$r, $name, $libraries){
 				$contents = file_get_contents($filepath);
 				$module = preg_match(PRE_MODULE, $contents, $modules) == 1 ?
 					$modules[1] : NULL;
-				if($filtermod && $module !== $_GET['mod']){
+				if(count($modules) > 0 && !in_array($module, $modules){
 					continue;
 				}
 				if(preg_match_all(PRE_FUNC, $contents, $funcs) !== false){
@@ -133,7 +132,8 @@ if($_SERVER['REQUEST_METHOD'] !== 'GET'){
 		'cleanplatform:OS-Independent/Graphics/Scalable' =>'./clean-platform/OS-Independent/Graphics/Scalable/');
 
 	$res = array();
-	$msg = search_doc($res, $_GET['str'], $libraries);
+	$modules = isset($_GET['mod']) ? explode(',', $_GET['mod']) : array();
+	$msg = search_doc($res, $_GET['str'], $libraries, $modules);
 	sort_results($res);
 	if(!$res){
 		echo json_encode(array(

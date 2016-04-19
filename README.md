@@ -16,8 +16,9 @@ A clean hoogle clone. Use at your own risk. Live version available
 
 ### Api specification for developers
 `api.php` should be called with a `GET` request where the `str` variable
-contains the search string. The api will return a JSON formatted datastructure
-containing the following fields
+contains the search string and the optional `mod` variable contains a
+commaseparated list of modules to search in. The api will return a JSON
+formatted datastructure containing the following fields
 
 - `return`
 

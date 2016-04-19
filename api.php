@@ -21,8 +21,6 @@ function search_doc(&$r, $name, $libraries, $searchmodules){
 				if(count($searchmodules) > 0 && !in_array($module, $searchmodules)){
 					continue;
 				}
-				print_r($searchmodules);
-				printf($module);
 				if(preg_match_all(PRE_FUNC, $contents, $funcs) !== false){
 					for($i=0; $i<count($funcs[1]); $i++){
 						$funcname = $funcs[1][$i];

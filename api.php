@@ -8,7 +8,7 @@ define('PRE_MODULE',
 define('PRE_FUNC', 
   '/^(?:\\/\\/)?\s*(?:instance|class)?\s*\(?(' . PRE_IDENT . ')\)?\s*(?:infix[lr]?\s+\d\s*(?:\\/\\/)?)?(?:\s+a\s+)?::.*$/mi');
 
-function search_doc(&$r, $name, $libraries, $modules){
+function search_doc(&$r, $name, $libraries, $searchmodules){
 	foreach($libraries as $library => $librarypath){
 		$files = glob($librarypath . "*.dcl", GLOB_NOSORT | GLOB_MARK);
 		foreach($files as $filepath) {
@@ -18,9 +18,11 @@ function search_doc(&$r, $name, $libraries, $modules){
 				$contents = file_get_contents($filepath);
 				$module = preg_match(PRE_MODULE, $contents, $modules) == 1 ?
 					$modules[1] : NULL;
-				if(count($modules) > 0 && !in_array($module, $modules)){
+				if(count($searchmodules) > 0 && !in_array($module, $searchmodules)){
 					continue;
 				}
+				print_r($searchmodules);
+				printf($module);
 				if(preg_match_all(PRE_FUNC, $contents, $funcs) !== false){
 					for($i=0; $i<count($funcs[1]); $i++){
 						$funcname = $funcs[1][$i];

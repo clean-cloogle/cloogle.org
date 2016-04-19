@@ -48,6 +48,9 @@ findType f db=:{typemap} = toList $ filterWithKey (\(FL _ _ f`) _->f==f`) typema
 findType` :: (FunctionLocation Type -> Bool) TypeDB -> [(FunctionLocation, Type)]
 findType` f {typemap} = toList $ filterWithKey f typemap
 
+findType`` :: [(FunctionLocation Type -> Bool)] TypeDB -> [(FunctionLocation, Type)]
+findType`` fs {typemap} = toList $ foldr filterWithKey typemap fs
+
 getInstances :: Class TypeDB -> [Type]
 getInstances c {instancemap} = if (isNothing ts) [] (fromJust ts)
 where ts = get c instancemap
@@ -109,6 +112,4 @@ openDb f
 
 saveDb :: TypeDB *File -> *File
 saveDb db f = fwrites (toString $ toJSON db) f
-
-db = { zero & typemap = put (FL "a" "b" "somefunc") (Var "x") newMap }
 

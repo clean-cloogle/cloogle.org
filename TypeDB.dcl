@@ -32,6 +32,7 @@ putType :: FunctionLocation Type TypeDB -> TypeDB
 putTypes :: [(FunctionLocation, Type)] TypeDB -> TypeDB
 findType :: FunctionName TypeDB -> [(FunctionLocation, Type)]
 findType` :: (FunctionLocation Type -> Bool) TypeDB -> [(FunctionLocation, Type)]
+findType`` :: [(FunctionLocation Type -> Bool)] TypeDB -> [(FunctionLocation, Type)]
 
 getInstances :: Class TypeDB -> [Type]
 putInstance :: Class Type TypeDB -> TypeDB

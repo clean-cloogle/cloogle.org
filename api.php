@@ -9,6 +9,7 @@ define('PRE_FUNC',
   '/^(?:\\/\\/)?\s*(?:instance|class)?\s*\(?(' . PRE_IDENT . ')\)?\s*(?:infix[lr]?\s+\d\s*(?:\\/\\/)?)?(?:\s+a\s+)?::.*$/mi');
 
 function search_doc(&$r, $name, $libraries){
+	$filtermod = isset($_GET['mod']);
 	foreach($libraries as $library => $librarypath){
 		$files = glob($librarypath . "*.dcl", GLOB_NOSORT | GLOB_MARK);
 		foreach($files as $filepath) {
@@ -18,6 +19,9 @@ function search_doc(&$r, $name, $libraries){
 				$contents = file_get_contents($filepath);
 				$module = preg_match(PRE_MODULE, $contents, $modules) == 1 ?
 					$modules[1] : NULL;
+				if($filtermod && $module !== $_GET['mod']){
+					continue;
+				}
 				if(preg_match_all(PRE_FUNC, $contents, $funcs) !== false){
 					for($i=0; $i<count($funcs[1]); $i++){
 						$funcname = $funcs[1][$i];
@@ -130,11 +134,6 @@ if($_SERVER['REQUEST_METHOD'] !== 'GET'){
 
 	$res = array();
 	$msg = search_doc($res, $_GET['str'], $libraries);
-	if(isset($_GET['mod'])){
-		$res = array_filter($res, function($val){
-			return $val['module'] == $_GET['mod'];
-		});
-	}
 	sort_results($res);
 	if(!$res){
 		echo json_encode(array(

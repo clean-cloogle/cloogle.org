@@ -18,7 +18,7 @@ function search_doc(&$r, $name, $libraries, $modules){
 				$contents = file_get_contents($filepath);
 				$module = preg_match(PRE_MODULE, $contents, $modules) == 1 ?
 					$modules[1] : NULL;
-				if(count($modules) > 0 && !in_array($module, $modules){
+				if(count($modules) > 0 && !in_array($module, $modules)){
 					continue;
 				}
 				if(preg_match_all(PRE_FUNC, $contents, $funcs) !== false){

@@ -78,7 +78,7 @@ function formsubmit(){
 						sresults.innerHTML += '<hr /><table>' +
 							'<tr><th>Library: </th><td>' + c['library'] + '</td></tr>' +
 							'<tr><th>Filename: </th><td>' + c['filename'] + '</td></tr>' +
-							'<tr><th>Module: </th><td>' + c['module'] + '</td>' +
+							'<tr><th>Module: </th><td>' + c['modul'] + '</td>' +
 							'<td>' + c['distance'] + '</td></tr>' +
 							'</table>' + 
 							'<code>' + highlight(c['func']) + '</code>';

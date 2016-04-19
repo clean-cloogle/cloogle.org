@@ -66,7 +66,7 @@ where
     = snd $ fclose io w
 
     handle :: TypeDB (Maybe Command) *World -> *(Response, *World)
-    handle _ Nothing w = (err 1 "Couldn't parse input", w)
+    handle _ Nothing w = (err 4 "Couldn't parse input", w)
     handle db (Just {unify,name}) w
         # mbType = parseType (fromString unify)
         # filters = catMaybes $ [ isUnifiable <$> mbType

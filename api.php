@@ -130,11 +130,11 @@ if($_SERVER['REQUEST_METHOD'] !== 'GET'){
 
 	$res = array();
 	$msg = search_doc($res, $_GET['str'], $libraries);
-    if(isset($_GET['mod'])){
-        $res = array_filter($res, function($val){
-            return strtolower($val['module']) == strtolower($_GET['mod']);
-        });
-    }
+	if(isset($_GET['mod'])){
+		$res = array_filter($res, function($val){
+			return $val['module'] == $_GET['mod'];
+		});
+	}
 	sort_results($res);
 	if(!$res){
 		echo json_encode(array(

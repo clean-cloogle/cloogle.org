@@ -10,7 +10,7 @@ A Clean hoogle clone. Use at your own risk. Live version available
 ### How to setup
 
 - The frontend heavily depends on [VanillaJS](http://vanilla-js.com/) so you
-	should have a webbrowsers that supports it.
+	should have a webbrowser that supports it.
 
 - Add `env/envs.linux64` to your `$CLEAN_HOME/etc/IDEEnvs`.
 

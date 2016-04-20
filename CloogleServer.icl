@@ -84,7 +84,7 @@ where
         = { library  = lib
           , filename = (toString $ reverse $ takeWhile ((<>)'.') $ reverse $ fromString mod) +++ ".dcl"
           , modul    = mod
-          , func     = fname +++ " :: " +++ concat (print type)
+          , func     = fname +++ " :: " +++ concat (init $ drop 1 $ print type)
           , distance = distance
           }
     where

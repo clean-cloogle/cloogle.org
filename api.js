@@ -65,11 +65,9 @@ function formsubmit(){
 		sresults.innerHTML = 'Proccessing...';
 		var str = encodeURIComponent(form_str.value);
 		var url = 'api.php?str=' + str;
-		console.log('Apicall: ' + url);
 		var xmlHttp = new XMLHttpRequest();
 		xmlHttp.onreadystatechange = function() { 
 			if(xmlHttp.readyState == 4 && xmlHttp.status == 200){
-				console.log('Response: ' + xmlHttp.responseText);
 				var responsedata = JSON.parse(xmlHttp.responseText);
 				sresults.innerHTML =
 					'<p>Return code: ' + responsedata['return'] + '</p>' +
@@ -80,7 +78,7 @@ function formsubmit(){
 						sresults.innerHTML += '<hr /><table>' +
 							'<tr><th>Library: </th><td>' + c['library'] + '</td></tr>' +
 							'<tr><th>Filename: </th><td>' + c['filename'] + '</td></tr>' +
-							'<tr><th>Module: </th><td>' + c['module'] + '</td>' +
+							'<tr><th>Module: </th><td>' + c['modul'] + '</td>' +
 							'<td>' + c['distance'] + '</td></tr>' +
 							'</table>' + 
 							'<code>' + highlight(c['func']) + '</code>';
@@ -100,8 +98,9 @@ window.onload = function(){
 	var str = document.location.hash;
 	if(str !== ''){
 		str = str.substring(1);
-		console.log('Detected hash, setting searchstring to ' + str);
 		form_str.value = decodeURIComponent(str);
 		formsubmit();
 	}
+
+	document.getElementById('search_str').focus();
 }

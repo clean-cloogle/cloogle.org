@@ -1,0 +1,6 @@
+[submodule "CleanTypeUnifier"]
+	path = CleanTypeUnifier
+	url = https://github.com/camilstaps/CleanTypeUnifier
+[submodule "CleanLevenshtein"]
+	path = CleanLevenshtein
+	url = https://github.com/camilstaps/CleanLevenshtein

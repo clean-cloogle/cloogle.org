@@ -1,5 +1,6 @@
 BIN:=CloogleServer search builddb
 PRJ:=$(addsuffix .prj,$(BIN))
+MAN:=builddb.1 # Others don't have --help/--version # $(addsuffix .1,$(BIN))
 CPM:=cpm
 SED:=sed
 
@@ -7,6 +8,11 @@ SED:=sed
 .PHONY: all
 
 all: $(BIN)
+
+man: $(MAN)
+
+%.1: %
+	help2man -N ./$< > $@
 
 %: %.prj
 	$(CPM) $< \
@@ -19,6 +25,7 @@ all: $(BIN)
 	$(SED) -i 's/[ \t]\+Path:[ \t]\+{Project}/&\n&\/CleanLevenshtein\n&\/CleanTypeUnifier\n&\/CleanTypeUnifier\/clean-compiler\/main\/\n&\/CleanTypeUnifier\/clean-compiler\/frontend\/\n&\/CleanTypeUnifier\/clean-compiler\/backend\/\n&\/CleanTypeUnifier\/clean-compiler\/main\/Unix\//' $@
 	$(SED) -i 's/\([ \t]\+Path:[ \t]\+\){Project}$$/&\n\1{Application}\/lib\/ArgEnv\/\n\1{Application}\/lib\/TCPIP\//' $@
 	$(SED) -i 's/\($(basename $@)\).exe/\1/' $@
+	$(SED) -i 's/\(Output:[ \t]\+\)ShowConstructors/\1NoConsole/' $@
 
 clean:
-	$(RM) -r 'Clean System Files' $(BIN) $(PRJ)
+	$(RM) -r 'Clean System Files' $(BIN) $(PRJ) $(MAN)

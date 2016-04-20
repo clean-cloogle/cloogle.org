@@ -12,7 +12,7 @@ A Clean hoogle clone. Use at your own risk. Live version available
 - The frontend heavily depends on [VanillaJS](http://vanilla-js.com/) so you
 	should have a webbrowsers that supports it.
 
-- Add `envs/envs.linux64` to your `$CLEAN_HOME/etc/IDEEnvs`.
+- Add `env/envs.linux64` to your `$CLEAN_HOME/etc/IDEEnvs`.
 
 - Run `make`
 

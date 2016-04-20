@@ -63,8 +63,8 @@ function formsubmit(){
 		sresults.innerHTML = 'Can\'t search for the empty string';
 	} else {
 		sresults.innerHTML = 'Proccessing...';
-		var str = encodeURIComponent(form_str.value);
-		var url = 'api.php?str=' + str;
+		var str = form_str.value;
+		var url = 'api.php?str=' + encodeURIComponent(str);
 		var xmlHttp = new XMLHttpRequest();
 		xmlHttp.onreadystatechange = function() { 
 			if(xmlHttp.readyState == 4 && xmlHttp.status == 200){

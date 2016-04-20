@@ -6,8 +6,7 @@ import StdMaybe
 
 instance zero (Logger a b s) where zero = \_ _ w -> (undef, w)
 
-serve :: (a *World -> *(b,*World)) (Maybe (Logger a b s)) Port *World
-         -> *World | fromString a & toString b
+serve :: (a *World -> *(b,*World)) (Maybe (Logger a b s)) Port *World -> *World | fromString a & toString b
 serve f log port w
 # (ok, mbListener, w) = openTCP_Listener port w
 | not ok = abort ("Couldn't open port " +++ toString port)

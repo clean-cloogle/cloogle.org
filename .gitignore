@@ -13,3 +13,5 @@ Clean System Files/
 search
 builddb
 CloogleServer
+*.prj
+*.json

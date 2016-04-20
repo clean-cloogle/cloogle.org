@@ -1,7 +1,7 @@
 definition module SimpleTCPServer
 
 from StdOverloaded import class zero, class fromString, class toString
-from Data.Maybe import ::Maybe
+from StdMaybe import :: Maybe
 from TCPIP import ::IPAddress, ::Port
 
 :: LogMessage a b = Connected IPAddress

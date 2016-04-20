@@ -3,7 +3,7 @@ module CloogleServer
 import StdString, StdArray, StdList, StdFile, StdTuple, StdMisc, StdOrdList, StdBool
 from StdFunc import o
 
-import TCPIP
+from TCPIP import :: IPAddress, :: Port, instance toString IPAddress
 
 from Data.Func import $
 import Data.Maybe
@@ -14,10 +14,14 @@ import Data.Functor
 import Control.Applicative
 from Control.Monad import class Monad(..)
 
-import SimpleTCPServer
+import qualified StdMaybe as OldMaybe
+from SimpleTCPServer import :: LogMessage{..}, serve, :: Logger
+import qualified SimpleTCPServer
 import TypeDB
 import Type
 import Levenshtein
+
+:: OldMaybe a :== 'SimpleTCPServer'.Maybe a
 
 :: Command = { unify :: String
              , name :: String
@@ -58,7 +62,7 @@ Start w
 # (_, w) = fclose io w
 | isNothing db = abort "stdin does not have a TypeDB\n"
 # db = fromJust db
-= serve (handle db) (Just log) port w
+= serve (handle db) ('OldMaybe'.Just log) port w
 where
     help :: *File *World -> *World
     help io w

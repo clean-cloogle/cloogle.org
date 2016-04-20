@@ -12,10 +12,12 @@ A Clean hoogle clone. Use at your own risk. Live version available
 - The frontend heavily depends on [VanillaJS](http://vanilla-js.com/) so you
 	should have a webbrowsers that supports it.
 
-- Set the list of libraries and `CLEAN_LIB` in `builddb.icl`. Then build
-	`builddb.prj` and run it:
-	
-		$ cpm project builddb.prj build
+- Add `envs/envs.linux64` to your `$CLEAN_HOME/etc/IDEEnvs`.
+
+- Run `make`
+
+- Run
+
 		$ ./builddb -h 10M > types.db
 
 	This creates a file `types.db` which holds the internal database of functions

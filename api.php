@@ -1,7 +1,4 @@
 <?php
-error_reporting(E_ALL);
-ini_set('display_errors', '1');
-
 define('SERVER_HOSTNAME', 'localhost');
 define('SERVER_PORT', 31215);
 

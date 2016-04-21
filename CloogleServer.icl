@@ -87,10 +87,16 @@ where
         = { library  = lib
           , filename = (toString $ reverse $ takeWhile ((<>)'.') $ reverse $ fromString mod) +++ ".dcl"
           , modul    = mod
-          , func     = fname +++ " :: " +++ concat (init $ drop 1 $ print type)
+          , func     = fname +++ " :: " +++ concat (stripParens $ print type)
           , distance = distance
           }
     where
+		stripParens :: [String] -> [String]
+		stripParens ["(":ss]
+			| last ss == ")" = stripParens $ init ss
+			| otherwise = ["(":ss]
+		stripParens ss = ss
+
         distance
             | orgsearch == ""
                 | isNothing orgsearchtype = 0

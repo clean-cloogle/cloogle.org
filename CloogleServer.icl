@@ -93,9 +93,16 @@ where
     where
 		stripParens :: [String] -> [String]
 		stripParens ["(":ss]
-			| last ss == ")" = stripParens $ init ss
+			| last ss == ")" && parensMatch 0 (init ss) = init ss
 			| otherwise = ["(":ss]
 		stripParens ss = ss
+
+		parensMatch :: Int [String] -> Bool
+		parensMatch 0 []       = True
+		parensMatch _ []       = False
+		parensMatch i ["(":ss] = i >= 0 && parensMatch (i+1) ss
+		parensMatch i [")":ss] = i >= 0 && parensMatch (i-1) ss
+		parensMatch i [_:ss]   = i >= 0 && parensMatch i     ss
 
         distance
             | orgsearch == ""

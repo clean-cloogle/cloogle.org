@@ -33,29 +33,30 @@ from parse import wantModule
 	libs :: [String]}
 
 instance zero CLI where
-	zero = {
-		version = False,
-		help = False,
-		root = "/opt/clean/lib/",
-		libs = [
-			  "StdEnv"
-			, "StdLib"
-			, "ArgEnv"
-			, "Directory"
-			, "Dynamics"
-			, "Gast"
-			, "Generics"
-			, "MersenneTwister"
-			, "TCPIP"
-			, "clean-platform/OS-Independent"
-			, "clean-platform/OS-Linux"
-			, "clean-platform/OS-Linux-32"
-			, "clean-platform/OS-Linux-64"
-			, "clean-platform/OS-Mac"
-			, "clean-platform/OS-Posix"
-			, "clean-platform/OS-Windows"
-			, "clean-platform/OS-Windows-32"
-			, "clean-platform/OS-Windows-64"]}
+	zero = { version = False
+	       , help = False
+	       , root = "/opt/clean/lib/"
+	       , libs = [ "StdEnv"
+	                , "StdLib"
+	                , "ArgEnv"
+	                , "Directory"
+	                , "Dynamics"
+	                , "Gast"
+	                , "Generics"
+	                , "MersenneTwister"
+	                , "TCPIP"
+	                , "clean-platform/OS-Independent"
+	                , "clean-platform/OS-Linux"
+	                , "clean-platform/OS-Linux-32"
+	                , "clean-platform/OS-Linux-64"
+	                , "clean-platform/OS-Mac"
+	                , "clean-platform/OS-Posix"
+	                , "clean-platform/OS-Windows"
+	                , "clean-platform/OS-Windows-32"
+	                , "clean-platform/OS-Windows-64"
+	                ]
+	       }
+
 
 VERSION :== "Cloogle's builddb version 0.1\n"
 USAGE :== concat [

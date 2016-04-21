@@ -52,6 +52,8 @@ instance < Result where (<) r1 r2 = r1.distance < r2.distance
 err :: Int String -> Response
 err c m = {return=c, data=[], msg=m}
 
+MAX_RESULTS :== 100
+
 Start w
 # (io, w) = stdio w
 # (cmdline, w) = getCommandLine w
@@ -76,8 +78,9 @@ where
         # filters = catMaybes $ [ isUnifiable <$> mbType
                                 , pure $ isNameMatch (size name - 2) name
                                 ]
-        # results = map (makeResult name mbType) $ findType`` filters db
-        = ({return=0,msg="Success",data=sort results}, w)
+        # results = take MAX_RESULTS $ sort
+                    $ map (makeResult name mbType) $ findType`` filters db
+        = ({return=0,msg="Success",data=results}, w)
     
     makeResult :: String (Maybe Type) (FunctionLocation, Type) -> Result
     makeResult orgsearch orgsearchtype (FL lib mod fname, type)

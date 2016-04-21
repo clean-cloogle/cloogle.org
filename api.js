@@ -59,11 +59,9 @@ function highlight(type) {
 }
 
 function escapeHTML(unsafe) {
-	// http://stackoverflow.com/a/25396011/1544337
-	var text = document.createTextNode(unsafe);
-	var div = document.createElement('div');
-	div.appendChild(text);
-	return div.innerHTML;
+	var map = { "&": "&amp;", "<": "&lt;", ">": "&gt;",
+		'"': '&quot;', "'": '&#39;', "/": '&#x2F;' };
+	return String(unsafe).replace(/[&<>"'\/]/g, function(s){return map[s];});
 }
 
 function formsubmit(){

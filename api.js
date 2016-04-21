@@ -42,7 +42,7 @@ function highlight(type) {
 				var j = 0;
 				for (k in clss) {
 					j = parseInt(k)+1;
-					str += '<span class="' + clss[k] + '">' + parts[j] + '</span>';
+					str += '<span class="' + clss[k] + '">' + escapeHTML(parts[j]) + '</span>';
 				}
 				type = parts[j+1];
 
@@ -56,6 +56,14 @@ function highlight(type) {
 		if (!found || type == '')
 			return str;
 	}
+}
+
+function escapeHTML(unsafe) {
+	// http://stackoverflow.com/a/25396011/1544337
+	var text = document.createTextNode(unsafe);
+	var div = document.createElement('div');
+	div.appendChild(text);
+	return div.innerHTML;
 }
 
 function formsubmit(){
@@ -95,7 +103,7 @@ function formsubmit(){
 
 window.onload = function(){
 	sform.onsubmit = formsubmit;
-	var str = document.location.hash;
+	var str = decodeURIComponent(document.location.hash);
 	if(str !== ''){
 		str = str.substring(1);
 		form_str.value = decodeURIComponent(str);

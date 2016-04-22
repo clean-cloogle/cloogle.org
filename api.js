@@ -86,6 +86,7 @@ function formsubmit(){
 							'<tr><th>Filename: </th><td>' + c['filename'] + '</td></tr>' +
 							'<tr><th>Module: </th><td>' + c['modul'] + '</td>' +
 							'<td>' + c['distance'] + '</td></tr>' +
+							('cls' in c ? ('<tr><th>Class: </th><td>' + c['cls']['cls_name'] + ' ' + c['cls']['cls_vars'].join(' ') + '</td></tr>') : '') +
 							'</table>' + 
 							'<code>' + highlight(c['func']) + '</code>';
 					}

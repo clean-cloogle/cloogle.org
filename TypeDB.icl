@@ -86,6 +86,21 @@ findClass` f {classmap} = map (\(k,(x,y))->(k,x,y)) results
 where
     results = toList $ filterWithKey (\cl (vs,fs)->f cl vs fs) classmap
 
+findClassMembers` :: (ClassLocation [TypeVar] FunctionName Type -> Bool) TypeDB
+		-> [(ClassLocation, [TypeVar], FunctionName, Type)]
+findClassMembers` f {classmap} = filter (\(a,b,c,d)->f a b c d) $ flatten members
+where
+	members = map (\(cl,(vs,fs))->[(cl,vs,f,t) \\ (f,t)<-fs]) $ toList classmap
+
+findClassMembers`` :: [(ClassLocation [TypeVar] FunctionName Type -> Bool)]
+		TypeDB -> [(ClassLocation, [TypeVar], FunctionName, Type)]
+findClassMembers`` fs {classmap} = foldr (filter o app4) all_members fs
+where
+	app4 :: (a b c d -> e) (a,b,c,d) -> e
+	app4 f (a,b,c,d) = f a b c d
+
+	all_members = [(cl,vs,f,t) \\ (cl,(vs,fs)) <- toList classmap, (f,t) <- fs]
+
 searchExact :: Type TypeDB -> [(FunctionLocation, Type)]
 searchExact t db = filter ((==)t o snd) $ toList db.typemap
 

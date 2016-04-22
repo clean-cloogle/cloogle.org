@@ -35,12 +35,17 @@ import Levenshtein
 :: Result = { library :: String
             , filename :: String
             , func :: String
+            , cls :: Maybe ClassResult
             , modul :: String
             , distance :: Int
             }
 
-derive JSONEncode Command, Response, Result
-derive JSONDecode Command, Response, Result
+:: ErrorResult = Error Int String
+
+:: ClassResult = { cls_name :: String, cls_vars :: [String] }
+
+derive JSONEncode Command, Response, Result, ClassResult
+derive JSONDecode Command, Response, Result, ClassResult
 
 instance toString Response where toString r = toString $ toJSON r
 instance toString Command where toString r = toString $ toJSON r
@@ -66,34 +71,45 @@ Start w
 # db = fromJust db
 = serve (handle db) ('OldMaybe'.Just log) port w
 where
-    help :: *File *World -> *World
-    help io w
-    # io = io <<< "Usage: ./CloogleServer <port>\n"
-    = snd $ fclose io w
+	help :: *File *World -> *World
+	help io w
+	# io = io <<< "Usage: ./CloogleServer <port>\n"
+	= snd $ fclose io w
 
-    handle :: TypeDB (Maybe Command) *World -> *(Response, *World)
-    handle _ Nothing w = (err 4 "Couldn't parse input", w)
-    handle db (Just {unify,name}) w
-        # mbType = parseType (fromString unify)
-        # filters = catMaybes $ [ isUnifiable <$> mbType
-                                , pure $ isNameMatch (size name - 2) name
-                                ]
-        # results = take MAX_RESULTS $ sort
-                    $ map (makeResult name mbType) $ findType`` filters db
-        = ({return=0,msg="Success",data=results}, w)
-    
-    makeResult :: String (Maybe Type) (FunctionLocation, Type) -> Result
-    makeResult orgsearch orgsearchtype (FL lib mod fname, type)
-        = { library  = lib
-          , filename = (toString $ reverse $ takeWhile ((<>)'.') $ reverse $ fromString mod) +++ ".dcl"
-          , modul    = mod
-          , func     = fname +++ " :: " +++ concat (stripParens $ print type)
-          , distance = distance
-          }
-    where
+	handle :: TypeDB (Maybe Command) *World -> *(Response, *World)
+	handle _ Nothing w = (err 4 "Couldn't parse input", w)
+	handle db (Just {unify,name}) w
+		# mbType = parseType (fromString unify)
+		// Search normal functions
+		# filts = catMaybes $ [ (\t->(\_ u->isUnifiable t u)) <$> mbType
+		                      , pure (\loc _ ->
+		                        isNameMatch (size name - 2) name loc)
+		                      ]
+		# funcs = map (makeResult name mbType Nothing) $ findType`` filts db
+		// Search class members
+		# filts = catMaybes $ [ (\t->(\_ _ _ u->isUnifiable t u)) <$> mbType
+		                      , pure (\(CL lib mod _) _ f _ ->
+		                        isNameMatch (size name - 2) name (FL lib mod f))
+		                      ]
+		# members = findClassMembers`` filts db
+		# members = map (\(CL lib mod cls,vs,f,t) -> makeResult name mbType
+			(Just {cls_name=cls,cls_vars=vs}) (FL lib mod f,t)) members
+		# results = take MAX_RESULTS $ sort $ funcs ++ members
+		= ({return=0,msg="Success",data=results}, w)
+
+	makeResult :: String (Maybe Type) (Maybe ClassResult) (FunctionLocation, Type) -> Result
+	makeResult orgsearch orgsearchtype mbCls (FL lib mod fname, type)
+		= { library  = lib
+		  , filename = (toString $ reverse $ takeWhile ((<>)'.') $ reverse $ fromString mod) +++ ".dcl"
+		  , modul    = mod
+		  , func     = fname +++ " :: " +++ concat (stripParens $ print type)
+		  , cls      = mbCls
+		  , distance = distance
+		  }
+	where
 		stripParens :: [String] -> [String]
 		stripParens ["(":ss]
-			| last ss == ")" && parensMatch 0 (init ss) = init ss
+			| last ss == ")" && parensMatch 0 (init ss) = stripParens $ init ss
 			| otherwise = ["(":ss]
 		stripParens ss = ss
 
@@ -104,38 +120,38 @@ where
 		parensMatch i [")":ss] = i >= 0 && parensMatch (i-1) ss
 		parensMatch i [_:ss]   = i >= 0 && parensMatch i     ss
 
-        distance
-            | orgsearch == ""
-                | isNothing orgsearchtype = 0
-                # orgsearchtype = fromJust orgsearchtype
-                # (Just (ass1, ass2)) = unify [] orgsearchtype type
-                = length $ filter (not o isVar o snd) $ ass1 ++ ass2
-            # levdist = levenshtein fname orgsearch
-            = if (indexOf orgsearch fname == -1) 0 -100 + levdist
+		distance
+			| orgsearch == ""
+				| isNothing orgsearchtype = 0
+				# orgsearchtype = fromJust orgsearchtype
+				# (Just (ass1, ass2)) = unify [] orgsearchtype type
+				= length $ filter (not o isVar o snd) $ ass1 ++ ass2
+			# levdist = levenshtein fname orgsearch
+			= if (indexOf orgsearch fname == -1) 0 -100 + levdist
 
-    isUnifiable :: Type FunctionLocation Type -> Bool
-    isUnifiable t1 _ t2 = isJust (unify [] t1 t2)
+	isUnifiable :: Type Type -> Bool
+	isUnifiable t1 t2 = isJust (unify [] t1 t2)
 
-    isNameMatch :: Int String FunctionLocation Type -> Bool
-    isNameMatch maxdist n1 (FL _ _ n2) _
-        # (n1, n2) = ({toLower c \\ c <-: n1}, {toLower c \\ c <-: n2})
-        = n1 == "" || indexOf n1 n2 <> -1 || levenshtein n1 n2 <= maxdist
-    
-    log :: (LogMessage (Maybe Command) Response) IPAddress *World -> *(IPAddress, *World)
-    log msg s w
-    # (io,w) = stdio w
-    # io = fwrites (msgToString msg s) io
-    = (newS msg s, snd (fclose io w))
+	isNameMatch :: Int String FunctionLocation -> Bool
+	isNameMatch maxdist n1 (FL _ _ n2)
+		# (n1, n2) = ({toLower c \\ c <-: n1}, {toLower c \\ c <-: n2})
+		= n1 == "" || indexOf n1 n2 <> -1 || levenshtein n1 n2 <= maxdist
 
-    newS :: (LogMessage (Maybe Command) Response) IPAddress -> IPAddress
-    newS m s = case m of (Connected ip) = ip; _ = s
+	log :: (LogMessage (Maybe Command) Response) IPAddress *World -> *(IPAddress, *World)
+	log msg s w
+	# (io,w) = stdio w
+	# io = fwrites (msgToString msg s) io
+	= (newS msg s, snd (fclose io w))
 
-    msgToString :: (LogMessage (Maybe Command) Response) IPAddress -> String
-    msgToString (Received Nothing) ip
-        = toString ip +++ " <-- Nothing\n"
-    msgToString (Received (Just a)) ip
-        = toString ip +++ " <-- " +++ toString a +++ "\n"
-    msgToString (Sent b) ip
-        = toString ip +++ " --> " +++ toString b +++ "\n"
-    msgToString _ _ = ""
+	newS :: (LogMessage (Maybe Command) Response) IPAddress -> IPAddress
+	newS m s = case m of (Connected ip) = ip; _ = s
+
+	msgToString :: (LogMessage (Maybe Command) Response) IPAddress -> String
+	msgToString (Received Nothing) ip
+		= toString ip +++ " <-- Nothing\n"
+	msgToString (Received (Just a)) ip
+		= toString ip +++ " <-- " +++ toString a +++ "\n"
+	msgToString (Sent b) ip
+		= toString ip +++ " --> " +++ toString b +++ "\n"
+	msgToString _ _ = ""
 

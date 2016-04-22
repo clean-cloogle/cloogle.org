@@ -32,7 +32,7 @@ putType :: FunctionLocation Type TypeDB -> TypeDB
 putTypes :: [(FunctionLocation, Type)] TypeDB -> TypeDB
 findType :: FunctionName TypeDB -> [(FunctionLocation, Type)]
 findType` :: (FunctionLocation Type -> Bool) TypeDB -> [(FunctionLocation, Type)]
-findType`` :: [(FunctionLocation Type -> Bool)] TypeDB -> [(FunctionLocation, Type)]
+findType`` :: [FunctionLocation Type -> Bool] TypeDB -> [(FunctionLocation, Type)]
 
 getInstances :: Class TypeDB -> [Type]
 putInstance :: Class Type TypeDB -> TypeDB
@@ -44,11 +44,17 @@ putClass :: ClassLocation [TypeVar] [(FunctionName, Type)] TypeDB -> TypeDB
 putClasses :: [(ClassLocation, [TypeVar], [(FunctionName, Type)])] TypeDB -> TypeDB
 findClass :: Class TypeDB -> [(ClassLocation, [TypeVar], [(FunctionName, Type)])]
 findClass` :: (ClassLocation [TypeVar] [(FunctionName,Type)] -> Bool) TypeDB
-        -> [(ClassLocation, [TypeVar], [(FunctionName, Type)])]
+		-> [(ClassLocation, [TypeVar], [(FunctionName, Type)])]
+
+findClassMembers` :: (ClassLocation [TypeVar] FunctionName Type -> Bool) TypeDB
+		-> [(ClassLocation, [TypeVar], FunctionName, Type)]
+findClassMembers`` :: [ClassLocation [TypeVar] FunctionName Type -> Bool]
+		TypeDB -> [(ClassLocation, [TypeVar], FunctionName, Type)]
+
 
 searchExact :: Type TypeDB -> [(FunctionLocation, Type)]
 searchUnifiable :: Type TypeDB
-        -> [(FunctionLocation, Type, [TVAssignment], [TVAssignment])]
+		-> [(FunctionLocation, Type, [TVAssignment], [TVAssignment])]
 
 newDb :: TypeDB
 openDb :: *File -> *(Maybe TypeDB, *File)

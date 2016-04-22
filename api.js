@@ -59,11 +59,9 @@ function highlight(type) {
 }
 
 function escapeHTML(unsafe) {
-	// http://stackoverflow.com/a/25396011/1544337
-	var text = document.createTextNode(unsafe);
-	var div = document.createElement('div');
-	div.appendChild(text);
-	return div.innerHTML;
+	var map = { "&": "&amp;", "<": "&lt;", ">": "&gt;",
+		'"': '&quot;', "'": '&#39;', "/": '&#x2F;' };
+	return String(unsafe).replace(/[&<>"'\/]/g, function(s){return map[s];});
 }
 
 function formsubmit(){
@@ -71,8 +69,8 @@ function formsubmit(){
 		sresults.innerHTML = 'Can\'t search for the empty string';
 	} else {
 		sresults.innerHTML = 'Proccessing...';
-		var str = encodeURIComponent(form_str.value);
-		var url = 'api.php?str=' + str;
+		var str = form_str.value;
+		var url = 'api.php?str=' + encodeURIComponent(str);
 		var xmlHttp = new XMLHttpRequest();
 		xmlHttp.onreadystatechange = function() { 
 			if(xmlHttp.readyState == 4 && xmlHttp.status == 200){
@@ -86,8 +84,9 @@ function formsubmit(){
 						sresults.innerHTML += '<hr /><table>' +
 							'<tr><th>Library: </th><td>' + c['library'] + '</td></tr>' +
 							'<tr><th>Filename: </th><td>' + c['filename'] + '</td></tr>' +
-							'<tr><th>Module: </th><td>' + c['module'] + '</td>' +
+							'<tr><th>Module: </th><td>' + c['modul'] + '</td>' +
 							'<td>' + c['distance'] + '</td></tr>' +
+							('cls' in c ? ('<tr><th>Class: </th><td>' + c['cls']['cls_name'] + ' ' + c['cls']['cls_vars'].join(' ') + '</td></tr>') : '') +
 							'</table>' + 
 							'<code>' + highlight(c['func']) + '</code>';
 					}
@@ -106,7 +105,7 @@ window.onload = function(){
 	var str = decodeURIComponent(document.location.hash);
 	if(str !== ''){
 		str = str.substring(1);
-		form_str.value = str;
+		form_str.value = decodeURIComponent(str);
 		formsubmit();
 	}
 

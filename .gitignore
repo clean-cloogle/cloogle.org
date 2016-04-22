@@ -1,10 +1,8 @@
-sync.sh
-ArgEnv
-Directory
-Dynamics
-Generics
-MersenneTwister
-StdEnv
-StdLib
-TCPIP
-clean-platform
+Clean System Files/
+search
+builddb
+CloogleServer
+*.prj
+*.json
+*.1
+types.db

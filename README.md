@@ -14,19 +14,13 @@ A Clean hoogle clone. Use at your own risk. Live version available
 
 - Add `env/envs.linux64` to your `$CLEAN_HOME/etc/IDEEnvs`.
 
-- Run `make`
+- Run `make`. This builds all necessary binaries and runs `builddb`, which
+	creates a file `types.db` which holds the internal database of functions and
+	their types. If you add new libraries later on, you need to rerun `builddb`.
 
-- Run
+- You can then run the Clean backend with:
 
-		$ ./builddb -h 10M > types.db
-
-	This creates a file `types.db` which holds the internal database of functions
-	and their types. If you later add new libraries, you need to rerun `builddb`.
-
-- You can then build and run the Clean backend with:
-
-		$ cpm project CloogleServer.prj build
-		$ ./CloogleServer -h 10M 31215 < types.db
+		$ ./CloogleServer 31215 < types.db
 
 	In this example, the server uses port 31215. You need to use the same
 	settings in `api.php`.

@@ -87,7 +87,6 @@ where
 	loop [] db _ w = (db,w)
 	loop [(lib,mod):list] db cache w
 	# (db, cache, w) = getModuleTypes mod lib cache db w
-	//# db = 'DB'.putTypes sts db
 	= loop list db cache w
 
 	parseCLI :: [String] -> Either String CLI
@@ -119,7 +118,7 @@ findModules lib root w
 = (removeDup (mods ++ moremods), w)
 where
 	isDclModule :: String -> Bool
-	isDclModule s = s % (size s - 4, size s - 1) == ".dcl" && s.[0] <> '_'
+	isDclModule s = s % (size s - 4, size s - 1) == ".dcl"
 
 	isDirectory :: String -> Bool
 	isDirectory s = not $ isMember '.' $ fromString s

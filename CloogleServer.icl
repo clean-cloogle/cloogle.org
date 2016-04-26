@@ -1,18 +1,19 @@
 module CloogleServer
 
-import StdEnv
+import StdArray, StdBool, StdFile, StdList, StdOrdList, StdOverloaded, StdTuple
+from StdFunc import o
+from StdMisc import abort
 
 from TCPIP import :: IPAddress, :: Port, instance toString IPAddress
 
 from Data.Func import $
 import Data.Maybe
 import System.CommandLine
-import Text
 import Text.JSON
 import Data.Functor
 import Control.Applicative
-from Control.Monad import class Monad(..)
-import Text
+import Control.Monad
+from Text import class Text(concat,trim,indexOf), instance Text String
 
 import System.Time
 
@@ -37,10 +38,13 @@ import Levenshtein
 :: Result = { library :: String
             , filename :: String
             , func :: String
+			, unifier :: Maybe StrUnifier
             , cls :: Maybe ClassResult
             , modul :: String
             , distance :: Int
             }
+
+:: StrUnifier :== ([(String,String)], [(String,String)])
 
 :: ErrorResult = Error Int String
 
@@ -107,10 +111,15 @@ where
 		                         $ reverse $ fromString mod) +++ ".dcl"
 		  , modul    = mod
 		  , func     = fname +++ " :: " +++ concat (stripParens $ print type)
+		  , unifier  = toStrUnifier <$> (orgsearchtype >>= unify [] type)
 		  , cls      = mbCls
 		  , distance = distance
 		  }
 	where
+		toStrUnifier :: Unifier -> StrUnifier
+		toStrUnifier (tvas1, tvas2) = (map toStr tvas1, map toStr tvas2)
+		where toStr (var, type) = (var, concat $ print type)
+
 		stripParens :: [String] -> [String]
 		stripParens ["(":ss]
 			| last ss == ")" && parensMatch 0 (init ss) = stripParens $ init ss

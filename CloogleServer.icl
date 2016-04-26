@@ -1,7 +1,6 @@
 module CloogleServer
 
-import StdString, StdArray, StdList, StdFile, StdTuple, StdMisc, StdOrdList, StdBool
-from StdFunc import o
+import StdEnv
 
 from TCPIP import :: IPAddress, :: Port, instance toString IPAddress
 
@@ -83,13 +82,13 @@ where
 		// Search normal functions
 		# filts = catMaybes $ [ (\t->(\_ u->isUnifiable t u)) <$> mbType
 		                      , pure (\loc _ ->
-		                        isNameMatch (size name - 2) name loc)
+		                        isNameMatch (size name-2) name loc)
 		                      ]
 		# funcs = map (makeResult name mbType Nothing) $ findType`` filts db
 		// Search class members
 		# filts = catMaybes $ [ (\t->(\_ _ _ u->isUnifiable t u)) <$> mbType
 		                      , pure (\(CL lib mod _) _ f _ ->
-		                        isNameMatch (size name - 2) name (FL lib mod f))
+		                        isNameMatch (size name-2) name (FL lib mod f))
 		                      ]
 		# members = findClassMembers`` filts db
 		# members = map (\(CL lib mod cls,vs,f,t) -> makeResult name mbType
@@ -97,10 +96,12 @@ where
 		# results = take MAX_RESULTS $ sort $ funcs ++ members
 		= ({return=0,msg="Success",data=results}, w)
 
-	makeResult :: String (Maybe Type) (Maybe ClassResult) (FunctionLocation, Type) -> Result
+	makeResult :: String (Maybe Type) (Maybe ClassResult)
+	              (FunctionLocation, Type) -> Result
 	makeResult orgsearch orgsearchtype mbCls (FL lib mod fname, type)
 		= { library  = lib
-		  , filename = (toString $ reverse $ takeWhile ((<>)'.') $ reverse $ fromString mod) +++ ".dcl"
+		  , filename = (toString $ reverse $ takeWhile ((<>)'.')
+		                         $ reverse $ fromString mod) +++ ".dcl"
 		  , modul    = mod
 		  , func     = fname +++ " :: " +++ concat (stripParens $ print type)
 		  , cls      = mbCls
@@ -137,7 +138,8 @@ where
 		# (n1, n2) = ({toLower c \\ c <-: n1}, {toLower c \\ c <-: n2})
 		= n1 == "" || indexOf n1 n2 <> -1 || levenshtein n1 n2 <= maxdist
 
-	log :: (LogMessage (Maybe Command) Response) IPAddress *World -> *(IPAddress, *World)
+	log :: (LogMessage (Maybe Command) Response) IPAddress *World
+	       -> *(IPAddress, *World)
 	log msg s w
 	# (io,w) = stdio w
 	# io = fwrites (msgToString msg s) io
@@ -151,7 +153,8 @@ where
 		= toString ip +++ " <-- Nothing\n"
 	msgToString (Received (Just a)) ip
 		= toString ip +++ " <-- " +++ toString a +++ "\n"
-	msgToString (Sent b) ip
-		= toString ip +++ " --> " +++ toString b +++ "\n"
+	msgToString (Sent {return,data,msg}) ip
+		= toString ip +++ " --> " +++ toString (length data) +++ " results ("
+			+++ toString return +++ "; " +++ msg +++ ")\n"
 	msgToString _ _ = ""
 

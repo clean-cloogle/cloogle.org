@@ -12,6 +12,9 @@ import Text.JSON
 import Data.Functor
 import Control.Applicative
 from Control.Monad import class Monad(..)
+import Text
+
+import System.Time
 
 import qualified StdMaybe as OldMaybe
 from SimpleTCPServer import :: LogMessage{..}, serve, :: Logger
@@ -141,9 +144,13 @@ where
 	log :: (LogMessage (Maybe Command) Response) IPAddress *World
 	       -> *(IPAddress, *World)
 	log msg s w
+	| not needslog = (newS msg s, w)
+	# (tm,w) = localTime w
 	# (io,w) = stdio w
-	# io = fwrites (msgToString msg s) io
+	# io = io <<< trim (toString tm) <<< " " <<< msgToString msg s
 	= (newS msg s, snd (fclose io w))
+	where
+		needslog = case msg of (Received _) = True; (Sent _) = True; _ = False
 
 	newS :: (LogMessage (Maybe Command) Response) IPAddress -> IPAddress
 	newS m s = case m of (Connected ip) = ip; _ = s

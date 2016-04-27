@@ -18,6 +18,10 @@ if($_SERVER['REQUEST_METHOD'] !== 'GET'){
 	$unify = isset($str[1]) ? $str[1] : '';
 	$command = ['name' => $name, 'unify' => $unify];
 
+	if (isset($_GET['mod'])) {
+		$command['modules'] = explode(',', $_GET['mod']);
+	}
+
 	$skt = fsockopen(SERVER_HOSTNAME, SERVER_PORT);
 	if (!$skt) {
 		echo json_encode(array(

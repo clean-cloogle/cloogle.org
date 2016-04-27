@@ -26,21 +26,22 @@ import Levenshtein
 
 :: OldMaybe a :== 'SimpleTCPServer'.Maybe a
 
-:: Command = { unify :: String
-             , name :: String
+:: Request = { unify   :: String
+             , name    :: String
+			 , modules :: Maybe [String]
              }
 
 :: Response = { return :: Int
-              , data :: [Result]
-              , msg :: String
+              , data   :: [Result]
+              , msg    :: String
               }
 
-:: Result = { library :: String
+:: Result = { library  :: String
             , filename :: String
-            , func :: String
-			, unifier :: Maybe StrUnifier
-            , cls :: Maybe ClassResult
-            , modul :: String
+            , func     :: String
+			, unifier  :: Maybe StrUnifier
+            , cls      :: Maybe ClassResult
+            , modul    :: String
             , distance :: Int
             }
 
@@ -50,13 +51,13 @@ import Levenshtein
 
 :: ClassResult = { cls_name :: String, cls_vars :: [String] }
 
-derive JSONEncode Command, Response, Result, ClassResult
-derive JSONDecode Command, Response, Result, ClassResult
+derive JSONEncode Request, Response, Result, ClassResult
+derive JSONDecode Request, Response, Result, ClassResult
 
 instance toString Response where toString r = toString $ toJSON r
-instance toString Command where toString r = toString $ toJSON r
+instance toString Request where toString r = toString $ toJSON r
 
-instance fromString (Maybe Command) where fromString s = fromJSON $ fromString s
+instance fromString (Maybe Request) where fromString s = fromJSON $ fromString s
 
 instance < Result where (<) r1 r2 = r1.distance < r2.distance
 
@@ -82,20 +83,22 @@ where
 	# io = io <<< "Usage: ./CloogleServer <port>\n"
 	= snd $ fclose io w
 
-	handle :: TypeDB (Maybe Command) *World -> *(Response, *World)
+	handle :: TypeDB (Maybe Request) *World -> *(Response, *World)
 	handle _ Nothing w = (err 4 "Couldn't parse input", w)
-	handle db (Just {unify,name}) w
+	handle db (Just {unify,name,modules}) w
 		# mbType = parseType (fromString unify)
 		// Search normal functions
 		# filts = catMaybes $ [ (\t->(\_ u->isUnifiable t u)) <$> mbType
 		                      , pure (\loc _ ->
 		                        isNameMatch (size name-2) name loc)
+		                      , isModMatchF <$> modules
 		                      ]
 		# funcs = map (makeResult name mbType Nothing) $ findType`` filts db
 		// Search class members
 		# filts = catMaybes $ [ (\t->(\_ _ _ u->isUnifiable t u)) <$> mbType
 		                      , pure (\(CL lib mod _) _ f _ ->
 		                        isNameMatch (size name-2) name (FL lib mod f))
+		                      , isModMatchC <$> modules
 		                      ]
 		# members = findClassMembers`` filts db
 		# members = map (\(CL lib mod cls,vs,f,t) -> makeResult name mbType
@@ -145,12 +148,18 @@ where
 	isUnifiable :: Type Type -> Bool
 	isUnifiable t1 t2 = isJust (unify [] t1 t2)
 
-	isNameMatch :: Int String FunctionLocation -> Bool
+	isNameMatch :: !Int !String FunctionLocation -> Bool
 	isNameMatch maxdist n1 (FL _ _ n2)
 		# (n1, n2) = ({toLower c \\ c <-: n1}, {toLower c \\ c <-: n2})
 		= n1 == "" || indexOf n1 n2 <> -1 || levenshtein n1 n2 <= maxdist
 
-	log :: (LogMessage (Maybe Command) Response) IPAddress *World
+	isModMatchF :: ![String] FunctionLocation Type -> Bool
+	isModMatchF mods (FL _ mod _) _ = isMember mod mods
+
+	isModMatchC :: ![String] ClassLocation [TypeVar] FunctionName Type -> Bool
+	isModMatchC mods (CL _ mod _) _ _ _ = isMember mod mods
+
+	log :: (LogMessage (Maybe Request) Response) IPAddress *World
 	       -> *(IPAddress, *World)
 	log msg s w
 	| not needslog = (newS msg s, w)
@@ -161,10 +170,10 @@ where
 	where
 		needslog = case msg of (Received _) = True; (Sent _) = True; _ = False
 
-	newS :: (LogMessage (Maybe Command) Response) IPAddress -> IPAddress
+	newS :: (LogMessage (Maybe Request) Response) IPAddress -> IPAddress
 	newS m s = case m of (Connected ip) = ip; _ = s
 
-	msgToString :: (LogMessage (Maybe Command) Response) IPAddress -> String
+	msgToString :: (LogMessage (Maybe Request) Response) IPAddress -> String
 	msgToString (Received Nothing) ip
 		= toString ip +++ " <-- Nothing\n"
 	msgToString (Received (Just a)) ip

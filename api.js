@@ -12,7 +12,7 @@ function highlight(type) {
 		],
 		type: [
 			[/^(\s+)(.*)/, ['whitespace']],
-			[/^([a-z]+)(.*)/, ['typevar']],
+			[/^([a-z][a-zA-Z]*)(.*)/, ['typevar']],
 			[/^([A-Z]\w*)(.*)/, ['type']],
 			[/^(\/\/.*)(.*?)/, ['comment']],
 			[/^(\|)(.*)/, ['punctuation'], 'context'],
@@ -21,6 +21,8 @@ function highlight(type) {
 		context: [
 			[/^(\s+)(.*)/, ['whitespace']],
 			[/^(\/\/.*)(.*?)/, ['comment']],
+			[/^(,)(.*)/, ['punctuation']],
+			[/^(\S+)(,.*)/, ['classname']],
 			[/^(\S+)(.*)/, ['classname'], 'contextType']
 		],
 		contextType: [

@@ -101,19 +101,20 @@ where
 		                      , isModMatchC <$> modules
 		                      ]
 		# members = findClassMembers`` filts db
-		# members = map (\(CL lib mod cls,vs,f,t) -> makeResult name mbType
-			(Just {cls_name=cls,cls_vars=vs}) (FL lib mod f,t)) members
+		# members = map (\(CL lib mod cls,vs,f,et) -> makeResult name mbType
+			(Just {cls_name=cls,cls_vars=vs}) (FL lib mod f,et)) members
 		# results = take MAX_RESULTS $ sort $ funcs ++ members
 		= ({return=0,msg="Success",data=results}, w)
 
 	makeResult :: String (Maybe Type) (Maybe ClassResult)
-	              (FunctionLocation, Type) -> Result
-	makeResult orgsearch orgsearchtype mbCls (FL lib mod fname, type)
+	              (FunctionLocation, ExtendedType) -> Result
+	makeResult orgsearch orgsearchtype mbCls (FL lib mod fname, ET type tes)
 		= { library  = lib
 		  , filename = (toString $ reverse $ takeWhile ((<>)'.')
 		                         $ reverse $ fromString mod) +++ ".dcl"
 		  , modul    = mod
-		  , func     = fname +++ " :: " +++ concat (stripParens $ print type)
+		  , func     = fname +++ toStrPriority tes.te_priority +++
+					   " :: " +++ concat (stripParens $ print type)
 		  , unifier  = toStrUnifier <$> (orgsearchtype >>= unify [] type)
 		  , cls      = mbCls
 		  , distance = distance
@@ -122,6 +123,9 @@ where
 		toStrUnifier :: Unifier -> StrUnifier
 		toStrUnifier (tvas1, tvas2) = (map toStr tvas1, map toStr tvas2)
 		where toStr (var, type) = (var, concat $ print type)
+
+		toStrPriority :: (Maybe TE_Priority) -> String
+		toStrPriority p = case print p of [] = ""; ss = concat [" ":ss]
 
 		stripParens :: [String] -> [String]
 		stripParens ["(":ss]
@@ -145,18 +149,18 @@ where
 			# levdist = levenshtein fname orgsearch
 			= if (indexOf orgsearch fname == -1) 0 -100 + levdist
 
-	isUnifiable :: Type Type -> Bool
-	isUnifiable t1 t2 = isJust (unify [] t1 t2)
+	isUnifiable :: Type ExtendedType -> Bool
+	isUnifiable t1 (ET t2 _) = isJust (unify [] t1 t2)
 
 	isNameMatch :: !Int !String FunctionLocation -> Bool
 	isNameMatch maxdist n1 (FL _ _ n2)
 		# (n1, n2) = ({toLower c \\ c <-: n1}, {toLower c \\ c <-: n2})
 		= n1 == "" || indexOf n1 n2 <> -1 || levenshtein n1 n2 <= maxdist
 
-	isModMatchF :: ![String] FunctionLocation Type -> Bool
+	isModMatchF :: ![String] FunctionLocation ExtendedType -> Bool
 	isModMatchF mods (FL _ mod _) _ = isMember mod mods
 
-	isModMatchC :: ![String] ClassLocation [TypeVar] FunctionName Type -> Bool
+	isModMatchC :: ![String] ClassLocation [TypeVar] FunctionName ExtendedType -> Bool
 	isModMatchC mods (CL _ mod _) _ _ _ = isMember mod mods
 
 	log :: (LogMessage (Maybe Request) Response) IPAddress *World

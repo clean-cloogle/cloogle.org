@@ -2,6 +2,7 @@ module builddb
 
 // Project libraries
 import qualified TypeDB as DB
+from TypeDB import ::TypeExtras{..}
 
 // StdEnv
 import StdFile, StdList, StdMisc, StdArray, StdBool, StdString, StdTuple
@@ -24,6 +25,7 @@ from predef import init_identifiers
 from compile import empty_cache, ::DclCache{hash_table}
 from general import ::Optional(..)
 from syntax import ::SymbolTable, ::SymbolTableEntry, ::Ident{..}, ::SymbolPtr, ::Position(NoPos), ::Module{mod_ident,mod_defs}, ::ParsedDefinition(PD_TypeSpec,PD_Instance,PD_Class), ::FunSpecials, ::Priority, ::ParsedModule, ::SymbolType, ::ParsedInstanceAndMembers{..}, ::ParsedInstance{pi_ident,pi_types}, ::Type, ::ClassDef{class_ident,class_args}, ::TypeVar
+from scanner import ::Priority(..), ::Assoc(..)
 from parse import wantModule
 
 :: CLI = {
@@ -143,13 +145,18 @@ where
 	mkdir :: String -> String
 	mkdir s = {if (c == '.') '/' c\\c<-:s}
 
-	pd_typespecs :: String [ParsedDefinition] -> [('DB'.FunctionLocation, 'DB'.Type)]
+	pd_typespecs :: String [ParsedDefinition] -> [('DB'.FunctionLocation, 'DB'.ExtendedType)]
 	pd_typespecs mod pds
 	# pds = filter (\pd->case pd of (PD_TypeSpec _ _ _ _ _)=True; _=False) pds
-	# sts = map (\(PD_TypeSpec pos id prio st funspecs) -> ('DB'.FL lib mod id.id_name,st)) pds
-	# sts = filter (\st->case st of (_,(Yes _))=True; _=False) sts
-	# sts = map (\(loc,Yes x)->(loc,'T'.toType x)) sts
+	# sts = map (\(PD_TypeSpec pos id p st funspecs) -> ('DB'.FL lib mod id.id_name,st,p)) pds
+	# sts = [(fl, 'DB'.ET ('T'.toType x) {te_priority=toPrio p}) \\ (fl,Yes x,p) <- sts]
 	= sts
+	where
+		toPrio :: Priority -> Maybe 'DB'.TE_Priority
+		toPrio (Prio LeftAssoc i)  = Just $ 'DB'.LeftAssoc i
+		toPrio (Prio RightAssoc i) = Just $ 'DB'.RightAssoc i
+		toPrio (Prio NoAssoc i)    = Just $ 'DB'.NoAssoc i
+		toPrio _                   = Nothing
 
 	pd_instances :: String [ParsedDefinition] -> [('DB'.Class, ['DB'.Type])]
 	pd_instances mod pds
@@ -158,13 +165,13 @@ where
 		-> (pi_ident.id_name, map 'T'.toType pi_types)) pds
 
 	pd_classes :: String [ParsedDefinition]
-		-> [('DB'.ClassLocation, ['T'.TypeVar], [('DB'.FunctionName, 'T'.Type)])]
+		-> [('DB'.ClassLocation, ['T'.TypeVar], [('DB'.FunctionName, 'DB'.ExtendedType)])]
 	pd_classes mod pds
 	# pds = filter (\pd->case pd of (PD_Class _ _)=True; _=False) pds
 	= map (\(PD_Class {class_ident={id_name},class_args} pds)
 		-> let typespecs = pd_typespecs mod pds
 		in ('DB'.CL lib mod id_name, map 'T'.toTypeVar class_args, 
-			[(f,t) \\ ('DB'.FL _ _ f, t) <- typespecs])) pds
+			[(f,et) \\ ('DB'.FL _ _ f, et) <- typespecs])) pds
 
 unigroups :: (Type Type -> Bool) [(a,Type)] -> [([a],Type)]
 unigroups f ts = unigroups` ts []

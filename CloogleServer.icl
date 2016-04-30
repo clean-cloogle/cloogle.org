@@ -28,18 +28,20 @@ import Levenshtein
 
 :: Request = { unify   :: String
              , name    :: String
-			 , modules :: Maybe [String]
+             , modules :: Maybe [String]
+             , page    :: Maybe Int
              }
 
 :: Response = { return :: Int
               , data   :: [Result]
               , msg    :: String
+              , more_available :: Maybe Int
               }
 
 :: Result = { library  :: String
             , filename :: String
             , func     :: String
-			, unifier  :: Maybe StrUnifier
+            , unifier  :: Maybe StrUnifier
             , cls      :: Maybe ClassResult
             , modul    :: String
             , distance :: Int
@@ -62,9 +64,9 @@ instance fromString (Maybe Request) where fromString s = fromJSON $ fromString s
 instance < Result where (<) r1 r2 = r1.distance < r2.distance
 
 err :: Int String -> Response
-err c m = {return=c, data=[], msg=m}
+err c m = {return=c, data=[], msg=m, more_available=Nothing}
 
-MAX_RESULTS :== 100
+MAX_RESULTS :== 15
 
 Start w
 # (io, w) = stdio w
@@ -85,7 +87,7 @@ where
 
 	handle :: TypeDB (Maybe Request) *World -> *(Response, *World)
 	handle _ Nothing w = (err 4 "Couldn't parse input", w)
-	handle db (Just {unify,name,modules}) w
+	handle db (Just {unify,name,modules,page}) w
 		# mbType = parseType (fromString unify)
 		// Search normal functions
 		# filts = catMaybes $ [ (\t->(\_ u->isUnifiable t u)) <$> mbType
@@ -103,8 +105,11 @@ where
 		# members = findClassMembers`` filts db
 		# members = map (\(CL lib mod cls,vs,f,et) -> makeResult name mbType
 			(Just {cls_name=cls,cls_vars=vs}) (FL lib mod f,et)) members
-		# results = take MAX_RESULTS $ sort $ funcs ++ members
-		= ({return=0,msg="Success",data=results}, w)
+		# drop_n = fromJust (page <|> pure 0) * MAX_RESULTS
+		# results = drop drop_n $ sort $ funcs ++ members
+		# more = max 0 (length results - MAX_RESULTS)
+		# results = take MAX_RESULTS results
+		= ({return=0,msg="Success",data=results,more_available=Just more}, w)
 
 	makeResult :: String (Maybe Type) (Maybe ClassResult)
 	              (FunctionLocation, ExtendedType) -> Result
@@ -182,8 +187,9 @@ where
 		= toString ip +++ " <-- Nothing\n"
 	msgToString (Received (Just a)) ip
 		= toString ip +++ " <-- " +++ toString a +++ "\n"
-	msgToString (Sent {return,data,msg}) ip
+	msgToString (Sent {return,data,msg,more_available}) ip
 		= toString ip +++ " --> " +++ toString (length data) +++ " results ("
-			+++ toString return +++ "; " +++ msg +++ ")\n"
+			+++ toString return +++ "; " +++ msg +++
+			if (isJust more_available) ("; " +++ toString (fromJust more_available) +++ " more") "" +++ ")\n"
 	msgToString _ _ = ""
 

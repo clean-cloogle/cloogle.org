@@ -66,38 +66,75 @@ function escapeHTML(unsafe) {
 	return String(unsafe).replace(/[&<>"'\/]/g, function(s){return map[s];});
 }
 
-function formsubmit(){
-	if(form_str.value === ''){
-		sresults.innerHTML = 'Can\'t search for the empty string';
-	} else {
-		sresults.innerHTML = 'Proccessing...';
-		var str = form_str.value;
-		var url = 'api.php?str=' + encodeURIComponent(str);
-		var xmlHttp = new XMLHttpRequest();
-		xmlHttp.onreadystatechange = function() { 
-			if(xmlHttp.readyState == 4 && xmlHttp.status == 200){
-				var responsedata = JSON.parse(xmlHttp.responseText);
-				sresults.innerHTML =
+function getResults(str, page) {
+	var url = 'api.php?str=' + encodeURIComponent(str) + '&page=' + page;
+	var xmlHttp = new XMLHttpRequest();
+
+	var elem = document.getElementById('page-' + page);
+
+	elem.innerHTML += '<p id="loading">Processing...</p>';
+	var more = document.getElementById('more');
+	if (more !== null) {
+		more.remove();
+	}
+
+	xmlHttp.onreadystatechange = function() {
+		if(xmlHttp.readyState == 4 && xmlHttp.status == 200){
+			document.getElementById('loading').remove();
+			var responsedata = JSON.parse(xmlHttp.responseText);
+			if(responsedata['return'] === 0){
+				for(var i = 0; i<responsedata['data'].length; i++){
+					var c = responsedata['data'][i];
+					elem.innerHTML += '<hr/><table>' +
+						'<tr><th>Library: </th><td>' + c['library'] + '</td></tr>' +
+						'<tr><th>Filename: </th><td>' + c['filename'] + '</td></tr>' +
+						'<tr><th>Module: </th><td>' + c['modul'] + '</td>' +
+						'<td>' + c['distance'] + '</td></tr>' +
+						('cls' in c ? ('<tr><th>Class: </th><td>' + c['cls']['cls_name'] +
+								' ' + c['cls']['cls_vars'].join(' ') + '</td></tr>') : '') +
+						'</table>' +
+						'<code>' + highlight(c['func']) + '</code>';
+				}
+
+				if (responsedata['more_available'] != 0) {
+					elem.parentNode.innerHTML += '<div id="page-' + (page+1) + '">' +
+						'<p id="more"><a href="javascript:getResults(\'' +
+							escapeJS(str) + '\',' + (page+1) +
+						')">' + responsedata['more_available'] + ' more...</a></p>' +
+						'</div>';
+				}
+			} else {
+				elem.innerHTML =
 					'<p>Return code: ' + responsedata['return'] + '</p>' +
 					'<p>Message: ' + responsedata['msg'] + '</p>';
-				if(responsedata['return'] === 0){
-					for(var i = 0; i<responsedata['data'].length; i++){
-						var c = responsedata['data'][i];
-						sresults.innerHTML += '<hr /><table>' +
-							'<tr><th>Library: </th><td>' + c['library'] + '</td></tr>' +
-							'<tr><th>Filename: </th><td>' + c['filename'] + '</td></tr>' +
-							'<tr><th>Module: </th><td>' + c['modul'] + '</td>' +
-							'<td>' + c['distance'] + '</td></tr>' +
-							('cls' in c ? ('<tr><th>Class: </th><td>' + c['cls']['cls_name'] + ' ' + c['cls']['cls_vars'].join(' ') + '</td></tr>') : '') +
-							'</table>' + 
-							'<code>' + highlight(c['func']) + '</code>';
-					}
-				}
 			}
-		};
-		xmlHttp.open('GET', url, true); // true for asynchronous 
-		xmlHttp.send(null);
-		document.location.hash = "#" + str;
+		}
+	};
+	xmlHttp.open('GET', url, true); // true for asynchronous 
+	xmlHttp.send(null);
+	document.location.hash = "#" + str;
+}
+
+function escapeJS(s) {
+	return ('' + s).replace(/["'\\\n\r\u2028\u2029]/g, function (c) {
+		switch (c) {
+			case '"':
+			case "'":
+			case '\\': return '\\' + c;
+			case '\n': return '\\n';
+			case '\r': return '\\r';
+			case '\u2028': return '\\u2028';
+			case '\u2029': return '\\u2029';
+		}
+	});
+}
+
+function formsubmit(){
+	if (form_str.value === '') {
+		sresults.innerHTML = 'Can\'t search for the empty string';
+	} else {
+		sresults.innerHTML = '<div id="page-0"></div>';
+		getResults(form_str.value, 0);
 	}
 	return false;
 };

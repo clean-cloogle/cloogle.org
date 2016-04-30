@@ -22,6 +22,10 @@ if($_SERVER['REQUEST_METHOD'] !== 'GET'){
 		$command['modules'] = explode(',', $_GET['mod']);
 	}
 
+	if (isset($_GET['page'])) {
+		$command['page'] = (int) $_GET['page'];
+	}
+
 	$skt = fsockopen(SERVER_HOSTNAME, SERVER_PORT);
 	if (!$skt) {
 		echo json_encode(array(

@@ -4,7 +4,7 @@ A Clean hoogle clone. Use at your own risk. Live version available
 [here](http://cloogle.org/).
 
 ### Current features
-- Search for function/operator/class names.
+- Search for function/operator/class member names.
 - Search for function types.
 
 ### How to setup
@@ -33,18 +33,23 @@ A Clean hoogle clone. Use at your own risk. Live version available
 
 ### Api specification for developers
 `api.php` should be called with a `GET` request where the `str` variable
-contains the search string. The api will return a JSON formatted data structure
-containing the following fields:
+contains the search string. You may also add `mod` (a comma-separated list of
+modules to search in) and `page` (for pagination: 0 for the first *n* results,
+1 for the next *n*, etc.).
+
+The api will return a JSON formatted data structure containing the following
+fields:
 
 - `return`
 
 	Return code:
 
 	* `0`: success
-	* `1`: invalid request type (should use GET)
-	* `2`: no input (GET variable `str` should be set to the search string)
-	* `3`: the Clean backend could not be reached
-	* `4`: ununderstandable input (usually shouldn't happen)
+	* `127`: no results
+	* `128`: ununderstandable input (usually shouldn't happen)
+	* `150`: the Clean backend could not be reached
+	* `151`: invalid request type (should use GET)
+	* `152`: no input (GET variable `str` should be set to the search string)
 
 - `msg`
 
@@ -52,10 +57,41 @@ containing the following fields:
 
 - `data`
 
-	An array of search results. Every items contains the following fields:
-	`library`, `filename`, `modul` (not a typo), `func` and `distance`
-	representing the name of the library, filename, the module name, the matched
-	function signature and some loosely defined distance to the search string.
+	An array of search results. A result has the following fields:
+
+	* `library`
+	* `filename`
+	* `func`: the function name and type as a string
+	* `unifier`: a list of two lists of type assignments that represents the
+		unification of the searched type to the found type (only when `unify` is
+		not the empty string)
+	* `cls`: if the function is a class member, this contains `cls_name` and
+		`cls_vars` and represents the class it was found in
+	* `modul`: the module the result was found in (not a typo)
+	* `distance`: the distance measure we use to sort the results (lower is
+		better)
+
+- `more_available`
+
+	If there are more results that can be found using pagination, this will be
+	the number of results that have a higher distance than the last result sent.
+
+### Talking with the Clean backend directly
+`CloogleServer` is a TCP server listening on port 31215 (typically). Send a
+JSON request with the following fields:
+
+* `unify`, the type to search for as a string (or the empty string)
+* `name`, the name of the function to search for (or the empty string)
+* `modules`, a list of names of modules to search in (*optional*)
+* `page`: 0 for the first *n* results, 1 for the next *n*, etc. (*optional*)
+
+The Clean backend will return a JSON string, similar to the output of the PHP
+script described above. The error codes above 150 are specific to the script
+and cannot be returned by the Clean backend.
+
+After sending the result, the server will close the connection immediately.
+This allows us to not have to worry about simultaneous connections.
+Unfortunately, it means making a new connection for every request.
 
 ### Todo in order of importance
 

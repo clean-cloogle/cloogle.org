@@ -66,6 +66,9 @@ instance < Result where (<) r1 r2 = r1.distance < r2.distance
 err :: Int String -> Response
 err c m = {return=c, data=[], msg=m, more_available=Nothing}
 
+E_NORESULTS :== 127
+E_INVALIDINPUT :== 128
+
 MAX_RESULTS :== 15
 
 Start w
@@ -86,7 +89,7 @@ where
 	= snd $ fclose io w
 
 	handle :: TypeDB (Maybe Request) *World -> *(Response, *World)
-	handle _ Nothing w = (err 4 "Couldn't parse input", w)
+	handle _ Nothing w = (err E_INVALIDINPUT "Couldn't parse input", w)
 	handle db (Just {unify,name,modules,page}) w
 		# mbType = parseType (fromString unify)
 		// Search normal functions
@@ -109,6 +112,7 @@ where
 		# results = drop drop_n $ sort $ funcs ++ members
 		# more = max 0 (length results - MAX_RESULTS)
 		# results = take MAX_RESULTS results
+		| isEmpty results = (err E_NORESULTS "No results", w)
 		= ({return=0,msg="Success",data=results,more_available=Just more}, w)
 
 	makeResult :: String (Maybe Type) (Maybe ClassResult)

@@ -121,11 +121,11 @@ function makeUnifier(ufr) {
 	var from_left = ufr[0];
 	var from_right = ufr[1];
 	var s = '';
-	for (i in from_left) {
-		s += from_left[i][1] + ' &rarr; ' + from_left[i][0] + '; ';
-	}
 	for (i in from_right) {
 		s += from_right[i][0] + ' &rarr; ' + from_right[i][1] + '; ';
+	}
+	for (i in from_left) {
+		s += from_left[i][1] + ' &larr; ' + from_left[i][0] + '; ';
 	}
 	return s.substring(0, s.length - 2);
 }

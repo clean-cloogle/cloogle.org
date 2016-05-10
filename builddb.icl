@@ -147,10 +147,8 @@ where
 
 	pd_typespecs :: String [ParsedDefinition] -> [('DB'.FunctionLocation, 'DB'.ExtendedType)]
 	pd_typespecs mod pds
-	# pds = filter (\pd->case pd of (PD_TypeSpec _ _ _ _ _)=True; _=False) pds
-	# sts = map (\(PD_TypeSpec pos id p st funspecs) -> ('DB'.FL lib mod id.id_name,st,p)) pds
-	# sts = [(fl, 'DB'.ET ('T'.toType x) {te_priority=toPrio p}) \\ (fl,Yes x,p) <- sts]
-	= sts
+		= [('DB'.FL lib mod id_name, 'DB'.ET ('T'.toType t) {te_priority=toPrio p})
+		   \\ PD_TypeSpec pos id=:{id_name} p (Yes t) funspecs <- pds]
 	where
 		toPrio :: Priority -> Maybe 'DB'.TE_Priority
 		toPrio (Prio LeftAssoc i)  = Just $ 'DB'.LeftAssoc i
@@ -160,9 +158,8 @@ where
 
 	pd_instances :: String [ParsedDefinition] -> [('DB'.Class, ['DB'.Type])]
 	pd_instances mod pds
-	# pds = filter (\pd->case pd of (PD_Instance _)=True; _=False) pds
-	= map (\(PD_Instance {pim_pi={pi_ident,pi_types}})
-		-> (pi_ident.id_name, map 'T'.toType pi_types)) pds
+		= [(pi_ident.id_name, map 'T'.toType pi_types)
+		   \\ PD_Instance {pim_pi={pi_ident,pi_types}} <- pds]
 
 	pd_classes :: String [ParsedDefinition]
 		-> [('DB'.ClassLocation, ['T'.TypeVar], [('DB'.FunctionName, 'DB'.ExtendedType)])]

@@ -2,70 +2,6 @@ var form_str = document.getElementById('search_str');
 var sform = document.getElementById('search_form');
 var sresults = document.getElementById('search_results');
 
-function highlight(type) {
-	str = '';
-
-	var lex = {
-		start: [
-			[/^(\s+)(.*)/, ['whitespace']],
-			[/^(.+)(::.*)/, ['funcname'], 'type']
-		],
-		type: [
-			[/^(\s+)(.*)/, ['whitespace']],
-			[/^([a-z][a-zA-Z]*)(.*)/, ['typevar']],
-			[/^([A-Z]\w*)(.*)/, ['type']],
-			[/^(\/\/.*)(.*?)/, ['comment']],
-			[/^(\|)(.*)/, ['punctuation'], 'context'],
-			[/^(\W)(.*)/, ['punctuation']]
-		],
-		context: [
-			[/^(\s+)(.*)/, ['whitespace']],
-			[/^(\/\/.*)(.*?)/, ['comment']],
-			[/^(,)(.*)/, ['punctuation']],
-			[/^(\S+)(,.*)/, ['classname']],
-			[/^(\S+)(.*)/, ['classname'], 'contextType']
-		],
-		contextType: [
-			[/^(\s+)(.*)/, ['whitespace']],
-			[/^(\/\/.*)(.*?)/, ['comment']],
-			[/^([,&])(.*)/, ['punctuation'], 'context'],
-			[/^([^\s,]+)(.*)/, ['typevar']]
-		]
-	};
-
-	state = 'start';
-	while (true) {
-		var found = false;
-		for (i in lex[state]) {
-			patt = lex[state][i][0];
-			clss = lex[state][i][1];
-			if (type.match(patt)) {
-				parts = patt.exec(type);
-				var j = 0;
-				for (k in clss) {
-					j = parseInt(k)+1;
-					str += '<span class="' + clss[k] + '">' + escapeHTML(parts[j]) + '</span>';
-				}
-				type = parts[j+1];
-
-				found = true;
-				if (lex[state][i].length > 2)
-					state = lex[state][i][2];
-
-				break;
-			}
-		}
-		if (!found || type == '')
-			return str;
-	}
-}
-
-function escapeHTML(unsafe) {
-	var map = { "&": "&amp;", "<": "&lt;", ">": "&gt;",
-		'"': '&quot;', "'": '&#39;', "/": '&#x2F;' };
-	return String(unsafe).replace(/[&<>"'\/]/g, function(s){return map[s];});
-}
-
 function getResults(str, page) {
 	var url = 'api.php?str=' + encodeURIComponent(str) + '&page=' + page;
 	var xmlHttp = new XMLHttpRequest();
@@ -122,10 +58,10 @@ function makeUnifier(ufr) {
 	var from_right = ufr[1];
 	var s = '';
 	for (i in from_right) {
-		s += from_right[i][0] + ' &rarr; ' + from_right[i][1] + '; ';
+		s += '<tt>' + from_right[i][0] + '</tt> &rarr; <tt>' + from_right[i][1] + '</tt>; ';
 	}
 	for (i in from_left) {
-		s += from_left[i][1] + ' &larr; ' + from_left[i][0] + '; ';
+		s += '<tt>' + from_left[i][1] + '</tt> &larr; <tt>' + from_left[i][0] + '</tt>; ';
 	}
 	return s.substring(0, s.length - 2);
 }

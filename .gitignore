@@ -3,6 +3,7 @@ search
 builddb
 CloogleServer
 *.prj
-*.json
 *.1
 types.db
+cloogle.log
+node_modules/

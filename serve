@@ -1,0 +1,8 @@
+#!/bin/sh
+while :
+do
+	< types.db \
+		stdbuf -i0 -o0 -e0 \
+		./CloogleServer 31215 \
+		| tee -a cloogle.log
+done

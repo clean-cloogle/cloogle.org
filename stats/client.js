@@ -23,7 +23,7 @@ function updateSearches() {
 	}
 }
 
-connection = new WebSocket('ws://cloogle.org:31216/', 'cloogle-stats');
+connection = new WebSocket('ws://' + window.location.hostname + ':31216/', 'cloogle-stats');
 connection.onopen = function() { console.log('Connection open'); }
 connection.onclose = function() { console.log('Connection closed'); }
 connection.onmessage = function(msg) {

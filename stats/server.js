@@ -21,6 +21,10 @@ var ws = new WebSocketServer({
 ws.on('request', function(req){
 	var con = req.accept('cloogle-stats', req.origin);
 	var tail = spawn("tail", ["-f", filename]);
+
+	con.on('close', function(reason, desc){
+		tail.kill();
+	});
 	
 	tail.stdout.on('data', function(data){
 		var match = /<-- (\{.*\})/.exec(data);

@@ -22,6 +22,11 @@ A Clean hoogle clone. Use at your own risk. Live version available
 
 		$ ./CloogleServer 31215 < types.db
 
+  Alternatively, use `serve` as a wrapper. It will restart the server on
+  crashes, and log to both stdout and cloogle.log:
+
+    $ ./serve
+
 	In this example, the server uses port 31215. You need to use the same
 	settings in `api.php`.
 
@@ -93,11 +98,28 @@ After sending the result, the server will close the connection immediately.
 This allows us to not have to worry about simultaneous connections.
 Unfortunately, it means making a new connection for every request.
 
+### Live statistics
+There is a possibility to set up a web page that shows live statistics.
+Currently, only the last few searches are shown. For this, you need to have
+`nodejs` installed. Then do:
+
+    $ cd stats
+    $ npm install
+
+And to run:
+
+    $ node server.js ../cloogle.log
+
+This starts a WebSocket server on port 31216. You can navigate to `/stats` to
+view the statistics. This page will receive live updates.
+
 ### Todo in order of importance
 
 - Search on type definitions
 - Also grab possible comments above the function signature
 - Search for instances of classes
+- DoS prevention (both on PHP and on Clean level)
+- Statistics: show requests / minute
 
 ### Licence
 

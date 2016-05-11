@@ -20,7 +20,7 @@ var ws = new WebSocketServer({
 
 ws.on('request', function(req){
 	var con = req.accept('cloogle-stats', req.origin);
-	var tail = spawn("tail", ["-f", filename]);
+	var tail = spawn("tail", ["-n", "2", "-f", filename]);
 
 	con.on('close', function(reason, desc){
 		tail.kill();

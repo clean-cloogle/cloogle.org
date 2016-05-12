@@ -5,8 +5,9 @@
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
 	<title>Live Cloogle Stats</title>
-	<script type="text/javascript" src="client.js" defer="defer"></script>
+	<script type="text/javascript" src="chart.js" defer="defer"></script>
 	<script type="text/javascript" src="../clean.js" defer="defer"></script>
+	<script type="text/javascript" src="client.js" defer="defer"></script>
 	<link rel="stylesheet" href="../clean.css" type="text/css"/>
 	<style type="text/css">
 		#last-search {
@@ -30,10 +31,25 @@
 			font-size: 20px;
 			text-align: center;
 		}
+
+		#activity-container {
+			bottom: 0;
+			left: 0;
+			position: absolute;
+			width: 100%;
+		}
+
+		#activity {
+			display: block;
+			margin: 0 auto;
+		}
 	</style>
 </head>
 <body>
 	<div id="last-search"></div>
 	<div id="previous-searches"></div>
+	<div id="activity-container">
+		<canvas id="activity" width="800" height="400"></canvas>
+	</div>
 </body>
 </html>

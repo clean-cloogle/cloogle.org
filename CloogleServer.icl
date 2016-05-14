@@ -154,9 +154,16 @@ where
 				| isNothing orgsearchtype = 0
 				# orgsearchtype = fromJust orgsearchtype
 				# (Just (ass1, ass2)) = unify [] orgsearchtype type
-				= length $ filter (not o isVar o snd) $ ass1 ++ ass2
+				= sum [typeComplexity t \\ (_,t)<-ass1 ++ ass2 | not (isVar t)]
 			# levdist = levenshtein fname orgsearch
 			= if (indexOf orgsearch fname == -1) 0 -100 + levdist
+		where
+			typeComplexity :: Type -> Int
+			typeComplexity (Type _ ts) = foldr ((+) o typeComplexity) 1 ts
+			typeComplexity (Func is _ _) = foldr ((+) o typeComplexity) 5 is
+			typeComplexity (Var _) = 1
+			typeComplexity (Cons _ ts) = foldr ((+) o typeComplexity) 1 ts
+			typeComplexity (Uniq t) = 3 + typeComplexity t
 
 	isUnifiable :: Type ExtendedType -> Bool
 	isUnifiable t1 (ET t2 _) = isJust (unify [] t1 t2)

@@ -68,6 +68,7 @@ err c m = {return=c, data=[], msg=m, more_available=Nothing}
 
 E_NORESULTS :== 127
 E_INVALIDINPUT :== 128
+E_NAMETOOLONG :== 129
 
 MAX_RESULTS :== 15
 
@@ -91,6 +92,7 @@ where
 	handle :: TypeDB (Maybe Request) *World -> *(Response, *World)
 	handle _ Nothing w = (err E_INVALIDINPUT "Couldn't parse input", w)
 	handle db (Just {unify,name,modules,page}) w
+		| size name > 40 = (err E_NAMETOOLONG "function name too long", w)
 		# mbType = parseType (fromString unify)
 		// Search normal functions
 		# filts = catMaybes $ [ (\t->(\_ u->isUnifiable t u)) <$> mbType

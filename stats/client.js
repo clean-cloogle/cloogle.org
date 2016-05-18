@@ -20,7 +20,8 @@ function updateSearches() {
 		if (i == 0) continue;
 		var color = 100 + i * 20;
 		var color = 'rgb(' + color + ',' + color + ',' + color + ')';
-		previous.innerHTML += '<tt style="color:' + color + ';">' + searches[i] + '</tt><br/>';
+		previous.innerHTML += '<tt style="color:' + color + ';">' +
+				escapeHTML(searches[i]) + '</tt><br/>';
 	}
 }
 

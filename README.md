@@ -95,10 +95,6 @@ The Clean backend will return a JSON string, similar to the output of the PHP
 script described above. The error codes above 150 are specific to the script
 and cannot be returned by the Clean backend.
 
-After sending the result, the server will close the connection immediately.
-This allows us to not have to worry about simultaneous connections.
-Unfortunately, it means making a new connection for every request.
-
 ### Live statistics
 There is a possibility to set up a web page that shows live statistics.
 Currently, only the last few searches are shown. For this, you need to have

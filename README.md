@@ -99,6 +99,17 @@ Unfortunately, it means making a new connection for every request.
 - Also grab possible comments above the function signature
 - Search for instances of classes
 
+### Authors
+
+Maintainers:
+
+- [dopefishh](https://github.com/dopefishh)
+- [Camil Staps](https://camilstaps.nl)
+
+Contributors:
+
+- [KDercksen](https://github.com/KDercksen) (searching on module)
+
 ### Licence
 
 ```

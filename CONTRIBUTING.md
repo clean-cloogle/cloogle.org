@@ -10,7 +10,7 @@ contributing to avoid wasting your or our time.
 
 ---
 
-<a name="bugresp"></a>
+<a name="bugreps"></a>
 
 ## 1. Bug reports
 

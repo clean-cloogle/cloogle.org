@@ -1,5 +1,5 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<!DOCTYPE html>
+<html>
 <head>
 	<title>Cloogle</title>
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
@@ -29,13 +29,17 @@
 	</style>
 </head>
 <body>
-	<a href="https://github.com/dopefishh/cloogle">
-		<img src="logo.jpg" alt="follow link for the sourcecode" />
-	</a><br />
-	<a href="javascript:toggle('helptext')">How to use</a>
+	<p>
+		<a href="https://github.com/dopefishh/cloogle">
+			<img src="logo.jpg" alt="follow link for the sourcecode" />
+		</a>
+	</p>
+	<p>
+		<a href="javascript:toggle('helptext')">How to use</a>
+	</p>
 	<div id="helptext" style="display:none;">
 		<p>
-			Search for a function by its name: e.g. <code>head</code>.<br/>
+			Search for a function by its name: e.g. <code>hd</code>.<br/>
 			Search for a type by entering <code>:: <i>type</i></code>, e.g. <code>:: a [a] -&gt; a</code>.
 		</p>
 		<p>
@@ -50,10 +54,10 @@
 				</td>
 			</tr>
 			<tr>
-				<td><input type="submit" value="Search" /></td>
+				<td><input type="submit" value="Search" /></td><td></td><td></td>
 			</tr>
 		</table>
 	</form>
-	<div id='search_results'></div>
+	<div id="search_results"></div>
 </body>
 </html>

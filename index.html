@@ -21,26 +21,32 @@
 		.typevar { color: #59c28a; font-weight: bold; }
 		.type { color: #e3890b; font-weight: bold; }
 		.punctuation { color: #777777; }
+		#helptext code {
+			background-color: #f9f2f4;
+			font-size: 90%;
+			padding: 1px 4px;
+		}
 	</style>
 </head>
 <body>
 	<a href="https://github.com/dopefishh/cloogle">
-			<img src="logo.jpg" alt="follow link for the sourcecode" />
+		<img src="logo.jpg" alt="follow link for the sourcecode" />
 	</a><br />
-	<a href="javascript:toggle('helptext')">How to use</a> 
-	<div id="helptext" style="display: none">
-		<h3>Usage</h3>
-		
-		<p>Cloogle allows searching for function names, as well as types.<br><br>
-		To search for a function name, just enter that name: for example <code>head</code>.<br>
-		Search for types can be achieved by entering <code>:: &lt;type&gt;</code>, for example <code>:: a [a] -&gt; a</code>.<br><br>
-		A combination of both is also possible, e.g. <code>hd :: [a] -&gt; a</code>.</p>
+	<a href="javascript:toggle('helptext')">How to use</a>
+	<div id="helptext" style="display:none;">
+		<p>
+			Search for a function by its name: e.g. <code>head</code>.<br/>
+			Search for a type by entering <code>:: <i>type</i></code>, e.g. <code>:: a [a] -&gt; a</code>.
+		</p>
+		<p>
+			A combination of both is also possible, e.g. <code>hd :: [a] -&gt; a</code>.
+		</p>
 	</div>
 	<form id="search_form" action="#">
 		<table>
 			<tr>
 				<td colspan="3">
-					<input type="text" id="search_str" placeholder="hd :: [a] -> a" />
+					<input type="text" id="search_str" placeholder="fix :: (a -> a) -> a" />
 				</td>
 			</tr>
 			<tr>

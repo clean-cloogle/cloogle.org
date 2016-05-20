@@ -5,6 +5,15 @@
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
 	<script src="api.js" type="text/javascript" defer="defer"></script>
+	<script type="text/javascript">
+		function toggle(name) {
+            var e = document.getElementById(name);
+			if (e.style.display=="block")
+				e.style.display="none";
+			else
+				e.style.display="block";
+		}
+	</script>
 	<style type="text/css">
 		.comment { color: #aaaaaa; }
 		.funcname { color: #5998c2; font-weight: bold; }
@@ -18,7 +27,15 @@
 	<a href="https://github.com/dopefishh/cloogle">
 			<img src="logo.jpg" alt="follow link for the sourcecode" />
 	</a><br />
-	<a href="help.html">How to use</a> 
+	<a href="javascript:toggle('helptext')">How to use</a> 
+	<div id="helptext" style="display: none">
+		<h3>Usage</h3>
+		
+		<p>Cloogle allows searching for function names, as well as types.<br><br>
+		To search for a function name, just enter that name: for example <code>head</code>.<br>
+		Search for types can be achieved by entering <code>:: &lt;type&gt;</code>, for example <code>:: a [a] -&gt; a</code>.<br><br>
+		A combination of both is also possible, e.g. <code>hd :: [a] -&gt; a</code>.</p>
+	</div>
 	<form id="search_form" action="#">
 		<table>
 			<tr>

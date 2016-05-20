@@ -122,6 +122,17 @@ view the statistics. This page will receive live updates.
 - DoS prevention (both on PHP and on Clean level)
 - Statistics: show requests / minute
 
+### Authors
+
+Maintainers:
+
+- [dopefishh](https://github.com/dopefishh)
+- [Camil Staps](https://camilstaps.nl)
+
+Contributors:
+
+- [KDercksen](https://github.com/KDercksen) (searching on module)
+
 ### Licence
 
 ```

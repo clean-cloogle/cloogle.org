@@ -5,12 +5,10 @@ contributing to avoid wasting your or our time.
 
 ---
 
-1. [Bug reports](#bugreps)
-2. [Submitting patches](#patches)
+1. [Bug reports](#1-bug-reports)
+2. [Submitting patches](#2-submitting-patches)
 
 ---
-
-<a name="bugreps"></a>
 
 ## 1. Bug reports
 
@@ -24,8 +22,6 @@ issue. Make sure to include the following:
  - Expected outcome
  - How you're accessing Cloogle (through the frontend or directly to Clean)
 
-<a name="patches"></a>
-
 ## 2. Submitting patches
 
 ### General
@@ -37,15 +33,15 @@ issue. Make sure to include the following:
    things, open multiple, separate PRs.
  - If you intend to make large changes, it's probably best to open an issue and
    discuss with the maintainers first.
- - If necessary, edit the Readme as well.
+ - If necessary, edit `README.md` as well.
 
 ### Code style
 
  - Use tabs instead of spaces
- - Keep lines under 80 chars
+ - Keep lines under 80 chars (except for HTML).
  - When editing the frontend, do not use external frameworks (jQuery,
    bootstrap, etc.). We strive for minimality and elegance.
 
 ### Other stuff
 
- - Add yourself to the authors list in README.md
+ - Add yourself to the authors list in `README.md`

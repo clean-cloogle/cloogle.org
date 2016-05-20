@@ -131,7 +131,7 @@ Maintainers:
 
 Contributors:
 
-- [KDercksen](https://github.com/KDercksen) (searching on module)
+- [KDercksen](https://github.com/KDercksen) (searching on module; help text)
 
 ### Licence
 

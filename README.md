@@ -81,6 +81,7 @@ fields:
 
 	If there are more results that can be found using pagination, this will be
 	the number of results that have a higher distance than the last result sent.
+	If there are no more results, this field *may* be zero or may not be present.
 
 ### Talking with the Clean backend directly
 `CloogleServer` is a TCP server listening on port 31215 (typically). Send a

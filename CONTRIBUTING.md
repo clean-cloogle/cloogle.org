@@ -22,6 +22,10 @@ issue. Make sure to include the following:
  - Expected outcome
  - How you're accessing Cloogle (through the frontend or directly to Clean)
 
+**If you have found a security vulnerability**, please do **not** open a GitHub
+issue. Instead, contact one of the maintainers (see the list in `README.md`).
+We will take immediate action.
+
 ## 2. Submitting patches
 
 ### General

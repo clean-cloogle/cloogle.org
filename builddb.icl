@@ -79,17 +79,17 @@ Start w
 	# (mods, w) = findModules` cli.libs cli.root w
 	# (st, w) = init_identifiers newHeap w
 	# cache = empty_cache st
-	# (db, w) = loop mods 'DB'.newDb cache w
+	# (db, w) = loop cli.root mods 'DB'.newDb cache w
 	# f = 'DB'.saveDb db f
 	= fclose f w
 | not ok = abort "Couldn't close stdio"
 = w
 where
-	loop :: [(String,String)] 'DB'.TypeDB *DclCache *World -> *('DB'.TypeDB, *World)
-	loop [] db _ w = (db,w)
-	loop [(lib,mod):list] db cache w
-	# (db, cache, w) = getModuleTypes mod lib cache db w
-	= loop list db cache w
+	loop :: String [(String,String)] 'DB'.TypeDB *DclCache *World -> *('DB'.TypeDB, *World)
+	loop _ [] db _ w = (db,w)
+	loop root [(lib,mod):list] db cache w
+	# (db, cache, w) = getModuleTypes root mod lib cache db w
+	= loop root list db cache w
 
 	parseCLI :: [String] -> Either String CLI
 	parseCLI [] = Right zero
@@ -115,7 +115,7 @@ findModules lib root w
 #! (fps, w) = readDirectory (root +++ "/" +++ lib) w
 | isError fps = ([], w)
 #! fps = fromOk fps
-#! mods = map (tuple (root +++ lib)) $ map (\s->s%(0,size s-5)) $ filter isDclModule fps
+#! mods = map (\s->(lib, s%(0,size s-5))) $ filter isDclModule fps
 #! (moremods, w) = findModules` (map ((+++) (lib+++"/")) (filter isDirectory fps)) root w
 = (removeDup (mods ++ moremods), w)
 where
@@ -125,9 +125,9 @@ where
 	isDirectory :: String -> Bool
 	isDirectory s = not $ isMember '.' $ fromString s
 
-getModuleTypes :: String String *DclCache 'DB'.TypeDB *World -> *('DB'.TypeDB, *DclCache, *World)
-getModuleTypes mod lib cache db w
-# filename = lib +++ "/" +++ mkdir mod +++ ".dcl"
+getModuleTypes :: String String String *DclCache 'DB'.TypeDB *World -> *('DB'.TypeDB, *DclCache, *World)
+getModuleTypes root mod lib cache db w
+# filename = root +++ "/" +++ lib +++ "/" +++ mkdir mod +++ ".dcl"
 # (ok,f,w) = fopen filename FReadText w
 | not ok = abort ("Couldn't open file " +++ filename +++ ".\n")
 # (mod_id, ht) = putIdentInHashTable mod (IC_Module NoQualifiedIdents) cache.hash_table
@@ -137,16 +137,28 @@ getModuleTypes mod lib cache db w
 # (ok,w) = fclose f w
 | not ok = abort ("Couldn't close file " +++ filename +++ ".\n")
 # mod = pm.mod_ident.id_name
-# db = 'DB'.putTypes (pd_typespecs mod pm.mod_defs) db
-# db = 'DB'.putInstancess (pd_instances mod pm.mod_defs) db
-# db = 'DB'.putClasses (pd_classes mod pm.mod_defs) db
+# lib = cleanlib mod lib
+# db = 'DB'.putTypes (pd_typespecs lib mod pm.mod_defs) db
+# db = 'DB'.putInstancess (pd_instances pm.mod_defs) db
+# db = 'DB'.putClasses (pd_classes lib mod pm.mod_defs) db
 = (db,cache,w)
 where
 	mkdir :: String -> String
-	mkdir s = {if (c == '.') '/' c\\c<-:s}
+	mkdir s = { if (c == '.') '/' c \\ c <-: s }
 
-	pd_typespecs :: String [ParsedDefinition] -> [('DB'.FunctionLocation, 'DB'.ExtendedType)]
-	pd_typespecs mod pds
+	cleanlib :: !String !String -> String // Remove module dirs from lib
+	cleanlib mod lib = toString $ cl` (fromString $ mkdir mod) (fromString lib)
+	where
+		cl` :: ![Char] ![Char] -> [Char]
+		cl` mod lib
+			| not (isMember '/' mod) = lib
+			# mod = reverse $ tl $ dropWhile ((<>)'/') $ reverse mod
+			| drop (length lib - length mod) lib == mod
+				= take (length lib - length mod - 1) lib
+			= lib
+
+	pd_typespecs :: String String [ParsedDefinition] -> [('DB'.FunctionLocation, 'DB'.ExtendedType)]
+	pd_typespecs lib mod pds
 		= [('DB'.FL lib mod id_name, 'DB'.ET ('T'.toType t) {te_priority=toPrio p})
 		   \\ PD_TypeSpec pos id=:{id_name} p (Yes t) funspecs <- pds]
 	where
@@ -156,17 +168,17 @@ where
 		toPrio (Prio NoAssoc i)    = Just $ 'DB'.NoAssoc i
 		toPrio _                   = Nothing
 
-	pd_instances :: String [ParsedDefinition] -> [('DB'.Class, ['DB'.Type])]
-	pd_instances mod pds
+	pd_instances :: [ParsedDefinition] -> [('DB'.Class, ['DB'.Type])]
+	pd_instances pds
 		= [(pi_ident.id_name, map 'T'.toType pi_types)
 		   \\ PD_Instance {pim_pi={pi_ident,pi_types}} <- pds]
 
-	pd_classes :: String [ParsedDefinition]
+	pd_classes :: String String [ParsedDefinition]
 		-> [('DB'.ClassLocation, ['T'.TypeVar], [('DB'.FunctionName, 'DB'.ExtendedType)])]
-	pd_classes mod pds
+	pd_classes lib mod pds
 	# pds = filter (\pd->case pd of (PD_Class _ _)=True; _=False) pds
 	= map (\(PD_Class {class_ident={id_name},class_args} pds)
-		-> let typespecs = pd_typespecs mod pds
+		-> let typespecs = pd_typespecs lib mod pds
 		in ('DB'.CL lib mod id_name, map 'T'.toTypeVar class_args, 
 			[(f,et) \\ ('DB'.FL _ _ f, et) <- typespecs])) pds
 

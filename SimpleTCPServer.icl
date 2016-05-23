@@ -3,6 +3,7 @@ implementation module SimpleTCPServer
 import TCPIP
 import StdEnv
 import StdMaybe
+import System._Posix
 
 instance zero (Logger a b s) where zero = \_ _ w -> (undef, w)
 
@@ -19,17 +20,21 @@ where
               -> (TCP_Listener, *World) | fromString a & toString b
     handle f log li w
     # ((ip, dupChan),li,w) = receive li w
-    # (s, w) = log (Connected ip) undef w
-    # (msg, rChan, w) = receive dupChan.rChannel w
-      dupChan = {dupChan & rChannel=rChan}
-    # msg = fromString (toString msg)
-    # (s, w) = log (Received msg) s w
-    # (resp, w) = f msg w
-    # (sChan, w) = send (toByteSeq (toString resp)) dupChan.sChannel w
-      dupChan = {dupChan & sChannel=sChan}
-    # (s, w) = log (Sent resp) s w
-    # w = closeRChannel dupChan.rChannel w
-    # w = closeChannel dupChan.sChannel w
-    # (s, w) = log Disconnected s w
-    = handle f log li w
-
+	# (pid,w) = fork w
+	| pid < 0 = abort "fork failed\n"
+	// Parent: handle new requests
+	| pid > 0 = handle f log li w
+	// Child: handle current request
+    #! (s, w) = log (Connected ip) undef w
+    #! (msg, rChan, w) = receive dupChan.rChannel w
+       dupChan = {dupChan & rChannel=rChan}
+    #! msg = fromString (toString msg)
+    #! (s, w) = log (Received msg) s w
+    #! (resp, w) = f msg w
+    #! (sChan, w) = send (toByteSeq (toString resp)) dupChan.sChannel w
+       dupChan = {dupChan & sChannel=sChan}
+    #! (s, w) = log (Sent resp) s w
+    #! w = closeRChannel dupChan.rChannel w
+    #! w = closeChannel dupChan.sChannel w
+    #! (s, w) = log Disconnected s w
+	= exit 0 w

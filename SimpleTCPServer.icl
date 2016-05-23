@@ -13,6 +13,7 @@ serve f log port w
 | not ok = abort ("Couldn't open port " +++ toString port)
 # listener = fromJust mbListener
 # log = if (isNothing log) zero (fromJust log)
+# (_,w) = signal 17 1 w // SIGCHLD, SIG_IGN: no notification if child ps dies
 # (listener, w) = handle f log listener w
 = closeRChannel listener w
 where
@@ -38,3 +39,8 @@ where
     #! w = closeChannel dupChan.sChannel w
     #! (s, w) = log Disconnected s w
 	= exit 0 w
+
+signal :: !Int !Int !*World -> *(!Int, !*World)
+signal signum handler w = code {
+	ccall signal "II:I:A"
+}

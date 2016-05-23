@@ -56,7 +56,7 @@ import Levenshtein
 derive JSONEncode Request, Response, Result, ClassResult
 derive JSONDecode Request, Response, Result, ClassResult
 
-instance toString Response where toString r = toString $ toJSON r
+instance toString Response where toString r = toString (toJSON r) +++ "\n"
 instance toString Request where toString r = toString $ toJSON r
 
 instance fromString (Maybe Request) where fromString s = fromJSON $ fromString s

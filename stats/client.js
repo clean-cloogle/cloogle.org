@@ -71,9 +71,11 @@ function addConnectionCallbacks(connection) {
 		var query = req.name + (req.unify ? ' :: ' + req.unify : '');
 		console.log(query);
 
-		searches.splice(0, 0, query);
-		if (searches.length > 10)
-			searches.splice(searches.length - 1, searches.length);
+		if (searches.length == 0 || !is_open_message) {
+			searches.splice(0, 0, query);
+			if (searches.length > 10)
+				searches.splice(searches.length - 1, searches.length);
+		}
 
 		if (!is_open_message) {
 			var time = new Date().timeNow(false);

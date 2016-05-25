@@ -1,0 +1,24 @@
+{
+  "name": "cloogle-stats",
+  "version": "1.0.0",
+  "description": "Live Cloogle stats",
+  "main": "server.js",
+  "dependencies": {
+    "websocket": "^1.0.22"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dopefishh/cloogle.git"
+  },
+  "author": ["Mart Lubbers", "Camil Staps"],
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/dopefishh/cloogle/issues"
+  },
+  "homepage": "https://github.com/dopefishh/cloogle#readme"
+}

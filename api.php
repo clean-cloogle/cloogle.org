@@ -39,7 +39,11 @@ if($_SERVER['REQUEST_METHOD'] !== 'GET'){
 	} else {
 		fwrite($skt, json_encode($command));
 		while (!feof($skt)) {
-			echo fgets($skt, 128);
+			$response = fgets($skt, 128);
+			echo $response;
+			if (strpos($response, "\n") !== false) {
+				break;
+			}
 		}
 		fclose($skt);
 	}

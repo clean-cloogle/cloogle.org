@@ -151,6 +151,7 @@ function formsubmit(){
 		sresults.innerHTML = '<div id="page-0"></div>';
 		getResults(form_str.value, 0);
 	}
+	form_str.value = '';
 	return false;
 };
 

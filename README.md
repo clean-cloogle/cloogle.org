@@ -10,7 +10,7 @@ A Clean hoogle clone. Use at your own risk. Live version available
 ### How to setup
 
 - The frontend heavily depends on [VanillaJS](http://vanilla-js.com/) so you
-	should have a webbrowser that supports it.
+	should have a browser that supports it.
 
 - Add `env/envs.linux64` to your `$CLEAN_HOME/etc/IDEEnvs`.
 
@@ -22,10 +22,10 @@ A Clean hoogle clone. Use at your own risk. Live version available
 
 		$ ./CloogleServer 31215 < types.db
 
-  Alternatively, use `serve` as a wrapper. It will restart the server on
-  crashes, and log to both stdout and cloogle.log:
+	Alternatively, use `serve` as a wrapper. It will restart the server on
+	crashes, and log to both stdout and cloogle.log:
 
-    $ ./serve
+		$ ./serve
 
 	In this example, the server uses port 31215. You need to use the same
 	settings in `api.php`.
@@ -135,7 +135,7 @@ Contributors:
 ```
 The MIT License (MIT)
 
-Copyright (c) <year> <copyright holders>
+Copyright (c) <2016> <Mart Lubbers and Camil Staps>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of
 this software and associated documentation files (the "Software"), to deal in

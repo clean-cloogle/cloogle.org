@@ -1,4 +1,4 @@
-BIN:=CloogleServer search builddb
+BIN:=CloogleServer builddb
 PRJ:=$(addsuffix .prj,$(BIN))
 DB=types.db
 MAN:=builddb.1 # Others don't have --help/--version # $(addsuffix .1,$(BIN))

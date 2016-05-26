@@ -1,7 +1,7 @@
 # cloogle
 
 A Clean hoogle clone. Use at your own risk. Live version available
-[here](http://cloogle.org/).
+[here](http://cloogle.org/) or search on DuckDuckGo with the `!cloogle` bang.
 
 ### Current features
 - Search for function/operator/class member names.

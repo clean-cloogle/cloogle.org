@@ -22,6 +22,11 @@ A Clean hoogle clone. Use at your own risk. Live version available
 
 		$ ./CloogleServer 31215 < types.db
 
+  Alternatively, use `serve` as a wrapper. It will restart the server on
+  crashes, and log to both stdout and cloogle.log:
+
+    $ ./serve
+
 	In this example, the server uses port 31215. You need to use the same
 	settings in `api.php`.
 
@@ -47,6 +52,7 @@ fields:
 	* `0`: success
 	* `127`: no results
 	* `128`: ununderstandable input (usually shouldn't happen)
+	* `129`: function name too long
 	* `150`: the Clean backend could not be reached
 	* `151`: invalid request type (should use GET)
 	* `152`: no input (GET variable `str` should be set to the search string)
@@ -75,6 +81,7 @@ fields:
 
 	If there are more results that can be found using pagination, this will be
 	the number of results that have a higher distance than the last result sent.
+	If there are no more results, this field *may* be zero or may not be present.
 
 ### Talking with the Clean backend directly
 `CloogleServer` is a TCP server listening on port 31215 (typically). Send a
@@ -89,15 +96,28 @@ The Clean backend will return a JSON string, similar to the output of the PHP
 script described above. The error codes above 150 are specific to the script
 and cannot be returned by the Clean backend.
 
-After sending the result, the server will close the connection immediately.
-This allows us to not have to worry about simultaneous connections.
-Unfortunately, it means making a new connection for every request.
+### Live statistics
+There is a possibility to set up a web page that shows live statistics.
+Currently, only the last few searches are shown. For this, you need to have
+`nodejs` installed. Then do:
+
+    $ cd stats
+    $ npm install
+
+And to run:
+
+    $ node server.js ../cloogle.log
+
+This starts a WebSocket server on port 31216. You can navigate to `/stats` to
+view the statistics. This page will receive live updates.
 
 ### Todo in order of importance
 
 - Search on type definitions
 - Also grab possible comments above the function signature
 - Search for instances of classes
+- DoS prevention (both on PHP and on Clean level)
+- Statistics: show requests / minute
 
 ### Authors
 

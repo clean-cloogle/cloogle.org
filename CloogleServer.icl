@@ -56,7 +56,7 @@ import Levenshtein
 derive JSONEncode Request, Response, Result, ClassResult
 derive JSONDecode Request, Response, Result, ClassResult
 
-instance toString Response where toString r = toString $ toJSON r
+instance toString Response where toString r = toString (toJSON r) +++ "\n"
 instance toString Request where toString r = toString $ toJSON r
 
 instance fromString (Maybe Request) where fromString s = fromJSON $ fromString s
@@ -68,6 +68,7 @@ err c m = {return=c, data=[], msg=m, more_available=Nothing}
 
 E_NORESULTS :== 127
 E_INVALIDINPUT :== 128
+E_NAMETOOLONG :== 129
 
 MAX_RESULTS :== 15
 
@@ -91,6 +92,7 @@ where
 	handle :: TypeDB (Maybe Request) *World -> *(Response, *World)
 	handle _ Nothing w = (err E_INVALIDINPUT "Couldn't parse input", w)
 	handle db (Just {unify,name,modules,page}) w
+		| size name > 40 = (err E_NAMETOOLONG "function name too long", w)
 		# mbType = parseType (fromString unify)
 		// Search normal functions
 		# filts = catMaybes $ [ (\t->(\_ u->isUnifiable t u)) <$> mbType
@@ -154,9 +156,16 @@ where
 				| isNothing orgsearchtype = 0
 				# orgsearchtype = fromJust orgsearchtype
 				# (Just (ass1, ass2)) = unify [] orgsearchtype type
-				= length $ filter (not o isVar o snd) $ ass1 ++ ass2
+				= sum [typeComplexity t \\ (_,t)<-ass1 ++ ass2 | not (isVar t)]
 			# levdist = levenshtein fname orgsearch
 			= if (indexOf orgsearch fname == -1) 0 -100 + levdist
+		where
+			typeComplexity :: Type -> Int
+			typeComplexity (Type _ ts) = foldr ((+) o typeComplexity) 1 ts
+			typeComplexity (Func is _ _) = foldr ((+) o typeComplexity) 5 is
+			typeComplexity (Var _) = 1
+			typeComplexity (Cons _ ts) = foldr ((+) o typeComplexity) 1 ts
+			typeComplexity (Uniq t) = 3 + typeComplexity t
 
 	isUnifiable :: Type ExtendedType -> Bool
 	isUnifiable t1 (ET t2 _) = isJust (unify [] t1 t2)

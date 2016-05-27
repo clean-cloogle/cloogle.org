@@ -116,8 +116,6 @@ view the statistics. This page will receive live updates.
 - Search on type definitions
 - Also grab possible comments above the function signature
 - Search for instances of classes
-- DoS prevention (both on PHP and on Clean level)
-- Statistics: show requests / minute
 
 ### Authors
 

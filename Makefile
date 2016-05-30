@@ -27,7 +27,7 @@ man: $(MAN)
 	$(SED) -i 's/\([ \t]\+Path:[ \t]\+\){Project}$$/&\n\1{Application}\/lib\/ArgEnv\/\n\1{Application}\/lib\/TCPIP\//' $@
 	$(SED) -i 's/\($(basename $@)\).exe/\1/' $@
 	$(SED) -i 's/\(Output:[ \t]\+\)ShowConstructors/\1NoConsole/' $@
-	$(SED) -i 's/\(HeapSize:[ \t]\+\)2097152/\110485760/' $@
+	$(SED) -i 's/\(HeapSize:[ \t]\+\)2097152/\120971520/' $@
 
 $(DB): builddb
 	./builddb > $(DB)

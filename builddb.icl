@@ -56,6 +56,10 @@ instance zero CLI where
 	                , "clean-platform/OS-Windows"
 	                , "clean-platform/OS-Windows-32"
 	                , "clean-platform/OS-Windows-64"
+	                , "iTasks-SDK/Dependencies/graph_copy"
+	                , "iTasks-SDK/Dependencies/clean-sapl/src"
+	                , "iTasks-SDK/Server"
+	                , "iTasks-SDK/Tests"
 	                ]
 	       }
 

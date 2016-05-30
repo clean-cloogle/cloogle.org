@@ -28,7 +28,7 @@ ws.on('request', function(req){
 	
 	tail.stdout.on('data', function(data){
 		var match = /<-- (\{.*\})/.exec(data);
-		if (match != null) {
+		if (match != null && !match[1].match(/u[0-9a-f]{4}/)) {
 			console.log(match[1]);
 			con.sendUTF(match[1]);
 		}

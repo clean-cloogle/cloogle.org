@@ -100,7 +100,7 @@ where
 		                        isNameMatch (size name-2) name loc)
 		                      , isModMatchF <$> modules
 		                      ]
-		# funcs = map (makeResult name mbType Nothing) $ findType`` filts db
+		# funs = map (makeResult name mbType Nothing) $ findFunction`` filts db
 		// Search class members
 		# filts = catMaybes $ [ (\t->(\_ _ _ u->isUnifiable t u)) <$> mbType
 		                      , pure (\(CL lib mod _) _ f _ ->
@@ -111,7 +111,7 @@ where
 		# members = map (\(CL lib mod cls,vs,f,et) -> makeResult name mbType
 			(Just {cls_name=cls,cls_vars=vs}) (FL lib mod f,et)) members
 		# drop_n = fromJust (page <|> pure 0) * MAX_RESULTS
-		# results = drop drop_n $ sort $ funcs ++ members
+		# results = drop drop_n $ sort $ funs ++ members
 		# more = max 0 (length results - MAX_RESULTS)
 		# results = take MAX_RESULTS results
 		| isEmpty results = (err E_NORESULTS "No results", w)

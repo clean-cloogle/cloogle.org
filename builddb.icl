@@ -24,7 +24,7 @@ from hashtable import ::HashTable, ::QualifiedIdents(NoQualifiedIdents), ::Ident
 from predef import init_identifiers
 from compile import empty_cache, ::DclCache{hash_table}
 from general import ::Optional(..)
-from syntax import ::SymbolTable, ::SymbolTableEntry, ::Ident{..}, ::SymbolPtr, ::Position(NoPos), ::Module{mod_ident,mod_defs}, ::ParsedDefinition(PD_TypeSpec,PD_Instance,PD_Class), ::FunSpecials, ::Priority, ::ParsedModule, ::SymbolType, ::ParsedInstanceAndMembers{..}, ::ParsedInstance{pi_ident,pi_types}, ::Type, ::ClassDef{class_ident,class_args}, ::TypeVar
+from syntax import ::SymbolTable, ::SymbolTableEntry, ::Ident{..}, ::SymbolPtr, ::Position(NoPos), ::Module{mod_ident,mod_defs}, ::ParsedDefinition(PD_TypeSpec,PD_Instance,PD_Class,PD_Type), ::FunSpecials, ::Priority, ::ParsedModule, ::SymbolType, ::ParsedInstanceAndMembers{..}, ::ParsedInstance{pi_ident,pi_types}, ::Type, ::ClassDef{class_ident,class_args}, ::TypeVar, ::ParsedTypeDef, ::TypeDef
 from scanner import ::Priority(..), ::Assoc(..)
 from parse import wantModule
 
@@ -142,9 +142,10 @@ getModuleTypes root mod lib cache db w
 | not ok = abort ("Couldn't close file " +++ filename +++ ".\n")
 # mod = pm.mod_ident.id_name
 # lib = cleanlib mod lib
-# db = 'DB'.putTypes (pd_typespecs lib mod pm.mod_defs) db
+# db = 'DB'.putFunctions (pd_typespecs lib mod pm.mod_defs) db
 # db = 'DB'.putInstancess (pd_instances pm.mod_defs) db
 # db = 'DB'.putClasses (pd_classes lib mod pm.mod_defs) db
+# db = 'DB'.putTypes (pd_types lib mod pm.mod_defs) db
 = (db,cache,w)
 where
 	mkdir :: String -> String
@@ -185,6 +186,11 @@ where
 		-> let typespecs = pd_typespecs lib mod pds
 		in ('DB'.CL lib mod id_name, map 'T'.toTypeVar class_args, 
 			[(f,et) \\ ('DB'.FL _ _ f, et) <- typespecs])) pds
+
+	pd_types :: String String [ParsedDefinition] -> [('DB'.TypeLocation, 'DB'.TypeDef)]
+	pd_types lib mod pds
+		= [('DB'.TL lib mod ('T'.td_name td), td)
+		   \\ PD_Type ptd <- pds, td <- ['T'.toTypeDef ptd]]
 
 unigroups :: (Type Type -> Bool) [(a,Type)] -> [([a],Type)]
 unigroups f ts = unigroups` ts []

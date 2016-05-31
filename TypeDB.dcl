@@ -10,7 +10,7 @@ from Data.Maybe import ::Maybe
 from GenEq import generic gEq
 
 // CleanTypeUnifier
-from Type import ::Type, ::TypeVar, ::TVAssignment, class print(..)
+from Type import ::Type, ::TypeVar, ::TVAssignment, ::TypeDef, class print(..)
 
 :: TypeDB
 instance zero TypeDB
@@ -33,13 +33,17 @@ instance print TE_Priority
 :: FunctionName :== String
 :: Class :== String
 
-getType :: FunctionLocation TypeDB -> Maybe ExtendedType
-putType :: FunctionLocation ExtendedType TypeDB -> TypeDB
-putTypes :: [(FunctionLocation, ExtendedType)] TypeDB -> TypeDB
-findType :: FunctionName TypeDB -> [(FunctionLocation, ExtendedType)]
-findType` :: (FunctionLocation ExtendedType -> Bool) TypeDB
+:: TypeLocation = TL Library Module TypeName
+
+:: TypeName :== String
+
+getFunction :: FunctionLocation TypeDB -> Maybe ExtendedType
+putFunction :: FunctionLocation ExtendedType TypeDB -> TypeDB
+putFunctions :: [(FunctionLocation, ExtendedType)] TypeDB -> TypeDB
+findFunction :: FunctionName TypeDB -> [(FunctionLocation, ExtendedType)]
+findFunction` :: (FunctionLocation ExtendedType -> Bool) TypeDB
 		-> [(FunctionLocation, ExtendedType)]
-findType`` :: [(FunctionLocation ExtendedType -> Bool)] TypeDB
+findFunction`` :: [(FunctionLocation ExtendedType -> Bool)] TypeDB
 		-> [(FunctionLocation, ExtendedType)]
 
 getInstances :: Class TypeDB -> [Type]
@@ -59,6 +63,12 @@ findClassMembers` :: (ClassLocation [TypeVar] FunctionName ExtendedType -> Bool)
 findClassMembers`` :: [ClassLocation [TypeVar] FunctionName ExtendedType -> Bool]
 		TypeDB -> [(ClassLocation, [TypeVar], FunctionName, ExtendedType)]
 
+getType :: TypeLocation TypeDB -> Maybe TypeDef
+putType :: TypeLocation TypeDef TypeDB -> TypeDB
+putTypes :: [(TypeLocation, TypeDef)] TypeDB -> TypeDB
+findType :: TypeName TypeDB -> [(TypeLocation, TypeDef)]
+findType` :: (TypeLocation TypeDef -> Bool) TypeDB
+		-> [(TypeLocation, TypeDef)]
 
 searchExact :: Type TypeDB -> [(FunctionLocation, ExtendedType)]
 searchUnifiable :: Type TypeDB
@@ -67,4 +77,3 @@ searchUnifiable :: Type TypeDB
 newDb :: TypeDB
 openDb :: *File -> *(Maybe TypeDB, *File)
 saveDb :: TypeDB *File -> *File
-

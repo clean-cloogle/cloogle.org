@@ -11,23 +11,28 @@ import Text.JSON
 import Type
 
 :: TypeDB = { functionmap :: Map FunctionLocation ExtendedType
-            , classmap :: Map ClassLocation ([TypeVar],[(FunctionName, ExtendedType)])
+            , classmap    :: Map ClassLocation ([TypeVar],[(FunctionName, ExtendedType)])
             , instancemap :: Map Class [Type]
+            , typemap     :: Map TypeLocation TypeDef
             }
 
 (<+) infixr 5 :: a b -> [String] | print a & print b
 (<+) a b = print a ++ print b
 
 derive gEq ClassOrGeneric, FunctionLocation, ClassLocation, Type, TypeDB,
-	TypeExtras, TE_Priority, ExtendedType
+	TypeExtras, TE_Priority, ExtendedType, TypeDef, TypeLocation, TypeDefRhs,
+	RecordField, Constructor
 derive JSONEncode ClassOrGeneric, FunctionLocation, ClassLocation, Type,
-	TypeDB, TypeExtras, TE_Priority, ExtendedType
+	TypeDB, TypeExtras, TE_Priority, ExtendedType, TypeDef, TypeLocation,
+	TypeDefRhs, RecordField, Constructor
 derive JSONDecode ClassOrGeneric, FunctionLocation, ClassLocation, Type,
-	TypeDB, TypeExtras, TE_Priority, ExtendedType
+	TypeDB, TypeExtras, TE_Priority, ExtendedType, TypeDef, TypeLocation,
+	TypeDefRhs, RecordField, Constructor
 
-instance zero TypeDB where zero = { functionmap       = newMap
+instance zero TypeDB where zero = { functionmap   = newMap
                                   , classmap      = newMap
                                   , instancemap   = newMap
+                                  , typemap       = newMap
                                   }
 
 instance < FunctionLocation where (<) (FL a b c) (FL d e f) = (a,b,c) < (d,e,f)
@@ -36,31 +41,34 @@ where print (FL lib mod fn) = fn <+ " in " <+ mod <+ " in " <+ lib
 
 instance < ClassLocation where (<) (CL a b c) (CL d e f) = (a,b,c) < (d,e,f)
 
+instance < TypeLocation where (<) (TL a b c) (TL d e f) = (a,b,c) < (d,e,f)
+
 instance print TE_Priority
 where
 	print (LeftAssoc i)  = "infixl " <+ i
 	print (RightAssoc i) = "infixr " <+ i
 	print (NoAssoc i)    = "infix " <+ i
 
-getType :: FunctionLocation TypeDB -> Maybe ExtendedType
-getType loc {functionmap} = get loc functionmap
+getFunction :: FunctionLocation TypeDB -> Maybe ExtendedType
+getFunction loc {functionmap} = get loc functionmap
 
-putType :: FunctionLocation ExtendedType TypeDB -> TypeDB
-putType fl t tdb=:{functionmap} = { tdb & functionmap = put fl t functionmap }
+putFunction :: FunctionLocation ExtendedType TypeDB -> TypeDB
+putFunction fl t tdb=:{functionmap} = { tdb & functionmap = put fl t functionmap }
 
-putTypes :: [(FunctionLocation, ExtendedType)] TypeDB -> TypeDB
-putTypes ts tdb = foldr (\(loc,t) db -> putType loc t db) tdb ts
+putFunctions :: [(FunctionLocation, ExtendedType)] TypeDB -> TypeDB
+putFunctions ts tdb = foldr (\(loc,t) db -> putFunction loc t db) tdb ts
 
-findType :: FunctionName TypeDB -> [(FunctionLocation, ExtendedType)]
-findType f db=:{functionmap} = toList $ filterWithKey (\(FL _ _ f`) _->f==f`) functionmap
+findFunction :: FunctionName TypeDB -> [(FunctionLocation, ExtendedType)]
+findFunction f db=:{functionmap}
+	= toList $ filterWithKey (\(FL _ _ f`) _->f==f`) functionmap
 
-findType` :: (FunctionLocation ExtendedType -> Bool) TypeDB
-		-> [(FunctionLocation, ExtendedType)]
-findType` f {functionmap} = toList $ filterWithKey f functionmap
+findFunction` :: (FunctionLocation ExtendedType -> Bool) TypeDB
+	-> [(FunctionLocation, ExtendedType)]
+findFunction` f {functionmap} = toList $ filterWithKey f functionmap
 
-findType`` :: [(FunctionLocation ExtendedType -> Bool)] TypeDB
-		-> [(FunctionLocation, ExtendedType)]
-findType`` fs {functionmap} = toList $ foldr filterWithKey functionmap fs
+findFunction`` :: [(FunctionLocation ExtendedType -> Bool)] TypeDB
+	-> [(FunctionLocation, ExtendedType)]
+findFunction`` fs {functionmap} = toList $ foldr filterWithKey functionmap fs
 
 getInstances :: Class TypeDB -> [Type]
 getInstances c {instancemap} = if (isNothing ts) [] (fromJust ts)
@@ -107,6 +115,23 @@ findClassMembers`` fs {classmap} = foldr (filter o app4) all_members fs
 where
 	all_members = [(cl,vs,f,t) \\ (cl,(vs,fs)) <- toList classmap, (f,t) <- fs]
 
+getType :: TypeLocation TypeDB -> Maybe TypeDef
+getType loc {typemap} = get loc typemap
+
+putType :: TypeLocation TypeDef TypeDB -> TypeDB
+putType tl td db=:{typemap} = {db & typemap = put tl td typemap}
+
+putTypes :: [(TypeLocation, TypeDef)] TypeDB -> TypeDB
+putTypes ts db = foldr (\(loc,td) -> putType loc td) db ts
+
+findType :: TypeName TypeDB -> [(TypeLocation, TypeDef)]
+findType t db=:{typemap}
+	= toList $ filterWithKey (\(TL _ _ t`) _->t==t`) typemap
+
+findType` :: (TypeLocation TypeDef -> Bool) TypeDB
+		-> [(TypeLocation, TypeDef)]
+findType` f {typemap} = toList $ filterWithKey f typemap
+
 searchExact :: Type TypeDB -> [(FunctionLocation, ExtendedType)]
 searchExact t db = filter ((\(ET t` _)->t==t`) o snd) $ toList db.functionmap
 
@@ -114,7 +139,7 @@ searchUnifiable :: Type TypeDB
         -> [(FunctionLocation, ExtendedType, [TVAssignment], [TVAssignment])]
 searchUnifiable t db = search` $ toList db.functionmap
 where
-    search` :: [(FunctionLocation,ExtendedType)] 
+    search` :: [(FunctionLocation,ExtendedType)]
             -> [(FunctionLocation,ExtendedType,[TVAssignment],[TVAssignment])]
     search` [] = []
     search` [(l,ET t` tes):list]
@@ -135,4 +160,3 @@ saveDb :: TypeDB *File -> *File
 saveDb db f = fwrites (toString $ toJSON db) f
 
 app4 f (a,b,c,d) :== f a b c d
-

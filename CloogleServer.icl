@@ -114,14 +114,14 @@ where
 		| size name > 40 = (err E_NAMETOOLONG "function name too long", w)
 		# mbType = parseType (fromString unify)
 		// Search normal functions
-		# filts = catMaybes $ [ (\t->(\_ u->isUnifiable t u)) <$> mbType
+		# filts = catMaybes $ [ (\t _ -> isUnifiable t) <$> mbType
 		                      , pure (\loc _ ->
 		                        isNameMatch (size name-2) name loc)
 		                      , isModMatchF <$> modules
 		                      ]
 		# funs = map (makeFunctionResult name mbType Nothing) $ findFunction`` filts db
 		// Search class members
-		# filts = catMaybes $ [ (\t->(\_ _ _ u->isUnifiable t u)) <$> mbType
+		# filts = catMaybes $ [ (\t _ _ _->isUnifiable t) <$> mbType
 		                      , pure (\(CL lib mod _) _ f _ ->
 		                        isNameMatch (size name-2) name (FL lib mod f))
 		                      , isModMatchC <$> modules

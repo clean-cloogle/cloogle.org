@@ -106,12 +106,18 @@ function highlightTypeDef(type, callback) {
 			[/(\W)/,         ['punctuation']]
 		],
 		lhs: [
+			[/(\s*)(E)(\.)/, ['whitespace', 'existential', 'punctuation'], 'lhsexi'],
 			[/(\s*)(\{)/,    ['whitespace', 'punctuation'], 'record'],
 			[/(\s*)/,        ['whitespace'], 'conses']
 		],
+		lhsexi: [
+			[/(\s+)/,        ['whitespace']],
+			[/([a-z][\w`]*)/, ['typevar']],
+			[/(:)/,          ['punctuation'], 'lhs']
+		],
 		record: [
 			[/(\s+)/,        ['whitespace']],
-			[/([a-z][\w`]*)(\s+)(::)/,
+			[/([_a-z][\w`]*)(\s+)(::)/,
 			                 ['field', 'whitespace', 'punctuation'],
 			                 'fieldtype'],
 			[/(\})/,         ['punctuation']]
@@ -125,12 +131,18 @@ function highlightTypeDef(type, callback) {
 		],
 		conses: [
 			[/(\s+)/,        ['whitespace']],
-			[/([A-Z][\w`]*)/, ['constructor'], 'consargs'],
+			[/(E)(\.)/,      ['existential', 'punctuation'], 'consexi'],
+			[/([_A-Z][\w`]*)/, ['constructor'], 'consargs'],
 			[/([~@#\$%\^\?!\+\-\*<>\\\/\|&=:]+)/, ['constructor'], 'consargs']
+		],
+		consexi: [
+			[/(\s+)/,        ['whitespace']],
+			[/([a-z][\w`]*)/, ['typevar']],
+			[/(:)/,          ['punctuation'], 'conses']
 		],
 		consargs: [
 			[/(\s+)/,        ['whitespace']],
-			[/([a-z][a-zA-Z]*)/, ['typevar']],
+			[/([a-z][\w`]*)/, ['typevar']],
 			[/([A-Z]\w*)/,   ['type']],
 			[/(\|)/,         ['punctuation'], 'conses'],
 			[/(\W)/,         ['punctuation']]

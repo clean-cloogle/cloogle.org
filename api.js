@@ -156,7 +156,6 @@ window.onload = function() {
 }
 
 window.onhashchange = function() {
-	console.log(refresh_on_hash, document.location.hash);
 	if (!refresh_on_hash) {
 		refresh_on_hash = true;
 	} else {

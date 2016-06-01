@@ -22,7 +22,11 @@
 }
 
 .punctuation {
-	color: #777777;
+	color: #777;
+}
+
+.existential {
+	color: #444;
 }
 
 .field {

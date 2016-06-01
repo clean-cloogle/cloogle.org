@@ -32,20 +32,25 @@ import Levenshtein
              , page    :: Maybe Int
              }
 
-:: Response = { return :: Int
-              , data   :: [Result]
-              , msg    :: String
+:: Response = { return         :: Int
+              , data           :: [Result]
+              , msg            :: String
               , more_available :: Maybe Int
               }
 
-:: Result = { library  :: String
-            , filename :: String
-            , func     :: String
-            , unifier  :: Maybe StrUnifier
-            , cls      :: Maybe ClassResult
-            , modul    :: String
-            , distance :: Int
-            }
+:: Result = FunctionResult FunctionResult
+
+:: BasicResult = { library  :: String
+                 , filename :: String
+                 , modul    :: String
+                 , distance :: Int
+                 }
+
+:: FunctionResult :== (BasicResult, FunctionExtras)
+:: FunctionExtras = { func     :: String
+                    , unifier  :: Maybe StrUnifier
+                    , cls      :: Maybe ClassResult
+                    }
 
 :: StrUnifier :== ([(String,String)], [(String,String)])
 
@@ -53,15 +58,23 @@ import Levenshtein
 
 :: ClassResult = { cls_name :: String, cls_vars :: [String] }
 
-derive JSONEncode Request, Response, Result, ClassResult
-derive JSONDecode Request, Response, Result, ClassResult
+derive JSONEncode Request, Response, Result, ClassResult, BasicResult,
+	FunctionExtras
+derive JSONDecode Request, Response, Result, ClassResult, BasicResult,
+	FunctionExtras
 
 instance toString Response where toString r = toString (toJSON r) +++ "\n"
 instance toString Request where toString r = toString $ toJSON r
 
 instance fromString (Maybe Request) where fromString s = fromJSON $ fromString s
 
-instance < Result where (<) r1 r2 = r1.distance < r2.distance
+instance < BasicResult where (<) r1 r2 = r1.distance < r2.distance
+instance < Result
+where
+	(<) r1 r2 = basic r1 < basic r2
+	where
+		basic :: Result -> BasicResult
+		basic (FunctionResult (br,_)) = br
 
 err :: Int String -> Response
 err c m = {return=c, data=[], msg=m, more_available=Nothing}
@@ -100,7 +113,7 @@ where
 		                        isNameMatch (size name-2) name loc)
 		                      , isModMatchF <$> modules
 		                      ]
-		# funs = map (makeResult name mbType Nothing) $ findFunction`` filts db
+		# funs = map (makeFunctionResult name mbType Nothing) $ findFunction`` filts db
 		// Search class members
 		# filts = catMaybes $ [ (\t->(\_ _ _ u->isUnifiable t u)) <$> mbType
 		                      , pure (\(CL lib mod _) _ f _ ->
@@ -108,28 +121,37 @@ where
 		                      , isModMatchC <$> modules
 		                      ]
 		# members = findClassMembers`` filts db
-		# members = map (\(CL lib mod cls,vs,f,et) -> makeResult name mbType
+		# members = map (\(CL lib mod cls,vs,f,et) -> makeFunctionResult name mbType
 			(Just {cls_name=cls,cls_vars=vs}) (FL lib mod f,et)) members
 		# drop_n = fromJust (page <|> pure 0) * MAX_RESULTS
 		# results = drop drop_n $ sort $ funs ++ members
 		# more = max 0 (length results - MAX_RESULTS)
 		# results = take MAX_RESULTS results
 		| isEmpty results = (err E_NORESULTS "No results", w)
-		= ({return=0,msg="Success",data=results,more_available=Just more}, w)
+		= ( { return = 0
+		    , msg = "Success"
+		    , data           = results
+		    , more_available = Just more
+		    }
+		  , w)
 
-	makeResult :: String (Maybe Type) (Maybe ClassResult)
+	makeFunctionResult :: String (Maybe Type) (Maybe ClassResult)
 	              (FunctionLocation, ExtendedType) -> Result
-	makeResult orgsearch orgsearchtype mbCls (FL lib mod fname, ET type tes)
-		= { library  = lib
-		  , filename = (toString $ reverse $ takeWhile ((<>)'.')
-		                         $ reverse $ fromString mod) +++ ".dcl"
-		  , modul    = mod
-		  , func     = fname +++ toStrPriority tes.te_priority +++
-					   " :: " +++ concat (stripParens $ print type)
-		  , unifier  = toStrUnifier <$> (orgsearchtype >>= unify [] type)
-		  , cls      = mbCls
-		  , distance = distance
-		  }
+	makeFunctionResult
+		orgsearch orgsearchtype mbCls (FL lib mod fname, ET type tes)
+		= FunctionResult
+		  ( { library  = lib
+		    , filename = (toString $ reverse $ takeWhile ((<>)'.')
+		                           $ reverse $ fromString mod) +++ ".dcl"
+		    , modul    = mod
+		    , distance = distance
+		    }
+		  , { func     = fname +++ toStrPriority tes.te_priority +++
+		                 " :: " +++ concat (stripParens $ print type)
+		    , unifier  = toStrUnifier <$> (orgsearchtype >>= unify [] type)
+		    , cls      = mbCls
+		    }
+		  )
 	where
 		toStrUnifier :: Unifier -> StrUnifier
 		toStrUnifier (tvas1, tvas2) = (map toStr tvas1, map toStr tvas2)
@@ -201,8 +223,8 @@ where
 	msgToString (Received (Just a)) ip
 		= toString ip +++ " <-- " +++ toString a +++ "\n"
 	msgToString (Sent {return,data,msg,more_available}) ip
-		= toString ip +++ " --> " +++ toString (length data) +++ " results ("
-			+++ toString return +++ "; " +++ msg +++
+		= toString ip +++ " --> " +++ toString (length data)
+			+++ " results (" +++ toString return +++ "; " +++ msg +++
 			if (isJust more_available) ("; " +++ toString (fromJust more_available) +++ " more") "" +++ ")\n"
 	msgToString _ _ = ""
 

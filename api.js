@@ -14,6 +14,50 @@ function getResults(str, page) {
 		more.remove();
 	}
 
+	function makeTable(d) {
+		var html = '<table>';
+		for (i in d) {
+			if (d[i].length == 2) {
+				html += '<tr><th>' + d[i][0] + ': </th><td>' +
+					d[i][1] + '</td></tr>';
+			}
+		}
+		html += '</table>';
+		return html;
+	}
+
+	function makeResultHTML(result) {
+		var kind = result[0];
+		var basic = result[1][0];
+		var specific = result[1][1];
+
+		var basicData = [
+			['Library', basic['library']],
+			['Filename', basic['filename']],
+			['Module', basic['module']],
+			['Distance', basic['distance']]
+		];
+
+		switch (kind) {
+			case 'FunctionResult':
+				specificData = [
+					('cls' in specific ?
+						[ 'Class', specific['cls']['cls_name'] + ' ' +
+						  specific['cls']['cls_vars'].join(' ')] :
+						[]),
+					('unifier' in specific ?
+						['Unifier', makeUnifier(specific['unifier'])] :
+						[])
+				];
+				return '<hr/>' +
+					makeTable(basicData.concat(specificData)) +
+					'<code>' + highlight(specific['func']) + '</code>';
+				break;
+			default:
+				return '';
+		}
+	}
+
 	xmlHttp.onreadystatechange = function() {
 		if(xmlHttp.readyState == 4 && xmlHttp.status == 200){
 			document.getElementById('loading').remove();
@@ -21,17 +65,7 @@ function getResults(str, page) {
 			if(responsedata['return'] === 0){
 				for(var i = 0; i<responsedata['data'].length; i++){
 					var c = responsedata['data'][i];
-					elem.innerHTML += '<hr/><table>' +
-						'<tr><th>Library: </th><td>' + c['library'] + '</td></tr>' +
-						'<tr><th>Filename: </th><td>' + c['filename'] + '</td></tr>' +
-						'<tr><th>Module: </th><td>' + c['modul'] + '</td>' +
-						'<td>' + c['distance'] + '</td></tr>' +
-						('cls' in c ? ('<tr><th>Class: </th><td>' + c['cls']['cls_name'] +
-								' ' + c['cls']['cls_vars'].join(' ') + '</td></tr>') : '') +
-						('unifier' in c ? ('<tr><th>Unifier: </th><td>' +
-								makeUnifier(c['unifier']) + '</td></tr>') : '') +
-						'</table>' +
-						'<code>' + highlight(c['func']) + '</code>';
+					elem.innerHTML += makeResultHTML(c);
 				}
 
 				if (responsedata['more_available'] != 0) {

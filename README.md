@@ -113,8 +113,6 @@ view the statistics. This page will receive live updates.
 
 ### Todo in order of importance
 
-- Search on type definitions
-- Also grab possible comments above the function signature
 - Search for instances of classes
 
 ### Authors

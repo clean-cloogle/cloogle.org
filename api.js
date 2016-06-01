@@ -53,6 +53,11 @@ function getResults(str, page) {
 					makeTable(basicData.concat(specificData)) +
 					'<code>' + highlight(specific['func']) + '</code>';
 				break;
+			case 'TypeResult':
+				return '<hr/>' +
+					makeTable(basicData) +
+					'<pre>' + specific['type'] + '</pre>';
+				break;
 			default:
 				return '';
 		}

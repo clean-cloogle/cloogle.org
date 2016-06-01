@@ -39,6 +39,7 @@ import Levenshtein
               }
 
 :: Result = FunctionResult FunctionResult
+          | TypeResult TypeResult
 
 :: BasicResult = { library  :: String
                  , filename :: String
@@ -46,11 +47,15 @@ import Levenshtein
                  , distance :: Int
                  }
 
-:: FunctionResult :== (BasicResult, FunctionExtras)
-:: FunctionExtras = { func     :: String
-                    , unifier  :: Maybe StrUnifier
-                    , cls      :: Maybe ClassResult
-                    }
+:: FunctionResult :== (BasicResult, FunctionResultExtras)
+:: FunctionResultExtras = { func     :: String
+                          , unifier  :: Maybe StrUnifier
+                          , cls      :: Maybe ClassResult
+                          }
+
+:: TypeResult :== (BasicResult, TypeResultExtras)
+:: TypeResultExtras = { type :: String
+                      }
 
 :: StrUnifier :== ([(String,String)], [(String,String)])
 
@@ -59,9 +64,9 @@ import Levenshtein
 :: ClassResult = { cls_name :: String, cls_vars :: [String] }
 
 derive JSONEncode Request, Response, Result, ClassResult, BasicResult,
-	FunctionExtras
+	FunctionResultExtras, TypeResultExtras
 derive JSONDecode Request, Response, Result, ClassResult, BasicResult,
-	FunctionExtras
+	FunctionResultExtras, TypeResultExtras
 
 instance toString Response where toString r = toString (toJSON r) +++ "\n"
 instance toString Request where toString r = toString $ toJSON r
@@ -75,6 +80,7 @@ where
 	where
 		basic :: Result -> BasicResult
 		basic (FunctionResult (br,_)) = br
+		basic (TypeResult (br,_)) = br
 
 err :: Int String -> Response
 err c m = {return=c, data=[], msg=m, more_available=Nothing}
@@ -123,8 +129,14 @@ where
 		# members = findClassMembers`` filts db
 		# members = map (\(CL lib mod cls,vs,f,et) -> makeFunctionResult name mbType
 			(Just {cls_name=cls,cls_vars=vs}) (FL lib mod f,et)) members
+		// Search types
+		# types = if (isJust mbType && isType (fromJust mbType))
+			(let (Type name _) = fromJust mbType in findType name db)
+			[]
+		# types = map (\(tl,td) -> makeTypeResult tl td) types
+		// Merge results
 		# drop_n = fromJust (page <|> pure 0) * MAX_RESULTS
-		# results = drop drop_n $ sort $ funs ++ members
+		# results = drop drop_n $ sort $ funs ++ members ++ types
 		# more = max 0 (length results - MAX_RESULTS)
 		# results = take MAX_RESULTS results
 		| isEmpty results = (err E_NORESULTS "No results", w)
@@ -135,14 +147,24 @@ where
 		    }
 		  , w)
 
+	makeTypeResult :: TypeLocation TypeDef -> Result
+	makeTypeResult (TL lib mod _) td
+		= TypeResult
+		  ( { library  = lib
+		    , filename = modToFilename mod
+		    , modul    = mod
+		    , distance = -100
+		    }
+		  , { type = concat $ print td }
+		  )
+
 	makeFunctionResult :: String (Maybe Type) (Maybe ClassResult)
 	              (FunctionLocation, ExtendedType) -> Result
 	makeFunctionResult
 		orgsearch orgsearchtype mbCls (FL lib mod fname, ET type tes)
 		= FunctionResult
 		  ( { library  = lib
-		    , filename = (toString $ reverse $ takeWhile ((<>)'.')
-		                           $ reverse $ fromString mod) +++ ".dcl"
+		    , filename = modToFilename mod
 		    , modul    = mod
 		    , distance = distance
 		    }
@@ -188,6 +210,10 @@ where
 			typeComplexity (Var _) = 1
 			typeComplexity (Cons _ ts) = foldr ((+) o typeComplexity) 1 ts
 			typeComplexity (Uniq t) = 3 + typeComplexity t
+
+	modToFilename :: String -> String
+	modToFilename mod = (toString $ reverse $ takeWhile ((<>)'.')
+	                              $ reverse $ fromString mod) +++ ".dcl"
 
 	isUnifiable :: Type ExtendedType -> Bool
 	isUnifiable t1 (ET t2 _) = isJust (unify [] t1 t2)

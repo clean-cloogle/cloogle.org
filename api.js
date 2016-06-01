@@ -43,9 +43,9 @@ function getResults(str, page) {
 		var specific = result[1][1];
 
 		var basicData = [
-			['Library', basic['library']],
+			['Library',  basic['library']],
 			['Filename', basic['filename']],
-			['Module', basic['module']],
+			['Module',   basic['modul']],
 			['Distance', basic['distance']]
 		];
 

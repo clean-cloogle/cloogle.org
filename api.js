@@ -1,6 +1,7 @@
 var form_str = document.getElementById('search_str');
 var sform = document.getElementById('search_form');
 var sresults = document.getElementById('search_results');
+var refresh_on_hash = true;
 
 function getResults(str, page) {
 	var url = 'api.php?str=' + encodeURIComponent(str) + '&page=' + page;
@@ -12,6 +13,16 @@ function getResults(str, page) {
 	var more = document.getElementById('more');
 	if (more !== null) {
 		more.remove();
+	}
+
+	function highlightCallback(span, cls, str) {
+		if (cls == 'type') {
+			return '<a class="hidden" title="Search :: ' + str + '" href="#' +
+				encodeURIComponent(':: ' + str) + '">' +
+				span + '</a>';
+		} else {
+			return span;
+		}
 	}
 
 	function makeTable(d) {
@@ -51,12 +62,12 @@ function getResults(str, page) {
 				];
 				return '<hr/>' +
 					makeTable(basicData.concat(specificData)) +
-					'<code>' + highlight(specific['func']) + '</code>';
+					'<code>' + highlightFunction(specific['func'], highlightCallback) + '</code>';
 				break;
 			case 'TypeResult':
 				return '<hr/>' +
 					makeTable(basicData) +
-					'<pre>' + specific['type'] + '</pre>';
+					'<pre>' + highlightTypeDef(specific['type'], highlightCallback) + '</pre>';
 				break;
 			default:
 				return '';
@@ -89,7 +100,10 @@ function getResults(str, page) {
 	};
 	xmlHttp.open('GET', url, true); // true for asynchronous
 	xmlHttp.send(null);
-	document.location.hash = "#" + str;
+	if (document.location.hash.substring(1) != encodeURIComponent(str)) {
+		refresh_on_hash = false;
+		document.location.hash = "#" + encodeURIComponent(str);
+	}
 }
 
 function makeUnifier(ufr) {
@@ -119,7 +133,7 @@ function escapeJS(s) {
 	});
 }
 
-function formsubmit(){
+function formsubmit() {
 	if (form_str.value === '') {
 		sresults.innerHTML = 'Can\'t search for the empty string';
 	} else {
@@ -129,7 +143,7 @@ function formsubmit(){
 	return false;
 };
 
-window.onload = function(){
+window.onload = function() {
 	sform.onsubmit = formsubmit;
 	var str = decodeURIComponent(document.location.hash);
 	if(str !== ''){
@@ -139,4 +153,15 @@ window.onload = function(){
 	}
 
 	document.getElementById('search_str').focus();
+}
+
+window.onhashchange = function() {
+	console.log(refresh_on_hash, document.location.hash);
+	if (!refresh_on_hash) {
+		refresh_on_hash = true;
+	} else {
+		var str = decodeURIComponent(document.location.hash);
+		form_str.value = str.substring(1);
+		formsubmit();
+	}
 }

@@ -1,49 +1,29 @@
-function highlight(type) {
-	str = '';
+function highlight(lex, istr) {
+	var out = [];
 
-	var lex = {
-		start: [
-			[/^(\s+)(.*)/, ['whitespace']],
-			[/^(.*)(::.*)/, ['funcname'], 'type'],
-			[/^(\S+)(.*)/, ['funcname']]
-		],
-		type: [
-			[/^(\s+)(.*)/, ['whitespace']],
-			[/^([a-z][a-zA-Z]*)(.*)/, ['typevar']],
-			[/^([A-Z]\w*)(.*)/, ['type']],
-			[/^(\/\/.*)(.*?)/, ['comment']],
-			[/^(\|)(.*)/, ['punctuation'], 'context'],
-			[/^(\W)(.*)/, ['punctuation']]
-		],
-		context: [
-			[/^(\s+)(.*)/, ['whitespace']],
-			[/^(\/\/.*)(.*?)/, ['comment']],
-			[/^(,)(.*)/, ['punctuation']],
-			[/^(\S+)(,.*)/, ['classname']],
-			[/^(\S+)(.*)/, ['classname'], 'contextType']
-		],
-		contextType: [
-			[/^(\s+)(.*)/, ['whitespace']],
-			[/^(\/\/.*)(.*?)/, ['comment']],
-			[/^([,&])(.*)/, ['punctuation'], 'context'],
-			[/^([^\s,]+)(.*)/, ['typevar']]
-		]
-	};
+	for (var group in lex) {
+		for (var i in lex[group]) {
+			lex[group][i][0] = new RegExp(
+					/^/.source +
+					lex[group][i][0].source +
+					/([\s\S]*)/.source);
+		}
+	}
 
-	state = 'start';
+	var state = 'start';
 	while (true) {
 		var found = false;
-		for (i in lex[state]) {
-			patt = lex[state][i][0];
-			clss = lex[state][i][1];
-			if (type.match(patt)) {
-				parts = patt.exec(type);
+		for (var i in lex[state]) {
+			var patt = lex[state][i][0];
+			var clss = lex[state][i][1];
+			if (istr.match(patt)) {
+				var parts = patt.exec(istr);
 				var j = 0;
-				for (k in clss) {
-					j = parseInt(k)+1;
-					str += '<span class="' + clss[k] + '">' + escapeHTML(parts[j]) + '</span>';
+				for (var k in clss) {
+					j++;
+					out.push({'class': clss[k], 'str': parts[j]});
 				}
-				type = parts[j+1];
+				istr = parts[j+1];
 
 				found = true;
 				if (lex[state][i].length > 2)
@@ -52,9 +32,110 @@ function highlight(type) {
 				break;
 			}
 		}
-		if (!found || type == '')
-			return str;
+		if (!found || istr == '')
+			return out;
 	}
+}
+
+function highlightToHTML(lex, istr, callback) {
+	var elems = highlight(lex, istr);
+	var ostr = '';
+	for (var i in elems) {
+		var cls = elems[i]['class'];
+		var str = elems[i]['str'];
+		var span = '<span class="' + elems[i]['class'] + '">' +
+			escapeHTML(elems[i]['str']) + '</span>';
+		if (typeof callback != 'undefined') {
+			ostr += callback(span, cls, str);
+		} else {
+			ostr += span;
+		}
+	}
+	return ostr;
+}
+
+function highlightFunction(func, callback) {
+	return highlightToHTML({
+		start: [
+			[/(\s+)/,        ['whitespace']],
+			[/(.*)(::)/,     ['funcname', 'punctuation'], 'type'],
+			[/(\S+)/,        ['funcname']]
+		],
+		type: [
+			[/(\s+)/,        ['whitespace']],
+			[/([a-z][a-zA-Z]*)/, ['typevar']],
+			[/([A-Z]\w*)/,   ['type']],
+			[/(\|)/,         ['punctuation'], 'context'],
+			[/(\W+)/,        ['punctuation']]
+		],
+		context: [
+			[/(\s+)/,        ['whitespace']],
+			[/(,)/,          ['punctuation']],
+			[/(\S+)(,)/,     ['classname', 'punctuation']],
+			[/(\S+)/,        ['classname'], 'contextType']
+		],
+		contextType: [
+			[/(\s+)/,        ['whitespace']],
+			[/([,&])/,       ['punctuation'], 'context'],
+			[/([^\s,]+)/,    ['typevar']]
+		]
+	}, func, callback);
+}
+
+function highlightTypeDef(type, callback) {
+	return highlightToHTML({
+		start: [
+			[/(::)/,         ['punctuation'], 'name']
+		],
+		name: [
+			[/(\s+)/,        ['whitespace']],
+			[/(\*)/,         ['punctuation']],
+			[/([A-Z][\w`]*)/, ['type'], 'vars'],
+			[/([~@#\$%\^\?!\+\-\*<>\\\/\|&=:]+)/, ['type'], 'vars']
+		],
+		vars: [
+			[/(\s+)/,        ['whitespace']],
+			[/([a-z][\w`]*)/, ['typevar']],
+			[/(\(?:==)/,     ['punctuation'], 'synonym'],
+			[/(=)/,          ['punctuation'], 'lhs']
+		],
+		synonym: [
+			[/(\s+)/,        ['whitespace']],
+			[/([a-z][a-zA-Z]*)/, ['typevar']],
+			[/([A-Z]\w*)/,   ['type']],
+			[/(\W)/,         ['punctuation']]
+		],
+		lhs: [
+			[/(\s*)(\{)/,    ['whitespace', 'punctuation'], 'record'],
+			[/(\s*)/,        ['whitespace'], 'conses']
+		],
+		record: [
+			[/(\s+)/,        ['whitespace']],
+			[/([a-z][\w`]*)(\s+)(::)/,
+			                 ['field', 'whitespace', 'punctuation'],
+			                 'fieldtype'],
+			[/(\})/,         ['punctuation']]
+		],
+		fieldtype: [
+			[/(\s+)/,        ['whitespace']],
+			[/([a-z][a-zA-Z]*)/, ['typevar']],
+			[/([A-Z]\w*)/,   ['type']],
+			[/(,)/,          ['punctuation'], 'record'],
+			[/(\W)/,         ['punctuation']]
+		],
+		conses: [
+			[/(\s+)/,        ['whitespace']],
+			[/([A-Z][\w`]*)/, ['constructor'], 'consargs'],
+			[/([~@#\$%\^\?!\+\-\*<>\\\/\|&=:]+)/, ['constructor'], 'consargs']
+		],
+		consargs: [
+			[/(\s+)/,        ['whitespace']],
+			[/([a-z][a-zA-Z]*)/, ['typevar']],
+			[/([A-Z]\w*)/,   ['type']],
+			[/(\|)/,         ['punctuation'], 'conses'],
+			[/(\W)/,         ['punctuation']]
+		]
+	}, type, callback);
 }
 
 function escapeHTML(unsafe) {

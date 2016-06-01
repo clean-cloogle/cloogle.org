@@ -133,6 +133,7 @@ where
 		# types = if (isJust mbType && isType (fromJust mbType))
 			(let (Type name _) = fromJust mbType in findType name db)
 			[]
+		# types = if (isNothing mbType) (findType name db) types
 		# types = map (\(tl,td) -> makeTypeResult tl td) types
 		// Merge results
 		# drop_n = fromJust (page <|> pure 0) * MAX_RESULTS

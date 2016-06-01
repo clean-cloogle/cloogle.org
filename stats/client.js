@@ -11,7 +11,7 @@ function updateSearches() {
 	query = searches[0];
 	console.log(query);
 	var last = document.getElementById('last-search');
-	last.innerHTML = '<pre>' + highlight(query) + '</pre>';
+	last.innerHTML = '<pre>' + highlightFunction(query) + '</pre>';
 	last.innerHTML += '<div class="time">' + new Date().timeNow(true) + '</div>';
 
 	var previous = document.getElementById('previous-searches');

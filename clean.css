@@ -1,6 +1,35 @@
-.comment { color: #aaaaaa; }
-.funcname { color: #5998c2; font-weight: bold; }
-.classname { color: #5998c2; }
-.typevar { color: #59c28a; font-weight: bold; }
-.type { color: #e3890b; font-weight: bold; }
-.punctuation { color: #777777; }
+.comment {
+	color: #aaaaaa;
+}
+
+.funcname {
+	color: #5998c2;
+	font-weight: bold;
+}
+
+.classname {
+	color: #5998c2;
+}
+
+.typevar {
+	color: #59c28a;
+	font-weight: bold;
+}
+
+.type {
+	color: #e3890b;
+	font-weight: bold;
+}
+
+.punctuation {
+	color: #777777;
+}
+
+.field {
+	color: #41b1b5;
+}
+
+.constructor {
+	color: #932d1d;
+	font-weight: bold;
+}

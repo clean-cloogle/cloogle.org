@@ -133,7 +133,8 @@ function highlightTypeDef(type, callback) {
 			[/(\s+)/,        ['whitespace']],
 			[/(E)(\.)/,      ['existential', 'punctuation'], 'consexi'],
 			[/([_A-Z][\w`]*)/, ['constructor'], 'consargs'],
-			[/([~@#\$%\^\?!\+\-\*<>\\\/\|&=:]+)/, ['constructor'], 'consargs']
+			[/([~@#\$%\^\?!\+\-\*<>\\\/\|&=:]+)/, ['constructor'], 'consargs'],
+			[/(\.\.)/,       ['punctuation']]
 		],
 		consexi: [
 			[/(\s+)/,        ['whitespace']],

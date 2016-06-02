@@ -10,6 +10,7 @@ function highlight(lex, istr) {
 		}
 	}
 
+	var state_stack = [];
 	var state = 'start';
 	while (true) {
 		var found = false;
@@ -26,8 +27,15 @@ function highlight(lex, istr) {
 				istr = parts[j+1];
 
 				found = true;
-				if (lex[state][i].length > 2)
-					state = lex[state][i][2];
+				if (lex[state][i].length > 2) {
+					var new_state = lex[state][i][2];
+					if (new_state == 'pop') {
+						state = state_stack.pop();
+					} else {
+						state_stack.push(state);
+						state = new_state;
+					}
+				}
 
 				break;
 			}
@@ -126,7 +134,17 @@ function highlightTypeDef(type, callback) {
 			[/(\s+)/,        ['whitespace']],
 			[/([a-z][a-zA-Z]*)/, ['typevar']],
 			[/([A-Z]\w*)/,   ['type']],
-			[/(,)/,          ['punctuation'], 'record'],
+			[/(\()/,         ['punctuation'], 'tuple'],
+			[/([\[\{])/,     ['punctuation'], 'fieldtype'],
+			[/([\]\},])/,    ['punctuation'], 'pop'],
+			[/(\W)/,         ['punctuation']]
+		],
+		tuple: [
+			[/(\s+)/,        ['whitespace']],
+			[/([a-z][a-zA-Z]*)/, ['typevar']],
+			[/([A-Z]\w*)/,   ['type']],
+			[/([\(\[\{])/,   ['punctuation'], 'tuple'],
+			[/([\)\]\}])/,   ['punctuation'], 'pop'],
 			[/(\W)/,         ['punctuation']]
 		],
 		conses: [

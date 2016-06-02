@@ -1,12 +1,13 @@
 module CloogleServer
 
 import StdArray, StdBool, StdFile, StdList, StdOrdList, StdOverloaded, StdTuple
-from StdFunc import o
+from StdFunc import o, flip
 from StdMisc import abort
 
 from TCPIP import :: IPAddress, :: Port, instance toString IPAddress
 
 from Data.Func import $
+import Data.List
 import Data.Maybe
 import System.CommandLine
 import Text.JSON
@@ -36,6 +37,7 @@ import Levenshtein
               , data           :: [Result]
               , msg            :: String
               , more_available :: Maybe Int
+              , suggestions    :: Maybe [(String, Int)]
               }
 
 :: Result = FunctionResult FunctionResult
@@ -68,6 +70,14 @@ derive JSONEncode Request, Response, Result, ClassResult, BasicResult,
 derive JSONDecode Request, Response, Result, ClassResult, BasicResult,
 	FunctionResultExtras, TypeResultExtras
 
+instance zero Request
+where
+	zero = { unify   = ""
+	       , name    = ""
+	       , modules = Nothing
+	       , page    = Nothing
+	       }
+
 instance toString Response where toString r = toString (toJSON r) +++ "\n"
 instance toString Request where toString r = toString $ toJSON r
 
@@ -83,7 +93,12 @@ where
 		basic (TypeResult (br,_)) = br
 
 err :: Int String -> Response
-err c m = {return=c, data=[], msg=m, more_available=Nothing}
+err c m = { return         = c
+          , data           = []
+          , msg            = m
+          , more_available = Nothing
+          , suggestions    = Nothing
+          }
 
 E_NORESULTS :== 127
 E_INVALIDINPUT :== 128
@@ -110,8 +125,36 @@ where
 
 	handle :: TypeDB (Maybe Request) *World -> *(Response, *World)
 	handle _ Nothing w = (err E_INVALIDINPUT "Couldn't parse input", w)
-	handle db (Just {unify,name,modules,page}) w
+	handle db (Just request=:{unify,name,modules,page}) w
 		| size name > 40 = (err E_NAMETOOLONG "function name too long", w)
+		// Results
+		# drop_n = fromJust (page <|> pure 0) * MAX_RESULTS
+		# results = take MAX_RESULTS $ drop drop_n $ sort $ search request db
+		// More available
+		# more = max 0 (length results - MAX_RESULTS)
+		// Suggestions
+		# mbType = parseType (fromString unify)
+		# suggestions
+			= filter ((<)(length results) o snd) <$> (mbType >>= flip suggs db)
+		// Response
+		| isEmpty results = (err E_NORESULTS "No results", w)
+		= ( { return = 0
+		    , msg = "Success"
+		    , data           = results
+		    , more_available = Just more
+		    , suggestions    = suggestions
+		    }
+		  , w)
+
+	suggs :: Type TypeDB -> Maybe [(String, Int)]
+	suggs (Func is r cc) db
+		| length is < 3 = Just [let t` = concat $ print $ Func is` r cc in
+		                        (t`, length $ search {zero & unify=t`} db)
+		                        \\ is` <- permutations is | is` <> is]
+	suggs _ _ = Nothing
+
+	search :: Request TypeDB -> [Result]
+	search {unify,name,modules,page} db
 		# mbType = parseType (fromString unify)
 		// Search normal functions
 		# filts = catMaybes $ [ (\t _ -> isUnifiable t) <$> mbType
@@ -136,17 +179,7 @@ where
 		# types = if (isNothing mbType) (findType name db) types
 		# types = map (\(tl,td) -> makeTypeResult tl td) types
 		// Merge results
-		# drop_n = fromJust (page <|> pure 0) * MAX_RESULTS
-		# results = drop drop_n $ sort $ funs ++ members ++ types
-		# more = max 0 (length results - MAX_RESULTS)
-		# results = take MAX_RESULTS results
-		| isEmpty results = (err E_NORESULTS "No results", w)
-		= ( { return = 0
-		    , msg = "Success"
-		    , data           = results
-		    , more_available = Just more
-		    }
-		  , w)
+		= sort $ funs ++ members ++ types
 
 	makeTypeResult :: TypeLocation TypeDef -> Result
 	makeTypeResult (TL lib mod _) td

@@ -74,6 +74,18 @@ function getResults(str, page) {
 		}
 	}
 
+	function makeSuggestions(suggs) {
+		var str = '<hr/><div id="suggestions"><b>Did you mean...</b><table>';
+		for (i in suggs) {
+			var sug = ':: ' + suggs[i][0];
+			str += '<tr><td><a class="hidden" href="#' + encodeURIComponent(sug) + '"><code>' +
+				highlightFunction(sug) + '</code></a></td><td>' +
+				suggs[i][1] + ' results</td></tr>';
+		}
+		str += '</table></div>';
+		return str;
+	}
+
 	xmlHttp.onreadystatechange = function() {
 		if(xmlHttp.readyState == 4 && xmlHttp.status == 200){
 			document.getElementById('loading').remove();
@@ -90,6 +102,13 @@ function getResults(str, page) {
 							escapeJS(str) + '\',' + (page+1) +
 						')">' + responsedata['more_available'] + ' more...</a></p>' +
 						'</div>';
+				}
+
+				if ('suggestions' in responsedata &&
+						responsedata['suggestions'].length > 0) {
+					elem.parentNode.innerHTML =
+						makeSuggestions(responsedata['suggestions'])
+						+ elem.parentNode.innerHTML;
 				}
 			} else {
 				elem.innerHTML =

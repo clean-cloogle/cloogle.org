@@ -129,9 +129,9 @@ where
 		| size name > 40 = (err E_NAMETOOLONG "function name too long", w)
 		// Results
 		# drop_n = fromJust (page <|> pure 0) * MAX_RESULTS
-		# results = take MAX_RESULTS $ drop drop_n $ sort $ search request db
-		// More available
+		# results = drop drop_n $ sort $ search request db
 		# more = max 0 (length results - MAX_RESULTS)
+		# results = take MAX_RESULTS results
 		// Suggestions
 		# mbType = parseType (fromString unify)
 		# suggestions

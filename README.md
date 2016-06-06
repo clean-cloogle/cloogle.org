@@ -1,11 +1,19 @@
 # cloogle
 
-A Clean hoogle clone. Use at your own risk. Live version available
-[here](http://cloogle.org/) or search on DuckDuckGo with the `!cloogle` bang.
+A Clean hoogle clone. Use at your own risk. You can use any of the available
+frontends:
+
+- Live version available at [cloogle.org](http://cloogle.org/)
+- On DuckDuckGo with the `!cloogle` bang.
+- Using [@CloogleBot](https://telegram.me/CloogleBot) on Telegram (see
+  [camilstaps/CloogleBot](https://github.com/camilstaps/CloogleBot))
+- Using the CLI implementation at
+  [KDercksen/cloogle-cli](https://github.com/KDercksen/cloogle-cli)
 
 ### Current features
 - Search for function/operator/class member names.
 - Search for function types.
+- Search for type definitions.
 
 ### How to setup
 
@@ -110,10 +118,6 @@ And to run:
 
 This starts a WebSocket server on port 31216. You can navigate to `/stats` to
 view the statistics. This page will receive live updates.
-
-### Todo in order of importance
-
-- Search for instances of classes
 
 ### Authors
 

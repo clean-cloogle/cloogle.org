@@ -42,9 +42,15 @@ function getResults(str, page) {
 		var basic = result[1][0];
 		var specific = result[1][1];
 
+		var viewUrl =
+			'src/view.php?lib=' + encodeURIComponent(basic['library']) +
+			'&mod=' + encodeURIComponent(basic['modul']) +
+			'&hl';
+
 		var basicData = [
 			['Library',  basic['library']],
-			['Filename', basic['filename']],
+			['Filename', '<a href="' + viewUrl + '" target="_blank">' + 
+				basic['filename'] + '</a>'],
 			['Module',   basic['modul']],
 			['Distance', basic['distance']]
 		];

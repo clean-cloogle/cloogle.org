@@ -274,4 +274,3 @@ where
 			+++ " results (" +++ toString return +++ "; " +++ msg +++
 			if (isJust more_available) ("; " +++ toString (fromJust more_available) +++ " more") "" +++ ")\n"
 	msgToString _ _ = ""
-

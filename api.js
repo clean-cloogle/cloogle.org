@@ -62,7 +62,9 @@ function getResults(str, page) {
 						[ 'Class', specific['cls']['cls_name'] + ' ' +
 						  specific['cls']['cls_vars'].join(' ')] :
 						[]),
-					('unifier' in specific ?
+					('unifier' in specific &&
+						(specific['unifier'][0].length > 0 ||
+						 specific['unifier'][1].length > 0) ?
 						['Unifier', makeUnifier(specific['unifier'])] :
 						[])
 				];

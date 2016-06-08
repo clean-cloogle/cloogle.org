@@ -17,7 +17,6 @@ instance zero TypeDB
 derive gEq TypeDB
 
 :: FunctionLocation = FL Library Module FunctionName
-instance < FunctionLocation
 instance print FunctionLocation
 
 :: TypeExtras = { te_priority :: Maybe TE_Priority }

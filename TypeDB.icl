@@ -16,8 +16,8 @@ import Type
             , typemap     :: Map TypeLocation TypeDef
             }
 
-(<+) infixr 5 :: a b -> [String] | print a & print b
-(<+) a b = print a ++ print b
+(--) infixr 5 :: a b -> [String] | print a & print b
+(--) a b = print False a ++ print False b
 
 derive gEq ClassOrGeneric, FunctionLocation, ClassLocation, Type, TypeDB,
 	TypeExtras, TE_Priority, ExtendedType, TypeDef, TypeLocation, TypeDefRhs,
@@ -37,7 +37,7 @@ instance zero TypeDB where zero = { functionmap   = newMap
 
 instance < FunctionLocation where (<) (FL a b c) (FL d e f) = (a,b,c) < (d,e,f)
 instance print FunctionLocation
-where print (FL lib mod fn) = fn <+ " in " <+ mod <+ " in " <+ lib
+where print _ (FL lib mod fn) = fn -- " in " -- mod -- " in " -- lib
 
 instance < ClassLocation where (<) (CL a b c) (CL d e f) = (a,b,c) < (d,e,f)
 
@@ -45,9 +45,9 @@ instance < TypeLocation where (<) (TL a b c) (TL d e f) = (a,b,c) < (d,e,f)
 
 instance print TE_Priority
 where
-	print (LeftAssoc i)  = "infixl " <+ i
-	print (RightAssoc i) = "infixr " <+ i
-	print (NoAssoc i)    = "infix " <+ i
+	print _ (LeftAssoc i)  = "infixl " -- i
+	print _ (RightAssoc i) = "infixr " -- i
+	print _ (NoAssoc i)    = "infix " -- i
 
 getFunction :: FunctionLocation TypeDB -> Maybe ExtendedType
 getFunction loc {functionmap} = get loc functionmap

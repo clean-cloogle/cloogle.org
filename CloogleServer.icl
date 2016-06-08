@@ -115,7 +115,7 @@ Start w
 # (db, io) = openDb io
 # (_, w) = fclose io w
 | isNothing db = abort "stdin does not have a TypeDB\n"
-# db = fromJust db
+#! db = fromJust db
 = serve (handle db) ('OldMaybe'.Just log) port w
 where
 	help :: *File *World -> *World
@@ -123,7 +123,7 @@ where
 	# io = io <<< "Usage: ./CloogleServer <port>\n"
 	= snd $ fclose io w
 
-	handle :: TypeDB (Maybe Request) *World -> *(Response, *World)
+	handle :: !TypeDB !(Maybe Request) !*World -> *(!Response, !*World)
 	handle _ Nothing w = (err E_INVALIDINPUT "Couldn't parse input", w)
 	handle db (Just request=:{unify,name,modules,page}) w
 		| size name > 40 = (err E_NAMETOOLONG "function name too long", w)
@@ -146,14 +146,14 @@ where
 		    }
 		  , w)
 
-	suggs :: Type TypeDB -> Maybe [(String, Int)]
+	suggs :: !Type !TypeDB -> Maybe [(String, Int)]
 	suggs (Func is r cc) db
-		| length is < 3 = Just [let t` = concat $ print $ Func is` r cc in
+		| length is < 3 = Just [let t` = concat $ print False $ Func is` r cc in
 		                        (t`, length $ search {zero & unify=t`} db)
 		                        \\ is` <- permutations is | is` <> is]
 	suggs _ _ = Nothing
 
-	search :: Request TypeDB -> [Result]
+	search :: !Request !TypeDB -> [Result]
 	search {unify,name,modules,page} db
 		# mbType = parseType (fromString unify)
 		// Search normal functions
@@ -189,7 +189,7 @@ where
 		    , modul    = mod
 		    , distance = -100
 		    }
-		  , { type = concat $ print td }
+		  , { type = concat $ print False td }
 		  )
 
 	makeFunctionResult :: String (Maybe Type) (Maybe ClassResult)
@@ -203,7 +203,7 @@ where
 		    , distance = distance
 		    }
 		  , { func     = fname +++ toStrPriority tes.te_priority +++
-		                 " :: " +++ concat (stripParens $ print type)
+		                 " :: " +++ concat (print False type)
 		    , unifier  = toStrUnifier <$> (orgsearchtype >>= unify [] type)
 		    , cls      = mbCls
 		    }
@@ -211,23 +211,10 @@ where
 	where
 		toStrUnifier :: Unifier -> StrUnifier
 		toStrUnifier (tvas1, tvas2) = (map toStr tvas1, map toStr tvas2)
-		where toStr (var, type) = (var, concat $ print type)
+		where toStr (var, type) = (var, concat $ print False type)
 
 		toStrPriority :: (Maybe TE_Priority) -> String
-		toStrPriority p = case print p of [] = ""; ss = concat [" ":ss]
-
-		stripParens :: [String] -> [String]
-		stripParens ["(":ss]
-			| last ss == ")" && parensMatch 0 (init ss) = stripParens $ init ss
-			| otherwise = ["(":ss]
-		stripParens ss = ss
-
-		parensMatch :: Int [String] -> Bool
-		parensMatch 0 []       = True
-		parensMatch _ []       = False
-		parensMatch i ["(":ss] = i >= 0 && parensMatch (i+1) ss
-		parensMatch i [")":ss] = i >= 0 && parensMatch (i-1) ss
-		parensMatch i [_:ss]   = i >= 0 && parensMatch i     ss
+		toStrPriority p = case print False p of [] = ""; ss = concat [" ":ss]
 
 		distance
 			| orgsearch == ""

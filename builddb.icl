@@ -201,17 +201,17 @@ where
 	| f t ut	= unigroups` ts [([a:ns],ut):groups]
 	| otherwise = unigroups` ts [(ns,ut):unigroups` [(a,t)] groups]
 
-(<+) infixr 5 :: a b -> [String] | print a & print b
-(<+) a b = print a ++ print b
+(--) infixr 5 :: a b -> [String] | print a & print b
+(--) a b = print False a ++ print False b
 
 join :: a [b] -> [String] | print a & print b
 join _ [] = []
-join a [b:[]] = print b
-join a [b:bs] = b <+ a <+ join a bs
+join a [b:[]] = print False b
+join a [b:bs] = b -- a -- join a bs
 
 alignl :: Int a -> [String] | print a
 alignl i s
-# s = print s
+# s = print False s
 # len = sum (map size s)
 | len >= i = s
 | otherwise = s ++ [{' ' \\ i <- [0..i-len]}]

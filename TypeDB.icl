@@ -135,19 +135,6 @@ findType` f {typemap} = toList $ filterWithKey f typemap
 searchExact :: Type TypeDB -> [(FunctionLocation, ExtendedType)]
 searchExact t db = filter ((\(ET t` _)->t==t`) o snd) $ toList db.functionmap
 
-searchUnifiable :: Type TypeDB
-        -> [(FunctionLocation, ExtendedType, [TVAssignment], [TVAssignment])]
-searchUnifiable t db = search` $ toList db.functionmap
-where
-    search` :: [(FunctionLocation,ExtendedType)]
-            -> [(FunctionLocation,ExtendedType,[TVAssignment],[TVAssignment])]
-    search` [] = []
-    search` [(l,ET t` tes):list]
-    # tvas = unify [] t t`
-    | isNothing tvas = search` list
-    # (tvas1,tvas2) = fromJust tvas
-    = [(l,ET t` tes,tvas1,tvas2):search` list]
-
 newDb :: TypeDB
 newDb = zero
 

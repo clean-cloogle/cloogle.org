@@ -155,7 +155,7 @@ where
 
 	search :: !Request !TypeDB -> [Result]
 	search {unify,name,modules,page} db
-		# mbType = parseType (fromString unify)
+		# mbType = prepare_unification True <$> parseType (fromString unify)
 		// Search normal functions
 		# filts = catMaybes $ [ (\t _ -> isUnifiable t) <$> mbType
 		                      , pure (\loc _ ->
@@ -204,7 +204,8 @@ where
 		    }
 		  , { func     = fname +++ toStrPriority tes.te_priority +++
 		                 " :: " +++ concat (print False type)
-		    , unifier  = toStrUnifier <$> (orgsearchtype >>= unify [] type)
+		    , unifier  = toStrUnifier <$> finish_unification
+				<$> (orgsearchtype >>= unify [] type)
 		    , cls      = mbCls
 		    }
 		  )
@@ -220,7 +221,8 @@ where
 			| orgsearch == ""
 				| isNothing orgsearchtype = 0
 				# orgsearchtype = fromJust orgsearchtype
-				# (Just (ass1, ass2)) = unify [] orgsearchtype type
+				# (Just (ass1, ass2)) = finish_unification
+					<$> unify [] orgsearchtype (prepare_unification False type)
 				= sum [typeComplexity t \\ (_,t)<-ass1 ++ ass2 | not (isVar t)]
 			# levdist = levenshtein fname orgsearch
 			= if (indexOf orgsearch fname == -1) 0 -100 + levdist
@@ -237,7 +239,7 @@ where
 	                              $ reverse $ fromString mod) +++ ".dcl"
 
 	isUnifiable :: Type ExtendedType -> Bool
-	isUnifiable t1 (ET t2 _) = isJust (unify [] t1 t2)
+	isUnifiable t1 (ET t2 _) = isJust (unify [] t1 (prepare_unification False t2))
 
 	isNameMatch :: !Int !String FunctionLocation -> Bool
 	isNameMatch maxdist n1 (FL _ _ n2)

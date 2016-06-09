@@ -70,8 +70,6 @@ findType` :: (TypeLocation TypeDef -> Bool) TypeDB
 		-> [(TypeLocation, TypeDef)]
 
 searchExact :: Type TypeDB -> [(FunctionLocation, ExtendedType)]
-searchUnifiable :: Type TypeDB
-        -> [(FunctionLocation, ExtendedType, [TVAssignment], [TVAssignment])]
 
 newDb :: TypeDB
 openDb :: *File -> *(Maybe TypeDB, *File)

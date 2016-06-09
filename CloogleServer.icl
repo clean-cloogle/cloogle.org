@@ -27,8 +27,8 @@ import Levenshtein
 
 :: OldMaybe a :== 'SimpleTCPServer'.Maybe a
 
-:: Request = { unify   :: String
-             , name    :: String
+:: Request = { unify   :: Maybe String
+             , name    :: Maybe String
              , modules :: Maybe [String]
              , page    :: Maybe Int
              }
@@ -72,8 +72,8 @@ derive JSONDecode Request, Response, Result, ClassResult, BasicResult,
 
 instance zero Request
 where
-	zero = { unify   = ""
-	       , name    = ""
+	zero = { unify   = Nothing
+	       , name    = Nothing
 	       , modules = Nothing
 	       , page    = Nothing
 	       }
@@ -126,14 +126,15 @@ where
 	handle :: !TypeDB !(Maybe Request) !*World -> *(!Response, !*World)
 	handle _ Nothing w = (err E_INVALIDINPUT "Couldn't parse input", w)
 	handle db (Just request=:{unify,name,modules,page}) w
-		| size name > 40 = (err E_NAMETOOLONG "function name too long", w)
+		| isJust name && size (fromJust name) > 40
+			= (err E_NAMETOOLONG "function name too long", w)
 		// Results
 		# drop_n = fromJust (page <|> pure 0) * MAX_RESULTS
 		# results = drop drop_n $ sort $ search request db
 		# more = max 0 (length results - MAX_RESULTS)
 		# results = take MAX_RESULTS results
 		// Suggestions
-		# mbType = parseType (fromString unify)
+		# mbType = unify >>= parseType o fromString
 		# suggestions
 			= filter ((<)(length results) o snd) <$> (mbType >>= flip suggs db)
 		// Response
@@ -149,24 +150,23 @@ where
 	suggs :: !Type !TypeDB -> Maybe [(String, Int)]
 	suggs (Func is r cc) db
 		| length is < 3 = Just [let t` = concat $ print False $ Func is` r cc in
-		                        (t`, length $ search {zero & unify=t`} db)
+		                        (t`, length $ search {zero & unify=Just t`} db)
 		                        \\ is` <- permutations is | is` <> is]
 	suggs _ _ = Nothing
 
 	search :: !Request !TypeDB -> [Result]
 	search {unify,name,modules,page} db
-		# mbType = prepare_unification True <$> parseType (fromString unify)
+		# mbType = prepare_unification True <$> (unify >>= parseType o fromString)
 		// Search normal functions
 		# filts = catMaybes $ [ (\t _ -> isUnifiable t) <$> mbType
-		                      , pure (\loc _ ->
-		                        isNameMatch (size name-2) name loc)
+		                      , (\n loc _ -> isNameMatch (size n-2) n loc) <$> name
 		                      , isModMatchF <$> modules
 		                      ]
 		# funs = map (makeFunctionResult name mbType Nothing) $ findFunction`` filts db
 		// Search class members
 		# filts = catMaybes $ [ (\t _ _ _->isUnifiable t) <$> mbType
-		                      , pure (\(CL lib mod _) _ f _ ->
-		                        isNameMatch (size name-2) name (FL lib mod f))
+		                      , (\n (CL lib mod _) _ f _ -> isNameMatch
+		                        (size n-2) n (FL lib mod f)) <$> name
 		                      , isModMatchC <$> modules
 		                      ]
 		# members = findClassMembers`` filts db
@@ -176,7 +176,7 @@ where
 		# types = if (isJust mbType && isType (fromJust mbType))
 			(let (Type name _) = fromJust mbType in findType name db)
 			[]
-		# types = if (isNothing mbType) (findType name db) types
+		# types = if (isNothing mbType && isJust name) (findType (fromJust name) db) types
 		# types = map (\(tl,td) -> makeTypeResult tl td) types
 		// Merge results
 		= sort $ funs ++ members ++ types
@@ -192,7 +192,7 @@ where
 		  , { type = concat $ print False td }
 		  )
 
-	makeFunctionResult :: String (Maybe Type) (Maybe ClassResult)
+	makeFunctionResult :: (Maybe String) (Maybe Type) (Maybe ClassResult)
 	              (FunctionLocation, ExtendedType) -> Result
 	makeFunctionResult
 		orgsearch orgsearchtype mbCls (FL lib mod fname, ET type tes)
@@ -218,12 +218,13 @@ where
 		toStrPriority p = case print False p of [] = ""; ss = concat [" ":ss]
 
 		distance
-			| orgsearch == ""
+			| isNothing orgsearch || (fromJust orgsearch == "")
 				| isNothing orgsearchtype = 0
 				# orgsearchtype = fromJust orgsearchtype
 				# (Just (ass1, ass2)) = finish_unification
 					<$> unify [] orgsearchtype (prepare_unification False type)
 				= sum [typeComplexity t \\ (_,t)<-ass1 ++ ass2 | not (isVar t)]
+			# orgsearch = fromJust orgsearch
 			# levdist = levenshtein fname orgsearch
 			= if (indexOf orgsearch fname == -1) 0 -100 + levdist
 		where

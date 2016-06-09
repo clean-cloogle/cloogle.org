@@ -18,9 +18,17 @@ if($_SERVER['REQUEST_METHOD'] !== 'GET'){
 		"msg" => "GET variable 'str' should be set"));
 } else {
 	$str = array_map('trim', explode('::', $_GET['str']));
-	$name = $str[0];
-	$unify = isset($str[1]) ? $str[1] : '';
-	$command = ['name' => $name, 'unify' => $unify];
+	$name = trim($str[0]);
+	$unify = isset($str[1]) ? trim($str[1]) : '';
+	$command = [];
+
+	if ($name != '') {
+		$command['name'] = $name;
+	}
+
+	if ($unify != '') {
+		$command['unify'] = $unify;
+	}
 
 	if (isset($_GET['mod'])) {
 		$command['modules'] = explode(',', $_GET['mod']);

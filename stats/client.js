@@ -68,7 +68,8 @@ function addConnectionCallbacks(connection) {
 	connection.onmessage = function(msg) {
 		console.log(msg.data);
 		var req = JSON.parse(msg.data);
-		var query = req.name + (req.unify ? ' :: ' + req.unify : '');
+		var query = (req.name ? req.name : '') +
+			(req.unify ? ' :: ' + req.unify : '');
 		console.log(query);
 
 		if (searches.length == 0 || !is_open_message) {

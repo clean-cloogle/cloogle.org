@@ -1,6 +1,3 @@
-var form_str = document.getElementById('search_str');
-var sform = document.getElementById('search_form');
-var sresults = document.getElementById('search_results');
 var refresh_on_hash = true;
 
 function getResults(str, page) {
@@ -158,36 +155,4 @@ function escapeJS(s) {
 			case '\u2029': return '\\u2029';
 		}
 	});
-}
-
-function formsubmit() {
-	if (form_str.value === '') {
-		sresults.innerHTML = 'Can\'t search for the empty string';
-	} else {
-		sresults.innerHTML = '<div id="page-0"></div>';
-		getResults(form_str.value, 0);
-	}
-	return false;
-};
-
-window.onload = function() {
-	sform.onsubmit = formsubmit;
-	var str = decodeURIComponent(document.location.hash);
-	if(str !== ''){
-		str = str.substring(1);
-		form_str.value = decodeURIComponent(str);
-		formsubmit();
-	}
-
-	document.getElementById('search_str').focus();
-}
-
-window.onhashchange = function() {
-	if (!refresh_on_hash) {
-		refresh_on_hash = true;
-	} else {
-		var str = decodeURIComponent(document.location.hash);
-		form_str.value = str.substring(1);
-		formsubmit();
-	}
 }

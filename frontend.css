@@ -1,0 +1,57 @@
+#helptext code {
+	background-color: #f9f2f4;
+	font-size: 90%;
+	padding: 1px 4px;
+}
+
+a.hidden {
+	text-decoration: none;
+}
+
+#suggestions {
+	margin: 10px 0;
+}
+
+#search_str_container {
+	margin-bottom: 1em;
+	position: relative;
+}
+
+.search_str {
+	font-family: monospace;
+	font-size: 12px;
+	font-weight: bold;
+	left: 0;
+	line-height: 1.5em;
+	position: absolute;
+	top: 0;
+}
+
+.search_str * {
+	font-weight: bold !important;
+}
+
+#search_str_highlight {
+	margin: 0;
+	padding: 3px;
+}
+
+#search_str {
+	background-color: transparent;
+	color: transparent;
+	cursor: text !important;
+}
+
+@keyframes caret {
+	0%   { border-left-color: black; }
+	49%  { border-left-color: black; }
+	50%  { border-left-color: transparent; }
+	100% { border-left-color: transparent; }
+}
+
+.search_str #caret {
+	animation: caret 1s infinite;
+	border-left: 1px solid black;
+	height: 16px;
+	position: absolute;
+}

@@ -3,10 +3,7 @@ function highlight(lex, istr) {
 
 	for (var group in lex) {
 		for (var i in lex[group]) {
-			lex[group][i][0] = new RegExp(
-					/^/.source +
-					lex[group][i][0].source +
-					/([\s\S]*)/.source);
+			lex[group][i][0] = new RegExp(/^/.source + lex[group][i][0].source);
 		}
 	}
 
@@ -20,11 +17,13 @@ function highlight(lex, istr) {
 			if (istr.match(patt)) {
 				var parts = patt.exec(istr);
 				var j = 0;
+				var consumed = 0;
 				for (var k in clss) {
 					j++;
 					out.push({'class': clss[k], 'str': parts[j]});
+					consumed += parts[j].length;
 				}
-				istr = parts[j+1];
+				istr = istr.substring(consumed);
 
 				found = true;
 				if (lex[state][i].length > 2) {

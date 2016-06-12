@@ -5,33 +5,11 @@
 	<title>Cloogle</title>
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
-	<script src="api.js" type="text/javascript" defer="defer"></script>
 	<script src="clean.js" type="text/javascript" defer="defer"></script>
+	<script src="api.js" type="text/javascript" defer="defer"></script>
+	<script src="frontend.js" type="text/javascript" defer="defer"></script>
 	<link rel="stylesheet" href="clean.css" type="text/css"/>
-	<script type="text/javascript">
-		function toggle(name) {
-			var e = document.getElementById(name);
-			if (e.style.display=="block")
-				e.style.display="none";
-			else
-				e.style.display="block";
-		}
-	</script>
-	<style type="text/css">
-		#helptext code {
-			background-color: #f9f2f4;
-			font-size: 90%;
-			padding: 1px 4px;
-		}
-
-		a.hidden {
-			text-decoration: none;
-		}
-
-		#suggestions {
-			margin: 10px 0;
-		}
-	</style>
+	<link rel="stylesheet" href="frontend.css" type="text/css"/>
 </head>
 <body>
 	<p>
@@ -53,16 +31,12 @@
 		</p>
 	</div>
 	<form id="search_form" action="#">
-		<table>
-			<tr>
-				<td colspan="3">
-					<input type="text" id="search_str" placeholder="fix :: (a -> a) -> a" />
-				</td>
-			</tr>
-			<tr>
-				<td><input type="submit" value="Search" /></td><td></td><td></td>
-			</tr>
-		</table>
+		<div id="search_str_container">
+			<pre id="search_str_highlight" class="search_str"></pre>
+			<input type="text" id="search_str" class="search_str" placeholder="fix :: (a -> a) -> a" />
+			<br style="clear:both;"/>
+		</div>
+		<input type="submit" value="Search"/>
 	</form>
 	<div id="search_results"></div>
 </body>

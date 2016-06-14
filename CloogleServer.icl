@@ -218,7 +218,7 @@ where
 		toStrPriority p = case print False p of [] = ""; ss = concat [" ":ss]
 
 		distance
-			| isNothing orgsearch || (fromJust orgsearch == "")
+			| isNothing orgsearch || fromJust orgsearch == ""
 				| isNothing orgsearchtype = 0
 				# orgsearchtype = fromJust orgsearchtype
 				# (Just (ass1, ass2)) = finish_unification

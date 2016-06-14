@@ -205,7 +205,7 @@ where
 		  , { func     = fname +++ toStrPriority tes.te_priority +++
 		                 " :: " +++ concat (print False type)
 		    , unifier  = toStrUnifier <$> finish_unification
-				<$> (orgsearchtype >>= unify [] type)
+				<$> (orgsearchtype >>= unify [] (prepare_unification False type))
 		    , cls      = mbCls
 		    }
 		  )

@@ -14,7 +14,8 @@ import Text.JSON
 import Data.Functor
 import Control.Applicative
 import Control.Monad
-from Text import class Text(concat,trim,indexOf), instance Text String
+from Text import class Text(concat,trim,indexOf,toLowerCase),
+	instance Text String
 
 import System.Time
 
@@ -173,21 +174,24 @@ where
 		# members = map (\(CL lib mod cls,vs,f,et) -> makeFunctionResult name mbType
 			(Just {cls_name=cls,cls_vars=vs}) (FL lib mod f,et)) members
 		// Search types
-		# types = if (isJust mbType && isType (fromJust mbType))
-			(let (Type name _) = fromJust mbType in findType name db)
-			[]
-		# types = if (isNothing mbType && isJust name) (findType (fromJust name) db) types
-		# types = map (\(tl,td) -> makeTypeResult tl td) types
+		# lcTypeName = if (isJust mbType && isType (fromJust mbType))
+			(let (Type name _) = fromJust mbType in Just $ toLowerCase name)
+			(toLowerCase <$> name)
+		# types = case lcTypeName of
+			(Just n) = findType` (\(TL _ _ t) _ -> toLowerCase t == n) db
+			Nothing  = []
+		# types = map (\(tl,td) -> makeTypeResult name tl td) types
 		// Merge results
 		= sort $ funs ++ members ++ types
 
-	makeTypeResult :: TypeLocation TypeDef -> Result
-	makeTypeResult (TL lib mod _) td
+	makeTypeResult :: (Maybe String) TypeLocation TypeDef -> Result
+	makeTypeResult mbName (TL lib mod t) td
 		= TypeResult
 		  ( { library  = lib
 		    , filename = modToFilename mod
 		    , modul    = mod
-		    , distance = -100
+		    , distance
+				= if (isNothing mbName) -100 (levenshtein` t (fromJust mbName))
 		    }
 		  , { type = concat $ print False td }
 		  )
@@ -225,8 +229,7 @@ where
 					<$> unify [] orgsearchtype (prepare_unification False type)
 				= sum [typeComplexity t \\ (_,t)<-ass1 ++ ass2 | not (isVar t)]
 			# orgsearch = fromJust orgsearch
-			# levdist = levenshtein fname orgsearch
-			= if (indexOf orgsearch fname == -1) 0 -100 + levdist
+			= levenshtein` orgsearch fname
 		where
 			typeComplexity :: Type -> Int
 			typeComplexity (Type _ ts) = foldr ((+) o typeComplexity) 1 ts
@@ -234,6 +237,9 @@ where
 			typeComplexity (Var _) = 1
 			typeComplexity (Cons _ ts) = foldr ((+) o typeComplexity) 1 ts
 			typeComplexity (Uniq t) = 3 + typeComplexity t
+
+	levenshtein` :: String String -> Int
+	levenshtein` a b = if (indexOf a b == -1) 0 -100 + levenshtein a b
 
 	modToFilename :: String -> String
 	modToFilename mod = (toString $ reverse $ takeWhile ((<>)'.')

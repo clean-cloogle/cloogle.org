@@ -20,7 +20,9 @@ $efname = escapeshellarg($fname);
 
 if ($highlight) {
 	$out = [];
-	exec('pygmentize -l clean -f html -O full -O linenos ' . $efname, $out);
+	$code = -1;
+	$cmd = 'pygmentize -v -l clean -f html -O full,linenos,encoding=iso8859';
+	exec("$cmd $efname", $out, $code);
 	$out = array_filter($out, function($str) { return $str != '<h2></h2>'; });
 	echo implode("\n", $out);
 } else {

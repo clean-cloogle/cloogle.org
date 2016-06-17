@@ -137,7 +137,9 @@ where
 		// Suggestions
 		# mbType = unify >>= parseType o fromString
 		# suggestions
-			= filter ((<)(length results) o snd) <$> (mbType >>= flip suggs db)
+			= sortBy (\a b -> snd a > snd b) <$>
+			  filter ((<)(length results) o snd) <$>
+			  (mbType >>= flip suggs db)
 		// Response
 		| isEmpty results = (err E_NORESULTS "No results", w)
 		= ( { return = 0
@@ -150,26 +152,27 @@ where
 
 	suggs :: !Type !TypeDB -> Maybe [(String, Int)]
 	suggs (Func is r cc) db
-		| length is < 3 = Just [let t` = concat $ print False $ Func is` r cc in
-		                        (t`, length $ search {zero & unify=Just t`} db)
-		                        \\ is` <- permutations is | is` <> is]
+		| length is < 3
+			= Just [let t` = concat $ print False $ Func is` r cc in
+			            (t`, length $ search {zero & unify=Just t`} db)
+			        \\ is` <- permutations is | is` <> is]
 	suggs _ _ = Nothing
 
 	search :: !Request !TypeDB -> [Result]
 	search {unify,name,modules,page} db
 		# mbType = prepare_unification True <$> (unify >>= parseType o fromString)
 		// Search normal functions
-		# filts = catMaybes $ [ (\t _ -> isUnifiable t) <$> mbType
-		                      , (\n loc _ -> isNameMatch (size n-2) n loc) <$> name
-		                      , isModMatchF <$> modules
-		                      ]
+		# filts = catMaybes [ (\t _ -> isUnifiable t) <$> mbType
+		                    , (\n loc _ -> isNameMatch (size n-2) n loc) <$> name
+		                    , isModMatchF <$> modules
+		                    ]
 		# funs = map (makeFunctionResult name mbType Nothing) $ findFunction`` filts db
 		// Search class members
-		# filts = catMaybes $ [ (\t _ _ _->isUnifiable t) <$> mbType
-		                      , (\n (CL lib mod _) _ f _ -> isNameMatch
-		                        (size n-2) n (FL lib mod f)) <$> name
-		                      , isModMatchC <$> modules
-		                      ]
+		# filts = catMaybes [ (\t _ _ _->isUnifiable t) <$> mbType
+		                    , (\n (CL lib mod _) _ f _ -> isNameMatch
+		                      (size n-2) n (FL lib mod f)) <$> name
+		                    , isModMatchC <$> modules
+		                    ]
 		# members = findClassMembers`` filts db
 		# members = map (\(CL lib mod cls,vs,f,et) -> makeFunctionResult name mbType
 			(Just {cls_name=cls,cls_vars=vs}) (FL lib mod f,et)) members
@@ -191,7 +194,7 @@ where
 		    , filename = modToFilename mod
 		    , modul    = mod
 		    , distance
-				= if (isNothing mbName) -100 (levenshtein` t (fromJust mbName))
+		        = if (isNothing mbName) -100 (levenshtein` t (fromJust mbName))
 		    }
 		  , { type = concat $ print False td }
 		  )
@@ -208,8 +211,8 @@ where
 		    }
 		  , { func     = fname +++ toStrPriority tes.te_priority +++
 		                 " :: " +++ concat (print False type)
-		    , unifier  = toStrUnifier <$> finish_unification
-				<$> (orgsearchtype >>= unify [] (prepare_unification False type))
+		    , unifier  = toStrUnifier <$> finish_unification <$>
+		        (orgsearchtype >>= unify [] (prepare_unification False type))
 		    , cls      = mbCls
 		    }
 		  )
@@ -225,18 +228,18 @@ where
 			| isNothing orgsearch || fromJust orgsearch == ""
 				| isNothing orgsearchtype = 0
 				# orgsearchtype = fromJust orgsearchtype
-				# (Just (ass1, ass2)) = finish_unification
-					<$> unify [] orgsearchtype (prepare_unification False type)
-				= sum [typeComplexity t \\ (_,t)<-ass1 ++ ass2 | not (isVar t)]
+				# (Just (ass1, ass2)) = finish_unification <$>
+					unify [] orgsearchtype (prepare_unification False type)
+				= toInt $ sum [typeComplexity t \\ (_,t)<-ass1 ++ ass2 | not (isVar t)]
 			# orgsearch = fromJust orgsearch
 			= levenshtein` orgsearch fname
 		where
-			typeComplexity :: Type -> Int
-			typeComplexity (Type _ ts) = foldr ((+) o typeComplexity) 1 ts
-			typeComplexity (Func is _ _) = foldr ((+) o typeComplexity) 5 is
-			typeComplexity (Var _) = 1
-			typeComplexity (Cons _ ts) = foldr ((+) o typeComplexity) 1 ts
-			typeComplexity (Uniq t) = 3 + typeComplexity t
+			typeComplexity :: Type -> Real
+			typeComplexity (Type _ ts) = 1.2 * foldr ((+) o typeComplexity) 1.0 ts
+			typeComplexity (Func is r _) = 2.0 * foldr ((+) o typeComplexity) 1.0 [r:is]
+			typeComplexity (Var _) = 1.0
+			typeComplexity (Cons _ ts) = 1.2 * foldr ((+) o typeComplexity) 1.0 ts
+			typeComplexity (Uniq t) = 3.0 + typeComplexity t
 
 	levenshtein` :: String String -> Int
 	levenshtein` a b = if (indexOf a b == -1) 0 -100 + levenshtein a b

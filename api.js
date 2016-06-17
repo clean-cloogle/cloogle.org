@@ -106,8 +106,9 @@ function getResults(str, page) {
 					elem.innerHTML += makeResultHTML(c);
 				}
 
+				var par = elem.parentNode
 				if (responsedata['more_available'] != 0) {
-					elem.parentNode.innerHTML += '<div id="page-' + (page+1) + '">' +
+					par.innerHTML += '<div id="page-' + (page+1) + '">' +
 						'<p id="more"><a href="javascript:getResults(\'' +
 							escapeJS(str) + '\',' + (page+1) +
 						')">' + responsedata['more_available'] + ' more...</a></p>' +
@@ -116,9 +117,9 @@ function getResults(str, page) {
 
 				if ('suggestions' in responsedata &&
 						responsedata['suggestions'].length > 0) {
-					elem.parentNode.innerHTML =
+					par.innerHTML =
 						makeSuggestions(responsedata['suggestions'])
-						+ elem.parentNode.innerHTML;
+						+ par.innerHTML;
 				}
 			} else {
 				elem.innerHTML =

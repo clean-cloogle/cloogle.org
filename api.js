@@ -42,15 +42,17 @@ function getResults(str, page) {
 		var basic = result[1][0];
 		var specific = result[1][1];
 
-		var viewUrl =
+		var dclUrl =
 			'src/view.php?lib=' + encodeURIComponent(basic['library']) +
 			'&mod=' + encodeURIComponent(basic['modul']) +
 			'&hl';
+		var iclUrl = dclUrl + '&icl';
 
 		var basicData = [
 			['Library',  basic['library']],
-			['Filename', '<a href="' + viewUrl + '" target="_blank">' + 
-				basic['filename'] + '</a>'],
+			['Filename', '<a href="' + dclUrl + '" target="_blank">' +
+				basic['filename'] +
+				'</a> (<a href="' + iclUrl + '" target="_blank">icl</a>)'],
 			['Module',   basic['modul']],
 			['Distance', basic['distance']]
 		];

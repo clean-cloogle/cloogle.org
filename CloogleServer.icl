@@ -104,6 +104,7 @@ err c m = { return         = c
 E_NORESULTS :== 127
 E_INVALIDINPUT :== 128
 E_NAMETOOLONG :== 129
+E_INVALIDTYPE :== 130
 
 MAX_RESULTS :== 15
 
@@ -129,6 +130,8 @@ where
 	handle db (Just request=:{unify,name,modules,page}) w
 		| isJust name && size (fromJust name) > 40
 			= (err E_NAMETOOLONG "function name too long", w)
+		| isJust unify && isNothing (parseType $ fromString $ fromJust unify)
+			= (err E_INVALIDTYPE "couldn't parse type", w)
 		// Results
 		# drop_n = fromJust (page <|> pure 0) * MAX_RESULTS
 		# results = drop drop_n $ sort $ search request db

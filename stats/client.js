@@ -11,7 +11,13 @@ function updateSearches() {
 	query = searches[0];
 	console.log(query);
 	var last = document.getElementById('last-search');
-	last.innerHTML = '<pre>' + highlightFunction(query) + '</pre>';
+
+	var highlighter = highlightFunction;
+	if (query.substring(0,6) == 'class ') {
+		highlighter = highlightClassDef;
+	}
+
+	last.innerHTML = '<pre>' + highlighter(query) + '</pre>';
 	last.innerHTML += '<div class="time">' + new Date().timeNow(true) + '</div>';
 
 	var previous = document.getElementById('previous-searches');
@@ -70,6 +76,9 @@ function addConnectionCallbacks(connection) {
 		var req = JSON.parse(msg.data);
 		var query = (req.name ? req.name : '') +
 			(req.unify ? ' :: ' + req.unify : '');
+		if ('className' in req) {
+			query = 'class ' + req.className;
+		}
 		console.log(query);
 
 		if (searches.length == 0 || !is_open_message) {

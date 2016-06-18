@@ -14,6 +14,20 @@ frontends:
 - Search for function/operator/class member names.
 - Search for function types.
 - Search for type definitions.
+- Search for class definitions.
+
+---
+
+### Contents
+
+- [Setup](#how-to-setup)
+- [API specification of the PHP wrapper](#api-specification-for-developers)
+- [API specification of the Clean backend](#talking-with-the-clean-backend-directly)
+- [Live statistics](#live-statistics)
+- [Authors](#authors)
+- [Licence](#licence)
+
+---
 
 ### How to setup
 
@@ -106,6 +120,9 @@ script described above. The error codes above 150 are specific to the script
 and cannot be returned by the Clean backend.
 
 ### Live statistics
+The live version's statistics page is at
+[cloogle.org/stats](http://cloogle.org/stats).
+
 There is a possibility to set up a web page that shows live statistics.
 Currently, only the last few searches are shown. For this, you need to have
 `nodejs` installed. Then do:

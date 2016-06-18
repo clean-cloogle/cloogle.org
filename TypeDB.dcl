@@ -19,7 +19,11 @@ derive gEq TypeDB
 :: FunctionLocation = FL Library Module FunctionName
 instance print FunctionLocation
 
-:: TypeExtras = { te_priority :: Maybe TE_Priority }
+:: TypeExtras = { te_priority :: Maybe TE_Priority
+                , te_isconstructor :: Bool
+                }
+instance zero TypeExtras
+
 :: TE_Priority = LeftAssoc Int | RightAssoc Int | NoAssoc Int
 instance print TE_Priority
 

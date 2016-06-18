@@ -28,7 +28,9 @@ function getResults(str, page) {
 	function makeTable(d) {
 		var html = '<table>';
 		for (i in d) {
-			if (d[i].length == 2) {
+			if (d[i].length == 1) {
+				html += '<tr><td colspan="2">' + d[i][0] + '</td></tr>';
+			} else if (d[i].length == 2) {
 				html += '<tr><th>' + d[i][0] + ': </th><td>' +
 					d[i][1] + '</td></tr>';
 			}
@@ -59,7 +61,15 @@ function getResults(str, page) {
 
 		switch (kind) {
 			case 'FunctionResult':
-				specificData = [
+				specificData = [];
+				if ('constructor_of' in specific) {
+					specificData.push([
+						'This function is a type constructor of <code>' +
+						highlightFunction(':: ' + specific['constructor_of'],
+							highlightCallback) + '</code>.'
+					]);
+				}
+				specificData.push(
 					('cls' in specific ?
 						[ 'Class', specific['cls']['cls_name'] + ' ' +
 						  specific['cls']['cls_vars'].join(' ')] :
@@ -69,7 +79,7 @@ function getResults(str, page) {
 						 specific['unifier'][1].length > 0) ?
 						['Unifier', makeUnifier(specific['unifier'])] :
 						[])
-				];
+				);
 				return '<hr/>' +
 					makeTable(basicData.concat(specificData)) +
 					'<code>' + highlightFunction(specific['func'], highlightCallback) + '</code>';

@@ -43,6 +43,12 @@ instance < ClassLocation where (<) (CL a b c) (CL d e f) = (a,b,c) < (d,e,f)
 
 instance < TypeLocation where (<) (TL a b c) (TL d e f) = (a,b,c) < (d,e,f)
 
+instance zero TypeExtras
+where
+	zero = { te_priority = Nothing
+	       , te_isconstructor = False
+	       }
+
 instance print TE_Priority
 where
 	print _ (LeftAssoc i)  = "infixl " -- i

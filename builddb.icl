@@ -2,7 +2,7 @@ module builddb
 
 // Project libraries
 import qualified TypeDB as DB
-from TypeDB import ::TypeExtras{..}
+from TypeDB import ::TypeExtras{..}, instance zero TypeExtras
 
 // StdEnv
 import StdFile, StdList, StdMisc, StdArray, StdBool, StdString, StdTuple
@@ -20,19 +20,26 @@ import CoclUtils
 // frontend
 //import Heap, compile, parse, predef
 import Heap
-from hashtable import ::HashTable, ::QualifiedIdents(NoQualifiedIdents), ::IdentClass(IC_Module), ::BoxedIdent{..}, putIdentInHashTable
+from hashtable import ::HashTable, ::QualifiedIdents(NoQualifiedIdents),
+	::IdentClass(IC_Module), ::BoxedIdent{..}, putIdentInHashTable
 from predef import init_identifiers
 from compile import empty_cache, ::DclCache{hash_table}
 from general import ::Optional(..)
-from syntax import ::SymbolTable, ::SymbolTableEntry, ::Ident{..}, ::SymbolPtr, ::Position(NoPos), ::Module{mod_ident,mod_defs}, ::ParsedDefinition(PD_TypeSpec,PD_Instance,PD_Class,PD_Type), ::FunSpecials, ::Priority, ::ParsedModule, ::SymbolType, ::ParsedInstanceAndMembers{..}, ::ParsedInstance{pi_ident,pi_types}, ::Type, ::ClassDef{class_ident,class_args}, ::TypeVar, ::ParsedTypeDef, ::TypeDef
+from syntax import ::SymbolTable, ::SymbolTableEntry, ::Ident{..}, ::SymbolPtr,
+	::Position(NoPos), ::Module{mod_ident,mod_defs},
+	::ParsedDefinition(PD_TypeSpec,PD_Instance,PD_Class,PD_Type),
+	::FunSpecials, ::Priority, ::ParsedModule, ::SymbolType,
+	::ParsedInstanceAndMembers{..}, ::ParsedInstance{pi_ident,pi_types},
+	::Type, ::ClassDef{class_ident,class_args}, ::TypeVar, ::ParsedTypeDef,
+	::TypeDef
 from scanner import ::Priority(..), ::Assoc(..)
 from parse import wantModule
 
-:: CLI = {
-	help :: Bool,
-	version :: Bool,
-	root :: String,
-	libs :: [String]}
+:: CLI = { help :: Bool
+         , version :: Bool
+         , root :: String
+         , libs :: [String]
+         }
 
 instance zero CLI where
 	zero = { version = False
@@ -145,7 +152,9 @@ getModuleTypes root mod lib cache db w
 # db = 'DB'.putFunctions (pd_typespecs lib mod pm.mod_defs) db
 # db = 'DB'.putInstancess (pd_instances pm.mod_defs) db
 # db = 'DB'.putClasses (pd_classes lib mod pm.mod_defs) db
-# db = 'DB'.putTypes (pd_types lib mod pm.mod_defs) db
+# typedefs = pd_types lib mod pm.mod_defs
+# db = 'DB'.putTypes typedefs db
+# db = 'DB'.putFunctions (flatten $ map constructor_functions typedefs) db
 = (db,cache,w)
 where
 	mkdir :: String -> String
@@ -162,10 +171,12 @@ where
 				= take (length lib - length mod - 1) lib
 			= lib
 
-	pd_typespecs :: String String [ParsedDefinition] -> [('DB'.FunctionLocation, 'DB'.ExtendedType)]
+	pd_typespecs :: String String [ParsedDefinition]
+		-> [('DB'.FunctionLocation, 'DB'.ExtendedType)]
 	pd_typespecs lib mod pds
-		= [('DB'.FL lib mod id_name, 'DB'.ET ('T'.toType t) {te_priority=toPrio p})
-		   \\ PD_TypeSpec pos id=:{id_name} p (Yes t) funspecs <- pds]
+		= [( 'DB'.FL lib mod id_name
+		   , 'DB'.ET ('T'.toType t) {zero & te_priority=toPrio p}
+		   ) \\ PD_TypeSpec pos id=:{id_name} p (Yes t) funspecs <- pds]
 	where
 		toPrio :: Priority -> Maybe 'DB'.TE_Priority
 		toPrio (Prio LeftAssoc i)  = Just $ 'DB'.LeftAssoc i
@@ -179,7 +190,8 @@ where
 		   \\ PD_Instance {pim_pi={pi_ident,pi_types}} <- pds]
 
 	pd_classes :: String String [ParsedDefinition]
-		-> [('DB'.ClassLocation, ['T'.TypeVar], [('DB'.FunctionName, 'DB'.ExtendedType)])]
+		-> [('DB'.ClassLocation, ['T'.TypeVar],
+			[('DB'.FunctionName, 'DB'.ExtendedType)])]
 	pd_classes lib mod pds
 	# pds = filter (\pd->case pd of (PD_Class _ _)=True; _=False) pds
 	= map (\(PD_Class {class_ident={id_name},class_args} pds)
@@ -187,34 +199,17 @@ where
 		in ('DB'.CL lib mod id_name, map 'T'.toTypeVar class_args, 
 			[(f,et) \\ ('DB'.FL _ _ f, et) <- typespecs])) pds
 
-	pd_types :: String String [ParsedDefinition] -> [('DB'.TypeLocation, 'DB'.TypeDef)]
+	pd_types :: String String [ParsedDefinition]
+		-> [('DB'.TypeLocation, 'DB'.TypeDef)]
 	pd_types lib mod pds
 		= [('DB'.TL lib mod ('T'.td_name td), td)
 		   \\ PD_Type ptd <- pds, td <- ['T'.toTypeDef ptd]]
 
-unigroups :: (Type Type -> Bool) [(a,Type)] -> [([a],Type)]
-unigroups f ts = unigroups` ts []
-where
-	unigroups` [] groups = groups
-	unigroups` [(a,t):ts] [] = unigroups` ts [([a],t)]
-	unigroups` [(a,t):ts] [(ns,ut):groups]
-	| f t ut	= unigroups` ts [([a:ns],ut):groups]
-	| otherwise = unigroups` ts [(ns,ut):unigroups` [(a,t)] groups]
-
-(--) infixr 5 :: a b -> [String] | print a & print b
-(--) a b = print False a ++ print False b
-
-join :: a [b] -> [String] | print a & print b
-join _ [] = []
-join a [b:[]] = print False b
-join a [b:bs] = b -- a -- join a bs
-
-alignl :: Int a -> [String] | print a
-alignl i s
-# s = print False s
-# len = sum (map size s)
-| len >= i = s
-| otherwise = s ++ [{' ' \\ i <- [0..i-len]}]
+	constructor_functions :: ('DB'.TypeLocation, 'DB'.TypeDef)
+		-> [('DB'.FunctionLocation, 'DB'.ExtendedType)]
+	constructor_functions ('DB'.TL lib mod _, td)
+		= [('DB'.FL lib mod c, 'DB'.ET f {zero & te_isconstructor=True})
+		   \\ (c,f) <- 'T'.constructorsToFunctions td]
 
 wantModule` :: !*File !{#Char} !Bool !Ident !Position !Bool !*HashTable !*File !*Files
 	-> ((!Bool,!Bool,!ParsedModule, !*HashTable, !*File), !*Files)

@@ -54,6 +54,7 @@ import Levenshtein
 :: FunctionResultExtras = { func     :: String
                           , unifier  :: Maybe StrUnifier
                           , cls      :: Maybe ClassResult
+                          , constructor_of :: Maybe String
                           }
 
 :: TypeResult :== (BasicResult, TypeResultExtras)
@@ -217,6 +218,9 @@ where
 		    , unifier  = toStrUnifier <$> finish_unification <$>
 		        (orgsearchtype >>= unify [] (prepare_unification False type))
 		    , cls      = mbCls
+			, constructor_of = if (tes.te_isconstructor)
+				(let (Func _ r _) = type in Just $ concat $ print False r)
+				Nothing
 		    }
 		  )
 	where

@@ -188,7 +188,7 @@ function highlightClassDef(cls, callback, start) {
 		],
 		className: [
 			[/(\s+)/,        ['whitespace']],
-			[/(\S+)/,        ['classname'], 'pop']
+			[/(\S+)/,        ['classname'], 'start']
 		],
 		context: [
 			[/(where)/,      ['keyword']],

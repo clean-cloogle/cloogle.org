@@ -75,8 +75,10 @@ function getResults(str, page) {
 				}
 				specificData.push(
 					('cls' in specific ?
-						[ 'Class', specific['cls']['cls_name'] + ' ' +
-						  specific['cls']['cls_vars'].join(' ')] :
+						[ 'Class', '<code>' +
+						  highlightClassDef(specific['cls']['cls_name'] +
+							  ' ' + specific['cls']['cls_vars'].join(' '),
+							  highlightCallback, 'className') + '</code>'] :
 						[]),
 					('unifier' in specific &&
 						(specific['unifier'][0].length > 0 ||
@@ -114,7 +116,8 @@ function getResults(str, page) {
 				var html = '<hr/>' +
 					makeTable(basicData.concat(specificData)) + '<pre>' +
 					highlightClassDef(
-							'class ' + specific['class_heading'] + ' where',
+							'class ' + specific['class_heading'] +
+							(specific['class_funs'].length > 0 ? ' where' : ''),
 							highlightCallback) +
 					'<br/>';
 				for (var i in specific['class_funs']) {

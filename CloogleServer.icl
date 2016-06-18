@@ -103,6 +103,7 @@ where
 		basic :: Result -> BasicResult
 		basic (FunctionResult (br,_)) = br
 		basic (TypeResult (br,_)) = br
+		basic (ClassResult (br,_)) = br
 
 err :: Int String -> Response
 err c m = { return         = c

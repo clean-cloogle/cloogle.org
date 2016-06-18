@@ -74,13 +74,18 @@ function highlightFunction(func, callback) {
 			[/([a-z][a-zA-Z]*)/, ['typevar']],
 			[/([A-Z]\w*)/,   ['type']],
 			[/(\|)/,         ['punctuation'], 'context'],
-			[/(\W+)/,        ['punctuation']]
+			[/(\W)/,         ['punctuation']]
 		],
 		context: [
 			[/(\s+)/,        ['whitespace']],
 			[/(,)/,          ['punctuation']],
-			[/(\S+)(,)/,     ['classname', 'punctuation']],
-			[/(\S+)/,        ['classname'], 'contextType']
+			[/(\S+)(\{\|)/,  ['generic', 'punctuation'], 'generic'],
+			[/([^\s{]+)(,)/, ['classname', 'punctuation']],
+			[/([^\s{]+)/,    ['classname'], 'contextType']
+		],
+		generic: [
+			[/([*>-]+\|\},)/, ['punctuation'], 'pop'],
+			[/([*>-]+\|\})/, ['punctuation'], 'contextType']
 		],
 		contextType: [
 			[/(\s+)/,        ['whitespace']],

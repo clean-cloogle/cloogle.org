@@ -21,13 +21,13 @@ import Type
 
 derive gEq ClassOrGeneric, FunctionLocation, ClassLocation, Type, TypeDB,
 	TypeExtras, TE_Priority, ExtendedType, TypeDef, TypeLocation, TypeDefRhs,
-	RecordField, Constructor
+	RecordField, Constructor, Kind
 derive JSONEncode ClassOrGeneric, FunctionLocation, ClassLocation, Type,
 	TypeDB, TypeExtras, TE_Priority, ExtendedType, TypeDef, TypeLocation,
-	TypeDefRhs, RecordField, Constructor
+	TypeDefRhs, RecordField, Constructor, Kind
 derive JSONDecode ClassOrGeneric, FunctionLocation, ClassLocation, Type,
 	TypeDB, TypeExtras, TE_Priority, ExtendedType, TypeDef, TypeLocation,
-	TypeDefRhs, RecordField, Constructor
+	TypeDefRhs, RecordField, Constructor, Kind
 
 instance zero TypeDB where zero = { functionmap   = newMap
                                   , classmap      = newMap

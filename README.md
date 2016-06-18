@@ -86,19 +86,21 @@ fields:
 
 - `data`
 
-	An array of search results. A result has the following fields:
+	An array of search results. A result is an array of three elements. The first
+	determines the kind of result. It may be `FunctionResult`, `TypeResult` or
+	`ClassResult`. The second contains general data, in particular the following
+	fields:
 
 	* `library`
 	* `filename`
-	* `func`: the function name and type as a string
-	* `unifier`: a list of two lists of type assignments that represents the
-		unification of the searched type to the found type (only when `unify` is
-		not the empty string)
-	* `cls`: if the function is a class member, this contains `cls_name` and
-		`cls_vars` and represents the class it was found in
 	* `modul`: the module the result was found in (not a typo)
 	* `distance`: the distance measure we use to sort the results (lower is
 		better)
+
+	The third element of the array contains data specific to the kind of result.
+	It is easiest to look in `CloogleServer.icl` at the types
+	`FunctionResultExtras`, `TypeResultExtras` and `ClassResultExtras` to get an
+	idea of the fields that may be returned.
 
 - `more_available`
 
@@ -106,14 +108,23 @@ fields:
 	the number of results that have a higher distance than the last result sent.
 	If there are no more results, this field *may* be zero or may not be present.
 
+- `suggestions`
+
+	If there are similar searches that may return more results, this will be an
+	array of two-tuples with the alternative search and the number of results.
+
 ### Talking with the Clean backend directly
 `CloogleServer` is a TCP server listening on port 31215 (typically). Send a
-JSON request with the following fields:
+JSON request with at least one of the following fields:
 
-* `unify`, the type to search for as a string (or the empty string)
-* `name`, the name of the function to search for (or the empty string)
-* `modules`, a list of names of modules to search in (*optional*)
-* `page`: 0 for the first *n* results, 1 for the next *n*, etc. (*optional*)
+* `unify`, the type to search for as a string.
+* `name`, the name of the function to search for.
+* `className`, the name of the class to search for.
+* `modules`, a list of names of modules to search in.
+* `page`: 0 for the first *n* results, 1 for the next *n*, etc.
+
+All fields are optional. If `className` is present, `unify` and `name` will be
+ignored.
 
 The Clean backend will return a JSON string, similar to the output of the PHP
 script described above. The error codes above 150 are specific to the script

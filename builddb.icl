@@ -30,8 +30,8 @@ from syntax import ::SymbolTable, ::SymbolTableEntry, ::Ident{..}, ::SymbolPtr,
 	::ParsedDefinition(PD_TypeSpec,PD_Instance,PD_Class,PD_Type),
 	::FunSpecials, ::Priority, ::ParsedModule, ::SymbolType,
 	::ParsedInstanceAndMembers{..}, ::ParsedInstance{pi_ident,pi_types},
-	::Type, ::ClassDef{class_ident,class_args}, ::TypeVar, ::ParsedTypeDef,
-	::TypeDef
+	::Type, ::ClassDef{class_ident,class_args,class_context},
+	::TypeVar, ::ParsedTypeDef, ::TypeDef
 from scanner import ::Priority(..), ::Assoc(..)
 from parse import wantModule
 
@@ -190,13 +190,14 @@ where
 		   \\ PD_Instance {pim_pi={pi_ident,pi_types}} <- pds]
 
 	pd_classes :: String String [ParsedDefinition]
-		-> [('DB'.ClassLocation, ['T'.TypeVar],
+		-> [('DB'.ClassLocation, ['T'.TypeVar], 'T'.ClassContext,
 			[('DB'.FunctionName, 'DB'.ExtendedType)])]
 	pd_classes lib mod pds
 	# pds = filter (\pd->case pd of (PD_Class _ _)=True; _=False) pds
-	= map (\(PD_Class {class_ident={id_name},class_args} pds)
+	= map (\(PD_Class {class_ident={id_name},class_args,class_context} pds)
 		-> let typespecs = pd_typespecs lib mod pds
 		in ('DB'.CL lib mod id_name, map 'T'.toTypeVar class_args, 
+		    flatten $ map 'T'.toClassContext class_context,
 			[(f,et) \\ ('DB'.FL _ _ f, et) <- typespecs])) pds
 
 	pd_types :: String String [ParsedDefinition]

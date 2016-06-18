@@ -60,8 +60,8 @@ fields:
 	* `0`: success
 	* `127`: no results
 	* `128`: ununderstandable input (usually shouldn't happen)
-	* `129`: function name too long
-	* `130`: couldn't parse type
+	* `129`: invalid name field
+	* `130`: couldn't parse unify field as a type
 	* `150`: the Clean backend could not be reached
 	* `151`: invalid request type (should use GET)
 	* `152`: no input (GET variable `str` should be set to the search string)

@@ -1,4 +1,4 @@
-function highlight(lex, istr) {
+function highlight(lex, istr, start) {
 	var out = [];
 
 	for (var group in lex) {
@@ -12,6 +12,9 @@ function highlight(lex, istr) {
 
 	var state_stack = [];
 	var state = 'start';
+	if (typeof start != 'undefined') {
+		state = start;
+	}
 	while (true) {
 		var found = false;
 		for (var i in lex[state]) {
@@ -45,8 +48,8 @@ function highlight(lex, istr) {
 	}
 }
 
-function highlightToHTML(lex, istr, callback) {
-	var elems = highlight(lex, istr);
+function highlightToHTML(lex, istr, callback, start) {
+	var elems = highlight(lex, istr, start);
 	var ostr = '';
 	for (var i in elems) {
 		var cls = elems[i]['class'];
@@ -62,7 +65,7 @@ function highlightToHTML(lex, istr, callback) {
 	return ostr;
 }
 
-function highlightFunction(func, callback) {
+function highlightFunction(func, callback, start) {
 	return highlightToHTML({
 		start: [
 			[/(\s+)/,        ['whitespace']],
@@ -92,10 +95,10 @@ function highlightFunction(func, callback) {
 			[/([,&])/,       ['punctuation'], 'context'],
 			[/([^\s,]+)/,    ['typevar']]
 		]
-	}, func, callback);
+	}, func, callback, start);
 }
 
-function highlightTypeDef(type, callback) {
+function highlightTypeDef(type, callback, start) {
 	return highlightToHTML({
 		start: [
 			[/(::)/,         ['punctuation'], 'name']
@@ -171,7 +174,45 @@ function highlightTypeDef(type, callback) {
 			[/(\|)/,         ['punctuation'], 'conses'],
 			[/(\W)/,         ['punctuation']]
 		]
-	}, type, callback);
+	}, type, callback, start);
+}
+
+function highlightClassDef(cls, callback, start) {
+	return highlightToHTML({
+		start: [
+			[/(\s+)/,        ['whitespace']],
+			[/(class)/,      ['keyword'], 'className'],
+			[/(where)/,      ['keyword']],
+			[/([a-z][\w`]*)/, ['typevar']],
+			[/(\|)/,         ['punctuation'], 'context']
+		],
+		className: [
+			[/(\s+)/,        ['whitespace']],
+			[/(\S+)/,        ['classname'], 'pop']
+		],
+		context: [
+			[/(where)/,      ['keyword']],
+			[/(\s+)/,        ['whitespace']],
+			[/(,)/,          ['punctuation']],
+			[/(\S+)(\{\|)/,  ['generic', 'punctuation'], 'generic'],
+			[/([^\s{]+)(,)/, ['classname', 'punctuation']],
+			[/([^\s{]+)/,    ['classname'], 'contextType']
+		],
+		generic: [
+			[/([*>-]+\|\},)/, ['punctuation'], 'pop'],
+			[/([*>-]+\|\})/, ['punctuation'], 'contextType']
+		],
+		contextType: [
+			[/(where)/,      ['keyword']],
+			[/(\s+)/,        ['whitespace']],
+			[/([,&])/,       ['punctuation'], 'context'],
+			[/([^\s,]+)/,    ['typevar']]
+		]
+	}, cls, callback, start);
+}
+
+function highlightType(type, callback) {
+	return highlightFunction(type, callback, 'type');
 }
 
 function escapeHTML(unsafe) {

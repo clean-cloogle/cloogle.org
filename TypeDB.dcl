@@ -10,7 +10,8 @@ from Data.Maybe import ::Maybe
 from GenEq import generic gEq
 
 // CleanTypeUnifier
-from Type import ::Type, ::TypeVar, ::TVAssignment, ::TypeDef, class print(..)
+from Type import ::Type, ::TypeVar, ::TVAssignment, ::TypeDef, class print(..),
+  ::ClassContext, ::ClassRestriction, ::ClassOrGeneric
 
 :: TypeDB
 instance zero TypeDB
@@ -28,6 +29,7 @@ instance zero TypeExtras
 instance print TE_Priority
 
 :: ExtendedType = ET Type TypeExtras
+instance print ExtendedType
 
 :: ClassLocation = CL Library Module Class
 
@@ -54,17 +56,17 @@ putInstance :: Class Type TypeDB -> TypeDB
 putInstances :: Class [Type] TypeDB -> TypeDB
 putInstancess :: [(Class, [Type])] TypeDB -> TypeDB
 
-getClass :: ClassLocation TypeDB -> Maybe ([TypeVar],[(FunctionName,ExtendedType)])
-putClass :: ClassLocation [TypeVar] [(FunctionName, ExtendedType)] TypeDB -> TypeDB
-putClasses :: [(ClassLocation, [TypeVar], [(FunctionName, ExtendedType)])] TypeDB -> TypeDB
-findClass :: Class TypeDB -> [(ClassLocation, [TypeVar], [(FunctionName, ExtendedType)])]
-findClass` :: (ClassLocation [TypeVar] [(FunctionName,ExtendedType)] -> Bool) TypeDB
-		-> [(ClassLocation, [TypeVar], [(FunctionName, ExtendedType)])]
+getClass :: ClassLocation TypeDB -> Maybe ([TypeVar],ClassContext,[(FunctionName,ExtendedType)])
+putClass :: ClassLocation [TypeVar] ClassContext [(FunctionName,ExtendedType)] TypeDB -> TypeDB
+putClasses :: [(ClassLocation, [TypeVar], ClassContext, [(FunctionName,ExtendedType)])] TypeDB -> TypeDB
+findClass :: Class TypeDB -> [(ClassLocation, [TypeVar], ClassContext, [(FunctionName, ExtendedType)])]
+findClass` :: (ClassLocation [TypeVar] ClassContext [(FunctionName,ExtendedType)] -> Bool) TypeDB
+		-> [(ClassLocation, [TypeVar], ClassContext, [(FunctionName, ExtendedType)])]
 
-findClassMembers` :: (ClassLocation [TypeVar] FunctionName ExtendedType -> Bool) TypeDB
-		-> [(ClassLocation, [TypeVar], FunctionName, ExtendedType)]
-findClassMembers`` :: [ClassLocation [TypeVar] FunctionName ExtendedType -> Bool]
-		TypeDB -> [(ClassLocation, [TypeVar], FunctionName, ExtendedType)]
+findClassMembers` :: (ClassLocation [TypeVar] ClassContext FunctionName ExtendedType -> Bool) TypeDB
+		-> [(ClassLocation, [TypeVar], ClassContext, FunctionName, ExtendedType)]
+findClassMembers`` :: [ClassLocation [TypeVar] ClassContext FunctionName ExtendedType -> Bool]
+		TypeDB -> [(ClassLocation, [TypeVar], ClassContext, FunctionName, ExtendedType)]
 
 getType :: TypeLocation TypeDB -> Maybe TypeDef
 putType :: TypeLocation TypeDef TypeDB -> TypeDB

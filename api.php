@@ -22,7 +22,9 @@ if($_SERVER['REQUEST_METHOD'] !== 'GET'){
 	$unify = isset($str[1]) ? trim($str[1]) : '';
 	$command = [];
 
-	if ($name != '') {
+	if (substr($name, 0, 6) == 'class ') {
+		$command['className'] = substr($name, 6);
+	} elseif ($name != '') {
 		$command['name'] = $name;
 	}
 

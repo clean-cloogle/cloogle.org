@@ -28,10 +28,11 @@ import Levenshtein
 
 :: OldMaybe a :== 'SimpleTCPServer'.Maybe a
 
-:: Request = { unify   :: Maybe String
-             , name    :: Maybe String
-             , modules :: Maybe [String]
-             , page    :: Maybe Int
+:: Request = { unify     :: Maybe String
+             , name      :: Maybe String
+             , className :: Maybe String
+             , modules   :: Maybe [String]
+             , page      :: Maybe Int
              }
 
 :: Response = { return         :: Int
@@ -43,6 +44,7 @@ import Levenshtein
 
 :: Result = FunctionResult FunctionResult
           | TypeResult TypeResult
+          | ClassResult ClassResult
 
 :: BasicResult = { library  :: String
                  , filename :: String
@@ -53,7 +55,7 @@ import Levenshtein
 :: FunctionResult :== (BasicResult, FunctionResultExtras)
 :: FunctionResultExtras = { func     :: String
                           , unifier  :: Maybe StrUnifier
-                          , cls      :: Maybe ClassResult
+                          , cls      :: Maybe ShortClassResult
                           , constructor_of :: Maybe String
                           }
 
@@ -61,23 +63,31 @@ import Levenshtein
 :: TypeResultExtras = { type :: String
                       }
 
+:: ClassResult :== (BasicResult, ClassResultExtras)
+:: ClassResultExtras = { class_name :: String
+                       , class_heading :: String
+                       , class_funs :: [String]
+                       , class_instances :: [String]
+                       }
+
 :: StrUnifier :== ([(String,String)], [(String,String)])
 
 :: ErrorResult = Error Int String
 
-:: ClassResult = { cls_name :: String, cls_vars :: [String] }
+:: ShortClassResult = { cls_name :: String, cls_vars :: [String] }
 
-derive JSONEncode Request, Response, Result, ClassResult, BasicResult,
-	FunctionResultExtras, TypeResultExtras
-derive JSONDecode Request, Response, Result, ClassResult, BasicResult,
-	FunctionResultExtras, TypeResultExtras
+derive JSONEncode Request, Response, Result, ShortClassResult, BasicResult,
+	FunctionResultExtras, TypeResultExtras, ClassResultExtras
+derive JSONDecode Request, Response, Result, ShortClassResult, BasicResult,
+	FunctionResultExtras, TypeResultExtras, ClassResultExtras
 
 instance zero Request
 where
-	zero = { unify   = Nothing
-	       , name    = Nothing
-	       , modules = Nothing
-	       , page    = Nothing
+	zero = { unify     = Nothing
+	       , name      = Nothing
+	       , className = Nothing
+	       , modules   = Nothing
+	       , page      = Nothing
 	       }
 
 instance toString Response where toString r = toString (toJSON r) +++ "\n"
@@ -104,7 +114,7 @@ err c m = { return         = c
 
 E_NORESULTS :== 127
 E_INVALIDINPUT :== 128
-E_NAMETOOLONG :== 129
+E_INVALIDNAME :== 129
 E_INVALIDTYPE :== 130
 
 MAX_RESULTS :== 15
@@ -130,7 +140,9 @@ where
 	handle _ Nothing w = (err E_INVALIDINPUT "Couldn't parse input", w)
 	handle db (Just request=:{unify,name,modules,page}) w
 		| isJust name && size (fromJust name) > 40
-			= (err E_NAMETOOLONG "function name too long", w)
+			= (err E_INVALIDNAME "function name too long", w)
+		| isJust name && any isSpace (fromString $ fromJust name)
+			= (err E_INVALIDNAME "name cannot contain spaces", w)
 		| isJust unify && isNothing (parseType $ fromString $ fromJust unify)
 			= (err E_INVALIDTYPE "couldn't parse type", w)
 		// Results
@@ -163,7 +175,11 @@ where
 	suggs _ _ = Nothing
 
 	search :: !Request !TypeDB -> [Result]
-	search {unify,name,modules,page} db
+	search {unify,name,className,modules,page} db
+		| isJust className
+			# className = fromJust className
+			# classes = findClass className db
+			= map (flip makeClassResult db) classes
 		# mbType = prepare_unification True <$> (unify >>= parseType o fromString)
 		// Search normal functions
 		# filts = catMaybes [ (\t _ -> isUnifiable t) <$> mbType
@@ -172,13 +188,13 @@ where
 		                    ]
 		# funs = map (makeFunctionResult name mbType Nothing) $ findFunction`` filts db
 		// Search class members
-		# filts = catMaybes [ (\t _ _ _->isUnifiable t) <$> mbType
-		                    , (\n (CL lib mod _) _ f _ -> isNameMatch
+		# filts = catMaybes [ (\t _ _ _ _->isUnifiable t) <$> mbType
+		                    , (\n (CL lib mod _) _ _ f _ -> isNameMatch
 		                      (size n-2) n (FL lib mod f)) <$> name
 		                    , isModMatchC <$> modules
 		                    ]
 		# members = findClassMembers`` filts db
-		# members = map (\(CL lib mod cls,vs,f,et) -> makeFunctionResult name mbType
+		# members = map (\(CL lib mod cls,vs,_,f,et) -> makeFunctionResult name mbType
 			(Just {cls_name=cls,cls_vars=vs}) (FL lib mod f,et)) members
 		// Search types
 		# lcTypeName = if (isJust mbType && isType (fromJust mbType))
@@ -190,6 +206,24 @@ where
 		# types = map (\(tl,td) -> makeTypeResult name tl td) types
 		// Merge results
 		= sort $ funs ++ members ++ types
+
+	makeClassResult :: (ClassLocation, [TypeVar], ClassContext, [(FunctionName,ExtendedType)])
+		TypeDB -> Result
+	makeClassResult (CL lib mod cls, vars, cc, funs) db
+		= ClassResult
+		  ( { library  = lib
+		    , filename = modToFilename mod
+		    , modul    = mod
+		    , distance = 0
+		    }
+		  , { class_name = cls
+		    , class_heading = foldl ((+++) o (flip (+++) " ")) cls vars +++
+			    if (isEmpty cc) "" " " +++ concat (print False cc)
+		    , class_funs = [f +++ concat (print False t) \\ (f,t) <- funs]
+		    , class_instances
+		        = sort [concat (print False t) \\ t <- getInstances cls db]
+		    }
+		  )
 
 	makeTypeResult :: (Maybe String) TypeLocation TypeDef -> Result
 	makeTypeResult mbName (TL lib mod t) td
@@ -203,18 +237,17 @@ where
 		  , { type = concat $ print False td }
 		  )
 
-	makeFunctionResult :: (Maybe String) (Maybe Type) (Maybe ClassResult)
+	makeFunctionResult :: (Maybe String) (Maybe Type) (Maybe ShortClassResult)
 	              (FunctionLocation, ExtendedType) -> Result
 	makeFunctionResult
-		orgsearch orgsearchtype mbCls (FL lib mod fname, ET type tes)
+		orgsearch orgsearchtype mbCls (FL lib mod fname, et=:(ET type tes))
 		= FunctionResult
 		  ( { library  = lib
 		    , filename = modToFilename mod
 		    , modul    = mod
 		    , distance = distance
 		    }
-		  , { func     = fname +++ toStrPriority tes.te_priority +++
-		                 " :: " +++ concat (print False type)
+		  , { func     = fname +++ concat (print False et)
 		    , unifier  = toStrUnifier <$> finish_unification <$>
 		        (orgsearchtype >>= unify [] (prepare_unification False type))
 		    , cls      = mbCls
@@ -266,8 +299,8 @@ where
 	isModMatchF :: ![String] FunctionLocation ExtendedType -> Bool
 	isModMatchF mods (FL _ mod _) _ = isMember mod mods
 
-	isModMatchC :: ![String] ClassLocation [TypeVar] FunctionName ExtendedType -> Bool
-	isModMatchC mods (CL _ mod _) _ _ _ = isMember mod mods
+	isModMatchC :: ![String] ClassLocation [TypeVar] ClassContext FunctionName ExtendedType -> Bool
+	isModMatchC mods (CL _ mod _) _ _ _ _ = isMember mod mods
 
 	log :: (LogMessage (Maybe Request) Response) IPAddress *World
 	       -> *(IPAddress, *World)

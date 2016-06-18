@@ -20,6 +20,10 @@ function getResults(str, page) {
 			return '<a class="hidden" title="Search :: ' + str + '" href="#' +
 				encodeURIComponent(':: ' + str) + '">' +
 				span + '</a>';
+		} else if (cls == 'classname') {
+			return '<a class="hidden" title="Search class ' + str + '" href="#' +
+				encodeURIComponent('class ' + str) + '">' +
+				span + '</a>';
 		} else {
 			return span;
 		}
@@ -61,7 +65,7 @@ function getResults(str, page) {
 
 		switch (kind) {
 			case 'FunctionResult':
-				specificData = [];
+				var specificData = [];
 				if ('constructor_of' in specific) {
 					specificData.push([
 						'This function is a type constructor of <code>' +
@@ -82,12 +86,44 @@ function getResults(str, page) {
 				);
 				return '<hr/>' +
 					makeTable(basicData.concat(specificData)) +
-					'<code>' + highlightFunction(specific['func'], highlightCallback) + '</code>';
+					'<code>' +
+					highlightFunction(specific['func'], highlightCallback) +
+					'</code>';
 				break;
 			case 'TypeResult':
 				return '<hr/>' +
 					makeTable(basicData) +
-					'<pre>' + highlightTypeDef(specific['type'], highlightCallback) + '</pre>';
+					'<pre>' +
+					highlightTypeDef(specific['type'], highlightCallback) +
+					'</pre>';
+				break;
+			case 'ClassResult':
+				var instances = '';
+				for (var i in specific['class_instances']) {
+					if (instances != '') {
+						instances += ', ';
+					}
+					instances += '<code>' +
+						highlightType(specific['class_instances'][i],
+								highlightCallback) +
+						'</code>'
+				}
+				var specificData = [
+					['Instances', instances]
+				];
+				var html = '<hr/>' +
+					makeTable(basicData.concat(specificData)) + '<pre>' +
+					highlightClassDef(
+							'class ' + specific['class_heading'] + ' where',
+							highlightCallback) +
+					'<br/>';
+				for (var i in specific['class_funs']) {
+					html += '<br/>    ' +
+						highlightFunction(specific['class_funs'][i],
+								highlightCallback);
+				}
+				html += '</pre>';
+				return html;
 				break;
 			default:
 				return '';

@@ -15,7 +15,7 @@ import Data.Functor
 import Control.Applicative
 import Control.Monad
 from Text import class Text(concat,trim,indexOf,toLowerCase),
-	instance Text String
+	instance Text String, instance + String
 
 import System.Time
 
@@ -90,7 +90,7 @@ where
 	       , page      = Nothing
 	       }
 
-instance toString Response where toString r = toString (toJSON r) +++ "\n"
+instance toString Response where toString r = toString (toJSON r) + "\n"
 instance toString Request where toString r = toString $ toJSON r
 
 instance fromString (Maybe Request) where fromString s = fromJSON $ fromString s
@@ -150,13 +150,13 @@ where
 		# drop_n = fromJust (page <|> pure 0) * MAX_RESULTS
 		# results = drop drop_n $ sort $ search request db
 		# more = max 0 (length results - MAX_RESULTS)
-		# results = take MAX_RESULTS results
 		// Suggestions
 		# mbType = unify >>= parseType o fromString
 		# suggestions
 			= sortBy (\a b -> snd a > snd b) <$>
 			  filter ((<)(length results) o snd) <$>
-			  (mbType >>= flip suggs db)
+			  (mbType >>= \t -> suggs name t db)
+		# results = take MAX_RESULTS results
 		// Response
 		| isEmpty results = (err E_NORESULTS "No results", w)
 		= ( { return = 0
@@ -167,13 +167,14 @@ where
 		    }
 		  , w)
 
-	suggs :: !Type !TypeDB -> Maybe [(String, Int)]
-	suggs (Func is r cc) db
+	suggs :: !(Maybe String) !Type !TypeDB -> Maybe [(String, Int)]
+	suggs n (Func is r cc) db
 		| length is < 3
 			= Just [let t` = concat $ print False $ Func is` r cc in
-			            (t`, length $ search {zero & unify=Just t`} db)
+			        let s = if (isJust n) (fromJust n + " ") "" + ":: " + t` in
+			        (s, length $ search {zero & name=n, unify=Just t`} db)
 			        \\ is` <- permutations is | is` <> is]
-	suggs _ _ = Nothing
+	suggs _ _ _ = Nothing
 
 	search :: !Request !TypeDB -> [Result]
 	search {unify,name,className,modules,page} db
@@ -223,9 +224,9 @@ where
 		    , distance = -100
 		    }
 		  , { class_name = cls
-		    , class_heading = foldl ((+++) o (flip (+++) " ")) cls vars +++
-			    if (isEmpty cc) "" " " +++ concat (print False cc)
-		    , class_funs = [f +++ concat (print False t) \\ (f,t) <- funs]
+		    , class_heading = foldl ((+) o (flip (+) " ")) cls vars +
+			    if (isEmpty cc) "" " " + concat (print False cc)
+		    , class_funs = [f + concat (print False t) \\ (f,t) <- funs]
 		    , class_instances
 		        = sort [concat (print False t) \\ t <- getInstances cls db]
 		    }
@@ -253,7 +254,7 @@ where
 		    , modul    = mod
 		    , distance = distance
 		    }
-		  , { func     = fname +++ concat (print False et)
+		  , { func     = fname + concat (print False et)
 		    , unifier  = toStrUnifier <$> finish_unification <$>
 		        (orgsearchtype >>= unify [] (prepare_unification False type))
 		    , cls      = mbCls
@@ -292,7 +293,7 @@ where
 
 	modToFilename :: String -> String
 	modToFilename mod = (toString $ reverse $ takeWhile ((<>)'.')
-	                              $ reverse $ fromString mod) +++ ".dcl"
+	                              $ reverse $ fromString mod) + ".dcl"
 
 	isUnifiable :: Type ExtendedType -> Bool
 	isUnifiable t1 (ET t2 _) = isJust (unify [] t1 (prepare_unification False t2))
@@ -324,11 +325,11 @@ where
 
 	msgToString :: (LogMessage (Maybe Request) Response) IPAddress -> String
 	msgToString (Received Nothing) ip
-		= toString ip +++ " <-- Nothing\n"
+		= toString ip + " <-- Nothing\n"
 	msgToString (Received (Just a)) ip
-		= toString ip +++ " <-- " +++ toString a +++ "\n"
+		= toString ip + " <-- " + toString a + "\n"
 	msgToString (Sent {return,data,msg,more_available}) ip
-		= toString ip +++ " --> " +++ toString (length data)
-			+++ " results (" +++ toString return +++ "; " +++ msg +++
-			if (isJust more_available) ("; " +++ toString (fromJust more_available) +++ " more") "" +++ ")\n"
+		= toString ip + " --> " + toString (length data)
+			+ " results (" + toString return + "; " + msg +
+			if (isJust more_available) ("; " + toString (fromJust more_available) + " more") "" + ")\n"
 	msgToString _ _ = ""

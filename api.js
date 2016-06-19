@@ -136,7 +136,7 @@ function getResults(str, page) {
 	function makeSuggestions(suggs) {
 		var str = '<hr/><div id="suggestions"><b>Did you mean...</b><table>';
 		for (i in suggs) {
-			var sug = ':: ' + suggs[i][0];
+			var sug = suggs[i][0];
 			str += '<tr><td><a class="hidden" href="#' + encodeURIComponent(sug) + '"><code>' +
 				highlightFunction(sug) + '</code></a></td><td>' +
 				suggs[i][1] + ' results</td></tr>';

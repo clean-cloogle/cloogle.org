@@ -205,8 +205,13 @@ where
 			(Just n) = findType` (\(TL _ _ t) _ -> toLowerCase t == n) db
 			Nothing  = []
 		# types = map (\(tl,td) -> makeTypeResult name tl td) types
+		// Search classes
+		# classes = case (isNothing mbType, toLowerCase <$> name) of
+			(True, Just c) = map (flip makeClassResult db) $
+				findClass` (\(CL _ _ c`) _ _ _ -> toLowerCase c` == c) db
+			_ = []
 		// Merge results
-		= sort $ funs ++ members ++ types
+		= sort $ funs ++ members ++ types ++ classes
 
 	makeClassResult :: (ClassLocation, [TypeVar], ClassContext, [(FunctionName,ExtendedType)])
 		TypeDB -> Result
@@ -215,7 +220,7 @@ where
 		  ( { library  = lib
 		    , filename = modToFilename mod
 		    , modul    = mod
-		    , distance = 0
+		    , distance = -100
 		    }
 		  , { class_name = cls
 		    , class_heading = foldl ((+++) o (flip (+++) " ")) cls vars +++

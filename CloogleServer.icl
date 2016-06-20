@@ -39,7 +39,7 @@ import Levenshtein
               , data           :: [Result]
               , msg            :: String
               , more_available :: Maybe Int
-              , suggestions    :: Maybe [(String, Int)]
+              , suggestions    :: Maybe [(Request, Int)]
               }
 
 :: Result = FunctionResult FunctionResult
@@ -167,12 +167,12 @@ where
 		    }
 		  , w)
 
-	suggs :: !(Maybe String) !Type !TypeDB -> Maybe [(String, Int)]
+	suggs :: !(Maybe String) !Type !TypeDB -> Maybe [(Request, Int)]
 	suggs n (Func is r cc) db
 		| length is < 3
 			= Just [let t` = concat $ print False $ Func is` r cc in
-			        let s = if (isJust n) (fromJust n + " ") "" + ":: " + t` in
-			        (s, length $ search {zero & name=n, unify=Just t`} db)
+			        let request = {zero & name=n, unify=Just t`} in
+			        (request, length $ search request db)
 			        \\ is` <- permutations is | is` <> is]
 	suggs _ _ _ = Nothing
 

@@ -137,8 +137,16 @@ function getResults(str, page) {
 		var str = '<hr/><div id="suggestions"><b>Did you mean...</b><table>';
 		for (i in suggs) {
 			var sug = suggs[i][0];
-			str += '<tr><td><a class="hidden" href="#' + encodeURIComponent(sug) + '"><code>' +
-				highlightFunction(sug) + '</code></a></td><td>' +
+			var sugstr = []
+			if ('name' in sug) {
+				sugstr.push(sug.name);
+			}
+			if ('unify' in sug) {
+				sugstr.push(':: ' + sug.unify);
+			}
+			sugstr = sugstr.join(' ');
+			str += '<tr><td><a class="hidden" href="#' + encodeURIComponent(sugstr) + '"><code>' +
+				highlightFunction(sugstr) + '</code></a></td><td>' +
 				suggs[i][1] + ' results</td></tr>';
 		}
 		str += '</table></div>';

@@ -111,7 +111,8 @@ fields:
 - `suggestions`
 
 	If there are similar searches that may return more results, this will be an
-	array of two-tuples with the alternative search and the number of results.
+	array of two-tuples with the alternative search (which has the same fields as
+	a request) and the number of results.
 
 ### Talking with the Clean backend directly
 `CloogleServer` is a TCP server listening on port 31215 (typically). Send a

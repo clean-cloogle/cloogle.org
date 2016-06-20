@@ -57,6 +57,7 @@ import Levenshtein
                           , unifier  :: Maybe StrUnifier
                           , cls      :: Maybe ShortClassResult
                           , constructor_of :: Maybe String
+                          , generic_derivations :: Maybe [String]
                           }
 
 :: TypeResult :== (BasicResult, TypeResultExtras)
@@ -188,7 +189,7 @@ where
 		                    , (\n loc _ -> isNameMatch (size n-2) n loc) <$> name
 		                    , isModMatchF <$> modules
 		                    ]
-		# funs = map (makeFunctionResult name mbType Nothing) $ findFunction`` filts db
+		# funs = map (\f -> makeFunctionResult name mbType Nothing f db) $ findFunction`` filts db
 		// Search class members
 		# filts = catMaybes [ (\t _ _ _ _->isUnifiable t) <$> mbType
 		                    , (\n (CL lib mod _) _ _ f _ -> isNameMatch
@@ -197,7 +198,7 @@ where
 		                    ]
 		# members = findClassMembers`` filts db
 		# members = map (\(CL lib mod cls,vs,_,f,et) -> makeFunctionResult name mbType
-			(Just {cls_name=cls,cls_vars=vs}) (FL lib mod f,et)) members
+			(Just {cls_name=cls,cls_vars=vs}) (FL lib mod f,et) db) members
 		// Search types
 		# lcTypeName = if (isJust mbType && isType (fromJust mbType))
 			(let (Type name _) = fromJust mbType in Just $ toLowerCase name)
@@ -245,9 +246,9 @@ where
 		  )
 
 	makeFunctionResult :: (Maybe String) (Maybe Type) (Maybe ShortClassResult)
-	              (FunctionLocation, ExtendedType) -> Result
+	              (FunctionLocation, ExtendedType) TypeDB -> Result
 	makeFunctionResult
-		orgsearch orgsearchtype mbCls (FL lib mod fname, et=:(ET type tes))
+		orgsearch orgsearchtype mbCls (FL lib mod fname, et=:(ET type tes)) db
 		= FunctionResult
 		  ( { library  = lib
 		    , filename = modToFilename mod
@@ -261,6 +262,10 @@ where
 			, constructor_of = if (tes.te_isconstructor)
 				(let (Func _ r _) = type in Just $ concat $ print False r)
 				Nothing
+		    , generic_derivations
+		        = let derivs = getDerivations fname db in
+			      (\_ -> [concat $ print False d \\ d <-derivs]) <$>
+			      tes.te_generic_vars
 		    }
 		  )
 	where

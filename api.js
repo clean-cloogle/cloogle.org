@@ -70,13 +70,6 @@ function getResults(str, page) {
 		switch (kind) {
 			case 'FunctionResult':
 				var specificData = [];
-				if ('constructor_of' in specific) {
-					specificData.push([
-						'This function is a type constructor of <code>' +
-						highlightFunction(':: ' + specific['constructor_of'],
-							highlightCallback) + '</code>.'
-					]);
-				}
 				specificData.push(
 					('cls' in specific ?
 						[ 'Class', '<code>' +
@@ -90,6 +83,26 @@ function getResults(str, page) {
 						['Unifier', makeUnifier(specific['unifier'])] :
 						[])
 				);
+				if ('generic_derivations' in specific) {
+					var derivations = '';
+					for (var i in specific['generic_derivations']) {
+						if (derivations != '') {
+							derivations += ', ';
+						}
+						derivations += '<code>' +
+							highlightType(specific['generic_derivations'][i],
+									highlightCallback) +
+							'</code>';
+					}
+					specificData.push(['Derivations', derivations]);
+				}
+				if ('constructor_of' in specific) {
+					specificData.push([
+						'This function is a type constructor of <code>' +
+						highlightFunction(':: ' + specific['constructor_of'],
+							highlightCallback) + '</code>.'
+					]);
+				}
 				return '<hr/>' +
 					makeTable(basicData.concat(specificData)) +
 					'<code>' +
@@ -112,11 +125,9 @@ function getResults(str, page) {
 					instances += '<code>' +
 						highlightType(specific['class_instances'][i],
 								highlightCallback) +
-						'</code>'
+						'</code>';
 				}
-				var specificData = [
-					['Instances', instances]
-				];
+				var specificData = [['Instances', instances]];
 				var html = '<hr/>' +
 					makeTable(basicData.concat(specificData)) + '<pre>' +
 					highlightClassDef(

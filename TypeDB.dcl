@@ -35,10 +35,11 @@ instance print (FunctionName, ExtendedType)
 
 :: ClassLocation = CL Library Module Class
 
-:: Library :== String
-:: Module :== String
+:: Library      :== String
+:: Module       :== String
 :: FunctionName :== String
-:: Class :== String
+:: Class        :== String
+:: GenericName  :== String
 
 :: TypeLocation = TL Library Module TypeName
 
@@ -76,6 +77,11 @@ putTypes :: [(TypeLocation, TypeDef)] TypeDB -> TypeDB
 findType :: TypeName TypeDB -> [(TypeLocation, TypeDef)]
 findType` :: (TypeLocation TypeDef -> Bool) TypeDB
 		-> [(TypeLocation, TypeDef)]
+
+getDerivations :: GenericName TypeDB -> [Type]
+putDerivation :: GenericName Type TypeDB -> TypeDB
+putDerivations :: GenericName [Type] TypeDB -> TypeDB
+putDerivationss :: [(GenericName, [Type])] TypeDB -> TypeDB
 
 searchExact :: Type TypeDB -> [(FunctionLocation, ExtendedType)]
 

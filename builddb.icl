@@ -27,12 +27,13 @@ from compile import empty_cache, ::DclCache{hash_table}
 from general import ::Optional(..)
 from syntax import ::SymbolTable, ::SymbolTableEntry, ::Ident{..}, ::SymbolPtr,
 	::Position(NoPos), ::Module{mod_ident,mod_defs},
-	::ParsedDefinition(PD_TypeSpec,PD_Instance,PD_Class,PD_Type,PD_Generic),
+	::ParsedDefinition(PD_TypeSpec,PD_Instance,PD_Class,PD_Type,PD_Generic,PD_Derive),
 	::FunSpecials, ::Priority, ::ParsedModule, ::SymbolType,
 	::ParsedInstanceAndMembers{..}, ::ParsedInstance{pi_ident,pi_types},
 	::Type, ::ClassDef{class_ident,class_args,class_context},
 	::TypeVar, ::ParsedTypeDef, ::TypeDef,
-	::GenericDef{gen_ident,gen_type,gen_vars}
+	::GenericDef{gen_ident,gen_type,gen_vars},
+	::GenericCaseDef{gc_type,gc_gcf}, ::GenericCaseFunctions(GCF), ::GCF
 from scanner import ::Priority(..), ::Assoc(..)
 from parse import wantModule
 
@@ -157,6 +158,7 @@ getModuleTypes root mod lib cache db w
 # db = 'DB'.putTypes typedefs db
 # db = 'DB'.putFunctions (flatten $ map constructor_functions typedefs) db
 # db = 'DB'.putFunctions (pd_generics lib mod pm.mod_defs) db
+# db = 'DB'.putDerivationss (pd_derivations pm.mod_defs) db
 = (db,cache,w)
 where
 	mkdir :: String -> String
@@ -172,6 +174,11 @@ where
 			| drop (length lib - length mod) lib == mod
 				= take (length lib - length mod - 1) lib
 			= lib
+
+	pd_derivations :: [ParsedDefinition] -> [('DB'.GenericName, ['DB'.Type])]
+	pd_derivations pds
+		= [(id.id_name, ['T'.toType gc_type])
+		   \\ PD_Derive gcdefs <- pds, {gc_type,gc_gcf=GCF id _} <- gcdefs]
 
 	pd_generics :: String String [ParsedDefinition]
 		-> [('DB'.FunctionLocation, 'DB'.ExtendedType)]

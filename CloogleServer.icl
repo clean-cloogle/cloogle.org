@@ -226,7 +226,7 @@ where
 		  , { class_name = cls
 		    , class_heading = foldl ((+) o (flip (+) " ")) cls vars +
 			    if (isEmpty cc) "" " " + concat (print False cc)
-		    , class_funs = [f + concat (print False t) \\ (f,t) <- funs]
+		    , class_funs = [concat $ print False fun \\ fun <- funs]
 		    , class_instances
 		        = sort [concat (print False t) \\ t <- getInstances cls db]
 		    }
@@ -254,7 +254,7 @@ where
 		    , modul    = mod
 		    , distance = distance
 		    }
-		  , { func     = fname + concat (print False et)
+		  , { func     = concat $ print False (fname,et)
 		    , unifier  = toStrUnifier <$> finish_unification <$>
 		        (orgsearchtype >>= unify [] (prepare_unification False type))
 		    , cls      = mbCls

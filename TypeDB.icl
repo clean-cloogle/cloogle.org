@@ -45,14 +45,16 @@ instance < TypeLocation where (<) (TL a b c) (TL d e f) = (a,b,c) < (d,e,f)
 
 instance zero TypeExtras
 where
-	zero = { te_priority = Nothing
+	zero = { te_priority      = Nothing
 	       , te_isconstructor = False
+	       , te_generic_vars  = Nothing
 	       }
 
 instance print TypeExtras
 where
-  print _ {te_priority=Nothing} = []
-  print b {te_priority=Just p}  = print b p -- " "
+	print b {te_priority=Just p} = print b p -- " "
+	print b {te_generic_vars=Just vars} = print b vars -- " "
+	print _ _ = []
 
 instance print TE_Priority
 where
@@ -60,9 +62,12 @@ where
 	print _ (RightAssoc i) = "infixr " -- i
 	print _ (NoAssoc i)    = "infix " -- i
 
-instance print ExtendedType
+instance print (FunctionName, ExtendedType)
 where
-  print _ (ET t e) = " " -- e -- ":: " -- t
+	print _ (f, (ET t e=:{te_generic_vars=Just _}))
+		= "generic " -- f -- " " -- e -- " :: " -- t
+	print _ (f, (ET t e))
+		= f -- " " -- e -- " :: " -- t
 
 getFunction :: FunctionLocation TypeDB -> Maybe ExtendedType
 getFunction loc {functionmap} = get loc functionmap

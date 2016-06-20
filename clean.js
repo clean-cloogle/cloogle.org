@@ -69,8 +69,18 @@ function highlightFunction(func, callback, start) {
 	return highlightToHTML({
 		start: [
 			[/(\s+)/,        ['whitespace']],
+			[/(generic)(\s)/, ['keyword', 'whitespace'], 'generic'],
 			[/(.*)(::)/,     ['funcname', 'punctuation'], 'type'],
 			[/(\S+)/,        ['funcname']]
+		],
+		generic: [
+			[/(\s+)/,        ['whitespace']],
+			[/(\S+)/,        ['funcname'], 'genericVars']
+		],
+		genericVars: [
+			[/(\s+)/,        ['whitespace']],
+			[/(::)/,         ['punctuation'], 'type'],
+			[/(\S)/,         ['typevar']]
 		],
 		type: [
 			[/(\s+)/,        ['whitespace']],
@@ -82,11 +92,11 @@ function highlightFunction(func, callback, start) {
 		context: [
 			[/(\s+)/,        ['whitespace']],
 			[/(,)/,          ['punctuation']],
-			[/(\S+)(\{\|)/,  ['generic', 'punctuation'], 'generic'],
+			[/(\S+)(\{\|)/,  ['generic', 'punctuation'], 'genericContext'],
 			[/([^\s{]+)(,)/, ['classname', 'punctuation']],
 			[/([^\s{]+)/,    ['classname'], 'contextType']
 		],
-		generic: [
+		genericContext: [
 			[/([*>-]+\|\},)/, ['punctuation'], 'pop'],
 			[/([*>-]+\|\})/, ['punctuation'], 'contextType']
 		],

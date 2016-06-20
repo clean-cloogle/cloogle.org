@@ -20,8 +20,9 @@ derive gEq TypeDB
 :: FunctionLocation = FL Library Module FunctionName
 instance print FunctionLocation
 
-:: TypeExtras = { te_priority :: Maybe TE_Priority
+:: TypeExtras = { te_priority      :: Maybe TE_Priority
                 , te_isconstructor :: Bool
+                , te_generic_vars  :: Maybe [TypeVar]
                 }
 instance zero TypeExtras
 
@@ -29,7 +30,8 @@ instance zero TypeExtras
 instance print TE_Priority
 
 :: ExtendedType = ET Type TypeExtras
-instance print ExtendedType
+
+instance print (FunctionName, ExtendedType)
 
 :: ClassLocation = CL Library Module Class
 

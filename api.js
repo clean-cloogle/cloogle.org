@@ -24,6 +24,10 @@ function getResults(str, page) {
 			return '<a class="hidden" title="Search class ' + str + '" href="#' +
 				encodeURIComponent('class ' + str) + '">' +
 				span + '</a>';
+		} else if (cls == 'generic') {
+			return '<a class="hidden" title="Search generic ' + str + '" href="#' +
+				encodeURIComponent(str) + '">' +
+				span + '</a>';
 		} else {
 			return span;
 		}

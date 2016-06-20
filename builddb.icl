@@ -27,11 +27,12 @@ from compile import empty_cache, ::DclCache{hash_table}
 from general import ::Optional(..)
 from syntax import ::SymbolTable, ::SymbolTableEntry, ::Ident{..}, ::SymbolPtr,
 	::Position(NoPos), ::Module{mod_ident,mod_defs},
-	::ParsedDefinition(PD_TypeSpec,PD_Instance,PD_Class,PD_Type),
+	::ParsedDefinition(PD_TypeSpec,PD_Instance,PD_Class,PD_Type,PD_Generic),
 	::FunSpecials, ::Priority, ::ParsedModule, ::SymbolType,
 	::ParsedInstanceAndMembers{..}, ::ParsedInstance{pi_ident,pi_types},
 	::Type, ::ClassDef{class_ident,class_args,class_context},
-	::TypeVar, ::ParsedTypeDef, ::TypeDef
+	::TypeVar, ::ParsedTypeDef, ::TypeDef,
+	::GenericDef{gen_ident,gen_type,gen_vars}
 from scanner import ::Priority(..), ::Assoc(..)
 from parse import wantModule
 
@@ -155,6 +156,7 @@ getModuleTypes root mod lib cache db w
 # typedefs = pd_types lib mod pm.mod_defs
 # db = 'DB'.putTypes typedefs db
 # db = 'DB'.putFunctions (flatten $ map constructor_functions typedefs) db
+# db = 'DB'.putFunctions (pd_generics lib mod pm.mod_defs) db
 = (db,cache,w)
 where
 	mkdir :: String -> String
@@ -170,6 +172,13 @@ where
 			| drop (length lib - length mod) lib == mod
 				= take (length lib - length mod - 1) lib
 			= lib
+
+	pd_generics :: String String [ParsedDefinition]
+		-> [('DB'.FunctionLocation, 'DB'.ExtendedType)]
+	pd_generics lib mod pds
+		= [( 'DB'.FL lib mod id_name
+		   , 'DB'.ET ('T'.toType gen_type) {zero & te_generic_vars=Just $ map 'T'.toTypeVar gen_vars}
+		   ) \\ PD_Generic {gen_ident={id_name},gen_type,gen_vars} <- pds]
 
 	pd_typespecs :: String String [ParsedDefinition]
 		-> [('DB'.FunctionLocation, 'DB'.ExtendedType)]

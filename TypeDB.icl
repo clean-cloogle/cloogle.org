@@ -3,6 +3,7 @@ implementation module TypeDB
 // Standard libraries
 import StdEnv
 from Data.Func import $
+from Data.List import intercalate
 import Data.Map
 import Data.Maybe
 import Text.JSON
@@ -16,6 +17,9 @@ import Type
             , typemap     :: Map TypeLocation TypeDef
             , derivemap   :: Map GenericName [Type]
             }
+
+printersperse :: Bool a [b] -> [String] | print a & print b
+printersperse ia a bs = intercalate (print False a) (map (print ia) bs)
 
 (--) infixr 5 :: a b -> [String] | print a & print b
 (--) a b = print False a ++ print False b
@@ -57,7 +61,7 @@ where
 instance print TypeExtras
 where
 	print b {te_priority=Just p} = print b p -- " "
-	print b {te_generic_vars=Just vars} = print b vars -- " "
+	print b {te_generic_vars=Just vars} = printersperse b " " vars -- " "
 	print _ _ = []
 
 instance print TE_Priority

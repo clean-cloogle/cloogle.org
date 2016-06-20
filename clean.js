@@ -92,8 +92,10 @@ function highlightFunction(func, callback, start) {
 		],
 		contextType: [
 			[/(\s+)/,        ['whitespace']],
-			[/([,&])/,       ['punctuation'], 'context'],
-			[/([^\s,]+)/,    ['typevar']]
+			[/([,&])/,       ['punctuation'], 'pop'],
+			[/([\(\[])/,     ['punctuation'], 'contextType'],
+			[/([\)\]])/,     ['punctuation'], 'pop'],
+			[/([^\s\(\)\[\],]+)/, ['typevar']]
 		]
 	}, func, callback, start);
 }

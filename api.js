@@ -39,7 +39,7 @@ function getResults(str, page) {
 			if (d[i].length == 1) {
 				html += '<tr><td colspan="2">' + d[i][0] + '</td></tr>';
 			} else if (d[i].length == 2) {
-				html += '<tr><th>' + d[i][0] + ': </th><td>' +
+				html += '<tr><th>' + d[i][0] + ': </th><td class="wide">' +
 					d[i][1] + '</td></tr>';
 			}
 		}

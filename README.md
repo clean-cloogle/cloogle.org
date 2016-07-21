@@ -6,11 +6,11 @@ frontends:
 - Live version available at [cloogle.org](http://cloogle.org/)
 - On DuckDuckGo with the `!cloogle` bang.
 - Using [@CloogleBot](https://telegram.me/CloogleBot) on Telegram (see
-  [camilstaps/CloogleBot](https://github.com/camilstaps/CloogleBot))
+	[camilstaps/CloogleBot](https://github.com/camilstaps/CloogleBot))
 - Using the CLI implementation at
-  [KDercksen/cloogle-cli](https://github.com/KDercksen/cloogle-cli)
+	[KDercksen/cloogle-cli](https://github.com/KDercksen/cloogle-cli)
 
-### Current features
+## Current features
 - Search for function/operator/class member names.
 - Search for function types.
 - Search for type definitions.
@@ -18,9 +18,10 @@ frontends:
 
 ---
 
-### Contents
+## Contents
 
-- [Setup](#how-to-setup)
+- [Setup](#setup)
+- [Setup using Docker](#setup-using-docker)
 - [API specification of the PHP wrapper](#api-specification-for-developers)
 - [API specification of the Clean backend](#talking-with-the-clean-backend-directly)
 - [Live statistics](#live-statistics)
@@ -29,10 +30,14 @@ frontends:
 
 ---
 
-### How to setup
+## Setup
+
+### Frontend
 
 - The frontend heavily depends on [VanillaJS](http://vanilla-js.com/) so you
 	should have a browser that supports it.
+
+### Backend
 
 - Add `env/envs.linux64` to your `$CLEAN_HOME/etc/IDEEnvs`.
 
@@ -52,19 +57,63 @@ frontends:
 	In this example, the server uses port 31215. You need to use the same
 	settings in `api.php`.
 
-	Leave the `CloogleServer` running. When a HTTP request for `api.php` is made,
-	that PHP script will communicate with the Clean backend server.
+	Leave the `CloogleServer` running.
 
-	You may want to consider running the backend server in a sandbox or with
-	limited permissions.
+- Install a web server with PHP support to handle requests for `api.php`. When
+	an HTTP request for `api.php` is made, that PHP script will communicate with
+	the Clean backend server.
 
-### Api specification for developers
+### Live statistics
+The live version's statistics page is at
+[cloogle.org/stats](http://cloogle.org/stats).
+
+There is a possibility to set up a web page that shows live statistics.
+Currently, only the last few searches are shown. For this, you need to have
+`nodejs` installed. Then do:
+
+	$ cd stats
+	$ npm install
+
+And to run:
+
+	$ node server.js ../cloogle.log
+
+This starts a WebSocket server on port 31216. You can navigate to `/stats` to
+view the statistics. This page will receive live updates.
+
+## Setup using Docker
+
+This is an experimental feature. There are two `Dockerfile`s available: one for
+the Cloogle server and one for the live statistics. We need them to share a
+`cloogle.log`. Also, both use `--net=host` to easily open their ports. In a
+production environment, you should not do this, but instead use `-p` and set up
+forwarding rules.
+
+### Cloogle server
+
+	$ docker build -t cloogle .
+	$ docker run -d --net=host --name=cloogle \
+		-v "$PWD/cloogle.log":/usr/src/cloogle/cloogle.log \
+		cloogle
+	$ docker start cloogle
+
+### Live statistics
+
+	$ cd stats
+	$ docker build -t cloogle-stats .
+	$ docker run -d --net=host --name=cloogle-stats \
+		-v "$PWD/../cloogle.log":/var/www/cloogle.log \
+		cloogle-stats \
+		/var/www/cloogle.log
+	$ docker start cloogle-stats
+
+## HTTP API specification
 `api.php` should be called with a `GET` request where the `str` variable
 contains the search string. You may also add `mod` (a comma-separated list of
 modules to search in) and `page` (for pagination: 0 for the first *n* results,
 1 for the next *n*, etc.).
 
-The api will return a JSON formatted data structure containing the following
+The API will return a JSON formatted data structure containing the following
 fields:
 
 - `return`
@@ -114,7 +163,7 @@ fields:
 	array of two-tuples with the alternative search (which has the same fields as
 	a request) and the number of results.
 
-### Talking with the Clean backend directly
+## TCP API Specification
 `CloogleServer` is a TCP server listening on port 31215 (typically). Send a
 JSON request with at least one of the following fields:
 
@@ -131,25 +180,7 @@ The Clean backend will return a JSON string, similar to the output of the PHP
 script described above. The error codes above 150 are specific to the script
 and cannot be returned by the Clean backend.
 
-### Live statistics
-The live version's statistics page is at
-[cloogle.org/stats](http://cloogle.org/stats).
-
-There is a possibility to set up a web page that shows live statistics.
-Currently, only the last few searches are shown. For this, you need to have
-`nodejs` installed. Then do:
-
-    $ cd stats
-    $ npm install
-
-And to run:
-
-    $ node server.js ../cloogle.log
-
-This starts a WebSocket server on port 31216. You can navigate to `/stats` to
-view the statistics. This page will receive live updates.
-
-### Authors
+## Authors
 
 Maintainers:
 
@@ -160,7 +191,7 @@ Contributors:
 
 - [KDercksen](https://github.com/KDercksen) (searching on module; help text)
 
-### Licence
+## Licence
 
 ```
 The MIT License (MIT)

@@ -11,12 +11,13 @@ import Text.JSON
 // CleanTypeUnifier
 import Type
 
-:: TypeDB = { functionmap :: Map FunctionLocation ExtendedType
-            , classmap    :: Map ClassLocation ([TypeVar],ClassContext,[(FunctionName, ExtendedType)])
-            , instancemap :: Map Class [Type]
-            , typemap     :: Map TypeLocation TypeDef
-            , derivemap   :: Map GenericName [Type]
-            }
+:: TypeDB
+	= { functionmap :: Map FunctionLocation ExtendedType
+	  , classmap    :: Map ClassLocation ([TypeVar],ClassContext,[(FunctionName, ExtendedType)])
+	  , instancemap :: Map Class [Type]
+	  , typemap     :: Map TypeLocation TypeDef
+	  , derivemap   :: Map GenericName [Type]
+	  }
 
 printersperse :: Bool a [b] -> [String] | print a & print b
 printersperse ia a bs = intercalate (print False a) (map (print ia) bs)

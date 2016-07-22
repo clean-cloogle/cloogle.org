@@ -1,24 +1,20 @@
-# cloogle
+# Cloogle
 
-A Clean hoogle clone. Use at your own risk. You can use any of the available
-frontends:
+A Clean hoogle clone: search for functions, types, and classes from the Clean
+standard libraries.
 
-- Live version available at [cloogle.org](http://cloogle.org/)
-- On DuckDuckGo with the `!cloogle` bang.
-- Using [@CloogleBot](https://telegram.me/CloogleBot) on Telegram (see
-	[camilstaps/CloogleBot](https://github.com/camilstaps/CloogleBot))
-- Using the CLI implementation at
-	[KDercksen/cloogle-cli](https://github.com/KDercksen/cloogle-cli)
+Use any of the available frontends:
 
-## Current features
-- Search for function/operator/class member names.
-- Search for function types.
-- Search for type definitions.
-- Search for class definitions.
+- Web app at [cloogle.org](http://cloogle.org/).
+- The `!cloogle` bang on DuckDuckGo.
+- [@CloogleBot](https://telegram.me/CloogleBot) on Telegram (see
+	[camilstaps/CloogleBot](https://github.com/camilstaps/CloogleBot)).
+- [KDercksen/cloogle-cli](https://github.com/KDercksen/cloogle-cli), a command
+	line interface to the api.
 
 ---
 
-## Contents
+### Readme contents
 
 - [Setup](#setup)
 - [Setup using Docker](#setup-using-docker)

@@ -1,9 +1,8 @@
 Clean System Files/
-search
 builddb
 CloogleServer
 *.prj
 *.1
-types.db
+types.json
 cloogle.log
 node_modules/

@@ -12,7 +12,7 @@ instance zero (Logger a b s) where zero = \_ _ w -> (undef, w)
 serve :: (a *World -> *(b,*World)) (Maybe (Logger a b s)) Port *World -> *World | fromString a & toString b
 serve f log port w
 # (ok, mbListener, w) = openTCP_Listener port w
-| not ok = abort ("Couldn't open port " +++ toString port)
+| not ok = abort ("Couldn't open port " +++ toString port +++ "\n")
 # listener = fromJust mbListener
 # log = if (isNothing log) zero (fromJust log)
 # (_,w) = signal 17 1 w // SIGCHLD, SIG_IGN: no notification if child ps dies

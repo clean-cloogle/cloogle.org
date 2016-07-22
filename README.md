@@ -39,29 +39,36 @@ frontends:
 
 ### Backend
 
-- Add `env/envs.linux64` to your `$CLEAN_HOME/etc/IDEEnvs`.
+```bash
+$ cd backend
+$ cat env/envs.linux64 >> "$CLEAN_HOME/etc/IDEEnvs"
+$ make
+```
 
-- Run `make`. This builds all necessary binaries and runs `builddb`, which
-	creates a file `types.db` which holds the internal database of functions and
-	their types. If you add new libraries later on, you need to rerun `builddb`.
+You have now built the necessary binaries and created `types.db`, which holds
+the internal database.
 
-- You can then run the Clean backend with:
+You can now run the CloogleServer with:
 
-		$ ./CloogleServer 31215 < types.db
+```bash
+$ ./CloogleServer 31215 < types.db
+```
 
-	Alternatively, use `serve` as a wrapper. It will restart the server on
-	crashes, and log to both stdout and cloogle.log:
+Alternatively, use `serve` as a wrapper. It will restart the server on
+crashes, and log to both stdout and cloogle.log:
 
-		$ ./serve
+```bash
+$ ./serve
+```
 
-	In this example, the server uses port 31215. You need to use the same
-	settings in `api.php`.
+In this example, the server uses port 31215. You need to use the same settings
+in `frontend/api.php`.
 
-	Leave the `CloogleServer` running.
+Leave the `CloogleServer` running.
 
-- Install a web server with PHP support to handle requests for `api.php`. When
-	an HTTP request for `api.php` is made, that PHP script will communicate with
-	the Clean backend server.
+Install a web server with PHP support to handle requests for the `frontend`
+directory. When an HTTP request for `api.php` is made, that PHP script will
+communicate with the Clean backend server.
 
 ### Live statistics
 The live version's statistics page is at
@@ -71,12 +78,16 @@ There is a possibility to set up a web page that shows live statistics.
 Currently, only the last few searches are shown. For this, you need to have
 `nodejs` installed. Then do:
 
-	$ cd stats
-	$ npm install
+```bash
+$ cd frontend/stats
+$ npm install
+```
 
 And to run:
 
-	$ node server.js ../cloogle.log
+```bash
+$ node server.js ../../backend/cloogle.log
+```
 
 This starts a WebSocket server on port 31216. You can navigate to `/stats` to
 view the statistics. This page will receive live updates.
@@ -91,21 +102,27 @@ forwarding rules.
 
 ### Cloogle server
 
-	$ docker build -t cloogle .
-	$ docker run -d --net=host --name=cloogle \
-		-v "$PWD/cloogle.log":/usr/src/cloogle/cloogle.log \
-		cloogle
-	$ docker start cloogle
+```bash
+$ cd backend
+$ sudo touch /var/log/cloogle.log
+$ docker build -t cloogle .
+$ docker run -d --net=host --name=cloogle \
+	-v /var/log/cloogle.log:/usr/src/cloogle/cloogle.log \
+	cloogle
+$ docker start cloogle
+```
 
 ### Live statistics
 
-	$ cd stats
-	$ docker build -t cloogle-stats .
-	$ docker run -d --net=host --name=cloogle-stats \
-		-v "$PWD/../cloogle.log":/var/www/cloogle.log \
-		cloogle-stats \
-		/var/www/cloogle.log
-	$ docker start cloogle-stats
+```bash
+$ cd frontend/stats
+$ docker build -t cloogle-stats .
+$ docker run -d --net=host --name=cloogle-stats \
+	-v /var/log/cloogle.log:/var/log/cloogle.log \
+	cloogle-stats \
+	/var/log/cloogle.log
+$ docker start cloogle-stats
+```
 
 ## HTTP API specification
 `api.php` should be called with a `GET` request where the `str` variable

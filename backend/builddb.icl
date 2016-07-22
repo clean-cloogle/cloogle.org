@@ -76,7 +76,7 @@ instance zero CLI where
 VERSION :== "Cloogle's builddb version 0.1\n"
 USAGE :== concat [
 	VERSION, "\n",
-	"Usage: ./builddb [opts] > builddb.json\n\n",
+	"Usage: ./builddb [opts] > types.json\n\n",
 	"\t-h, --help Show this help\n",
 	"\t-r PATH    Change the library root to PATH\n",
 	"\t-l PATH    Add PATH to the librarypaths relative to the root\n"]

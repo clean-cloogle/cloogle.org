@@ -1,6 +1,6 @@
 BIN:=CloogleServer builddb
 PRJ:=$(addsuffix .prj,$(BIN))
-DB=types.db
+DB=types.json
 MAN:=builddb.1 # Others don't have --help/--version # $(addsuffix .1,$(BIN))
 CPM:=cpm
 SED:=sed

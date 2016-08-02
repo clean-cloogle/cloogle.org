@@ -183,11 +183,13 @@ JSON request with at least one of the following fields:
 * `unify`, the type to search for as a string.
 * `name`, the name of the function to search for.
 * `className`, the name of the class to search for.
+* `typeName`, the name of the type to search for.
 * `modules`, a list of names of modules to search in.
 * `page`: 0 for the first *n* results, 1 for the next *n*, etc.
 
 All fields are optional. If `className` is present, `unify` and `name` will be
-ignored.
+ignored. If `typeName` is present (and `className` is not), `unify` and `name`
+will be ignored.
 
 The Clean backend will return a JSON string, similar to the output of the PHP
 script described above. The error codes above 150 are specific to the script

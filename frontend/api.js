@@ -17,8 +17,8 @@ function getResults(str, page) {
 
 	function highlightCallback(span, cls, str) {
 		if (cls == 'type') {
-			return '<a class="hidden" title="Search :: ' + str + '" href="#' +
-				encodeURIComponent(':: ' + str) + '">' +
+			return '<a class="hidden" title="Search type ' + str + '" href="#' +
+				encodeURIComponent('type ' + str) + '">' +
 				span + '</a>';
 		} else if (cls == 'classname') {
 			return '<a class="hidden" title="Search class ' + str + '" href="#' +

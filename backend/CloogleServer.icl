@@ -31,6 +31,7 @@ import Levenshtein
 :: Request = { unify     :: Maybe String
              , name      :: Maybe String
              , className :: Maybe String
+             , typeName  :: Maybe String
              , modules   :: Maybe [String]
              , page      :: Maybe Int
              }
@@ -87,6 +88,7 @@ where
 	zero = { unify     = Nothing
 	       , name      = Nothing
 	       , className = Nothing
+	       , typeName  = Nothing
 	       , modules   = Nothing
 	       , page      = Nothing
 	       }
@@ -178,11 +180,15 @@ where
 	suggs _ _ _ = Nothing
 
 	search :: !Request !TypeDB -> [Result]
-	search {unify,name,className,modules,page} db
+	search {unify,name,className,typeName,modules,page} db
 		| isJust className
 			# className = fromJust className
 			# classes = findClass className db
 			= map (flip makeClassResult db) classes
+		| isJust typeName
+			# typeName = fromJust typeName
+			# types = findType typeName db
+			= map (uncurry (makeTypeResult (Just typeName))) types
 		# mbType = prepare_unification True <$> (unify >>= parseType o fromString)
 		// Search normal functions
 		# filts = catMaybes [ (\t _ -> isUnifiable t) <$> mbType

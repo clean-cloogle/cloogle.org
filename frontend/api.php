@@ -24,6 +24,8 @@ if($_SERVER['REQUEST_METHOD'] !== 'GET'){
 
 	if (substr($name, 0, 6) == 'class ') {
 		$command['className'] = substr($name, 6);
+	} elseif (substr($name, 0, 5) == 'type ') {
+		$command['typeName'] = substr($name, 5);
 	} elseif ($name != '') {
 		$command['name'] = $name;
 	}

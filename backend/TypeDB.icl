@@ -13,6 +13,7 @@ import Type
 
 :: TypeDB
 	= { functionmap :: Map FunctionLocation ExtendedType
+	  , macromap    :: Map MacroLocation Macro
 	  , classmap    :: Map ClassLocation ([TypeVar],ClassContext,[(FunctionName, ExtendedType)])
 	  , instancemap :: Map Class [Type]
 	  , typemap     :: Map TypeLocation TypeDef
@@ -38,6 +39,7 @@ derive JSONDecode ClassOrGeneric, FunctionLocation, ClassLocation, Type,
 instance zero TypeDB
 where
 	zero = { functionmap   = newMap
+	       , macromap      = newMap
 	       , classmap      = newMap
 	       , instancemap   = newMap
 	       , typemap       = newMap
@@ -47,6 +49,10 @@ where
 instance < FunctionLocation where (<) (FL a b c) (FL d e f) = (a,b,c) < (d,e,f)
 instance print FunctionLocation
 where print _ (FL lib mod fn) = fn -- " in " -- mod -- " in " -- lib
+
+instance < MacroLocation where (<) (ML a b c) (ML d e f) = (a,b,c) < (d,e,f)
+instance print MacroLocation
+where print _ (ML lib mod mn) = mn -- " in " -- mod -- " in " -- lib
 
 instance < ClassLocation where (<) (CL a b c) (CL d e f) = (a,b,c) < (d,e,f)
 
@@ -98,6 +104,8 @@ findFunction` f {functionmap} = toList $ filterWithKey f functionmap
 findFunction`` :: [(FunctionLocation ExtendedType -> Bool)] TypeDB
 	-> [(FunctionLocation, ExtendedType)]
 findFunction`` fs {functionmap} = toList $ foldr filterWithKey functionmap fs
+
+getMacro :: MacroLocation TypeDB -> Maybe Macro
 
 getInstances :: Class TypeDB -> [Type]
 getInstances c {instancemap} = if (isNothing ts) [] (fromJust ts)

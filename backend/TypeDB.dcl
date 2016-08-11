@@ -33,11 +33,19 @@ instance print TE_Priority
 
 instance print (FunctionName, ExtendedType)
 
+:: MacroLocation = ML Library Module MacroName
+instance print MacroLocation
+
+:: Macro = { macro_rhs    :: String
+           , macro_extras :: TypeExtras
+           }
+
 :: ClassLocation = CL Library Module Class
 
 :: Library      :== String
 :: Module       :== String
 :: FunctionName :== String
+:: MacroName    :== String
 :: Class        :== String
 :: GenericName  :== String
 
@@ -53,6 +61,8 @@ findFunction` :: (FunctionLocation ExtendedType -> Bool) TypeDB
 		-> [(FunctionLocation, ExtendedType)]
 findFunction`` :: [(FunctionLocation ExtendedType -> Bool)] TypeDB
 		-> [(FunctionLocation, ExtendedType)]
+
+getMacro :: MacroLocation TypeDB -> Maybe Macro
 
 getInstances :: Class TypeDB -> [Type]
 putInstance :: Class Type TypeDB -> TypeDB

@@ -78,6 +78,8 @@ function addConnectionCallbacks(connection) {
 			(req.unify ? ' :: ' + req.unify : '');
 		if ('className' in req) {
 			query = 'class ' + req.className;
+		} else if ('typeName' in req) {
+			query = ':: ' + req.typeName;
 		}
 		console.log(query);
 

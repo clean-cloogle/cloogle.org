@@ -270,7 +270,7 @@ where
 		    , filename = modToFilename mod
 		    , modul    = mod
 		    , distance
-		        = if (isNothing mbName) -100 (levenshtein` m (fromJust mbName))
+		        = if (isNothing mbName) -100 (levenshtein` (fromJust mbName) m)
 		    }
 		  , { macro_name = m
 		    , macro_representation = mac.macro_as_string

@@ -227,6 +227,10 @@ function highlightType(type, callback) {
 	return highlightFunction(type, callback, 'type');
 }
 
+function highlightMacro(macro, callback) {
+	return macro;
+}
+
 function escapeHTML(unsafe) {
 	var map = { "&": "&amp;", "<": "&lt;", ">": "&gt;",
 		'"': '&quot;', "'": '&#39;', "/": '&#x2F;' };

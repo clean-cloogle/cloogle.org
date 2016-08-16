@@ -143,6 +143,13 @@ function getResults(str, page) {
 				html += '</pre>';
 				return html;
 				break;
+			case 'MacroResult':
+				return '<hr/>' +
+					makeTable(basicData) +
+					'<pre>' +
+					highlightMacro(specific['macro_representation'], highlightCallback) +
+					'</pre>';
+				break;
 			default:
 				return '';
 		}

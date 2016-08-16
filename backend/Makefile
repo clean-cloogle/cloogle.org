@@ -23,7 +23,7 @@ man: $(MAN)
 %.prj:
 	$(CPM) project $(basename $@) create
 	$(SED) -i 's/\(Target:[ \t]\+\)StdEnv/\1CleanPlatform/' $@
-	$(SED) -i 's/[ \t]\+Path:[ \t]\+{Project}/&\n&\/CleanLevenshtein\n&\/CleanTypeUnifier\n&\/CleanTypeUnifier\/clean-compiler\/main\/\n&\/CleanTypeUnifier\/clean-compiler\/frontend\/\n&\/CleanTypeUnifier\/clean-compiler\/backend\/\n&\/CleanTypeUnifier\/clean-compiler\/main\/Unix\//' $@
+	$(SED) -i 's/[ \t]\+Path:[ \t]\+{Project}/&\n&\/CleanLevenshtein\n&\/CleanPrettyPrint\n&\/CleanTypeUnifier\n&\/CleanTypeUnifier\/clean-compiler\/main\/\n&\/CleanTypeUnifier\/clean-compiler\/frontend\/\n&\/CleanTypeUnifier\/clean-compiler\/backend\/\n&\/CleanTypeUnifier\/clean-compiler\/main\/Unix\//' $@
 	$(SED) -i 's/\([ \t]\+Path:[ \t]\+\){Project}$$/&\n\1{Application}\/lib\/ArgEnv\/\n\1{Application}\/lib\/TCPIP\//' $@
 	$(SED) -i 's/\($(basename $@)\).exe/\1/' $@
 	$(SED) -i 's/\(Output:[ \t]\+\)ShowConstructors/\1NoConsole/' $@

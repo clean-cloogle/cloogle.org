@@ -2,7 +2,7 @@ module builddb
 
 // Project libraries
 import qualified TypeDB as DB
-from TypeDB import ::TypeExtras{..}, instance zero TypeExtras
+from TypeDB import ::TypeExtras{..}, instance zero TypeExtras, ::Macro{..}
 
 // StdEnv
 import StdFile, StdList, StdMisc, StdArray, StdBool, StdString, StdTuple
@@ -17,6 +17,9 @@ import qualified Type as T
 from Type import class print(print), instance print [a], instance print String
 import CoclUtils
 
+// CleanPrettyPrint
+import CleanPrettyPrint
+
 // frontend
 //import Heap, compile, parse, predef
 import Heap
@@ -27,13 +30,15 @@ from compile import empty_cache, ::DclCache{hash_table}
 from general import ::Optional(..)
 from syntax import ::SymbolTable, ::SymbolTableEntry, ::Ident{..}, ::SymbolPtr,
 	::Position(NoPos), ::Module{mod_ident,mod_defs},
-	::ParsedDefinition(PD_TypeSpec,PD_Instance,PD_Class,PD_Type,PD_Generic,PD_Derive),
+	::ParsedDefinition(PD_TypeSpec,PD_Instance,PD_Class,PD_Type,PD_Generic,PD_Derive,PD_Function),
 	::FunSpecials, ::Priority, ::ParsedModule, ::SymbolType,
 	::ParsedInstanceAndMembers{..}, ::ParsedInstance{pi_ident,pi_types},
 	::Type, ::ClassDef{class_ident,class_args,class_context},
 	::TypeVar, ::ParsedTypeDef, ::TypeDef,
 	::GenericDef{gen_ident,gen_type,gen_vars},
-	::GenericCaseDef{gc_type,gc_gcf}, ::GenericCaseFunctions(GCF), ::GCF
+	::GenericCaseDef{gc_type,gc_gcf}, ::GenericCaseFunctions(GCF), ::GCF,
+	::FunKind(FK_Macro),
+	::Rhs, ::ParsedExpr
 from scanner import ::Priority(..), ::Assoc(..)
 from parse import wantModule
 
@@ -159,6 +164,7 @@ getModuleTypes root mod lib cache db w
 # db = 'DB'.putFunctions (flatten $ map constructor_functions typedefs) db
 # db = 'DB'.putFunctions (pd_generics lib mod pm.mod_defs) db
 # db = 'DB'.putDerivationss (pd_derivations pm.mod_defs) db
+# db = 'DB'.putMacros (pd_macros lib mod pm.mod_defs) db
 = (db,cache,w)
 where
 	mkdir :: String -> String
@@ -174,6 +180,14 @@ where
 			| drop (length lib - length mod) lib == mod
 				= take (length lib - length mod - 1) lib
 			= lib
+
+	pd_macros :: String String [ParsedDefinition] -> [('DB'.MacroLocation, 'DB'.Macro)]
+	pd_macros lib mod pds
+		= [( 'DB'.ML lib mod id.id_name
+		   , { macro_rhs = cpp rhs
+		     , macro_extras = zero
+		     }
+		   ) \\ PD_Function _ id isinfix args rhs FK_Macro <- pds]
 
 	pd_derivations :: [ParsedDefinition] -> [('DB'.GenericName, ['DB'.Type])]
 	pd_derivations pds

@@ -63,6 +63,8 @@ findFunction`` :: [(FunctionLocation ExtendedType -> Bool)] TypeDB
 		-> [(FunctionLocation, ExtendedType)]
 
 getMacro :: MacroLocation TypeDB -> Maybe Macro
+putMacro :: MacroLocation Macro TypeDB -> TypeDB
+putMacros :: [(MacroLocation, Macro)] TypeDB -> TypeDB
 
 getInstances :: Class TypeDB -> [Type]
 putInstance :: Class Type TypeDB -> TypeDB

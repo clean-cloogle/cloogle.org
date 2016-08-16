@@ -28,13 +28,13 @@ printersperse ia a bs = intercalate (print False a) (map (print ia) bs)
 
 derive gEq ClassOrGeneric, FunctionLocation, ClassLocation, Type, TypeDB,
 	TypeExtras, TE_Priority, ExtendedType, TypeDef, TypeLocation, TypeDefRhs,
-	RecordField, Constructor, Kind
+	RecordField, Constructor, Kind, MacroLocation, Macro
 derive JSONEncode ClassOrGeneric, FunctionLocation, ClassLocation, Type,
 	TypeDB, TypeExtras, TE_Priority, ExtendedType, TypeDef, TypeLocation,
-	TypeDefRhs, RecordField, Constructor, Kind
+	TypeDefRhs, RecordField, Constructor, Kind, MacroLocation, Macro
 derive JSONDecode ClassOrGeneric, FunctionLocation, ClassLocation, Type,
 	TypeDB, TypeExtras, TE_Priority, ExtendedType, TypeDef, TypeLocation,
-	TypeDefRhs, RecordField, Constructor, Kind
+	TypeDefRhs, RecordField, Constructor, Kind, MacroLocation, Macro
 
 instance zero TypeDB
 where
@@ -106,6 +106,13 @@ findFunction`` :: [(FunctionLocation ExtendedType -> Bool)] TypeDB
 findFunction`` fs {functionmap} = toList $ foldr filterWithKey functionmap fs
 
 getMacro :: MacroLocation TypeDB -> Maybe Macro
+getMacro loc {macromap} = get loc macromap
+
+putMacro :: MacroLocation Macro TypeDB -> TypeDB
+putMacro ml m db=:{macromap} = { db & macromap = put ml m macromap }
+
+putMacros :: [(MacroLocation, Macro)] TypeDB -> TypeDB
+putMacros ms db = foldr (\(loc,m) db -> putMacro loc m db) db ms
 
 getInstances :: Class TypeDB -> [Type]
 getInstances c {instancemap} = if (isNothing ts) [] (fromJust ts)

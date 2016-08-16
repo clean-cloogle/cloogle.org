@@ -36,7 +36,7 @@ instance print (FunctionName, ExtendedType)
 :: MacroLocation = ML Library Module MacroName
 instance print MacroLocation
 
-:: Macro = { macro_rhs    :: String
+:: Macro = { macro_as_string :: String
            , macro_extras :: TypeExtras
            }
 
@@ -65,6 +65,7 @@ findFunction`` :: [(FunctionLocation ExtendedType -> Bool)] TypeDB
 getMacro :: MacroLocation TypeDB -> Maybe Macro
 putMacro :: MacroLocation Macro TypeDB -> TypeDB
 putMacros :: [(MacroLocation, Macro)] TypeDB -> TypeDB
+findMacro` :: (MacroLocation Macro -> Bool) TypeDB -> [(MacroLocation, Macro)]
 
 getInstances :: Class TypeDB -> [Type]
 putInstance :: Class Type TypeDB -> TypeDB

@@ -184,10 +184,10 @@ where
 	pd_macros :: String String [ParsedDefinition] -> [('DB'.MacroLocation, 'DB'.Macro)]
 	pd_macros lib mod pds
 		= [( 'DB'.ML lib mod id.id_name
-		   , { macro_rhs = cpp rhs
+		   , { macro_as_string = cpp pd
 		     , macro_extras = zero
 		     }
-		   ) \\ PD_Function _ id isinfix args rhs FK_Macro <- pds]
+		   ) \\ pd=:(PD_Function _ id isinfix args rhs FK_Macro) <- pds]
 
 	pd_derivations :: [ParsedDefinition] -> [('DB'.GenericName, ['DB'.Type])]
 	pd_derivations pds

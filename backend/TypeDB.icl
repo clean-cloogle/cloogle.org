@@ -114,6 +114,9 @@ putMacro ml m db=:{macromap} = { db & macromap = put ml m macromap }
 putMacros :: [(MacroLocation, Macro)] TypeDB -> TypeDB
 putMacros ms db = foldr (\(loc,m) db -> putMacro loc m db) db ms
 
+findMacro` :: (MacroLocation Macro -> Bool) TypeDB -> [(MacroLocation, Macro)]
+findMacro` f {macromap} = toList $ filterWithKey f macromap
+
 getInstances :: Class TypeDB -> [Type]
 getInstances c {instancemap} = if (isNothing ts) [] (fromJust ts)
 where ts = get c instancemap

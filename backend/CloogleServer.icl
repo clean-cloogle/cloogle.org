@@ -46,6 +46,7 @@ import Levenshtein
 :: Result = FunctionResult FunctionResult
           | TypeResult TypeResult
           | ClassResult ClassResult
+          | MacroResult MacroResult
 
 :: BasicResult = { library  :: String
                  , filename :: String
@@ -72,6 +73,11 @@ import Levenshtein
                        , class_instances :: [String]
                        }
 
+:: MacroResult :== (BasicResult, MacroResultExtras)
+:: MacroResultExtras = { macro_name :: String
+                       , macro_representation :: String
+                       }
+
 :: StrUnifier :== ([(String,String)], [(String,String)])
 
 :: ErrorResult = Error Int String
@@ -79,9 +85,9 @@ import Levenshtein
 :: ShortClassResult = { cls_name :: String, cls_vars :: [String] }
 
 derive JSONEncode Request, Response, Result, ShortClassResult, BasicResult,
-	FunctionResultExtras, TypeResultExtras, ClassResultExtras
+	FunctionResultExtras, TypeResultExtras, ClassResultExtras, MacroResultExtras
 derive JSONDecode Request, Response, Result, ShortClassResult, BasicResult,
-	FunctionResultExtras, TypeResultExtras, ClassResultExtras
+	FunctionResultExtras, TypeResultExtras, ClassResultExtras, MacroResultExtras
 
 instance zero Request
 where
@@ -107,6 +113,7 @@ where
 		basic (FunctionResult (br,_)) = br
 		basic (TypeResult (br,_)) = br
 		basic (ClassResult (br,_)) = br
+		basic (MacroResult (br,_)) = br
 
 err :: Int String -> Response
 err c m = { return         = c
@@ -196,6 +203,11 @@ where
 		                    , isModMatchF <$> modules
 		                    ]
 		# funs = map (\f -> makeFunctionResult name mbType Nothing f db) $ findFunction`` filts db
+		// Search macros
+		# macros = case name of
+			Nothing  = []
+			(Just n) = findMacro` (\(ML lib mod m) _ -> isNameMatch (size n-2) n (FL lib mod m)) db
+		# macros = map (\(lhs,rhs) -> makeMacroResult name lhs rhs) macros
 		// Search class members
 		# filts = catMaybes [ (\t _ _ _ _->isUnifiable t) <$> mbType
 		                    , (\n (CL lib mod _) _ _ f _ -> isNameMatch
@@ -219,7 +231,7 @@ where
 				findClass` (\(CL _ _ c`) _ _ _ -> toLowerCase c` == c) db
 			_ = []
 		// Merge results
-		= sort $ funs ++ members ++ types ++ classes
+		= sort $ funs ++ members ++ types ++ classes ++ macros
 
 	makeClassResult :: (ClassLocation, [TypeVar], ClassContext, [(FunctionName,ExtendedType)])
 		TypeDB -> Result
@@ -249,6 +261,20 @@ where
 		        = if (isNothing mbName) -100 (levenshtein` t (fromJust mbName))
 		    }
 		  , { type = concat $ print False td }
+		  )
+
+	makeMacroResult :: (Maybe String) MacroLocation Macro -> Result
+	makeMacroResult mbName (ML lib mod m) mac
+		= MacroResult
+		  ( { library  = lib
+		    , filename = modToFilename mod
+		    , modul    = mod
+		    , distance
+		        = if (isNothing mbName) -100 (levenshtein` m (fromJust mbName))
+		    }
+		  , { macro_name = m
+		    , macro_representation = mac.macro_as_string
+		    }
 		  )
 
 	makeFunctionResult :: (Maybe String) (Maybe Type) (Maybe ShortClassResult)

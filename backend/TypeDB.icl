@@ -56,7 +56,12 @@ where print _ (ML lib mod mn) = mn -- " in " -- mod -- " in " -- lib
 
 instance < ClassLocation where (<) (CL a b c) (CL d e f) = (a,b,c) < (d,e,f)
 
-instance < TypeLocation where (<) (TL a b c) (TL d e f) = (a,b,c) < (d,e,f)
+instance < TypeLocation
+where
+	(<) (TL_Builtin a) (TL_Builtin b) = a < b
+	(<) (TL_Builtin _) (TL _ _ _)     = True
+	(<) (TL _ _ _)     (TL_Builtin _) = False
+	(<) (TL a b c)     (TL d e f)     = (a,b,c) < (d,e,f)
 
 instance zero TypeExtras
 where
@@ -174,7 +179,10 @@ putTypes ts db = foldr (\(loc,td) -> putType loc td) db ts
 
 findType :: TypeName TypeDB -> [(TypeLocation, TypeDef)]
 findType t db=:{typemap}
-	= toList $ filterWithKey (\(TL _ _ t`) _->t==t`) typemap
+	= toList $ filterWithKey (\tl _ -> getName tl == t) typemap
+where
+	getName (TL _ _ t)     = t
+	getName (TL_Builtin t) = t
 
 findType` :: (TypeLocation TypeDef -> Bool) TypeDB
 		-> [(TypeLocation, TypeDef)]

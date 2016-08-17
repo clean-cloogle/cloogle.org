@@ -16,6 +16,7 @@ import System.Directory, System.CommandLine
 // CleanTypeUnifier
 import qualified Type as T
 from Type import class print(print), instance print [a], instance print String
+from Type import qualified ::TypeDef{..}, ::Constructor{..}
 import CoclUtils
 
 // CleanPrettyPrint
@@ -106,6 +107,7 @@ Start w
 	# (st, w) = init_identifiers newHeap w
 	# cache = empty_cache st
 	# (db, w) = loop cli.root mods 'DB'.newDb cache w
+	# db = 'DB'.putTypes predefTypes db
 	# f = 'DB'.saveDb db f
 	= fclose f w
 | not ok = abort "Couldn't close stdio"
@@ -127,6 +129,29 @@ where
 		("-r", [x:xs]) = (\c->{c & root=x}) <$> parseCLI xs
 		("-l", [x:xs]) = (\c->{c & libs=[x:c.libs]}) <$> parseCLI xs
 		(x, _) = Left $ "Unknown option '" +++ x +++ "'"
+
+predefTypes :: [('DB'.TypeLocation, 'T'.TypeDef)]
+predefTypes
+	= [ ( 'DB'.TL_Builtin "Bool"
+	    , { deft
+		  & 'Type'.td_name = "Bool"
+	      , 'Type'.td_rhs  = 'T'.TDRCons False
+	        [ { defc & 'Type'.cons_name="False" }
+	        , { defc & 'Type'.cons_name="True" }
+			]
+	      }
+	    )
+	  , ( 'DB'.TL_Builtin "Int",     { deft & 'Type'.td_name = "Int"     } )
+	  , ( 'DB'.TL_Builtin "Real",    { deft & 'Type'.td_name = "Real"    } )
+	  , ( 'DB'.TL_Builtin "Char",    { deft & 'Type'.td_name = "Char"    } )
+	  , ( 'DB'.TL_Builtin "String",  { deft & 'Type'.td_name = "String"  } )
+	  , ( 'DB'.TL_Builtin "Dynamic", { deft & 'Type'.td_name = "Dynamic" } )
+	  , ( 'DB'.TL_Builtin "File",    { deft & 'Type'.td_name = "File"    })
+	  , ( 'DB'.TL_Builtin "World",   { deft & 'Type'.td_name = "World",  'Type'.td_uniq = True } )
+	  ]
+where
+	deft = {'Type'.td_name="", 'Type'.td_uniq=False, 'Type'.td_args=[], 'Type'.td_rhs='T'.TDRAbstract}
+	defc = {'Type'.cons_name="", 'Type'.cons_args=[], 'Type'.cons_exi_vars=[], 'Type'.cons_context=[]}
 
 //             Exclude   Root    Library Base module            Library Module
 findModules :: ![String] !String !String !String !*World -> *(![(String,String)], !*World)

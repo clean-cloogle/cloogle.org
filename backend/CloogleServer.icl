@@ -52,6 +52,7 @@ import Levenshtein
                  , filename :: String
                  , modul    :: String
                  , distance :: Int
+                 , builtin  :: Maybe Bool
                  }
 
 :: FunctionResult :== (BasicResult, FunctionResultExtras)
@@ -222,7 +223,7 @@ where
 			(let (Type name _) = fromJust mbType in Just $ toLowerCase name)
 			(toLowerCase <$> name)
 		# types = case lcTypeName of
-			(Just n) = findType` (\(TL _ _ t) _ -> toLowerCase t == n) db
+			(Just n) = findType` (\tl _ -> toLowerCase (getName tl) == n) db
 			Nothing  = []
 		# types = map (\(tl,td) -> makeTypeResult name tl td) types
 		// Search classes
@@ -232,6 +233,9 @@ where
 			_ = []
 		// Merge results
 		= sort $ funs ++ members ++ types ++ classes ++ macros
+	where
+		getName (TL _ _ t)     = t
+		getName (TL_Builtin t) = t
 
 	makeClassResult :: (ClassLocation, [TypeVar], ClassContext, [(FunctionName,ExtendedType)])
 		TypeDB -> Result
@@ -241,10 +245,11 @@ where
 		    , filename = modToFilename mod
 		    , modul    = mod
 		    , distance = -100
+		    , builtin  = Nothing
 		    }
 		  , { class_name = cls
 		    , class_heading = foldl ((+) o (flip (+) " ")) cls vars +
-			    if (isEmpty cc) "" " " + concat (print False cc)
+		        if (isEmpty cc) "" " " + concat (print False cc)
 		    , class_funs = [concat $ print False fun \\ fun <- funs]
 		    , class_instances
 		        = sort [concat (print False t) \\ t <- getInstances cls db]
@@ -259,6 +264,18 @@ where
 		    , modul    = mod
 		    , distance
 		        = if (isNothing mbName) -100 (levenshtein` t (fromJust mbName))
+		    , builtin  = Nothing
+		    }
+		  , { type = concat $ print False td }
+		  )
+	makeTypeResult mbName (TL_Builtin t) td
+		= TypeResult
+		  ( { library  = ""
+		    , filename = ""
+		    , modul    = ""
+		    , distance
+		        = if (isNothing mbName) -100 (levenshtein` t (fromJust mbName))
+		    , builtin  = Just True
 		    }
 		  , { type = concat $ print False td }
 		  )
@@ -271,6 +288,7 @@ where
 		    , modul    = mod
 		    , distance
 		        = if (isNothing mbName) -100 (levenshtein` (fromJust mbName) m)
+		    , builtin  = Nothing
 		    }
 		  , { macro_name = m
 		    , macro_representation = mac.macro_as_string
@@ -286,18 +304,19 @@ where
 		    , filename = modToFilename mod
 		    , modul    = mod
 		    , distance = distance
+		    , builtin  = Nothing
 		    }
 		  , { func     = concat $ print False (fname,et)
 		    , unifier  = toStrUnifier <$> finish_unification <$>
 		        (orgsearchtype >>= unify [] (prepare_unification False type))
 		    , cls      = mbCls
-			, constructor_of = if (tes.te_isconstructor)
-				(let (Func _ r _) = type in Just $ concat $ print False r)
-				Nothing
+		    , constructor_of = if (tes.te_isconstructor)
+		        (let (Func _ r _) = type in Just $ concat $ print False r)
+		        Nothing
 		    , generic_derivations
 		        = let derivs = getDerivations fname db in
-			      (\_ -> [concat $ print False d \\ d <-derivs]) <$>
-			      tes.te_generic_vars
+		          (\_ -> [concat $ print False d \\ d <-derivs]) <$>
+		          tes.te_generic_vars
 		    }
 		  )
 	where

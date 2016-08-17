@@ -115,6 +115,10 @@ function getResults(str, page) {
 					'</code>';
 				break;
 			case 'TypeResult':
+				if ('builtin' in basic && basic['builtin']) {
+					basicData.splice(0,3);
+					basicData.push(['This is a builtin type.']);
+				}
 				return '<hr/>' +
 					makeTable(basicData) +
 					'<pre>' +

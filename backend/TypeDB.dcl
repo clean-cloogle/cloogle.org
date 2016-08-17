@@ -49,7 +49,7 @@ instance print MacroLocation
 :: Class        :== String
 :: GenericName  :== String
 
-:: TypeLocation = TL Library Module TypeName
+:: TypeLocation = TL Library Module TypeName | TL_Builtin TypeName
 
 :: TypeName :== String
 

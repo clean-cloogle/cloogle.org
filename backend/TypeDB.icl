@@ -13,6 +13,7 @@ import Type
 
 :: TypeDB
 	= { functionmap :: Map FunctionLocation ExtendedType
+	  , macromap    :: Map MacroLocation Macro
 	  , classmap    :: Map ClassLocation ([TypeVar],ClassContext,[(FunctionName, ExtendedType)])
 	  , instancemap :: Map Class [Type]
 	  , typemap     :: Map TypeLocation TypeDef
@@ -27,17 +28,18 @@ printersperse ia a bs = intercalate (print False a) (map (print ia) bs)
 
 derive gEq ClassOrGeneric, FunctionLocation, ClassLocation, Type, TypeDB,
 	TypeExtras, TE_Priority, ExtendedType, TypeDef, TypeLocation, TypeDefRhs,
-	RecordField, Constructor, Kind
+	RecordField, Constructor, Kind, MacroLocation, Macro
 derive JSONEncode ClassOrGeneric, FunctionLocation, ClassLocation, Type,
 	TypeDB, TypeExtras, TE_Priority, ExtendedType, TypeDef, TypeLocation,
-	TypeDefRhs, RecordField, Constructor, Kind
+	TypeDefRhs, RecordField, Constructor, Kind, MacroLocation, Macro
 derive JSONDecode ClassOrGeneric, FunctionLocation, ClassLocation, Type,
 	TypeDB, TypeExtras, TE_Priority, ExtendedType, TypeDef, TypeLocation,
-	TypeDefRhs, RecordField, Constructor, Kind
+	TypeDefRhs, RecordField, Constructor, Kind, MacroLocation, Macro
 
 instance zero TypeDB
 where
 	zero = { functionmap   = newMap
+	       , macromap      = newMap
 	       , classmap      = newMap
 	       , instancemap   = newMap
 	       , typemap       = newMap
@@ -47,6 +49,10 @@ where
 instance < FunctionLocation where (<) (FL a b c) (FL d e f) = (a,b,c) < (d,e,f)
 instance print FunctionLocation
 where print _ (FL lib mod fn) = fn -- " in " -- mod -- " in " -- lib
+
+instance < MacroLocation where (<) (ML a b c) (ML d e f) = (a,b,c) < (d,e,f)
+instance print MacroLocation
+where print _ (ML lib mod mn) = mn -- " in " -- mod -- " in " -- lib
 
 instance < ClassLocation where (<) (CL a b c) (CL d e f) = (a,b,c) < (d,e,f)
 
@@ -75,7 +81,9 @@ instance print (FunctionName, ExtendedType)
 where
 	print _ (f, (ET t e=:{te_generic_vars=Just _}))
 		= "generic " -- f -- " " -- e -- " :: " -- t
-	print _ (f, (ET t e))
+	print _ (f, (ET t e=:{te_priority=Just _}))
+		= "(" -- f -- ") " -- e -- " :: " -- t
+	print _ (f, (ET t e=:{te_priority=Nothing}))
 		= f -- " " -- e -- " :: " -- t
 
 getFunction :: FunctionLocation TypeDB -> Maybe ExtendedType
@@ -98,6 +106,18 @@ findFunction` f {functionmap} = toList $ filterWithKey f functionmap
 findFunction`` :: [(FunctionLocation ExtendedType -> Bool)] TypeDB
 	-> [(FunctionLocation, ExtendedType)]
 findFunction`` fs {functionmap} = toList $ foldr filterWithKey functionmap fs
+
+getMacro :: MacroLocation TypeDB -> Maybe Macro
+getMacro loc {macromap} = get loc macromap
+
+putMacro :: MacroLocation Macro TypeDB -> TypeDB
+putMacro ml m db=:{macromap} = { db & macromap = put ml m macromap }
+
+putMacros :: [(MacroLocation, Macro)] TypeDB -> TypeDB
+putMacros ms db = foldr (\(loc,m) db -> putMacro loc m db) db ms
+
+findMacro` :: (MacroLocation Macro -> Bool) TypeDB -> [(MacroLocation, Macro)]
+findMacro` f {macromap} = toList $ filterWithKey f macromap
 
 getInstances :: Class TypeDB -> [Type]
 getInstances c {instancemap} = if (isNothing ts) [] (fromJust ts)

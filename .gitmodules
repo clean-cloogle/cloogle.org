@@ -4,3 +4,6 @@
 [submodule "CleanLevenshtein"]
 	path = backend/CleanLevenshtein
 	url = https://github.com/camilstaps/CleanLevenshtein
+[submodule "backend/CleanPrettyPrint"]
+	path = backend/CleanPrettyPrint
+	url = https://github.com/camilstaps/CleanPrettyPrint.git

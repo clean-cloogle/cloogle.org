@@ -149,9 +149,9 @@ fields:
 - `data`
 
 	An array of search results. A result is an array of three elements. The first
-	determines the kind of result. It may be `FunctionResult`, `TypeResult` or
-	`ClassResult`. The second contains general data, in particular the following
-	fields:
+	determines the kind of result. It may be `FunctionResult`, `TypeResult`,
+	`ClassResult` or `MacroResult`. The second contains general data, in
+	particular the following fields:
 
 	* `library`
 	* `filename`
@@ -161,8 +161,8 @@ fields:
 
 	The third element of the array contains data specific to the kind of result.
 	It is easiest to look in `CloogleServer.icl` at the types
-	`FunctionResultExtras`, `TypeResultExtras` and `ClassResultExtras` to get an
-	idea of the fields that may be returned.
+	`FunctionResultExtras`, `TypeResultExtras`, `ClassResultExtras` and
+	`MacroResultExtras` to get an idea of the fields that may be returned.
 
 - `more_available`
 

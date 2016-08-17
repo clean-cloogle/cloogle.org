@@ -2,13 +2,14 @@ module builddb
 
 // Project libraries
 import qualified TypeDB as DB
-from TypeDB import ::TypeExtras{..}, instance zero TypeExtras
+from TypeDB import ::TypeExtras{..}, instance zero TypeExtras, ::Macro{..}
 
 // StdEnv
 import StdFile, StdList, StdMisc, StdArray, StdBool, StdString, StdTuple
 
 // CleanPlatform
 import Data.Maybe, Data.Either, Data.Error, Data.Func, Data.Tuple, Data.Functor
+import Control.Applicative, Control.Monad
 from Text import class Text(concat), instance Text String
 import System.Directory, System.CommandLine
 
@@ -16,6 +17,9 @@ import System.Directory, System.CommandLine
 import qualified Type as T
 from Type import class print(print), instance print [a], instance print String
 import CoclUtils
+
+// CleanPrettyPrint
+import CleanPrettyPrint
 
 // frontend
 //import Heap, compile, parse, predef
@@ -27,13 +31,15 @@ from compile import empty_cache, ::DclCache{hash_table}
 from general import ::Optional(..)
 from syntax import ::SymbolTable, ::SymbolTableEntry, ::Ident{..}, ::SymbolPtr,
 	::Position(NoPos), ::Module{mod_ident,mod_defs},
-	::ParsedDefinition(PD_TypeSpec,PD_Instance,PD_Class,PD_Type,PD_Generic,PD_Derive),
+	::ParsedDefinition(PD_TypeSpec,PD_Instance,PD_Class,PD_Type,PD_Generic,PD_Derive,PD_Function),
 	::FunSpecials, ::Priority, ::ParsedModule, ::SymbolType,
 	::ParsedInstanceAndMembers{..}, ::ParsedInstance{pi_ident,pi_types},
 	::Type, ::ClassDef{class_ident,class_args,class_context},
 	::TypeVar, ::ParsedTypeDef, ::TypeDef,
 	::GenericDef{gen_ident,gen_type,gen_vars},
-	::GenericCaseDef{gc_type,gc_gcf}, ::GenericCaseFunctions(GCF), ::GCF
+	::GenericCaseDef{gc_type,gc_gcf}, ::GenericCaseFunctions(GCF), ::GCF,
+	::FunKind(FK_Macro),
+	::Rhs, ::ParsedExpr
 from scanner import ::Priority(..), ::Assoc(..)
 from parse import wantModule
 
@@ -159,6 +165,7 @@ getModuleTypes root mod lib cache db w
 # db = 'DB'.putFunctions (flatten $ map constructor_functions typedefs) db
 # db = 'DB'.putFunctions (pd_generics lib mod pm.mod_defs) db
 # db = 'DB'.putDerivationss (pd_derivations pm.mod_defs) db
+# db = 'DB'.putMacros (pd_macros lib mod pm.mod_defs) db
 = (db,cache,w)
 where
 	mkdir :: String -> String
@@ -174,6 +181,28 @@ where
 			| drop (length lib - length mod) lib == mod
 				= take (length lib - length mod - 1) lib
 			= lib
+
+	pd_macros :: String String [ParsedDefinition] -> [('DB'.MacroLocation, 'DB'.Macro)]
+	pd_macros lib mod pds
+		= [( 'DB'.ML lib mod id.id_name
+		   , { macro_as_string = priostring id +++ cpp pd
+		     , macro_extras = {zero & te_priority = findPrio id >>= toPrio}
+		     }
+		   ) \\ pd=:(PD_Function _ id isinfix args rhs FK_Macro) <- pds]
+	where
+		priostring :: Ident -> String
+		priostring id = case findTypeSpec id pds of
+			Nothing    = ""
+			(Just pri) = cpp pri +++ "\n"
+
+		findPrio :: Ident -> Maybe Priority
+		findPrio id = (\(PD_TypeSpec _ _ p _ _) -> p) <$> findTypeSpec id pds
+
+		findTypeSpec :: Ident [ParsedDefinition] -> Maybe ParsedDefinition
+		findTypeSpec _  []          = Nothing
+		findTypeSpec id [pd=:(PD_TypeSpec _ id` prio _ _):pds]
+		| id`.id_name == id.id_name = Just pd
+		findTypeSpec id [_:pds]     = findTypeSpec id pds
 
 	pd_derivations :: [ParsedDefinition] -> [('DB'.GenericName, ['DB'.Type])]
 	pd_derivations pds
@@ -193,12 +222,6 @@ where
 		= [( 'DB'.FL lib mod id_name
 		   , 'DB'.ET ('T'.toType t) {zero & te_priority=toPrio p}
 		   ) \\ PD_TypeSpec pos id=:{id_name} p (Yes t) funspecs <- pds]
-	where
-		toPrio :: Priority -> Maybe 'DB'.TE_Priority
-		toPrio (Prio LeftAssoc i)  = Just $ 'DB'.LeftAssoc i
-		toPrio (Prio RightAssoc i) = Just $ 'DB'.RightAssoc i
-		toPrio (Prio NoAssoc i)    = Just $ 'DB'.NoAssoc i
-		toPrio _                   = Nothing
 
 	pd_instances :: [ParsedDefinition] -> [('DB'.Class, ['DB'.Type])]
 	pd_instances pds
@@ -227,6 +250,12 @@ where
 	constructor_functions ('DB'.TL lib mod _, td)
 		= [('DB'.FL lib mod c, 'DB'.ET f {zero & te_isconstructor=True})
 		   \\ (c,f) <- 'T'.constructorsToFunctions td]
+
+	toPrio :: Priority -> Maybe 'DB'.TE_Priority
+	toPrio (Prio LeftAssoc i)  = Just $ 'DB'.LeftAssoc i
+	toPrio (Prio RightAssoc i) = Just $ 'DB'.RightAssoc i
+	toPrio (Prio NoAssoc i)    = Just $ 'DB'.NoAssoc i
+	toPrio _                   = Nothing
 
 wantModule` :: !*File !{#Char} !Bool !Ident !Position !Bool !*HashTable !*File !*Files
 	-> ((!Bool,!Bool,!ParsedModule, !*HashTable, !*File), !*Files)

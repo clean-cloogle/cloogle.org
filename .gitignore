@@ -6,3 +6,4 @@ CloogleServer
 types.json
 cloogle.log
 node_modules/
+backend/clean-compiler/

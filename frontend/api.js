@@ -28,6 +28,10 @@ function getResults(str, page) {
 			return '<a class="hidden" title="Search generic ' + str + '" href="#' +
 				encodeURIComponent(str) + '">' +
 				span + '</a>';
+		} else if (cls == 'funcname funcname-onlyused' || cls == 'constructor') {
+			return '<a class="hidden" title="Search ' + str + '" href="#' +
+				encodeURIComponent(str) + '">' +
+				span + '</a>';
 		} else {
 			return span;
 		}
@@ -106,7 +110,8 @@ function getResults(str, page) {
 				return '<hr/>' +
 					makeTable(basicData.concat(specificData)) +
 					'<code>' +
-					highlightFunction(specific['func'], highlightCallback) +
+					highlightFunction(specific['func'], highlightCallback,
+							'constructor_of' in specific ? 'startConstructor' : 'start') +
 					'</code>';
 				break;
 			case 'TypeResult':
@@ -142,6 +147,13 @@ function getResults(str, page) {
 				}
 				html += '</pre>';
 				return html;
+				break;
+			case 'MacroResult':
+				return '<hr/>' +
+					makeTable(basicData) +
+					'<pre>' +
+					highlightMacro(specific['macro_representation'], highlightCallback) +
+					'</pre>';
 				break;
 			default:
 				return '';

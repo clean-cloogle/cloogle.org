@@ -11,8 +11,12 @@
 
 FROM camilstaps/clean:2.4-itasks
 
+RUN apt-get update && apt-get install -y subversion ca-certificates
+
 COPY . /usr/src/cloogle
 WORKDIR /usr/src/cloogle
+
+RUN cat env/envs.linux64 >> /opt/clean/etc/IDEEnvs
 
 RUN make
 

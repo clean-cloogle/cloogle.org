@@ -81,6 +81,7 @@ function highlightFunction(func, callback, start) {
 			[/(infix[rl])(\s+)(\d*)/,
 			                 ['keyword', 'whitespace', 'keyword']],
 			[/([\(\)])/,     ['punctuation']],
+			[/(::)/,         ['punctuation'], 'type'],
 			[/([^\(\)]+)/,   ['funcname']]
 		],
 		startConstructor: [ // alternative entry point in case this is a constructor
@@ -122,6 +123,8 @@ function highlightFunction(func, callback, start) {
 			[/(\[)/,         ['punctuation'], 'attrenv'],
 			[/([\(\[])/,     ['punctuation'], 'contextType'],
 			[/([\)\]])/,     ['punctuation'], 'pop'],
+			[/([a-z][\w`]*)/, ['typevar']],
+			[/([A-Z][\w`]*)/, ['type']],
 			[/([^\s\(\)\[\],]+)/, ['typevar']]
 		],
 		attrenv: [

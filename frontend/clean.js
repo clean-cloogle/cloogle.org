@@ -69,9 +69,19 @@ function highlightFunction(func, callback, start) {
 	return highlightToHTML({
 		start: [
 			[/(\s+)/,        ['whitespace']],
-			[/(generic)(\s)/, ['keyword', 'whitespace'], 'generic'],
-			[/(.*)(::)/,     ['funcname', 'punctuation'], 'type'],
-			[/(\S+)/,        ['funcname']]
+			[/(generic)(\s)/,
+			                 ['keyword', 'whitespace'], 'generic'],
+			[/(\S+)(\s+)(::)/,
+			                 ['funcname', 'whitespace', 'punctuation'], 'type'],
+			[/(\()(\S+)(\))(\s+)(infix[rl]?)(\s*)(\d*)(\s*)(::)/,
+			                 ['punctuation', 'funcname', 'punctuation', 'whitespace',
+			                  'keyword', 'whitespace', 'keyword', 'whitespace',
+			                  'punctuation']
+			                 , 'type'],
+			[/(infix[rl])(\s+)(\d*)/,
+			                 ['keyword', 'whitespace', 'keyword']],
+			[/([\(\)])/,     ['punctuation']],
+			[/([^\(\)]+)/,   ['funcname']]
 		],
 		startConstructor: [ // alternative entry point in case this is a constructor
 			[/(\s+)/,        ['whitespace']],
@@ -248,6 +258,9 @@ function highlightMacro(macro, callback, start) {
 	return highlightToHTML({
 		start: [
 			[/(\s+)/,        ['whitespace']],
+			[/(\(.+\)\s+infix.*)/,
+			                 ['__type__']],
+			[/(\()(\S+)(\))/, ['punctuation', 'funcname', 'punctuation'], 'args'],
 			[/(\S+)/,        ['funcname'], 'args']
 		],
 		args: [
@@ -273,6 +286,8 @@ function highlightMacro(macro, callback, start) {
 			[/\b(True|False)\b/,
 			                 ['literal literal-bool']],
 			[/(")/,          ['literal literal-string'], 'string'],
+			[/(\(.+\)\s+infix.*)/,
+			                 ['__type__']],
 			[/([\w`]+\s*::.*)/,
 			                 ['__type__']],
 			[/([A-Z][\w`]*)/,['constructor']],

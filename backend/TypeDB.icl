@@ -46,22 +46,23 @@ where
 	       , derivemap     = newMap
 	       }
 
-instance < FunctionLocation where (<) (FL a b c) (FL d e f) = (a,b,c) < (d,e,f)
-instance print FunctionLocation
-where print _ (FL lib mod fn) = fn -- " in " -- mod -- " in " -- lib
+instance < FunctionLocation
+where
+	(<) (FL a b c)     (FL d e f)     = (a,b,c) < (d,e,f)
+	(<) (FL_Builtin a) (FL_Builtin b) = a < b
+	(<) (FL_Builtin _) _              = True
+	(<) _              _              = False
 
 instance < MacroLocation where (<) (ML a b c) (ML d e f) = (a,b,c) < (d,e,f)
-instance print MacroLocation
-where print _ (ML lib mod mn) = mn -- " in " -- mod -- " in " -- lib
 
 instance < ClassLocation where (<) (CL a b c) (CL d e f) = (a,b,c) < (d,e,f)
 
 instance < TypeLocation
 where
-	(<) (TL_Builtin a) (TL_Builtin b) = a < b
-	(<) (TL_Builtin _) (TL _ _ _)     = True
-	(<) (TL _ _ _)     (TL_Builtin _) = False
 	(<) (TL a b c)     (TL d e f)     = (a,b,c) < (d,e,f)
+	(<) (TL_Builtin a) (TL_Builtin b) = a < b
+	(<) (TL_Builtin _) _              = True
+	(<) _              _              = False
 
 instance zero TypeExtras
 where
@@ -102,7 +103,10 @@ putFunctions ts tdb = foldr (\(loc,t) db -> putFunction loc t db) tdb ts
 
 findFunction :: FunctionName TypeDB -> [(FunctionLocation, ExtendedType)]
 findFunction f db=:{functionmap}
-	= toList $ filterWithKey (\(FL _ _ f`) _->f==f`) functionmap
+	= toList $ filterWithKey (\fl _-> f == getName fl) functionmap
+where
+	getName (FL _ _ f)     = f
+	getName (FL_Builtin f) = f
 
 findFunction` :: (FunctionLocation ExtendedType -> Bool) TypeDB
 	-> [(FunctionLocation, ExtendedType)]

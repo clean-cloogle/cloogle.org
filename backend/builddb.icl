@@ -107,6 +107,7 @@ Start w
 	# (st, w) = init_identifiers newHeap w
 	# cache = empty_cache st
 	# (db, w) = loop cli.root mods 'DB'.newDb cache w
+	# db = 'DB'.putFunctions predefFunctions db
 	# db = 'DB'.putTypes predefTypes db
 	# f = 'DB'.saveDb db f
 	= fclose f w
@@ -129,6 +130,13 @@ where
 		("-r", [x:xs]) = (\c->{c & root=x}) <$> parseCLI xs
 		("-l", [x:xs]) = (\c->{c & libs=[x:c.libs]}) <$> parseCLI xs
 		(x, _) = Left $ "Unknown option '" +++ x +++ "'"
+
+predefFunctions :: [('DB'.FunctionLocation, 'DB'.ExtendedType)]
+predefFunctions
+	= [ ( 'DB'.FL_Builtin "if"
+	    , 'DB'.ET ('T'.Func ['T'.Type "Bool" [], 'T'.Var "a", 'T'.Var "a"] ('T'.Var "a") []) zero
+	    )
+	  ]
 
 predefTypes :: [('DB'.TypeLocation, 'T'.TypeDef)]
 predefTypes

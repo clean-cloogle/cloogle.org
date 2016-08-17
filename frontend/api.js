@@ -71,6 +71,11 @@ function getResults(str, page) {
 			['Distance', basic['distance']]
 		];
 
+		if ('builtin' in basic && basic['builtin']) {
+			basicData.splice(0,3);
+			basicData.push(['Builtin', 'yes (actual implementation may differ)']);
+		}
+
 		switch (kind) {
 			case 'FunctionResult':
 				var specificData = [];
@@ -115,10 +120,6 @@ function getResults(str, page) {
 					'</code>';
 				break;
 			case 'TypeResult':
-				if ('builtin' in basic && basic['builtin']) {
-					basicData.splice(0,3);
-					basicData.push(['This is a builtin type.']);
-				}
 				return '<hr/>' +
 					makeTable(basicData) +
 					'<pre>' +

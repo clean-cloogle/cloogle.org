@@ -17,8 +17,7 @@ from Type import ::Type, ::TypeVar, ::TVAssignment, ::TypeDef, class print(..),
 instance zero TypeDB
 derive gEq TypeDB
 
-:: FunctionLocation = FL Library Module FunctionName
-instance print FunctionLocation
+:: FunctionLocation = FL Library Module FunctionName | FL_Builtin FunctionName
 
 :: TypeExtras = { te_priority      :: Maybe TE_Priority
                 , te_isconstructor :: Bool
@@ -34,7 +33,6 @@ instance print TE_Priority
 instance print (FunctionName, ExtendedType)
 
 :: MacroLocation = ML Library Module MacroName
-instance print MacroLocation
 
 :: Macro = { macro_as_string :: String
            , macro_extras :: TypeExtras

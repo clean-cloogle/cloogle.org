@@ -298,13 +298,13 @@ where
 	makeFunctionResult :: (Maybe String) (Maybe Type) (Maybe ShortClassResult)
 	              (FunctionLocation, ExtendedType) TypeDB -> Result
 	makeFunctionResult
-		orgsearch orgsearchtype mbCls (FL lib mod fname, et=:(ET type tes)) db
+		orgsearch orgsearchtype mbCls (fl, et=:(ET type tes)) db
 		= FunctionResult
 		  ( { library  = lib
 		    , filename = modToFilename mod
 		    , modul    = mod
 		    , distance = distance
-		    , builtin  = Nothing
+		    , builtin  = builtin
 		    }
 		  , { func     = concat $ print False (fname,et)
 		    , unifier  = toStrUnifier <$> finish_unification <$>
@@ -320,6 +320,10 @@ where
 		    }
 		  )
 	where
+		(lib,mod,fname,builtin) = case fl of
+			(FL l m f)     = (l, m, f,Nothing)
+			(FL_Builtin f) = ("","",f,Just True)
+
 		toStrUnifier :: Unifier -> StrUnifier
 		toStrUnifier (tvas1, tvas2) = (map toStr tvas1, map toStr tvas2)
 		where toStr (var, type) = (var, concat $ print False type)
@@ -355,9 +359,11 @@ where
 	isUnifiable t1 (ET t2 _) = isJust (unify [] t1 (prepare_unification False t2))
 
 	isNameMatch :: !Int !String FunctionLocation -> Bool
-	isNameMatch maxdist n1 (FL _ _ n2)
-		# (n1, n2) = ({toLower c \\ c <-: n1}, {toLower c \\ c <-: n2})
+	isNameMatch maxdist n1 fl
+		# (n1, n2) = ({toLower c \\ c <-: n1}, {toLower c \\ c <-: getName fl})
 		= n1 == "" || indexOf n1 n2 <> -1 || levenshtein n1 n2 <= maxdist
+	where
+		getName (FL _ _ n) = n; getName (FL_Builtin n) = n
 
 	isModMatchF :: ![String] FunctionLocation ExtendedType -> Bool
 	isModMatchF mods (FL _ mod _) _ = isMember mod mods

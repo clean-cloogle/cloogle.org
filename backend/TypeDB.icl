@@ -81,7 +81,9 @@ instance print (FunctionName, ExtendedType)
 where
 	print _ (f, (ET t e=:{te_generic_vars=Just _}))
 		= "generic " -- f -- " " -- e -- " :: " -- t
-	print _ (f, (ET t e))
+	print _ (f, (ET t e=:{te_priority=Just _}))
+		= "(" -- f -- ") " -- e -- " :: " -- t
+	print _ (f, (ET t e=:{te_priority=Nothing}))
 		= f -- " " -- e -- " :: " -- t
 
 getFunction :: FunctionLocation TypeDB -> Maybe ExtendedType

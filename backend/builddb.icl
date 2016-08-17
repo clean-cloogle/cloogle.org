@@ -9,6 +9,7 @@ import StdFile, StdList, StdMisc, StdArray, StdBool, StdString, StdTuple
 
 // CleanPlatform
 import Data.Maybe, Data.Either, Data.Error, Data.Func, Data.Tuple, Data.Functor
+import Control.Applicative, Control.Monad
 from Text import class Text(concat), instance Text String
 import System.Directory, System.CommandLine
 
@@ -184,10 +185,24 @@ where
 	pd_macros :: String String [ParsedDefinition] -> [('DB'.MacroLocation, 'DB'.Macro)]
 	pd_macros lib mod pds
 		= [( 'DB'.ML lib mod id.id_name
-		   , { macro_as_string = cpp pd
-		     , macro_extras = zero
+		   , { macro_as_string = priostring id +++ cpp pd
+		     , macro_extras = {zero & te_priority = findPrio id >>= toPrio}
 		     }
 		   ) \\ pd=:(PD_Function _ id isinfix args rhs FK_Macro) <- pds]
+	where
+		priostring :: Ident -> String
+		priostring id = case findTypeSpec id pds of
+			Nothing    = ""
+			(Just pri) = cpp pri +++ "\n"
+
+		findPrio :: Ident -> Maybe Priority
+		findPrio id = (\(PD_TypeSpec _ _ p _ _) -> p) <$> findTypeSpec id pds
+
+		findTypeSpec :: Ident [ParsedDefinition] -> Maybe ParsedDefinition
+		findTypeSpec _  []          = Nothing
+		findTypeSpec id [pd=:(PD_TypeSpec _ id` prio _ _):pds]
+		| id`.id_name == id.id_name = Just pd
+		findTypeSpec id [_:pds]     = findTypeSpec id pds
 
 	pd_derivations :: [ParsedDefinition] -> [('DB'.GenericName, ['DB'.Type])]
 	pd_derivations pds
@@ -207,12 +222,6 @@ where
 		= [( 'DB'.FL lib mod id_name
 		   , 'DB'.ET ('T'.toType t) {zero & te_priority=toPrio p}
 		   ) \\ PD_TypeSpec pos id=:{id_name} p (Yes t) funspecs <- pds]
-	where
-		toPrio :: Priority -> Maybe 'DB'.TE_Priority
-		toPrio (Prio LeftAssoc i)  = Just $ 'DB'.LeftAssoc i
-		toPrio (Prio RightAssoc i) = Just $ 'DB'.RightAssoc i
-		toPrio (Prio NoAssoc i)    = Just $ 'DB'.NoAssoc i
-		toPrio _                   = Nothing
 
 	pd_instances :: [ParsedDefinition] -> [('DB'.Class, ['DB'.Type])]
 	pd_instances pds
@@ -241,6 +250,12 @@ where
 	constructor_functions ('DB'.TL lib mod _, td)
 		= [('DB'.FL lib mod c, 'DB'.ET f {zero & te_isconstructor=True})
 		   \\ (c,f) <- 'T'.constructorsToFunctions td]
+
+	toPrio :: Priority -> Maybe 'DB'.TE_Priority
+	toPrio (Prio LeftAssoc i)  = Just $ 'DB'.LeftAssoc i
+	toPrio (Prio RightAssoc i) = Just $ 'DB'.RightAssoc i
+	toPrio (Prio NoAssoc i)    = Just $ 'DB'.NoAssoc i
+	toPrio _                   = Nothing
 
 wantModule` :: !*File !{#Char} !Bool !Ident !Position !Bool !*HashTable !*File !*Files
 	-> ((!Bool,!Bool,!ParsedModule, !*HashTable, !*File), !*Files)

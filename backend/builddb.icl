@@ -10,7 +10,7 @@ import StdFile, StdList, StdMisc, StdArray, StdBool, StdString, StdTuple
 // CleanPlatform
 import Data.Maybe, Data.Either, Data.Error, Data.Func, Data.Tuple, Data.Functor
 import Control.Applicative, Control.Monad
-from Text import class Text(concat), instance Text String
+from Text import class Text(concat,replaceSubString,indexOf), instance Text String
 import System.Directory, System.CommandLine
 
 // CleanTypeUnifier
@@ -43,39 +43,45 @@ from syntax import ::SymbolTable, ::SymbolTableEntry, ::Ident{..}, ::SymbolPtr,
 from scanner import ::Priority(..), ::Assoc(..)
 from parse import wantModule
 
-:: CLI = { help :: Bool
+:: CLI = { help    :: Bool
          , version :: Bool
-         , root :: String
-         , libs :: [String]
+         , root    :: String
+         , libs    :: [String]
+         , exclude :: [String]
          }
 
 instance zero CLI where
 	zero = { version = False
-	       , help = False
-	       , root = "/opt/clean/lib/"
-	       , libs = [ "StdEnv"
-	                , "StdLib"
-	                , "ArgEnv"
-	                , "Directory"
-	                , "Dynamics"
-	                , "Gast"
-	                , "Generics"
-	                , "MersenneTwister"
-	                , "TCPIP"
-	                , "clean-platform/OS-Independent"
-	                , "clean-platform/OS-Linux"
-	                , "clean-platform/OS-Linux-32"
-	                , "clean-platform/OS-Linux-64"
-	                , "clean-platform/OS-Mac"
-	                , "clean-platform/OS-Posix"
-	                , "clean-platform/OS-Windows"
-	                , "clean-platform/OS-Windows-32"
-	                , "clean-platform/OS-Windows-64"
-	                , "iTasks-SDK/Dependencies/graph_copy"
-	                , "iTasks-SDK/Dependencies/clean-sapl/src"
-	                , "iTasks-SDK/Server"
-	                , "iTasks-SDK/Tests"
-	                ]
+	       , help    = False
+	       , root    = "/opt/clean/lib/"
+	       , libs    = [ "StdEnv"
+	                   , "StdLib"
+	                   , "ArgEnv"
+	                   , "Directory"
+	                   , "Dynamics"
+	                   , "Gast"
+	                   , "Generics"
+	                   , "MersenneTwister"
+	                   , "TCPIP"
+	                   , "clean-platform/OS-Independent"
+	                   , "clean-platform/OS-Linux"
+	                   , "clean-platform/OS-Linux-32"
+	                   , "clean-platform/OS-Linux-64"
+	                   , "clean-platform/OS-Mac"
+	                   , "clean-platform/OS-Posix"
+	                   , "clean-platform/OS-Windows"
+	                   , "clean-platform/OS-Windows-32"
+	                   , "clean-platform/OS-Windows-64"
+	                   , "iTasks-SDK/Dependencies/graph_copy"
+	                   , "iTasks-SDK/Dependencies/clean-sapl/src"
+	                   , "iTasks-SDK/Server"
+	                   , "iTasks-SDK/Tests"
+	                   ]
+	       , exclude = [ "StdEnv/_startup"
+	                   , "StdEnv/_system"
+	                   , "clean-platform/OS-Independent/Deprecated"
+	                   , "iTasks-SDK/Server/lib"
+	                   ]
 	       }
 
 
@@ -95,7 +101,8 @@ Start w
 	(Right cli)
 	| cli.help = fclose (f <<< USAGE) w
 	| cli.version = fclose (f <<< VERSION) w
-	# (mods, w) = findModules` cli.libs cli.root w
+	# (modss, w) = mapSt (\l -> findModules cli.exclude cli.root l "") cli.libs w
+	# mods = flatten modss
 	# (st, w) = init_identifiers newHeap w
 	# cache = empty_cache st
 	# (db, w) = loop cli.root mods 'DB'.newDb cache w
@@ -121,23 +128,23 @@ where
 		("-l", [x:xs]) = (\c->{c & libs=[x:c.libs]}) <$> parseCLI xs
 		(x, _) = Left $ "Unknown option '" +++ x +++ "'"
 
-//              Libraries                Library Module
-findModules` :: ![String] !String !*World -> *(![(String,String)], !*World)
-findModules` [] _ w = ([], w)
-findModules` [lib:libs] root w
-#! (mods, w) = findModules lib root w
-#! (moremods, w) = findModules` libs root w
-= (removeDup (mods ++ moremods), w)
-
-findModules :: !String !String !*World -> *(![(String,String)], !*World)
-findModules lib root w
-#! (fps, w) = readDirectory (root +++ "/" +++ lib) w
+//             Exclude   Root    Library Base module            Library Module
+findModules :: ![String] !String !String !String !*World -> *(![(String,String)], !*World)
+findModules ex root lib base w
+| any (\e -> indexOf e path <> -1) ex = ([], w)
+#! (fps, w)   = readDirectory path w
 | isError fps = ([], w)
-#! fps = fromOk fps
-#! mods = map (\s->(lib, s%(0,size s-5))) $ filter isDclModule fps
-#! (moremods, w) = findModules` (map ((+++) (lib+++"/")) (filter isDirectory fps)) root w
-= (removeDup (mods ++ moremods), w)
+#! fps        = fromOk fps
+#! mods       = map (\s -> (lib, basedot +++ s % (0, size s - 5))) $ filter included $ filter isDclModule fps
+#! (moremodss,w) = mapSt (\d -> findModules ex root lib (basedot +++ d)) (filter isDirectory fps) w
+= (removeDup (mods ++ flatten moremodss), w)
 where
+	path = root +++ "/" +++ lib +++ if (base == "") "" "/" +++ replaceSubString "." "/" base
+	basedot = if (base == "") "" (base +++ ".")
+
+	included :: String -> Bool
+	included s = not (any (\e -> indexOf e (path +++ "/" +++ s) <> -1) ex)
+
 	isDclModule :: String -> Bool
 	isDclModule s = s % (size s - 4, size s - 1) == ".dcl"
 

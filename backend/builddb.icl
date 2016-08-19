@@ -152,10 +152,12 @@ predefTypes
 	  , ( 'DB'.TL_Builtin "Int",     { deft & 'Type'.td_name = "Int"     } )
 	  , ( 'DB'.TL_Builtin "Real",    { deft & 'Type'.td_name = "Real"    } )
 	  , ( 'DB'.TL_Builtin "Char",    { deft & 'Type'.td_name = "Char"    } )
-	  , ( 'DB'.TL_Builtin "String",  { deft & 'Type'.td_name = "String"  } )
+	  , ( 'DB'.TL_Builtin "String",  { deft & 'Type'.td_name = "String",
+	              'Type'.td_rhs = 'T'.TDRSynonym ('T'.Type "{#Char}" []) } )
 	  , ( 'DB'.TL_Builtin "Dynamic", { deft & 'Type'.td_name = "Dynamic" } )
-	  , ( 'DB'.TL_Builtin "File",    { deft & 'Type'.td_name = "File"    })
-	  , ( 'DB'.TL_Builtin "World",   { deft & 'Type'.td_name = "World",  'Type'.td_uniq = True } )
+	  , ( 'DB'.TL_Builtin "File",    { deft & 'Type'.td_name = "File"    } )
+	  , ( 'DB'.TL_Builtin "World",   { deft & 'Type'.td_name = "World",
+	                                          'Type'.td_uniq = True      } )
 	  ]
 where
 	deft = {'Type'.td_name="", 'Type'.td_uniq=False, 'Type'.td_args=[], 'Type'.td_rhs='T'.TDRAbstract}

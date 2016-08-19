@@ -18,10 +18,19 @@
 		}
 	</script>
 	<style type="text/css">
-		#helptext code {
+		#helptext {
+			margin-bottom: 1em;
+		}
+
+		#helptext code, #helptext .code {
 			background-color: #f9f2f4;
+			font-family: monospace;
 			font-size: 90%;
 			padding: 1px 4px;
+		}
+
+		#helptext td.description {
+			padding-left: 1em;
 		}
 
 		a.hidden {
@@ -52,15 +61,33 @@
 		<a href="javascript:toggle('helptext')">How to use</a>
 	</p>
 	<div id="helptext" style="display:none;">
-		<p>
-			Search for a function by its name: e.g. <code>hd</code>.<br/>
-			Search for a function type by entering <code>:: <i>type</i></code>, e.g. <code>:: a [a] -&gt; a</code>.<br/>
-			Search for a type definition by entering <code>type <i>TypeName</i></code>, e.g. <code>type TypeCode</code>.<br/>
-			Search for a class definition by entering <code>class <i>className</i></code>, e.g. <code>class Ord</code>.
-		</p>
-		<p>
-			Some combinations are also possible, like <code>hd :: [a] -&gt; a</code>.
-		</p>
+		<p><b>The following search strings are recognised:</b></p>
+		<table>
+			<tr>
+				<td class='code'>hd</td>
+				<td class='description'>Functions with a name like <code>hd</td>
+			</tr>
+			<tr>
+				<td class='code'>:: a [a] -&gt; a</td>
+				<td class='description'>Functions with a type unifiable with <code>a [a] -&gt; a</td>
+			</tr>
+			<tr>
+				<td class='code'>hd :: [a] -&gt; a</td>
+				<td class='description'>A combination of the above</td>
+			</tr>
+			<tr>
+				<td class='code'>:: A.a: [a] -&gt; a</td>
+				<td class='description'>Type search, where <code>a</code> cannot be unified.</td>
+			</tr>
+			<tr>
+				<td class='code'>type Maybe</td>
+				<td class='description'>The type definition of <code>Maybe x</td>
+			</tr>
+			<tr>
+				<td class='code'>class Text</td>
+				<td class='description'>The class definition of <code>Text</code></td>
+			</tr>
+		</table>
 	</div>
 	<form id="search_form" action="#">
 		<table>

@@ -154,8 +154,9 @@ fields:
 	particular the following fields:
 
 	* `library`
-	* `filename`
 	* `modul`: the module the result was found in (not a typo)
+	* `filename`: the filename of the definition module
+	* `dcl_line`: the line where the definition is found
 	* `distance`: the distance measure we use to sort the results (lower is
 		better)
 

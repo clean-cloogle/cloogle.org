@@ -31,13 +31,14 @@ from predef import init_identifiers
 from compile import empty_cache, ::DclCache{hash_table}
 from general import ::Optional(..)
 from syntax import ::SymbolTable, ::SymbolTableEntry, ::Ident{..}, ::SymbolPtr,
-	::Position(NoPos), ::Module{mod_ident,mod_defs},
+	::Position(..), ::LineNr, ::FileName, ::FunctName,
+	::Module{mod_ident,mod_defs},
 	::ParsedDefinition(PD_TypeSpec,PD_Instance,PD_Class,PD_Type,PD_Generic,PD_Derive,PD_Function),
 	::FunSpecials, ::Priority, ::ParsedModule, ::SymbolType,
 	::ParsedInstanceAndMembers{..}, ::ParsedInstance{pi_ident,pi_types},
-	::Type, ::ClassDef{class_ident,class_args,class_context},
-	::TypeVar, ::ParsedTypeDef, ::TypeDef,
-	::GenericDef{gen_ident,gen_type,gen_vars},
+	::Type, ::ClassDef{class_ident,class_pos,class_args,class_context},
+	::TypeVar, ::ParsedTypeDef, ::TypeDef{td_pos},
+	::GenericDef{gen_ident,gen_pos,gen_type,gen_vars},
 	::GenericCaseDef{gc_type,gc_gcf}, ::GenericCaseFunctions(GCF), ::GCF,
 	::FunKind(FK_Macro),
 	::Rhs, ::ParsedExpr
@@ -227,11 +228,11 @@ where
 
 	pd_macros :: String String [ParsedDefinition] -> [('DB'.MacroLocation, 'DB'.Macro)]
 	pd_macros lib mod pds
-		= [( 'DB'.ML lib mod id.id_name
+		= [( 'DB'.ML lib mod id.id_name (toLine pos)
 		   , { macro_as_string = priostring id +++ cpp pd
 		     , macro_extras = {zero & te_priority = findPrio id >>= toPrio}
 		     }
-		   ) \\ pd=:(PD_Function _ id isinfix args rhs FK_Macro) <- pds]
+		   ) \\ pd=:(PD_Function pos id isinfix args rhs FK_Macro) <- pds]
 	where
 		priostring :: Ident -> String
 		priostring id = case findTypeSpec id pds of
@@ -255,14 +256,14 @@ where
 	pd_generics :: String String [ParsedDefinition]
 		-> [('DB'.FunctionLocation, 'DB'.ExtendedType)]
 	pd_generics lib mod pds
-		= [( 'DB'.FL lib mod id_name
+		= [( 'DB'.FL lib mod id_name (toLine gen_pos)
 		   , 'DB'.ET ('T'.toType gen_type) {zero & te_generic_vars=Just $ map 'T'.toTypeVar gen_vars}
-		   ) \\ PD_Generic {gen_ident={id_name},gen_type,gen_vars} <- pds]
+		   ) \\ PD_Generic {gen_ident={id_name},gen_pos,gen_type,gen_vars} <- pds]
 
 	pd_typespecs :: String String [ParsedDefinition]
 		-> [('DB'.FunctionLocation, 'DB'.ExtendedType)]
 	pd_typespecs lib mod pds
-		= [( 'DB'.FL lib mod id_name
+		= [( 'DB'.FL lib mod id_name (toLine pos)
 		   , 'DB'.ET ('T'.toType t) {zero & te_priority=toPrio p}
 		   ) \\ PD_TypeSpec pos id=:{id_name} p (Yes t) funspecs <- pds]
 
@@ -276,28 +277,28 @@ where
 			[('DB'.FunctionName, 'DB'.ExtendedType)])]
 	pd_classes lib mod pds
 	# pds = filter (\pd->case pd of (PD_Class _ _)=True; _=False) pds
-	= map (\(PD_Class {class_ident={id_name},class_args,class_context} pds)
+	= map (\(PD_Class {class_ident={id_name},class_pos,class_args,class_context} pds)
 		-> let typespecs = pd_typespecs lib mod pds
-		in ('DB'.CL lib mod id_name, map 'T'.toTypeVar class_args, 
+		in ('DB'.CL lib mod id_name (toLine class_pos), map 'T'.toTypeVar class_args,
 		    flatten $ map 'T'.toClassContext class_context,
-			[(f,et) \\ ('DB'.FL _ _ f, et) <- typespecs])) pds
+		    [(f,et) \\ ('DB'.FL _ _ f _, et) <- typespecs])) pds
 
 	pd_types :: String String [ParsedDefinition]
 		-> [('DB'.TypeLocation, 'DB'.TypeDef)]
 	pd_types lib mod pds
-		= [('DB'.TL lib mod ('T'.td_name td), td)
+		= [('DB'.TL lib mod ('T'.td_name td) (toLine ptd.td_pos), td)
 		   \\ PD_Type ptd <- pds, td <- ['T'.toTypeDef ptd]]
 
 	constructor_functions :: ('DB'.TypeLocation, 'DB'.TypeDef)
 		-> [('DB'.FunctionLocation, 'DB'.ExtendedType)]
-	constructor_functions ('DB'.TL lib mod _, td)
-		= [('DB'.FL lib mod c, 'DB'.ET f {zero & te_isconstructor=True})
+	constructor_functions ('DB'.TL lib mod _ line, td)
+		= [('DB'.FL lib mod c line, 'DB'.ET f {zero & te_isconstructor=True})
 		   \\ (c,f) <- 'T'.constructorsToFunctions td]
 
 	record_functions :: ('DB'.TypeLocation, 'DB'.TypeDef)
 		-> [('DB'.FunctionLocation, 'DB'.ExtendedType)]
-	record_functions ('DB'.TL lib mod _, td)
-		= [('DB'.FL lib mod f, 'DB'.ET t {zero & te_isrecordfield=True})
+	record_functions ('DB'.TL lib mod _ line, td)
+		= [('DB'.FL lib mod f line, 'DB'.ET t {zero & te_isrecordfield=True})
 			\\ (f,t) <- 'T'.recordsToFunctions td]
 
 	toPrio :: Priority -> Maybe 'DB'.TE_Priority
@@ -305,6 +306,11 @@ where
 	toPrio (Prio RightAssoc i) = Just $ 'DB'.RightAssoc i
 	toPrio (Prio NoAssoc i)    = Just $ 'DB'.NoAssoc i
 	toPrio _                   = Nothing
+
+	toLine :: Position -> 'DB'.LineNr
+	toLine (FunPos _ l _) = Just l
+	toLine (LinePos _ l)  = Just l
+	toLine _              = Nothing
 
 wantModule` :: !*File !{#Char} !Bool !Ident !Position !Bool !*HashTable !*File !*Files
 	-> ((!Bool,!Bool,!ParsedModule, !*HashTable, !*File), !*Files)

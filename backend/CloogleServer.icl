@@ -51,6 +51,7 @@ import Levenshtein
 :: BasicResult = { library  :: String
                  , filename :: String
                  , modul    :: String
+                 , dcl_line :: Maybe Int
                  , distance :: Int
                  , builtin  :: Maybe Bool
                  }
@@ -208,17 +209,17 @@ where
 		// Search macros
 		# macros = case name of
 			Nothing  = []
-			(Just n) = findMacro` (\(ML lib mod m) _ -> isNameMatch (size n-2) n (FL lib mod m)) db
+			(Just n) = findMacro` (\(ML lib mod m _) _ -> isNameMatch (size n-2) n (FL lib mod m Nothing)) db
 		# macros = map (\(lhs,rhs) -> makeMacroResult name lhs rhs) macros
 		// Search class members
 		# filts = catMaybes [ (\t _ _ _ _->isUnifiable t) <$> mbType
-		                    , (\n (CL lib mod _) _ _ f _ -> isNameMatch
-		                      (size n-2) n (FL lib mod f)) <$> name
+		                    , (\n (CL lib mod _ _) _ _ f _ -> isNameMatch
+		                      (size n-2) n (FL lib mod f Nothing)) <$> name
 		                    , isModMatchC <$> modules
 		                    ]
 		# members = findClassMembers`` filts db
-		# members = map (\(CL lib mod cls,vs,_,f,et) -> makeFunctionResult name mbType
-			(Just {cls_name=cls,cls_vars=vs}) (FL lib mod f,et) db) members
+		# members = map (\(CL lib mod cls line,vs,_,f,et) -> makeFunctionResult name mbType
+			(Just {cls_name=cls,cls_vars=vs}) (FL lib mod f line,et) db) members
 		// Search types
 		# lcTypeName = if (isJust mbType && isType (fromJust mbType))
 			(let (Type name _) = fromJust mbType in Just $ toLowerCase name)
@@ -230,20 +231,21 @@ where
 		// Search classes
 		# classes = case (isNothing mbType, toLowerCase <$> name) of
 			(True, Just c) = map (flip makeClassResult db) $
-				findClass` (\(CL _ _ c`) _ _ _ -> toLowerCase c` == c) db
+				findClass` (\(CL _ _ c` _) _ _ _ -> toLowerCase c` == c) db
 			_ = []
 		// Merge results
 		= sort $ funs ++ members ++ types ++ classes ++ macros
 	where
-		getName (TL _ _ t)     = t
+		getName (TL _ _ t _)   = t
 		getName (TL_Builtin t) = t
 
 	makeClassResult :: (ClassLocation, [TypeVar], ClassContext, [(FunctionName,ExtendedType)])
 		TypeDB -> Result
-	makeClassResult (CL lib mod cls, vars, cc, funs) db
+	makeClassResult (CL lib mod cls line, vars, cc, funs) db
 		= ClassResult
 		  ( { library  = lib
 		    , filename = modToFilename mod
+		    , dcl_line = line
 		    , modul    = mod
 		    , distance = -100
 		    , builtin  = Nothing
@@ -258,10 +260,11 @@ where
 		  )
 
 	makeTypeResult :: (Maybe String) TypeLocation TypeDef -> Result
-	makeTypeResult mbName (TL lib mod t) td
+	makeTypeResult mbName (TL lib mod t line) td
 		= TypeResult
 		  ( { library  = lib
 		    , filename = modToFilename mod
+		    , dcl_line = line
 		    , modul    = mod
 		    , distance
 		        = if (isNothing mbName) -100 (levenshtein` t (fromJust mbName))
@@ -273,6 +276,7 @@ where
 		= TypeResult
 		  ( { library  = ""
 		    , filename = ""
+		    , dcl_line = Nothing
 		    , modul    = ""
 		    , distance
 		        = if (isNothing mbName) -100 (levenshtein` t (fromJust mbName))
@@ -282,10 +286,11 @@ where
 		  )
 
 	makeMacroResult :: (Maybe String) MacroLocation Macro -> Result
-	makeMacroResult mbName (ML lib mod m) mac
+	makeMacroResult mbName (ML lib mod m line) mac
 		= MacroResult
 		  ( { library  = lib
 		    , filename = modToFilename mod
+		    , dcl_line = line
 		    , modul    = mod
 		    , distance
 		        = if (isNothing mbName) -100 (levenshtein` (fromJust mbName) m)
@@ -303,6 +308,7 @@ where
 		= FunctionResult
 		  ( { library  = lib
 		    , filename = modToFilename mod
+		    , dcl_line = line
 		    , modul    = mod
 		    , distance = distance
 		    , builtin  = builtin
@@ -324,9 +330,9 @@ where
 		    }
 		  )
 	where
-		(lib,mod,fname,builtin) = case fl of
-			(FL l m f)     = (l, m, f,Nothing)
-			(FL_Builtin f) = ("","",f,Just True)
+		(lib,mod,fname,line,builtin) = case fl of
+			(FL l m f ln)  = (l, m, f,ln,     Nothing)
+			(FL_Builtin f) = ("","",f,Nothing,Just True)
 
 		toStrUnifier :: Unifier -> StrUnifier
 		toStrUnifier (tvas1, tvas2) = (map toStr tvas1, map toStr tvas2)
@@ -367,13 +373,13 @@ where
 		# (n1, n2) = ({toLower c \\ c <-: n1}, {toLower c \\ c <-: getName fl})
 		= n1 == "" || indexOf n1 n2 <> -1 || levenshtein n1 n2 <= maxdist
 	where
-		getName (FL _ _ n) = n; getName (FL_Builtin n) = n
+		getName (FL _ _ n _) = n; getName (FL_Builtin n) = n
 
 	isModMatchF :: ![String] FunctionLocation ExtendedType -> Bool
-	isModMatchF mods (FL _ mod _) _ = isMember mod mods
+	isModMatchF mods (FL _ mod _ _) _ = isMember mod mods
 
 	isModMatchC :: ![String] ClassLocation [TypeVar] ClassContext FunctionName ExtendedType -> Bool
-	isModMatchC mods (CL _ mod _) _ _ _ _ = isMember mod mods
+	isModMatchC mods (CL _ mod _ _) _ _ _ _ = isMember mod mods
 
 	log :: (LogMessage (Maybe Request) Response) IPAddress *World
 	       -> *(IPAddress, *World)

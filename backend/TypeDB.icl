@@ -47,20 +47,32 @@ where
 	       , derivemap     = newMap
 	       }
 
+instance < (a,b,c,d) | Ord a & Ord b & Ord c & Ord d
+where
+	(<) (a,b,c,d) (e,f,g,h) = ((a,b),(c,d)) < ((e,f),(g,h))
+
+instance < (Maybe a) | < a
+where
+	(<) (Just a) (Just b) = a < b
+	(<) (Just _) Nothing  = True
+	(<) Nothing  _        = False
+
 instance < FunctionLocation
 where
-	(<) (FL a b c)     (FL d e f)     = (a,b,c) < (d,e,f)
+	(<) (FL a b c d)   (FL e f g h)   = (a,b,c,d) < (e,f,g,h)
 	(<) (FL_Builtin a) (FL_Builtin b) = a < b
 	(<) (FL_Builtin _) _              = True
 	(<) _              _              = False
 
-instance < MacroLocation where (<) (ML a b c) (ML d e f) = (a,b,c) < (d,e,f)
+instance < MacroLocation
+where (<) (ML a b c d) (ML e f g h) = (a,b,c,d) < (e,f,g,h)
 
-instance < ClassLocation where (<) (CL a b c) (CL d e f) = (a,b,c) < (d,e,f)
+instance < ClassLocation
+where (<) (CL a b c d) (CL e f g h) = (a,b,c,d) < (e,f,g,h)
 
 instance < TypeLocation
 where
-	(<) (TL a b c)     (TL d e f)     = (a,b,c) < (d,e,f)
+	(<) (TL a b c d)   (TL e f g h)   = (a,b,c,d) < (e,f,g,h)
 	(<) (TL_Builtin a) (TL_Builtin b) = a < b
 	(<) (TL_Builtin _) _              = True
 	(<) _              _              = False
@@ -109,7 +121,7 @@ findFunction :: FunctionName TypeDB -> [(FunctionLocation, ExtendedType)]
 findFunction f db=:{functionmap}
 	= toList $ filterWithKey (\fl _-> f == getName fl) functionmap
 where
-	getName (FL _ _ f)     = f
+	getName (FL _ _ f _)   = f
 	getName (FL_Builtin f) = f
 
 findFunction` :: (FunctionLocation ExtendedType -> Bool) TypeDB
@@ -157,7 +169,7 @@ putClasses cs db = foldr (\(cl,tvs,cc,fs) db -> putClass cl tvs cc fs db) db cs
 
 findClass :: Class TypeDB -> [(ClassLocation, [TypeVar], ClassContext, [(FunctionName, ExtendedType)])]
 findClass c {classmap} = map (\(k,(x,y,z))->(k,x,y,z)) results
-where results = toList $ filterWithKey (\(CL _ _ c`) _->c==c`) classmap
+where results = toList $ filterWithKey (\(CL _ _ c` _) _->c==c`) classmap
 
 findClass` :: (ClassLocation [TypeVar] ClassContext [(FunctionName,ExtendedType)] -> Bool) TypeDB
 		-> [(ClassLocation, [TypeVar], ClassContext, [(FunctionName,ExtendedType)])]
@@ -189,7 +201,7 @@ findType :: TypeName TypeDB -> [(TypeLocation, TypeDef)]
 findType t db=:{typemap}
 	= toList $ filterWithKey (\tl _ -> getName tl == t) typemap
 where
-	getName (TL _ _ t)     = t
+	getName (TL _ _ t _)   = t
 	getName (TL_Builtin t) = t
 
 findType` :: (TypeLocation TypeDef -> Bool) TypeDB

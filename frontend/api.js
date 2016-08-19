@@ -59,13 +59,15 @@ function getResults(str, page) {
 		var dclUrl =
 			'src/view.php?lib=' + encodeURIComponent(basic['library']) +
 			'&mod=' + encodeURIComponent(basic['modul']) +
-			'&hl';
+			'&hl' +
+			('dcl_line' in basic ? '&line=' + basic['dcl_line'] : '') +
+			('dcl_line' in basic ? '#line-' + basic['dcl_line'] : '');
 		var iclUrl = dclUrl + '&icl';
 
 		var basicData = [
 			['Library',  basic['library']],
 			['Filename', '<a href="' + dclUrl + '" target="_blank">' +
-				basic['filename'] +
+				basic['filename'] + ('dcl_line' in basic ? ':' + basic['dcl_line'] : '') +
 				'</a> (<a href="' + iclUrl + '" target="_blank">icl</a>)'],
 			['Module',   basic['modul']],
 			['Distance', basic['distance']]

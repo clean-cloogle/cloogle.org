@@ -14,32 +14,27 @@ from Type import ::Type, ::TypeVar, ::TVAssignment, ::TypeDef, class print(..),
   ::ClassContext, ::ClassRestriction, ::ClassOrGeneric
 
 :: TypeDB
-instance zero TypeDB
-derive gEq TypeDB
 
-:: FunctionLocation = FL Library Module FunctionName | FL_Builtin FunctionName
+:: TE_Priority = LeftAssoc Int | RightAssoc Int | NoAssoc Int
 
 :: TypeExtras = { te_priority      :: Maybe TE_Priority
                 , te_isconstructor :: Bool
                 , te_isrecordfield :: Bool
                 , te_generic_vars  :: Maybe [TypeVar]
                 }
-instance zero TypeExtras
-
-:: TE_Priority = LeftAssoc Int | RightAssoc Int | NoAssoc Int
-instance print TE_Priority
 
 :: ExtendedType = ET Type TypeExtras
-
-instance print (FunctionName, ExtendedType)
-
-:: MacroLocation = ML Library Module MacroName
 
 :: Macro = { macro_as_string :: String
            , macro_extras :: TypeExtras
            }
 
-:: ClassLocation = CL Library Module Class
+:: FunctionLocation = FL         Library Module FunctionName LineNr
+                    | FL_Builtin                FunctionName
+:: MacroLocation    = ML         Library Module MacroName    LineNr
+:: ClassLocation    = CL         Library Module Class        LineNr
+:: TypeLocation     = TL         Library Module TypeName     LineNr
+                    | TL_Builtin                TypeName
 
 :: Library      :== String
 :: Module       :== String
@@ -47,10 +42,16 @@ instance print (FunctionName, ExtendedType)
 :: MacroName    :== String
 :: Class        :== String
 :: GenericName  :== String
+:: TypeName     :== String
+:: LineNr       :== Maybe Int
 
-:: TypeLocation = TL Library Module TypeName | TL_Builtin TypeName
+derive gEq TypeDB
 
-:: TypeName :== String
+instance zero TypeDB
+instance zero TypeExtras
+
+instance print TE_Priority
+instance print (FunctionName, ExtendedType)
 
 getFunction :: FunctionLocation TypeDB -> Maybe ExtendedType
 putFunction :: FunctionLocation ExtendedType TypeDB -> TypeDB

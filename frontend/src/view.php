@@ -8,8 +8,8 @@ if (!isset($_REQUEST['lib']) || !isset($_REQUEST['mod'])) {
 }
 
 $iclordcl = isset($_REQUEST['icl']) ? 'icl' : 'dcl';
-
 $highlight = isset($_REQUEST['hl']) ? true : false;
+$hl_lines = isset($_REQUEST['line']) ? 'hl_lines=' . $_REQUEST['line'] : '';
 
 $lib = preg_replace('/[^\\w\\/\\-]/', '', $_REQUEST['lib']);
 $mod = str_replace('.', '/', $_REQUEST['mod']);
@@ -21,7 +21,7 @@ $efname = escapeshellarg($fname);
 if ($highlight) {
 	$out = [];
 	$code = -1;
-	$cmd = 'pygmentize -v -l clean -f html -O full,linenos,encoding=iso8859';
+	$cmd = 'pygmentize -v -l clean -f html -O full,linenos,linespans=line,' . $hl_lines . ',encoding=iso8859';
 	exec("$cmd $efname", $out, $code);
 	$out = array_filter($out, function($str) { return $str != '<h2></h2>'; });
 	echo implode("\n", $out);

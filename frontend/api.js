@@ -105,24 +105,26 @@ function getResults(str, page) {
 					}
 					specificData.push(['Derivations', derivations]);
 				}
+				var hl_entry = 'start';
 				if ('constructor_of' in specific) {
 					specificData.push([
 						'This function is a type constructor of <code>' +
 						highlightFunction(':: ' + specific['constructor_of'],
 							highlightCallback) + '</code>.'
 					]);
+					hl_entry = 'startConstructor';
 				} else if ('recordfield_of' in specific) {
 					specificData.push([
 						'This is a record field of <code>' +
 						highlightFunction(':: ' + specific['recordfield_of'],
 							highlightCallback) + '</code>.'
 					]);
+					hl_entry = 'startRecordField';
 				}
 				return '<hr/>' +
 					makeTable(basicData.concat(specificData)) +
 					'<code>' +
-					highlightFunction(specific['func'], highlightCallback,
-							'constructor_of' in specific ? 'startConstructor' : 'start') +
+					highlightFunction(specific['func'], highlightCallback, hl_entry) +
 					'</code>';
 				break;
 			case 'TypeResult':

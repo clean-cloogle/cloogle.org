@@ -88,6 +88,10 @@ function highlightFunction(func, callback, start) {
 			[/(\s+)/,        ['whitespace']],
 			[/(.*)(::)/,     ['constructor', 'punctuation'], 'type']
 		],
+		startRecordField: [ // alternative entry point in case this is a record field
+			[/(\s+)/,        ['whitespace']],
+			[/(.*)(::)/,     ['field', 'punctuation'], 'type']
+		],
 		generic: [
 			[/(\s+)/,        ['whitespace']],
 			[/(\S+)/,        ['funcname'], 'genericVars']

@@ -100,15 +100,26 @@ function highlightFunction(func, callback, start) {
 		type: [
 			[/(\s+)/,        ['whitespace']],
 			[/([a-z][a-zA-Z]*)/, ['typevar']],
+			[/(A)(\.)/,      ['keyword', 'punctuation'], 'univars'],
 			[/([A-Z]\w*)/,   ['type']],
 			[/(\|)/,         ['punctuation'], 'context'],
 			[/(\W)/,         ['punctuation']]
+		],
+		univars: [
+			[/(\s+)/,        ['whitespace']],
+			[/(\*)/,         ['punctuation']],
+			[/(:)/,          ['punctuation'], 'pop'],
+			[/([a-z][\w`]*)/, ['typevar']]
 		],
 		context: [
 			[/(\s+)/,        ['whitespace']],
 			[/(,)/,          ['punctuation']],
 			[/(\[)/,         ['punctuation'], 'attrenv'],
 			[/(\S+)(\{\|)/,  ['generic', 'punctuation'], 'genericContext'],
+			// These are two hacks for class context in universally quantified types:
+			[/(\()/,         ['punctuation'], 'pop'], // hack for sqlShare
+			[/(->)/,         ['punctuation'], 'pop'], // hack for sqlExecute
+			// End hacks
 			[/([^\s{]+)(,)/, ['classname', 'punctuation']],
 			[/([^\s{]+)/,    ['classname'], 'contextType']
 		],

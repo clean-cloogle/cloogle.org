@@ -111,6 +111,12 @@ function getResults(str, page) {
 						highlightFunction(':: ' + specific['constructor_of'],
 							highlightCallback) + '</code>.'
 					]);
+				} else if ('recordfield_of' in specific) {
+					specificData.push([
+						'This is a record field of <code>' +
+						highlightFunction(':: ' + specific['recordfield_of'],
+							highlightCallback) + '</code>.'
+					]);
 				}
 				return '<hr/>' +
 					makeTable(basicData.concat(specificData)) +

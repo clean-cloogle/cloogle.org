@@ -21,6 +21,7 @@ derive gEq TypeDB
 
 :: TypeExtras = { te_priority      :: Maybe TE_Priority
                 , te_isconstructor :: Bool
+                , te_isrecordfield :: Bool
                 , te_generic_vars  :: Maybe [TypeVar]
                 }
 instance zero TypeExtras

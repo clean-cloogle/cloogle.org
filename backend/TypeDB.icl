@@ -6,6 +6,7 @@ from Data.Func import $
 from Data.List import intercalate
 import Data.Map
 import Data.Maybe
+from Text import class Text(concat), instance Text String
 import Text.JSON
 
 // CleanTypeUnifier
@@ -68,6 +69,7 @@ instance zero TypeExtras
 where
 	zero = { te_priority      = Nothing
 	       , te_isconstructor = False
+	       , te_isrecordfield = False
 	       , te_generic_vars  = Nothing
 	       }
 
@@ -85,12 +87,14 @@ where
 
 instance print (FunctionName, ExtendedType)
 where
-	print _ (f, (ET t e=:{te_generic_vars=Just _}))
-		= "generic " -- f -- " " -- e -- " :: " -- t
-	print _ (f, (ET t e=:{te_priority=Just _}))
-		= "(" -- f -- ") " -- e -- " :: " -- t
-	print _ (f, (ET t e=:{te_priority=Nothing}))
-		= f -- " " -- e -- " :: " -- t
+	print _ (f, (ET t e))
+		= gen -- fname -- " " -- e -- " :: " -- t
+	where
+		gen = if (isJust e.te_generic_vars) "generic " ""
+		fname
+		| isJust e.te_priority = concat ("(" -- f -- ")")
+		| e.te_isrecordfield   = "." +++ f
+		| otherwise            = f
 
 getFunction :: FunctionLocation TypeDB -> Maybe ExtendedType
 getFunction loc {functionmap} = get loc functionmap

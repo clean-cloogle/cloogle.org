@@ -205,6 +205,7 @@ getModuleTypes root mod lib cache db w
 # typedefs = pd_types lib mod pm.mod_defs
 # db = 'DB'.putTypes typedefs db
 # db = 'DB'.putFunctions (flatten $ map constructor_functions typedefs) db
+# db = 'DB'.putFunctions (flatten $ map record_functions typedefs) db
 # db = 'DB'.putFunctions (pd_generics lib mod pm.mod_defs) db
 # db = 'DB'.putDerivationss (pd_derivations pm.mod_defs) db
 # db = 'DB'.putMacros (pd_macros lib mod pm.mod_defs) db
@@ -292,6 +293,12 @@ where
 	constructor_functions ('DB'.TL lib mod _, td)
 		= [('DB'.FL lib mod c, 'DB'.ET f {zero & te_isconstructor=True})
 		   \\ (c,f) <- 'T'.constructorsToFunctions td]
+
+	record_functions :: ('DB'.TypeLocation, 'DB'.TypeDef)
+		-> [('DB'.FunctionLocation, 'DB'.ExtendedType)]
+	record_functions ('DB'.TL lib mod _, td)
+		= [('DB'.FL lib mod f, 'DB'.ET t {zero & te_isrecordfield=True})
+			\\ (f,t) <- 'T'.recordsToFunctions td]
 
 	toPrio :: Priority -> Maybe 'DB'.TE_Priority
 	toPrio (Prio LeftAssoc i)  = Just $ 'DB'.LeftAssoc i

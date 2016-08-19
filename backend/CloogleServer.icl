@@ -56,10 +56,11 @@ import Levenshtein
                  }
 
 :: FunctionResult :== (BasicResult, FunctionResultExtras)
-:: FunctionResultExtras = { func     :: String
-                          , unifier  :: Maybe StrUnifier
-                          , cls      :: Maybe ShortClassResult
-                          , constructor_of :: Maybe String
+:: FunctionResultExtras = { func                :: String
+                          , unifier             :: Maybe StrUnifier
+                          , cls                 :: Maybe ShortClassResult
+                          , constructor_of      :: Maybe String
+                          , recordfield_of      :: Maybe String
                           , generic_derivations :: Maybe [String]
                           }
 
@@ -312,6 +313,9 @@ where
 		    , cls      = mbCls
 		    , constructor_of = if (tes.te_isconstructor)
 		        (let (Func _ r _) = type in Just $ concat $ print False r)
+		        Nothing
+		    , recordfield_of = if (tes.te_isrecordfield)
+		        (let (Func [t:_] _ _) = type in Just $ concat $ print False t)
 		        Nothing
 		    , generic_derivations
 		        = let derivs = getDerivations fname db in

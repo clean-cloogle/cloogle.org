@@ -70,14 +70,14 @@ import Levenshtein
                       }
 
 :: ClassResult :== (BasicResult, ClassResultExtras)
-:: ClassResultExtras = { class_name :: String
-                       , class_heading :: String
-                       , class_funs :: [String]
+:: ClassResultExtras = { class_name      :: String
+                       , class_heading   :: String
+                       , class_funs      :: [String]
                        , class_instances :: [String]
                        }
 
 :: MacroResult :== (BasicResult, MacroResultExtras)
-:: MacroResultExtras = { macro_name :: String
+:: MacroResultExtras = { macro_name           :: String
                        , macro_representation :: String
                        }
 
@@ -114,9 +114,9 @@ where
 	where
 		basic :: Result -> BasicResult
 		basic (FunctionResult (br,_)) = br
-		basic (TypeResult (br,_)) = br
-		basic (ClassResult (br,_)) = br
-		basic (MacroResult (br,_)) = br
+		basic (TypeResult     (br,_)) = br
+		basic (ClassResult    (br,_)) = br
+		basic (MacroResult    (br,_)) = br
 
 err :: Int String -> Response
 err c m = { return         = c
@@ -126,12 +126,12 @@ err c m = { return         = c
           , suggestions    = Nothing
           }
 
-E_NORESULTS :== 127
+E_NORESULTS    :== 127
 E_INVALIDINPUT :== 128
-E_INVALIDNAME :== 129
-E_INVALIDTYPE :== 130
+E_INVALIDNAME  :== 129
+E_INVALIDTYPE  :== 130
 
-MAX_RESULTS :== 15
+MAX_RESULTS    :== 15
 
 Start w
 # (io, w) = stdio w
@@ -203,45 +203,42 @@ where
 		// Search normal functions
 		# filts = catMaybes [ (\t _ -> isUnifiable t) <$> mbType
 		                    , (\n loc _ -> isNameMatch (size n-2) n loc) <$> name
-		                    , isModMatchF <$> modules
+		                    , (\mods loc _ -> isModMatch mods loc) <$> modules
 		                    ]
 		# funs = map (\f -> makeFunctionResult name mbType Nothing f db) $ findFunction`` filts db
 		// Search macros
 		# macros = case name of
 			Nothing  = []
-			(Just n) = findMacro` (\(ML lib mod m _) _ -> isNameMatch (size n-2) n (FL lib mod m Nothing)) db
+			(Just n) = findMacro` (\loc _ -> isNameMatch (size n-2) n loc) db
 		# macros = map (\(lhs,rhs) -> makeMacroResult name lhs rhs) macros
 		// Search class members
 		# filts = catMaybes [ (\t _ _ _ _->isUnifiable t) <$> mbType
-		                    , (\n (CL lib mod _ _) _ _ f _ -> isNameMatch
-		                      (size n-2) n (FL lib mod f Nothing)) <$> name
-		                    , isModMatchC <$> modules
+		                    , (\n (Location lib mod _ _) _ _ f _ -> isNameMatch
+		                      (size n-2) n (Location lib mod Nothing f)) <$> name
+		                    , (\mods loc _ _ _ _ -> isModMatch mods loc) <$> modules
 		                    ]
 		# members = findClassMembers`` filts db
-		# members = map (\(CL lib mod cls line,vs,_,f,et) -> makeFunctionResult name mbType
-			(Just {cls_name=cls,cls_vars=vs}) (FL lib mod f line,et) db) members
+		# members = map (\(Location lib mod line cls,vs,_,f,et) -> makeFunctionResult name mbType
+			(Just {cls_name=cls,cls_vars=vs}) (Location lib mod line f,et) db) members
 		// Search types
-		# lcTypeName = if (isJust mbType && isType (fromJust mbType))
+		# lcName = if (isJust mbType && isType (fromJust mbType))
 			(let (Type name _) = fromJust mbType in Just $ toLowerCase name)
 			(toLowerCase <$> name)
-		# types = case lcTypeName of
+		# types = case lcName of
 			(Just n) = findType` (\tl _ -> toLowerCase (getName tl) == n) db
 			Nothing  = []
 		# types = map (\(tl,td) -> makeTypeResult name tl td) types
 		// Search classes
 		# classes = case (isNothing mbType, toLowerCase <$> name) of
 			(True, Just c) = map (flip makeClassResult db) $
-				findClass` (\(CL _ _ c` _) _ _ _ -> toLowerCase c` == c) db
+				findClass` (\(Location _ _ _ c`) _ _ _ -> toLowerCase c` == c) db
 			_ = []
 		// Merge results
 		= sort $ funs ++ members ++ types ++ classes ++ macros
-	where
-		getName (TL _ _ t _)   = t
-		getName (TL_Builtin t) = t
 
-	makeClassResult :: (ClassLocation, [TypeVar], ClassContext, [(FunctionName,ExtendedType)])
+	makeClassResult :: (Location, [TypeVar], ClassContext, [(Name,ExtendedType)])
 		TypeDB -> Result
-	makeClassResult (CL lib mod cls line, vars, cc, funs) db
+	makeClassResult (Location lib mod line cls, vars, cc, funs) db
 		= ClassResult
 		  ( { library  = lib
 		    , filename = modToFilename mod
@@ -259,8 +256,8 @@ where
 		    }
 		  )
 
-	makeTypeResult :: (Maybe String) TypeLocation TypeDef -> Result
-	makeTypeResult mbName (TL lib mod t line) td
+	makeTypeResult :: (Maybe String) Location TypeDef -> Result
+	makeTypeResult mbName (Location lib mod line t) td
 		= TypeResult
 		  ( { library  = lib
 		    , filename = modToFilename mod
@@ -272,7 +269,7 @@ where
 		    }
 		  , { type = concat $ print False td }
 		  )
-	makeTypeResult mbName (TL_Builtin t) td
+	makeTypeResult mbName (Builtin t) td
 		= TypeResult
 		  ( { library  = ""
 		    , filename = ""
@@ -285,8 +282,8 @@ where
 		  , { type = concat $ print False td }
 		  )
 
-	makeMacroResult :: (Maybe String) MacroLocation Macro -> Result
-	makeMacroResult mbName (ML lib mod m line) mac
+	makeMacroResult :: (Maybe String) Location Macro -> Result
+	makeMacroResult mbName (Location lib mod line m) mac
 		= MacroResult
 		  ( { library  = lib
 		    , filename = modToFilename mod
@@ -302,7 +299,7 @@ where
 		  )
 
 	makeFunctionResult :: (Maybe String) (Maybe Type) (Maybe ShortClassResult)
-	              (FunctionLocation, ExtendedType) TypeDB -> Result
+		(Location, ExtendedType) TypeDB -> Result
 	makeFunctionResult
 		orgsearch orgsearchtype mbCls (fl, et=:(ET type tes)) db
 		= FunctionResult
@@ -331,8 +328,8 @@ where
 		  )
 	where
 		(lib,mod,fname,line,builtin) = case fl of
-			(FL l m f ln)  = (l, m, f,ln,     Nothing)
-			(FL_Builtin f) = ("","",f,Nothing,Just True)
+			(Location l m ln f) = (l,  m,  f, ln,      Nothing)
+			(Builtin f)         = ("", "", f, Nothing, Just True)
 
 		toStrUnifier :: Unifier -> StrUnifier
 		toStrUnifier (tvas1, tvas2) = (map toStr tvas1, map toStr tvas2)
@@ -368,21 +365,16 @@ where
 	isUnifiable :: Type ExtendedType -> Bool
 	isUnifiable t1 (ET t2 _) = isJust (unify [] t1 (prepare_unification False t2))
 
-	isNameMatch :: !Int !String FunctionLocation -> Bool
-	isNameMatch maxdist n1 fl
-		# (n1, n2) = ({toLower c \\ c <-: n1}, {toLower c \\ c <-: getName fl})
+	isNameMatch :: !Int !String Location -> Bool
+	isNameMatch maxdist n1 loc
+		# (n1, n2) = ({toLower c \\ c <-: n1}, {toLower c \\ c <-: getName loc})
 		= n1 == "" || indexOf n1 n2 <> -1 || levenshtein n1 n2 <= maxdist
-	where
-		getName (FL _ _ n _) = n; getName (FL_Builtin n) = n
 
-	isModMatchF :: ![String] FunctionLocation ExtendedType -> Bool
-	isModMatchF mods (FL _ mod _ _) _ = isMember mod mods
-
-	isModMatchC :: ![String] ClassLocation [TypeVar] ClassContext FunctionName ExtendedType -> Bool
-	isModMatchC mods (CL _ mod _ _) _ _ _ _ = isMember mod mods
+	isModMatch :: ![String] Location -> Bool
+	isModMatch mods (Location _ mod _ _) = isMember mod mods
 
 	log :: (LogMessage (Maybe Request) Response) IPAddress *World
-	       -> *(IPAddress, *World)
+		-> *(IPAddress, *World)
 	log msg s w
 	| not needslog = (newS msg s, w)
 	# (tm,w) = localTime w

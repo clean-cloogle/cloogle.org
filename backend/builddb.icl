@@ -23,7 +23,6 @@ import CoclUtils
 import CleanPrettyPrint
 
 // frontend
-//import Heap, compile, parse, predef
 import Heap
 from hashtable import ::HashTable, ::QualifiedIdents(NoQualifiedIdents),
 	::IdentClass(IC_Module), ::BoxedIdent{..}, putIdentInHashTable
@@ -101,16 +100,16 @@ Start w
 # (ok, w) = case parseCLI (tl args) of
 	(Left e) = fclose (f <<< e) w
 	(Right cli)
-	| cli.help = fclose (f <<< USAGE) w
+	| cli.help    = fclose (f <<< USAGE) w
 	| cli.version = fclose (f <<< VERSION) w
-	# (modss, w) = mapSt (\l -> findModules cli.exclude cli.root l "") cli.libs w
-	# mods = flatten modss
-	# (st, w) = init_identifiers newHeap w
-	# cache = empty_cache st
-	# (db, w) = loop cli.root mods 'DB'.newDb cache w
-	# db = 'DB'.putFunctions predefFunctions db
-	# db = 'DB'.putTypes predefTypes db
-	# f = 'DB'.saveDb db f
+	# (modss, w)  = mapSt (\l -> findModules cli.exclude cli.root l "") cli.libs w
+	# mods        = flatten modss
+	# (st, w)     = init_identifiers newHeap w
+	# cache       = empty_cache st
+	# (db, w)     = loop cli.root mods 'DB'.newDb cache w
+	# db          = 'DB'.putFunctions predefFunctions db
+	# db          = 'DB'.putTypes predefTypes db
+	# f           = 'DB'.saveDb db f
 	= fclose f w
 | not ok = abort "Couldn't close stdio"
 = w
@@ -119,6 +118,7 @@ where
 	loop _ [] db _ w = (db,w)
 	loop root [(lib,mod):list] db cache w
 	# (db, cache, w) = getModuleTypes root mod lib cache db w
+	# w = snd (fclose (stderr <<< lib <<< ": " <<< mod <<< "\n") w)
 	= loop root list db cache w
 
 	parseCLI :: [String] -> Either String CLI
@@ -132,16 +132,16 @@ where
 		("-l", [x:xs]) = (\c->{c & libs=[x:c.libs]}) <$> parseCLI xs
 		(x, _) = Left $ "Unknown option '" +++ x +++ "'"
 
-predefFunctions :: [('DB'.FunctionLocation, 'DB'.ExtendedType)]
+predefFunctions :: [('DB'.Location, 'DB'.ExtendedType)]
 predefFunctions
-	= [ ( 'DB'.FL_Builtin "if"
+	= [ ( 'DB'.Builtin "if"
 	    , 'DB'.ET ('T'.Func ['T'.Type "Bool" [], 'T'.Var "a", 'T'.Var "a"] ('T'.Var "a") []) zero
 	    )
 	  ]
 
-predefTypes :: [('DB'.TypeLocation, 'T'.TypeDef)]
+predefTypes :: [('DB'.Location, 'T'.TypeDef)]
 predefTypes
-	= [ ( 'DB'.TL_Builtin "Bool"
+	= [ ( 'DB'.Builtin "Bool"
 	    , { deft
 		  & 'Type'.td_name = "Bool"
 	      , 'Type'.td_rhs  = 'T'.TDRCons False
@@ -150,15 +150,15 @@ predefTypes
 			]
 	      }
 	    )
-	  , ( 'DB'.TL_Builtin "Int",     { deft & 'Type'.td_name = "Int"     } )
-	  , ( 'DB'.TL_Builtin "Real",    { deft & 'Type'.td_name = "Real"    } )
-	  , ( 'DB'.TL_Builtin "Char",    { deft & 'Type'.td_name = "Char"    } )
-	  , ( 'DB'.TL_Builtin "String",  { deft & 'Type'.td_name = "String",
-	              'Type'.td_rhs = 'T'.TDRSynonym ('T'.Type "{#Char}" []) } )
-	  , ( 'DB'.TL_Builtin "Dynamic", { deft & 'Type'.td_name = "Dynamic" } )
-	  , ( 'DB'.TL_Builtin "File",    { deft & 'Type'.td_name = "File"    } )
-	  , ( 'DB'.TL_Builtin "World",   { deft & 'Type'.td_name = "World",
-	                                          'Type'.td_uniq = True      } )
+	  , ( 'DB'.Builtin "Int",     { deft & 'Type'.td_name = "Int"     } )
+	  , ( 'DB'.Builtin "Real",    { deft & 'Type'.td_name = "Real"    } )
+	  , ( 'DB'.Builtin "Char",    { deft & 'Type'.td_name = "Char"    } )
+	  , ( 'DB'.Builtin "String",  { deft & 'Type'.td_name = "String",
+	           'Type'.td_rhs = 'T'.TDRSynonym ('T'.Type "{#Char}" []) } )
+	  , ( 'DB'.Builtin "Dynamic", { deft & 'Type'.td_name = "Dynamic" } )
+	  , ( 'DB'.Builtin "File",    { deft & 'Type'.td_name = "File"    } )
+	  , ( 'DB'.Builtin "World",   { deft & 'Type'.td_name = "World",
+	                                       'Type'.td_uniq = True      } )
 	  ]
 where
 	deft = {'Type'.td_name="", 'Type'.td_uniq=False, 'Type'.td_args=[], 'Type'.td_rhs='T'.TDRAbstract}
@@ -226,9 +226,9 @@ where
 				= take (length lib - length mod - 1) lib
 			= lib
 
-	pd_macros :: String String [ParsedDefinition] -> [('DB'.MacroLocation, 'DB'.Macro)]
+	pd_macros :: String String [ParsedDefinition] -> [('DB'.Location, 'DB'.Macro)]
 	pd_macros lib mod pds
-		= [( 'DB'.ML lib mod id.id_name (toLine pos)
+		= [( 'DB'.Location lib mod (toLine pos) id.id_name
 		   , { macro_as_string = priostring id +++ cpp pd
 		     , macro_extras = {zero & te_priority = findPrio id >>= toPrio}
 		     }
@@ -248,22 +248,22 @@ where
 		| id`.id_name == id.id_name = Just pd
 		findTypeSpec id [_:pds]     = findTypeSpec id pds
 
-	pd_derivations :: [ParsedDefinition] -> [('DB'.GenericName, ['DB'.Type])]
+	pd_derivations :: [ParsedDefinition] -> [('DB'.Name, ['DB'.Type])]
 	pd_derivations pds
 		= [(id.id_name, ['T'.toType gc_type])
 		   \\ PD_Derive gcdefs <- pds, {gc_type,gc_gcf=GCF id _} <- gcdefs]
 
 	pd_generics :: String String [ParsedDefinition]
-		-> [('DB'.FunctionLocation, 'DB'.ExtendedType)]
+		-> [('DB'.Location, 'DB'.ExtendedType)]
 	pd_generics lib mod pds
-		= [( 'DB'.FL lib mod id_name (toLine gen_pos)
+		= [( 'DB'.Location lib mod (toLine gen_pos) id_name
 		   , 'DB'.ET ('T'.toType gen_type) {zero & te_generic_vars=Just $ map 'T'.toTypeVar gen_vars}
 		   ) \\ PD_Generic {gen_ident={id_name},gen_pos,gen_type,gen_vars} <- pds]
 
 	pd_typespecs :: String String [ParsedDefinition]
-		-> [('DB'.FunctionLocation, 'DB'.ExtendedType)]
+		-> [('DB'.Location, 'DB'.ExtendedType)]
 	pd_typespecs lib mod pds
-		= [( 'DB'.FL lib mod id_name (toLine pos)
+		= [( 'DB'.Location lib mod (toLine pos) id_name
 		   , 'DB'.ET ('T'.toType t) {zero & te_priority=toPrio p}
 		   ) \\ PD_TypeSpec pos id=:{id_name} p (Yes t) funspecs <- pds]
 
@@ -273,32 +273,32 @@ where
 		   \\ PD_Instance {pim_pi={pi_ident,pi_types}} <- pds]
 
 	pd_classes :: String String [ParsedDefinition]
-		-> [('DB'.ClassLocation, ['T'.TypeVar], 'T'.ClassContext,
-			[('DB'.FunctionName, 'DB'.ExtendedType)])]
+		-> [('DB'.Location, ['T'.TypeVar], 'T'.ClassContext,
+			[('DB'.Name, 'DB'.ExtendedType)])]
 	pd_classes lib mod pds
 	# pds = filter (\pd->case pd of (PD_Class _ _)=True; _=False) pds
 	= map (\(PD_Class {class_ident={id_name},class_pos,class_args,class_context} pds)
 		-> let typespecs = pd_typespecs lib mod pds
-		in ('DB'.CL lib mod id_name (toLine class_pos), map 'T'.toTypeVar class_args,
+		in ('DB'.Location lib mod (toLine class_pos) id_name, map 'T'.toTypeVar class_args,
 		    flatten $ map 'T'.toClassContext class_context,
-		    [(f,et) \\ ('DB'.FL _ _ f _, et) <- typespecs])) pds
+		    [(f,et) \\ ('DB'.Location _ _ _ f, et) <- typespecs])) pds
 
 	pd_types :: String String [ParsedDefinition]
-		-> [('DB'.TypeLocation, 'DB'.TypeDef)]
+		-> [('DB'.Location, 'DB'.TypeDef)]
 	pd_types lib mod pds
-		= [('DB'.TL lib mod ('T'.td_name td) (toLine ptd.td_pos), td)
+		= [('DB'.Location lib mod (toLine ptd.td_pos) ('T'.td_name td), td)
 		   \\ PD_Type ptd <- pds, td <- ['T'.toTypeDef ptd]]
 
-	constructor_functions :: ('DB'.TypeLocation, 'DB'.TypeDef)
-		-> [('DB'.FunctionLocation, 'DB'.ExtendedType)]
-	constructor_functions ('DB'.TL lib mod _ line, td)
-		= [('DB'.FL lib mod c line, 'DB'.ET f {zero & te_isconstructor=True})
+	constructor_functions :: ('DB'.Location, 'DB'.TypeDef)
+		-> [('DB'.Location, 'DB'.ExtendedType)]
+	constructor_functions ('DB'.Location lib mod line _, td)
+		= [('DB'.Location lib mod line c, 'DB'.ET f {zero & te_isconstructor=True})
 		   \\ (c,f) <- 'T'.constructorsToFunctions td]
 
-	record_functions :: ('DB'.TypeLocation, 'DB'.TypeDef)
-		-> [('DB'.FunctionLocation, 'DB'.ExtendedType)]
-	record_functions ('DB'.TL lib mod _ line, td)
-		= [('DB'.FL lib mod f line, 'DB'.ET t {zero & te_isrecordfield=True})
+	record_functions :: ('DB'.Location, 'DB'.TypeDef)
+		-> [('DB'.Location, 'DB'.ExtendedType)]
+	record_functions ('DB'.Location lib mod line _, td)
+		= [('DB'.Location lib mod line f, 'DB'.ET t {zero & te_isrecordfield=True})
 			\\ (f,t) <- 'T'.recordsToFunctions td]
 
 	toPrio :: Priority -> Maybe 'DB'.TE_Priority

@@ -29,20 +29,13 @@ from Type import ::Type, ::TypeVar, ::TVAssignment, ::TypeDef, class print(..),
            , macro_extras :: TypeExtras
            }
 
-:: FunctionLocation = FL         Library Module FunctionName LineNr
-                    | FL_Builtin                FunctionName
-:: MacroLocation    = ML         Library Module MacroName    LineNr
-:: ClassLocation    = CL         Library Module Class        LineNr
-:: TypeLocation     = TL         Library Module TypeName     LineNr
-                    | TL_Builtin                TypeName
+:: Location = Location Library Module LineNr Name
+            | Builtin                        Name
 
+:: Name         :== String
 :: Library      :== String
 :: Module       :== String
-:: FunctionName :== String
-:: MacroName    :== String
 :: Class        :== String
-:: GenericName  :== String
-:: TypeName     :== String
 :: LineNr       :== Maybe Int
 
 derive gEq TypeDB
@@ -51,52 +44,53 @@ instance zero TypeDB
 instance zero TypeExtras
 
 instance print TE_Priority
-instance print (FunctionName, ExtendedType)
+instance print (Name, ExtendedType)
 
-getFunction :: FunctionLocation TypeDB -> Maybe ExtendedType
-putFunction :: FunctionLocation ExtendedType TypeDB -> TypeDB
-putFunctions :: [(FunctionLocation, ExtendedType)] TypeDB -> TypeDB
-findFunction :: FunctionName TypeDB -> [(FunctionLocation, ExtendedType)]
-findFunction` :: (FunctionLocation ExtendedType -> Bool) TypeDB
-		-> [(FunctionLocation, ExtendedType)]
-findFunction`` :: [(FunctionLocation ExtendedType -> Bool)] TypeDB
-		-> [(FunctionLocation, ExtendedType)]
+getName :: Location -> Name
 
-getMacro :: MacroLocation TypeDB -> Maybe Macro
-putMacro :: MacroLocation Macro TypeDB -> TypeDB
-putMacros :: [(MacroLocation, Macro)] TypeDB -> TypeDB
-findMacro` :: (MacroLocation Macro -> Bool) TypeDB -> [(MacroLocation, Macro)]
+getFunction :: Location TypeDB -> Maybe ExtendedType
+putFunction :: Location ExtendedType TypeDB -> TypeDB
+putFunctions :: [(Location, ExtendedType)] TypeDB -> TypeDB
+findFunction :: Name TypeDB -> [(Location, ExtendedType)]
+findFunction` :: (Location ExtendedType -> Bool) TypeDB
+		-> [(Location, ExtendedType)]
+findFunction`` :: [(Location ExtendedType -> Bool)] TypeDB
+		-> [(Location, ExtendedType)]
+
+getMacro :: Location TypeDB -> Maybe Macro
+putMacro :: Location Macro TypeDB -> TypeDB
+putMacros :: [(Location, Macro)] TypeDB -> TypeDB
+findMacro` :: (Location Macro -> Bool) TypeDB -> [(Location, Macro)]
 
 getInstances :: Class TypeDB -> [Type]
 putInstance :: Class Type TypeDB -> TypeDB
 putInstances :: Class [Type] TypeDB -> TypeDB
 putInstancess :: [(Class, [Type])] TypeDB -> TypeDB
 
-getClass :: ClassLocation TypeDB -> Maybe ([TypeVar],ClassContext,[(FunctionName,ExtendedType)])
-putClass :: ClassLocation [TypeVar] ClassContext [(FunctionName,ExtendedType)] TypeDB -> TypeDB
-putClasses :: [(ClassLocation, [TypeVar], ClassContext, [(FunctionName,ExtendedType)])] TypeDB -> TypeDB
-findClass :: Class TypeDB -> [(ClassLocation, [TypeVar], ClassContext, [(FunctionName, ExtendedType)])]
-findClass` :: (ClassLocation [TypeVar] ClassContext [(FunctionName,ExtendedType)] -> Bool) TypeDB
-		-> [(ClassLocation, [TypeVar], ClassContext, [(FunctionName, ExtendedType)])]
+getClass :: Location TypeDB -> Maybe ([TypeVar],ClassContext,[(Name,ExtendedType)])
+putClass :: Location [TypeVar] ClassContext [(Name,ExtendedType)] TypeDB -> TypeDB
+putClasses :: [(Location, [TypeVar], ClassContext, [(Name,ExtendedType)])] TypeDB -> TypeDB
+findClass :: Class TypeDB -> [(Location, [TypeVar], ClassContext, [(Name, ExtendedType)])]
+findClass` :: (Location [TypeVar] ClassContext [(Name,ExtendedType)] -> Bool) TypeDB
+		-> [(Location, [TypeVar], ClassContext, [(Name, ExtendedType)])]
 
-findClassMembers` :: (ClassLocation [TypeVar] ClassContext FunctionName ExtendedType -> Bool) TypeDB
-		-> [(ClassLocation, [TypeVar], ClassContext, FunctionName, ExtendedType)]
-findClassMembers`` :: [ClassLocation [TypeVar] ClassContext FunctionName ExtendedType -> Bool]
-		TypeDB -> [(ClassLocation, [TypeVar], ClassContext, FunctionName, ExtendedType)]
+findClassMembers` :: (Location [TypeVar] ClassContext Name ExtendedType -> Bool) TypeDB
+		-> [(Location, [TypeVar], ClassContext, Name, ExtendedType)]
+findClassMembers`` :: [Location [TypeVar] ClassContext Name ExtendedType -> Bool]
+		TypeDB -> [(Location, [TypeVar], ClassContext, Name, ExtendedType)]
 
-getType :: TypeLocation TypeDB -> Maybe TypeDef
-putType :: TypeLocation TypeDef TypeDB -> TypeDB
-putTypes :: [(TypeLocation, TypeDef)] TypeDB -> TypeDB
-findType :: TypeName TypeDB -> [(TypeLocation, TypeDef)]
-findType` :: (TypeLocation TypeDef -> Bool) TypeDB
-		-> [(TypeLocation, TypeDef)]
+getType :: Location TypeDB -> Maybe TypeDef
+putType :: Location TypeDef TypeDB -> TypeDB
+putTypes :: [(Location, TypeDef)] TypeDB -> TypeDB
+findType :: Name TypeDB -> [(Location, TypeDef)]
+findType` :: (Location TypeDef -> Bool) TypeDB -> [(Location, TypeDef)]
 
-getDerivations :: GenericName TypeDB -> [Type]
-putDerivation :: GenericName Type TypeDB -> TypeDB
-putDerivations :: GenericName [Type] TypeDB -> TypeDB
-putDerivationss :: [(GenericName, [Type])] TypeDB -> TypeDB
+getDerivations :: Name TypeDB -> [Type]
+putDerivation :: Name Type TypeDB -> TypeDB
+putDerivations :: Name [Type] TypeDB -> TypeDB
+putDerivationss :: [(Name, [Type])] TypeDB -> TypeDB
 
-searchExact :: Type TypeDB -> [(FunctionLocation, ExtendedType)]
+searchExact :: Type TypeDB -> [(Location, ExtendedType)]
 
 newDb :: TypeDB
 openDb :: *File -> *(Maybe TypeDB, *File)

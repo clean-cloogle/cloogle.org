@@ -18,6 +18,8 @@ WORKDIR /usr/src/cloogle
 
 RUN cat env/envs.linux64 >> /opt/clean/etc/IDEEnvs
 
+RUN svn checkout https://svn.cs.ru.nl/repos/SoccerFun/src /opt/clean/lib/SoccerFun
+
 RUN make
 
 EXPOSE 31215

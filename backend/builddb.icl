@@ -77,11 +77,18 @@ instance zero CLI where
 	                   , "iTasks-SDK/Dependencies/clean-sapl/src"
 	                   , "iTasks-SDK/Server"
 	                   , "iTasks-SDK/Tests"
+	                   , "SoccerFun/Game"
+	                   , "SoccerFun/Gui"
+	                   , "SoccerFun/StdLibExt"
+	                   , "SoccerFun/StdReferee"
+	                   , "SoccerFun/StdTeam"
 	                   ]
 	       , exclude = [ "StdEnv/_startup"
 	                   , "StdEnv/_system"
 	                   , "clean-platform/OS-Independent/Deprecated"
 	                   , "iTasks-SDK/Server/lib"
+	                   , "SoccerFun/StdReferee/RefereeCoach_"
+	                   , "SoccerFun/StdTeam/Team_"
 	                   ]
 	       }
 

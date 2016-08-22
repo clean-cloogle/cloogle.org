@@ -1,10 +1,23 @@
 var form_str = document.getElementById('search_str');
+var form_libs = document.getElementById('search_libs');
 var sform = document.getElementById('search_form');
 var sresults = document.getElementById('search_results');
 var refresh_on_hash = true;
 
-function getResults(str, page) {
-	var url = 'api.php?str=' + encodeURIComponent(str) + '&page=' + page;
+var old_str = null;
+var old_libs = null;
+
+function getResults(str, libs, page) {
+	if (str == null)  str  = old_str;
+	if (libs == null) libs = old_libs;
+
+	old_str  = str;
+	old_libs = libs;
+
+	var url = 'api.php' +
+		'?str='  + encodeURIComponent(str) +
+		'&lib='  + encodeURIComponent(libs) +
+		'&page=' + page;
 	var xmlHttp = new XMLHttpRequest();
 
 	var elem = document.getElementById('page-' + page);
@@ -208,8 +221,7 @@ function getResults(str, page) {
 				var par = elem.parentNode
 				if (responsedata['more_available'] != 0) {
 					par.innerHTML += '<div id="page-' + (page+1) + '">' +
-						'<p id="more"><a href="javascript:getResults(\'' +
-							escapeJS(str) + '\',' + (page+1) +
+						'<p id="more"><a href="javascript:getResults(null,null,' + (page+1) +
 						')">' + responsedata['more_available'] + ' more...</a></p>' +
 						'</div>';
 				}
@@ -248,26 +260,23 @@ function makeUnifier(ufr) {
 	return s.substring(0, s.length - 2);
 }
 
-function escapeJS(s) {
-	return ('' + s).replace(/["'\\\n\r\u2028\u2029]/g, function (c) {
-		switch (c) {
-			case '"':
-			case "'":
-			case '\\': return '\\' + c;
-			case '\n': return '\\n';
-			case '\r': return '\\r';
-			case '\u2028': return '\\u2028';
-			case '\u2029': return '\\u2029';
+function getLibs() {
+	var libs = [];
+	for (var i = 0; i < form_libs.length; i++) {
+		if (form_libs[i].selected) {
+			libs.push(form_libs[i].value);
 		}
-	});
+	}
+	return libs;
 }
 
 function formsubmit() {
 	if (form_str.value === '') {
 		sresults.innerHTML = 'Can\'t search for the empty string';
 	} else {
+		var libs = getLibs();
 		sresults.innerHTML = '<div id="page-0"></div>';
-		getResults(form_str.value, 0);
+		getResults(form_str.value, libs, 0);
 	}
 	return false;
 };

@@ -90,16 +90,45 @@
 		</table>
 	</div>
 	<form id="search_form" action="#">
-		<table>
-			<tr>
-				<td colspan="3">
-					<input type="text" id="search_str" placeholder="fix :: (a -> a) -> a" />
-				</td>
-			</tr>
-			<tr>
-				<td><input type="submit" value="Search" /></td><td></td><td></td>
-			</tr>
-		</table>
+		<input type="text" id="search_str" placeholder="fix :: (a -> a) -> a" /><br/>
+		<input type="submit" value="Search" />
+		&nbsp;(<a href="javascript:toggle('advanced')">advanced</a>)
+		<div id="advanced" style="display:none;">
+			<h4 style="margin:1em 0 .2em;">Libraries</h4>
+			<select multiple="multiple" size="10" id="search_libs">
+				<optgroup label="Clean 2.4">
+					<option selected="selected" value="StdEnv">StdEnv</option>
+					<option selected="selected" value="StdLib">StdLib</option>
+					<option selected="selected" value="ArgEnv">ArgEnv</option>
+					<option selected="selected" value="Directory">Directory</option>
+					<option selected="selected" value="Dynamics">Dynamics</option>
+					<option selected="selected" value="Gast">Gast</option>
+					<option selected="selected" value="Generics">Generics</option>
+					<option selected="selected" value="MersenneTwister">MersenneTwister</option>
+					<option selected="selected" value="TCPIP">TCPIP</option>
+				</optgroup>
+				<optgroup label="clean-platform">
+					<option selected="selected" value="clean-platform/OS-Independent">clean-platform/OS-Independent</option>
+					<option selected="selected" value="clean-platform/OS-Linux">clean-platform/OS-Linux</option>
+					<option selected="selected" value="clean-platform/OS-Linux-32">clean-platform/OS-Linux-32</option>
+					<option selected="selected" value="clean-platform/OS-Linux-64">clean-platform/OS-Linux-64</option>
+					<option selected="selected" value="clean-platform/OS-Mac">clean-platform/OS-Mac</option>
+					<option selected="selected" value="clean-platform/OS-Posix">clean-platform/OS-Posix</option>
+					<option selected="selected" value="clean-platform/OS-Windows">clean-platform/OS-Windows</option>
+					<option selected="selected" value="clean-platform/OS-Windows-32">clean-platform/OS-Windows-32</option>
+					<option selected="selected" value="clean-platform/OS-Windows-64">clean-platform/OS-Windows-64</option>
+				</optgroup>
+				<optgroup label="iTasks">
+					<option selected="selected" value="iTasks-SDK/Dependencies/graph_copy">iTasks-SDK/Dependencies/graph_copy</option>
+					<option selected="selected" value="iTasks-SDK/Dependencies/clean-sapl/src">iTasks-SDK/Dependencies/clean-sapl/src</option>
+					<option selected="selected" value="iTasks-SDK/Server">iTasks-SDK/Server</option>
+					<option selected="selected" value="iTasks-SDK/Tests">iTasks-SDK/Tests</option>
+				</optgroup>
+				<optgroup label="Miscellaneous">
+					<option selected="selected" value="SoccerFun">SoccerFun</option>
+				</optgroup>
+			</select>
+		</div>
 	</form>
 	<div id="search_results"></div>
 </body>

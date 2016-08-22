@@ -61,6 +61,7 @@ getMacro :: Location TypeDB -> Maybe Macro
 putMacro :: Location Macro TypeDB -> TypeDB
 putMacros :: [(Location, Macro)] TypeDB -> TypeDB
 findMacro` :: (Location Macro -> Bool) TypeDB -> [(Location, Macro)]
+findMacro`` :: [(Location Macro -> Bool)] TypeDB -> [(Location, Macro)]
 
 getInstances :: Class TypeDB -> [Type]
 putInstance :: Class Type TypeDB -> TypeDB
@@ -73,6 +74,8 @@ putClasses :: [(Location, [TypeVar], ClassContext, [(Name,ExtendedType)])] TypeD
 findClass :: Class TypeDB -> [(Location, [TypeVar], ClassContext, [(Name, ExtendedType)])]
 findClass` :: (Location [TypeVar] ClassContext [(Name,ExtendedType)] -> Bool) TypeDB
 		-> [(Location, [TypeVar], ClassContext, [(Name, ExtendedType)])]
+findClass`` :: [(Location [TypeVar] ClassContext [(Name,ExtendedType)] -> Bool)] TypeDB
+		-> [(Location, [TypeVar], ClassContext, [(Name, ExtendedType)])]
 
 findClassMembers` :: (Location [TypeVar] ClassContext Name ExtendedType -> Bool) TypeDB
 		-> [(Location, [TypeVar], ClassContext, Name, ExtendedType)]
@@ -84,6 +87,7 @@ putType :: Location TypeDef TypeDB -> TypeDB
 putTypes :: [(Location, TypeDef)] TypeDB -> TypeDB
 findType :: Name TypeDB -> [(Location, TypeDef)]
 findType` :: (Location TypeDef -> Bool) TypeDB -> [(Location, TypeDef)]
+findType`` :: [(Location TypeDef -> Bool)] TypeDB -> [(Location, TypeDef)]
 
 getDerivations :: Name TypeDB -> [Type]
 putDerivation :: Name Type TypeDB -> TypeDB

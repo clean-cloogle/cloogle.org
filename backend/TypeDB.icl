@@ -127,6 +127,9 @@ putMacros ms db = foldr (\(loc,m) db -> putMacro loc m db) db ms
 findMacro` :: (Location Macro -> Bool) TypeDB -> [(Location, Macro)]
 findMacro` f {macromap} = toList $ filterWithKey f macromap
 
+findMacro`` :: [(Location Macro -> Bool)] TypeDB -> [(Location, Macro)]
+findMacro`` fs {macromap} = toList $ foldr filterWithKey macromap fs
+
 getInstances :: Class TypeDB -> [Type]
 getInstances c {instancemap} = if (isNothing ts) [] (fromJust ts)
 where ts = get c instancemap
@@ -159,6 +162,11 @@ findClass` :: (Location [TypeVar] ClassContext [(Name,ExtendedType)] -> Bool) Ty
 findClass` f {classmap} = map (\(k,(x,y,z))->(k,x,y,z)) results
 where results = toList $ filterWithKey (\cl (vs,cc,fs)->f cl vs cc fs) classmap
 
+findClass`` :: [(Location [TypeVar] ClassContext [(Name,ExtendedType)] -> Bool)] TypeDB
+		-> [(Location, [TypeVar], ClassContext, [(Name, ExtendedType)])]
+findClass`` fs {classmap} = map (\(k,(x,y,z)) -> (k,x,y,z)) $ toList
+	$ foldr (\f -> filterWithKey (\cl (vs,cc,fs) -> f cl vs cc fs)) classmap fs
+
 findClassMembers` :: (Location [TypeVar] ClassContext Name ExtendedType -> Bool) TypeDB
 		-> [(Location, [TypeVar], ClassContext, Name, ExtendedType)]
 findClassMembers` f {classmap} = filter (app5 f) $ flatten members
@@ -187,6 +195,9 @@ findType t db=:{typemap}
 findType` :: (Location TypeDef -> Bool) TypeDB
 		-> [(Location, TypeDef)]
 findType` f {typemap} = toList $ filterWithKey f typemap
+
+findType`` :: [(Location TypeDef -> Bool)] TypeDB -> [(Location, TypeDef)]
+findType`` fs {typemap} = toList $ foldr filterWithKey typemap fs
 
 getDerivations :: Name TypeDB -> [Type]
 getDerivations gen {derivemap} = if (isNothing ts) [] (fromJust ts)

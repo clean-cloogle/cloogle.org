@@ -33,6 +33,7 @@ import Levenshtein
              , className :: Maybe String
              , typeName  :: Maybe String
              , modules   :: Maybe [String]
+             , libraries :: Maybe [String]
              , page      :: Maybe Int
              }
 
@@ -99,6 +100,7 @@ where
 	       , className = Nothing
 	       , typeName  = Nothing
 	       , modules   = Nothing
+	       , libraries = Nothing
 	       , page      = Nothing
 	       }
 
@@ -152,7 +154,7 @@ where
 
 	handle :: !TypeDB !(Maybe Request) !*World -> *(!Response, !*World)
 	handle _ Nothing w = (err E_INVALIDINPUT "Couldn't parse input", w)
-	handle db (Just request=:{unify,name,modules,page}) w
+	handle db (Just request=:{unify,name,page}) w
 		| isJust name && size (fromJust name) > 40
 			= (err E_INVALIDNAME "function name too long", w)
 		| isJust name && any isSpace (fromString $ fromJust name)
@@ -190,7 +192,10 @@ where
 	suggs _ _ _ = Nothing
 
 	search :: !Request !TypeDB -> [Result]
-	search {unify,name,className,typeName,modules,page} db
+	search {unify,name,className,typeName,modules,libraries,page} db
+		# db = case libraries of
+			(Just ls) = filterLocations (isLibMatch ls) db
+			Nothing   = db
 		# db = case modules of
 			(Just ms) = filterLocations (isModMatch ms) db
 			Nothing   = db
@@ -374,6 +379,10 @@ where
 	isModMatch :: ![String] Location -> Bool
 	isModMatch mods (Location _ mod _ _) = isMember mod mods
 	isModMatch _    (Builtin _)          = False
+
+	isLibMatch :: ![String] Location -> Bool
+	isLibMatch libs (Location lib _ _ _) = isMember lib libs
+	isLibMatch _    (Builtin _)          = False
 
 	log :: (LogMessage (Maybe Request) Response) IPAddress *World
 		-> *(IPAddress, *World)

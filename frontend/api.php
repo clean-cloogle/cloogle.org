@@ -34,6 +34,9 @@ if($_SERVER['REQUEST_METHOD'] !== 'GET'){
 		$command['unify'] = $unify;
 	}
 
+	if (isset($_GET['lib'])) {
+		$command['libraries'] = explode(',', $_GET['lib']);
+	}
 	if (isset($_GET['mod'])) {
 		$command['modules'] = explode(',', $_GET['mod']);
 	}

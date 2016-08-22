@@ -94,6 +94,18 @@ getName :: Location -> Name
 getName (Location _ _ _ name) = name
 getName (Builtin name)        = name
 
+filterLocations :: (Location -> Bool) TypeDB -> TypeDB
+filterLocations f db
+	= { db
+	  & functionmap = filterLoc db.functionmap
+	  , macromap    = filterLoc db.macromap
+	  , classmap    = filterLoc db.classmap
+	  , typemap     = filterLoc db.typemap
+	  }
+where
+	filterLoc :: ((Map Location a) -> Map Location a)
+	filterLoc = filterWithKey (const o f)
+
 getFunction :: Location TypeDB -> Maybe ExtendedType
 getFunction loc {functionmap} = get loc functionmap
 

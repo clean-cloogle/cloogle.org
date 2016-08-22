@@ -191,40 +191,32 @@ where
 
 	search :: !Request !TypeDB -> [Result]
 	search {unify,name,className,typeName,modules,page} db
+		# db = case modules of
+			(Just ms) = filterLocations (isModMatch ms) db
+			Nothing   = db
 		| isJust className
 			# className = fromJust className
 			# classes = findClass className db
-			# classes = case modules of
-				(Just ms) = filter (\(loc,_,_,_) -> isModMatch ms loc) classes
-				Nothing   = classes
 			= map (flip makeClassResult db) classes
 		| isJust typeName
 			# typeName = fromJust typeName
 			# types = findType typeName db
-			# types = case modules of
-				(Just ms) = filter (\(loc,_) -> isModMatch ms loc) types
-				Nothing   = types
 			= map (uncurry (makeTypeResult (Just typeName))) types
 		# mbType = prepare_unification True <$> (unify >>= parseType o fromString)
 		// Search normal functions
 		# filts = catMaybes [ (\t _ -> isUnifiable t) <$> mbType
 		                    , (\n loc _ -> isNameMatch (size n-2) n loc) <$> name
-		                    , (\mods loc _ -> isModMatch mods loc) <$> modules
 		                    ]
 		# funs = map (\f -> makeFunctionResult name mbType Nothing f db) $ findFunction`` filts db
 		// Search macros
-		# filts = catMaybes [ (\n loc _ -> isNameMatch (size n-2) n loc) <$> name
-		                    , (\mods loc _ -> isModMatch mods loc) <$> modules
-		                    ]
 		# macros = case name of
 			Nothing  = []
-			(Just n) = findMacro`` filts db
+			(Just n) = findMacro` (\loc _ -> isNameMatch (size n-2) n loc) db
 		# macros = map (\(lhs,rhs) -> makeMacroResult name lhs rhs) macros
 		// Search class members
 		# filts = catMaybes [ (\t _ _ _ _->isUnifiable t) <$> mbType
 		                    , (\n (Location lib mod _ _) _ _ f _ -> isNameMatch
 		                      (size n-2) n (Location lib mod Nothing f)) <$> name
-		                    , (\mods loc _ _ _ _ -> isModMatch mods loc) <$> modules
 		                    ]
 		# members = findClassMembers`` filts db
 		# members = map (\(Location lib mod line cls,vs,_,f,et) -> makeFunctionResult name mbType
@@ -233,17 +225,13 @@ where
 		# lcName = if (isJust mbType && isType (fromJust mbType))
 			(let (Type name _) = fromJust mbType in Just $ toLowerCase name)
 			(toLowerCase <$> name)
-		# filts = catMaybes [ (\n loc _ -> toLowerCase (getName loc) == n) <$> lcName
-		                    , (\mods loc _ -> isModMatch mods loc) <$> modules
-		                    ]
-		# types = findType`` filts db
+		# types = case lcName of
+			(Just n) = findType` (\loc _ -> toLowerCase (getName loc) == n) db
+			Nothing  = []
 		# types = map (\(tl,td) -> makeTypeResult name tl td) types
 		// Search classes
-		# filts = catMaybes [ (\n (Location _ _ _ c) _ _ _ -> toLowerCase c == n) <$> toLowerCase <$> name
-		                    , (\mods loc _ _ _ -> isModMatch mods loc) <$> modules
-		                    ]
 		# classes = case (isNothing mbType, toLowerCase <$> name) of
-			(True, Just c) = findClass`` filts db
+			(True, Just c) = findClass` (\(Location _ _ _ c`) _ _ _ -> toLowerCase c` == c) db
 			_              = []
 		# classes = map (flip makeClassResult db) classes
 		// Merge results

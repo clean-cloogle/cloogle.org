@@ -48,6 +48,8 @@ instance print (Name, ExtendedType)
 
 getName :: Location -> Name
 
+filterLocations :: (Location -> Bool) TypeDB -> TypeDB
+
 getFunction :: Location TypeDB -> Maybe ExtendedType
 putFunction :: Location ExtendedType TypeDB -> TypeDB
 putFunctions :: [(Location, ExtendedType)] TypeDB -> TypeDB

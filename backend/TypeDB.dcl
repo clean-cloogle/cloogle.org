@@ -65,10 +65,10 @@ putMacros :: [(Location, Macro)] TypeDB -> TypeDB
 findMacro` :: (Location Macro -> Bool) TypeDB -> [(Location, Macro)]
 findMacro`` :: [(Location Macro -> Bool)] TypeDB -> [(Location, Macro)]
 
-getInstances :: Class TypeDB -> [Type]
-putInstance :: Class Type TypeDB -> TypeDB
-putInstances :: Class [Type] TypeDB -> TypeDB
-putInstancess :: [(Class, [Type])] TypeDB -> TypeDB
+getInstances :: Class TypeDB -> [(Type, [Location])]
+putInstance :: Class Type Location TypeDB -> TypeDB
+putInstances :: Class [(Type, Location)] TypeDB -> TypeDB
+putInstancess :: [(Class, [(Type, Location)])] TypeDB -> TypeDB
 
 getClass :: Location TypeDB -> Maybe ([TypeVar],ClassContext,[(Name,ExtendedType)])
 putClass :: Location [TypeVar] ClassContext [(Name,ExtendedType)] TypeDB -> TypeDB

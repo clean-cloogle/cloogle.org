@@ -151,16 +151,39 @@ function getResults(str, libs, page) {
 					'</pre>';
 				break;
 			case 'ClassResult':
-				var instances = '';
-				for (var i in specific['class_instances']) {
-					if (instances != '') {
-						instances += ', ';
+				var instancesId = 'instances-' + specific['class_name'];
+				var instances = '<a href="javascript:toggle(\'' + instancesId + '\')">show / hide</a>';
+				instances += '<table id="' + instancesId + '" style="display:none;">';
+				var makeInstanceUrl = function(loc) {
+					var dclUrl =
+						'src/view.php?lib=' + encodeURIComponent(loc[0]) +
+						'&mod=' + encodeURIComponent(loc[1]) +
+						'&hl';
+					var iclUrl = dclUrl + '&icl';
+					if (loc[2].length > 1) {
+						dclUrl += '&line=' + loc[2][1] + '#line-' + loc[2][1];
 					}
-					instances += '<code>' +
-						highlightType(specific['class_instances'][i],
-								highlightCallback) +
-						'</code>';
+					return '<a target="_blank" ' +
+						'href="' + dclUrl + '" ' +
+						'title="' + loc[0] + '">' + loc[1] + '</a> (' +
+						'<a target="_blank" href="' + iclUrl + '">icl</a>)';
 				}
+				for (var i in specific['class_instances']) {
+					instances += '<tr><th><code>' +
+						highlightType(specific['class_instances'][i][0],
+								highlightCallback) +
+						'</code></th>';
+					var locs = '';
+					for (var j in specific['class_instances'][i][1]) {
+						var loc = specific['class_instances'][i][1][j];
+						if (locs != '') {
+							locs += ', ';
+						}
+						locs += makeInstanceUrl(loc);
+					}
+					instances += '<td>in: ' + locs + '</td></tr>';
+				}
+				instances += '</table>';
 				var specificData = [['Instances', instances]];
 				var html = '<hr/>' +
 					makeTable(basicData.concat(specificData)) + '<pre>' +

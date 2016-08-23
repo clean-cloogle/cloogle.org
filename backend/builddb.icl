@@ -34,7 +34,7 @@ from syntax import ::SymbolTable, ::SymbolTableEntry, ::Ident{..}, ::SymbolPtr,
 	::Module{mod_ident,mod_defs},
 	::ParsedDefinition(PD_TypeSpec,PD_Instance,PD_Class,PD_Type,PD_Generic,PD_Derive,PD_Function),
 	::FunSpecials, ::Priority, ::ParsedModule, ::SymbolType,
-	::ParsedInstanceAndMembers{..}, ::ParsedInstance{pi_ident,pi_types},
+	::ParsedInstanceAndMembers{..}, ::ParsedInstance{pi_ident,pi_pos,pi_types},
 	::Type, ::ClassDef{class_ident,class_pos,class_args,class_context},
 	::TypeVar, ::ParsedTypeDef, ::TypeDef{td_pos},
 	::GenericDef{gen_ident,gen_pos,gen_type,gen_vars},
@@ -208,7 +208,7 @@ getModuleTypes root mod lib cache db w
 # mod = pm.mod_ident.id_name
 # lib = cleanlib mod lib
 # db = 'DB'.putFunctions (pd_typespecs lib mod pm.mod_defs) db
-# db = 'DB'.putInstancess (pd_instances pm.mod_defs) db
+# db = 'DB'.putInstancess (pd_instances lib mod pm.mod_defs) db
 # db = 'DB'.putClasses (pd_classes lib mod pm.mod_defs) db
 # typedefs = pd_types lib mod pm.mod_defs
 # db = 'DB'.putTypes typedefs db
@@ -274,10 +274,12 @@ where
 		   , 'DB'.ET ('T'.toType t) {zero & te_priority=toPrio p}
 		   ) \\ PD_TypeSpec pos id=:{id_name} p (Yes t) funspecs <- pds]
 
-	pd_instances :: [ParsedDefinition] -> [('DB'.Class, ['DB'.Type])]
-	pd_instances pds
-		= [(pi_ident.id_name, map 'T'.toType pi_types)
-		   \\ PD_Instance {pim_pi={pi_ident,pi_types}} <- pds]
+	pd_instances :: String String [ParsedDefinition]
+		-> [('DB'.Class, [('DB'.Type, 'DB'.Location)])]
+	pd_instances lib mod pds
+		= [( pi_ident.id_name
+		   , [('T'.toType t, 'DB'.Location lib mod (toLine pi_pos) "") \\ t <- pi_types]
+		   ) \\ PD_Instance {pim_pi={pi_ident,pi_types,pi_pos}} <- pds]
 
 	pd_classes :: String String [ParsedDefinition]
 		-> [('DB'.Location, ['T'.TypeVar], 'T'.ClassContext,

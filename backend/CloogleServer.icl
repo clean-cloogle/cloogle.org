@@ -74,7 +74,7 @@ import Levenshtein
 :: ClassResultExtras = { class_name      :: String
                        , class_heading   :: String
                        , class_funs      :: [String]
-                       , class_instances :: [String]
+                       , class_instances :: [(String, [(String,String,Maybe Int)])]
                        }
 
 :: MacroResult :== (BasicResult, MacroResultExtras)
@@ -258,9 +258,13 @@ where
 		        if (isEmpty cc) "" " " + concat (print False cc)
 		    , class_funs = [concat $ print False fun \\ fun <- funs]
 		    , class_instances
-		        = sort [concat (print False t) \\ t <- getInstances cls db]
+		        = sortBy (\(a,_) (b,_) -> a < b)
+		            [(concat (print False t), map loc ls) \\ (t,ls) <- getInstances cls db]
 		    }
 		  )
+	where
+		loc :: Location -> (String, String, Maybe Int)
+		loc (Location lib mod ln _) = (lib, mod, ln)
 
 	makeTypeResult :: (Maybe String) Location TypeDef -> Result
 	makeTypeResult mbName (Location lib mod line t) td

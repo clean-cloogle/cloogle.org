@@ -3,6 +3,7 @@ implementation module TypeDB
 // Standard libraries
 import StdEnv
 from Data.Func import $
+import Data.Functor
 from Data.List import intercalate
 import Data.Map
 import Data.Maybe
@@ -16,7 +17,7 @@ import Type
 	= { functionmap :: Map Location ExtendedType
 	  , macromap    :: Map Location Macro
 	  , classmap    :: Map Location ([TypeVar],ClassContext,[(Name, ExtendedType)])
-	  , instancemap :: Map Class [Type]
+	  , instancemap :: Map Class [(Type, [Location])]
 	  , typemap     :: Map Location TypeDef
 	  , derivemap   :: Map Name [Type]
 	  }
@@ -58,6 +59,10 @@ where
 	(<) (Location _ _ _ _) (Builtin _)        = True
 	(<) (Builtin _)        (Location _ _ _ _) = False
 	(<) (Builtin a)        (Builtin b)        = a < b
+
+instance == Location
+where
+	(==) a b = gEq{|*|} a b
 
 instance zero TypeExtras
 where
@@ -101,10 +106,19 @@ filterLocations f db
 	  , macromap    = filterLoc db.macromap
 	  , classmap    = filterLoc db.classmap
 	  , typemap     = filterLoc db.typemap
+	  , instancemap = filtInstLocs <$> db.instancemap
 	  }
 where
 	filterLoc :: ((Map Location a) -> Map Location a)
 	filterLoc = filterWithKey (const o f)
+
+	filtInstLocs :: [(Type, [Location])] -> [(Type, [Location])]
+	filtInstLocs [] = []
+	filtInstLocs [(t,ls):rest] = case ls` of
+		[] =          filtInstLocs rest
+		_  = [(t,ls`):filtInstLocs rest]
+	where
+		ls` = filter f ls
 
 getFunction :: Location TypeDB -> Maybe ExtendedType
 getFunction loc {functionmap} = get loc functionmap
@@ -142,18 +156,24 @@ findMacro` f {macromap} = toList $ filterWithKey f macromap
 findMacro`` :: [(Location Macro -> Bool)] TypeDB -> [(Location, Macro)]
 findMacro`` fs {macromap} = toList $ foldr filterWithKey macromap fs
 
-getInstances :: Class TypeDB -> [Type]
+getInstances :: Class TypeDB -> [(Type, [Location])]
 getInstances c {instancemap} = if (isNothing ts) [] (fromJust ts)
 where ts = get c instancemap
 
-putInstance :: Class Type TypeDB -> TypeDB
-putInstance c t db=:{instancemap} = {db & instancemap=put c ts instancemap}
-where ts = removeDup [t : getInstances c db]
+putInstance :: Class Type Location TypeDB -> TypeDB
+putInstance c t l db=:{instancemap}
+	= {db & instancemap=put c (update (getInstances c db)) instancemap}
+where
+	update :: [(Type, [Location])] -> [(Type, [Location])]
+	update []   = [(t,[l])]
+	update [(t`,ls):rest]
+	| t` == t   = [(t`, removeDup [l:ls]):rest]
+	| otherwise = [(t`,ls):update rest]
 
-putInstances :: Class [Type] TypeDB -> TypeDB
-putInstances c ts db = foldr (\t db -> putInstance c t db) db ts
+putInstances :: Class [(Type, Location)] TypeDB -> TypeDB
+putInstances c ts db = foldr (\(t,l) db -> putInstance c t l db) db ts
 
-putInstancess :: [(Class, [Type])] TypeDB -> TypeDB
+putInstancess :: [(Class, [(Type, Location)])] TypeDB -> TypeDB
 putInstancess is db = foldr (\(c,ts) db -> putInstances c ts db) db is
 
 getClass :: Location TypeDB -> Maybe ([TypeVar],ClassContext,[(Name,ExtendedType)])

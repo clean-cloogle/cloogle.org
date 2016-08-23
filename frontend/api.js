@@ -72,10 +72,11 @@ function getResults(str, libs, page) {
 		var dclUrl =
 			'src/view.php?lib=' + encodeURIComponent(basic['library']) +
 			'&mod=' + encodeURIComponent(basic['modul']) +
-			'&hl' +
-			('dcl_line' in basic ? '&line=' + basic['dcl_line'] : '') +
-			('dcl_line' in basic ? '#line-' + basic['dcl_line'] : '');
+			'&hl';
 		var iclUrl = dclUrl + '&icl';
+		if ('dcl_line' in basic) {
+			dclUrl += '&line=' + basic['dcl_line'] + '#line-' + basic['dcl_line'];
+		}
 
 		var basicData = [
 			['Library',  basic['library']],

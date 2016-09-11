@@ -2,10 +2,16 @@ var form_str = document.getElementById('search_str');
 var form_libs = document.getElementById('search_libs');
 var sform = document.getElementById('search_form');
 var sresults = document.getElementById('search_results');
+var advanced_checkbox = document.getElementById('search_advanced');
 var refresh_on_hash = true;
 
 var old_str = null;
 var old_libs = null;
+
+function toggle(name) {
+	var e = document.getElementById(name);
+	e.style.display = e.style.display == 'block' ? 'none' : 'block';
+}
 
 function getResults(str, libs, page) {
 	if (str == null)  str  = old_str;
@@ -16,7 +22,7 @@ function getResults(str, libs, page) {
 
 	var url = 'api.php' +
 		'?str='  + encodeURIComponent(str) +
-		'&lib='  + encodeURIComponent(libs) +
+		(libs.length > 0 ? ('&lib='  + encodeURIComponent(libs)) : '') +
 		'&page=' + page;
 	var xmlHttp = new XMLHttpRequest();
 
@@ -285,12 +291,16 @@ function makeUnifier(ufr) {
 }
 
 function getLibs() {
+	if (!advanced_checkbox.checked)
+		return [];
+
 	var libs = [];
 	for (var i = 0; i < form_libs.length; i++) {
 		if (form_libs[i].selected) {
 			libs.push(form_libs[i].value);
 		}
 	}
+
 	return libs;
 }
 
@@ -305,6 +315,10 @@ function formsubmit() {
 	return false;
 };
 
+advanced_checkbox.onchange = function() {
+	toggle('advanced');
+}
+
 window.onload = function() {
 	sform.onsubmit = formsubmit;
 	var str = decodeURIComponent(document.location.hash);
@@ -313,6 +327,9 @@ window.onload = function() {
 		form_str.value = decodeURIComponent(str);
 		formsubmit();
 	}
+
+	if (advanced_checkbox.checked)
+		advanced_checkbox.onchange();
 
 	document.getElementById('search_str').focus();
 }

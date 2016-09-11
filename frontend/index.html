@@ -8,15 +8,6 @@
 	<script src="api.js" type="text/javascript" defer="defer"></script>
 	<script src="clean.js" type="text/javascript" defer="defer"></script>
 	<link rel="stylesheet" href="clean.css" type="text/css"/>
-	<script type="text/javascript">
-		function toggle(name) {
-			var e = document.getElementById(name);
-			if (e.style.display=="block")
-				e.style.display="none";
-			else
-				e.style.display="block";
-		}
-	</script>
 	<style type="text/css">
 		#helptext {
 			margin-bottom: 1em;
@@ -94,7 +85,8 @@
 	<form id="search_form" action="#">
 		<input type="text" id="search_str" placeholder="fix :: (a -> a) -> a" /><br/>
 		<input type="submit" value="Search" />
-		&nbsp;(<a href="javascript:toggle('advanced')">advanced</a>)
+		&nbsp;
+		<label><input type="checkbox" id="search_advanced"/> advanced</label>
 		<div id="advanced" style="display:none;">
 			<h4 style="margin:1em 0 .2em;">Libraries</h4>
 			<select multiple="multiple" size="10" id="search_libs">

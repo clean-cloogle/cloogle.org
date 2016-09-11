@@ -22,9 +22,12 @@ function getResults(str, libs, page) {
 
 	var url = 'api.php' +
 		'?str='  + encodeURIComponent(str) +
-		(libs.length > 0 ? ('&lib='  + encodeURIComponent(libs)) : '') +
+		(libs.length > 0 ? ('&lib=' + encodeURIComponent(libs[0])) : '') +
+		(libs.length > 0 ? ('&libs_builtin=' + encodeURIComponent(libs[1])) : '') +
 		'&page=' + page;
 	var xmlHttp = new XMLHttpRequest();
+
+	console.log(url);
 
 	var elem = document.getElementById('page-' + page);
 
@@ -294,14 +297,18 @@ function getLibs() {
 	if (!advanced_checkbox.checked)
 		return [];
 
+	var builtin = false;
 	var libs = [];
 	for (var i = 0; i < form_libs.length; i++) {
 		if (form_libs[i].selected) {
-			libs.push(form_libs[i].value);
+			if (form_libs[i].value == '__builtin')
+				builtin = true;
+			else
+				libs.push(form_libs[i].value);
 		}
 	}
 
-	return libs;
+	return [libs, builtin];
 }
 
 function formsubmit() {

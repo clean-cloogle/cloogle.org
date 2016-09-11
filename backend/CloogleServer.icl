@@ -385,7 +385,7 @@ where
 	isModMatch _    (Builtin _)          = False
 
 	isLibMatch :: (![String], !Bool) Location -> Bool
-	isLibMatch (libs,_) (Location lib _ _ _) = any (\l -> indexOf l lib <> -1) libs
+	isLibMatch (libs,_) (Location lib _ _ _) = any (\l -> indexOf l lib == 0) libs
 	isLibMatch (_,blti) (Builtin _)          = blti
 
 	log :: (LogMessage (Maybe Request) Response) IPAddress *World

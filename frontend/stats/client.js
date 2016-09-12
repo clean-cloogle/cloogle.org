@@ -59,7 +59,7 @@ function addConnectionCallbacks(connection) {
 		}
 		console.log('Attempting connection...');
 		connection = new WebSocket(
-				'ws://' + window.location.hostname + ':31216/',
+				'wss://' + window.location.hostname + ':31216/',
 				'cloogle-stats');
 		addConnectionCallbacks(connection);
 	}

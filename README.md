@@ -115,8 +115,9 @@ $ cd frontend/stats
 $ docker build -t cloogle-stats .
 $ docker run -d --net=host --name=cloogle-stats \
 	-v /var/log/cloogle.log:/var/log/cloogle.log \
-	cloogle-stats \
-	/var/log/cloogle.log
+	-v /path/to/cert.pem:/srv/ssl/cert.pem \
+	-v /path/to/key.pem:/srv/ssl/key.pem \
+	cloogle-stats
 $ docker start cloogle-stats
 ```
 

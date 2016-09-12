@@ -27,9 +27,9 @@ all: $(BIN) $(DB)
 
 clean-compiler:
 	svn checkout https://svn.cs.ru.nl/repos/clean-compiler/branches/itask/ clean-compiler
-	$(MAKE) -C clean-compiler/main/Unix
-	$(MAKE) -C clean-compiler/backendC/CleanCompilerSources -f Makefile.linux64
-	$(LN) -s ../../backendC/CleanCompilerSources/backend.a clean-compiler/backend/Clean\ System\ Files/backend_library
+	$(MAKE) -j -C clean-compiler/main/Unix
+	$(MAKE) -j -C clean-compiler/backendC/CleanCompilerSources -f Makefile.linux64
+	ln -s ../../backendC/CleanCompilerSources/backend.a clean-compiler/backend/Clean\ System\ Files/backend_library
 
 man: $(MAN)
 

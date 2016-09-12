@@ -1,16 +1,28 @@
 var util = require('util');
+var fs = require('fs');
 var spawn = require('child_process').spawn;
 var WebSocketServer = require('websocket').server;
 
 var filename = process.argv[2];
 if (!filename)
-	return util.puts("Usage: node server.js <LOG>");
+	return util.puts("Usage: node server.js <LOG> [<SSL_CERT> <SSL_KEY>]");
 
-http = require('http');
-var server = http.createServer(function(req,res){
-	res.writeHead(400);
-	res.end();
-});
+if (process.argv[3] && process.argv[4]) {
+	https = require('https');
+	var server = https.createServer({
+		cert: fs.readFileSync(process.argv[3]),
+		key: fs.readFileSync(process.argv[4])
+	}, function(req,res){
+		res.writeHead(400);
+		res.end();
+	});
+} else {
+	http = require('http');
+	var server = http.createServer(function(req,res){
+		res.writeHead(400);
+		res.end();
+	});
+}
 server.listen(31216);
 
 var ws = new WebSocketServer({

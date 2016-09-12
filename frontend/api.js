@@ -158,16 +158,6 @@ function getResults(str, libs, page) {
 					var derivationsId = 'derivations-' + (derivationsIdCounter++);
 					var derivations = makeInstanceTable(derivationsId,
 							specific['generic_derivations']);
-					//var derivations = '';
-					//for (var i in specific['generic_derivations']) {
-					//	if (derivations != '') {
-					//		derivations += ', ';
-					//	}
-					//	derivations += '<code>' +
-					//		highlightType(specific['generic_derivations'][i],
-					//				highlightCallback) +
-					//		'</code>';
-					//}
 					specificData.push(['Derivations', derivations]);
 				}
 				var hl_entry = 'start';

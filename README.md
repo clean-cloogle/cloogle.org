@@ -185,7 +185,9 @@ JSON request with at least one of the following fields:
 * `name`, the name of the function to search for.
 * `className`, the name of the class to search for.
 * `typeName`, the name of the type to search for.
-* `libraries`, a list of names of libraries to search in.
+* `libraries`, a list of two elements:
+	* A list of names of libraries to search in
+	* A boolean, whether language builtins should be searched or not.
 * `modules`, a list of names of modules to search in.
 * `page`: 0 for the first *n* results, 1 for the next *n*, etc.
 

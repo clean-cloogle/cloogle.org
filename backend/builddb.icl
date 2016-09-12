@@ -38,7 +38,7 @@ from syntax import ::SymbolTable, ::SymbolTableEntry, ::Ident{..}, ::SymbolPtr,
 	::Type, ::ClassDef{class_ident,class_pos,class_args,class_context},
 	::TypeVar, ::ParsedTypeDef, ::TypeDef{td_pos},
 	::GenericDef{gen_ident,gen_pos,gen_type,gen_vars},
-	::GenericCaseDef{gc_type,gc_gcf}, ::GenericCaseFunctions(GCF), ::GCF,
+	::GenericCaseDef{gc_type,gc_pos,gc_gcf}, ::GenericCaseFunctions(GCF), ::GCF,
 	::FunKind(FK_Macro),
 	::Rhs, ::ParsedExpr
 from scanner import ::Priority(..), ::Assoc(..)
@@ -215,7 +215,7 @@ getModuleTypes root mod lib cache db w
 # db = 'DB'.putFunctions (flatten $ map constructor_functions typedefs) db
 # db = 'DB'.putFunctions (flatten $ map record_functions typedefs) db
 # db = 'DB'.putFunctions (pd_generics lib mod pm.mod_defs) db
-# db = 'DB'.putDerivationss (pd_derivations pm.mod_defs) db
+# db = 'DB'.putDerivationss (pd_derivations lib mod pm.mod_defs) db
 # db = 'DB'.putMacros (pd_macros lib mod pm.mod_defs) db
 = (db,cache,w)
 where
@@ -255,10 +255,12 @@ where
 		| id`.id_name == id.id_name = Just pd
 		findTypeSpec id [_:pds]     = findTypeSpec id pds
 
-	pd_derivations :: [ParsedDefinition] -> [('DB'.Name, ['DB'.Type])]
-	pd_derivations pds
-		= [(id.id_name, ['T'.toType gc_type])
-		   \\ PD_Derive gcdefs <- pds, {gc_type,gc_gcf=GCF id _} <- gcdefs]
+	pd_derivations :: String String [ParsedDefinition]
+		-> [('DB'.Name, [('DB'.Type, 'DB'.Location)])]
+	pd_derivations lib mod pds
+		= [( id.id_name
+		   , [('T'.toType gc_type, 'DB'.Location lib mod (toLine gc_pos) "")]
+		   ) \\ PD_Derive gcdefs <- pds, {gc_type,gc_pos,gc_gcf=GCF id _} <- gcdefs]
 
 	pd_generics :: String String [ParsedDefinition]
 		-> [('DB'.Location, 'DB'.ExtendedType)]

@@ -2,11 +2,18 @@ var form_str = document.getElementById('search_str');
 var form_libs = document.getElementById('search_libs');
 var sform = document.getElementById('search_form');
 var sresults = document.getElementById('search_results');
+var advanced_checkbox = document.getElementById('search_advanced');
 var refresh_on_hash = true;
 
 var old_str = null;
 var old_libs = null;
 
+function toggle(name) {
+	var e = document.getElementById(name);
+	e.style.display = e.style.display == 'block' ? 'none' : 'block';
+}
+
+var derivationsIdCounter = 0;
 function getResults(str, libs, page) {
 	if (str == null)  str  = old_str;
 	if (libs == null) libs = old_libs;
@@ -16,9 +23,12 @@ function getResults(str, libs, page) {
 
 	var url = 'api.php' +
 		'?str='  + encodeURIComponent(str) +
-		'&lib='  + encodeURIComponent(libs) +
+		(libs.length > 0 ? ('&lib=' + encodeURIComponent(libs[0])) : '') +
+		(libs.length > 0 ? ('&libs_builtin=' + encodeURIComponent(libs[1])) : '') +
 		'&page=' + page;
 	var xmlHttp = new XMLHttpRequest();
+
+	console.log(url);
 
 	var elem = document.getElementById('page-' + page);
 
@@ -28,7 +38,7 @@ function getResults(str, libs, page) {
 		more.remove();
 	}
 
-	function highlightCallback(span, cls, str) {
+	var highlightCallback = function (span, cls, str) {
 		if (cls == 'type') {
 			return '<a class="hidden" title="Search type ' + str + '" href="#' +
 				encodeURIComponent('type ' + str) + '">' +
@@ -50,7 +60,7 @@ function getResults(str, libs, page) {
 		}
 	}
 
-	function makeTable(d) {
+	var makeTable = function (d) {
 		var html = '<table>';
 		for (i in d) {
 			if (d[i].length == 1) {
@@ -64,7 +74,43 @@ function getResults(str, libs, page) {
 		return html;
 	}
 
-	function makeResultHTML(result) {
+	var makeInstanceTable = function (id, list) {
+		var instances = '<a href="javascript:toggle(\'' + id + '\')">show / hide</a>';
+		instances += '<table id="' + id + '" style="display:none;">';
+		var makeInstanceUrl = function (loc) {
+			var dclUrl =
+				'src/view.php?lib=' + encodeURIComponent(loc[0]) +
+				'&mod=' + encodeURIComponent(loc[1]) +
+				'&hl';
+			var iclUrl = dclUrl + '&icl';
+			if (loc[2].length > 1) {
+				dclUrl += '&line=' + loc[2][1] + '#line-' + loc[2][1];
+			}
+			return '<a target="_blank" ' +
+				'href="' + dclUrl + '" ' +
+				'title="' + loc[0] + '">' + loc[1] + '</a> (' +
+				'<a target="_blank" href="' + iclUrl + '">icl</a>)';
+		}
+		for (var i in list) {
+			instances += '<tr><th><code>' +
+				highlightType(list[i][0],
+						highlightCallback) +
+				'</code></th>';
+			var locs = '';
+			for (var j in list[i][1]) {
+				var loc = list[i][1][j];
+				if (locs != '') {
+					locs += ', ';
+				}
+				locs += makeInstanceUrl(loc);
+			}
+			instances += '<td>in: ' + locs + '</td></tr>';
+		}
+		instances += '</table>';
+		return instances;
+	}
+
+	var makeResultHTML = function (result) {
 		var kind = result[0];
 		var basic = result[1][0];
 		var specific = result[1][1];
@@ -109,16 +155,9 @@ function getResults(str, libs, page) {
 						[])
 				);
 				if ('generic_derivations' in specific) {
-					var derivations = '';
-					for (var i in specific['generic_derivations']) {
-						if (derivations != '') {
-							derivations += ', ';
-						}
-						derivations += '<code>' +
-							highlightType(specific['generic_derivations'][i],
-									highlightCallback) +
-							'</code>';
-					}
+					var derivationsId = 'derivations-' + (derivationsIdCounter++);
+					var derivations = makeInstanceTable(derivationsId,
+							specific['generic_derivations']);
 					specificData.push(['Derivations', derivations]);
 				}
 				var hl_entry = 'start';
@@ -152,38 +191,8 @@ function getResults(str, libs, page) {
 				break;
 			case 'ClassResult':
 				var instancesId = 'instances-' + specific['class_name'];
-				var instances = '<a href="javascript:toggle(\'' + instancesId + '\')">show / hide</a>';
-				instances += '<table id="' + instancesId + '" style="display:none;">';
-				var makeInstanceUrl = function(loc) {
-					var dclUrl =
-						'src/view.php?lib=' + encodeURIComponent(loc[0]) +
-						'&mod=' + encodeURIComponent(loc[1]) +
-						'&hl';
-					var iclUrl = dclUrl + '&icl';
-					if (loc[2].length > 1) {
-						dclUrl += '&line=' + loc[2][1] + '#line-' + loc[2][1];
-					}
-					return '<a target="_blank" ' +
-						'href="' + dclUrl + '" ' +
-						'title="' + loc[0] + '">' + loc[1] + '</a> (' +
-						'<a target="_blank" href="' + iclUrl + '">icl</a>)';
-				}
-				for (var i in specific['class_instances']) {
-					instances += '<tr><th><code>' +
-						highlightType(specific['class_instances'][i][0],
-								highlightCallback) +
-						'</code></th>';
-					var locs = '';
-					for (var j in specific['class_instances'][i][1]) {
-						var loc = specific['class_instances'][i][1][j];
-						if (locs != '') {
-							locs += ', ';
-						}
-						locs += makeInstanceUrl(loc);
-					}
-					instances += '<td>in: ' + locs + '</td></tr>';
-				}
-				instances += '</table>';
+				var instances = makeInstanceTable(instancesId,
+						specific['class_instances']);
 				var specificData = [['Instances', instances]];
 				var html = '<hr/>' +
 					makeTable(basicData.concat(specificData)) + '<pre>' +
@@ -212,7 +221,7 @@ function getResults(str, libs, page) {
 		}
 	}
 
-	function makeSuggestions(suggs) {
+	var makeSuggestions = function (suggs) {
 		var str = '<hr/><div id="suggestions"><b>Did you mean...</b><table>';
 		for (i in suggs) {
 			var sug = suggs[i][0];
@@ -232,7 +241,7 @@ function getResults(str, libs, page) {
 		return str;
 	}
 
-	xmlHttp.onreadystatechange = function() {
+	xmlHttp.onreadystatechange = function () {
 		if(xmlHttp.readyState == 4 && xmlHttp.status == 200){
 			document.getElementById('loading').remove();
 			var responsedata = JSON.parse(xmlHttp.responseText);
@@ -285,13 +294,21 @@ function makeUnifier(ufr) {
 }
 
 function getLibs() {
+	if (!advanced_checkbox.checked)
+		return [];
+
+	var builtin = false;
 	var libs = [];
 	for (var i = 0; i < form_libs.length; i++) {
 		if (form_libs[i].selected) {
-			libs.push(form_libs[i].value);
+			if (form_libs[i].value == '__builtin')
+				builtin = true;
+			else
+				libs.push(form_libs[i].value);
 		}
 	}
-	return libs;
+
+	return [libs, builtin];
 }
 
 function formsubmit() {
@@ -305,7 +322,11 @@ function formsubmit() {
 	return false;
 };
 
-window.onload = function() {
+advanced_checkbox.onchange = function () {
+	toggle('advanced');
+}
+
+window.onload = function () {
 	sform.onsubmit = formsubmit;
 	var str = decodeURIComponent(document.location.hash);
 	if(str !== ''){
@@ -314,10 +335,13 @@ window.onload = function() {
 		formsubmit();
 	}
 
+	if (advanced_checkbox.checked)
+		advanced_checkbox.onchange();
+
 	document.getElementById('search_str').focus();
 }
 
-window.onhashchange = function() {
+window.onhashchange = function () {
 	if (!refresh_on_hash) {
 		refresh_on_hash = true;
 	} else {

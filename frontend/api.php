@@ -35,8 +35,15 @@ if($_SERVER['REQUEST_METHOD'] !== 'GET'){
 	}
 
 	if (isset($_GET['lib'])) {
-		$command['libraries'] = explode(',', $_GET['lib']);
+		$command['libraries'] = [explode(',', $_GET['lib']), false];
 	}
+
+	if (isset($_GET['libs_builtin'])) {
+		if (!isset($command['libraries'][0]))
+			$command['libraries'][0] = [];
+		$command['libraries'][1] = $_GET['libs_builtin'] == 'true';
+	}
+
 	if (isset($_GET['mod'])) {
 		$command['modules'] = explode(',', $_GET['mod']);
 	}

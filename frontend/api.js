@@ -13,6 +13,7 @@ function toggle(name) {
 	e.style.display = e.style.display == 'block' ? 'none' : 'block';
 }
 
+var derivationsIdCounter = 0;
 function getResults(str, libs, page) {
 	if (str == null)  str  = old_str;
 	if (libs == null) libs = old_libs;
@@ -37,7 +38,7 @@ function getResults(str, libs, page) {
 		more.remove();
 	}
 
-	function highlightCallback(span, cls, str) {
+	var highlightCallback = function (span, cls, str) {
 		if (cls == 'type') {
 			return '<a class="hidden" title="Search type ' + str + '" href="#' +
 				encodeURIComponent('type ' + str) + '">' +
@@ -59,7 +60,7 @@ function getResults(str, libs, page) {
 		}
 	}
 
-	function makeTable(d) {
+	var makeTable = function (d) {
 		var html = '<table>';
 		for (i in d) {
 			if (d[i].length == 1) {
@@ -73,7 +74,43 @@ function getResults(str, libs, page) {
 		return html;
 	}
 
-	function makeResultHTML(result) {
+	var makeInstanceTable = function (id, list) {
+		var instances = '<a href="javascript:toggle(\'' + id + '\')">show / hide</a>';
+		instances += '<table id="' + id + '" style="display:none;">';
+		var makeInstanceUrl = function (loc) {
+			var dclUrl =
+				'src/view.php?lib=' + encodeURIComponent(loc[0]) +
+				'&mod=' + encodeURIComponent(loc[1]) +
+				'&hl';
+			var iclUrl = dclUrl + '&icl';
+			if (loc[2].length > 1) {
+				dclUrl += '&line=' + loc[2][1] + '#line-' + loc[2][1];
+			}
+			return '<a target="_blank" ' +
+				'href="' + dclUrl + '" ' +
+				'title="' + loc[0] + '">' + loc[1] + '</a> (' +
+				'<a target="_blank" href="' + iclUrl + '">icl</a>)';
+		}
+		for (var i in list) {
+			instances += '<tr><th><code>' +
+				highlightType(list[i][0],
+						highlightCallback) +
+				'</code></th>';
+			var locs = '';
+			for (var j in list[i][1]) {
+				var loc = list[i][1][j];
+				if (locs != '') {
+					locs += ', ';
+				}
+				locs += makeInstanceUrl(loc);
+			}
+			instances += '<td>in: ' + locs + '</td></tr>';
+		}
+		instances += '</table>';
+		return instances;
+	}
+
+	var makeResultHTML = function (result) {
 		var kind = result[0];
 		var basic = result[1][0];
 		var specific = result[1][1];
@@ -118,16 +155,19 @@ function getResults(str, libs, page) {
 						[])
 				);
 				if ('generic_derivations' in specific) {
-					var derivations = '';
-					for (var i in specific['generic_derivations']) {
-						if (derivations != '') {
-							derivations += ', ';
-						}
-						derivations += '<code>' +
-							highlightType(specific['generic_derivations'][i],
-									highlightCallback) +
-							'</code>';
-					}
+					var derivationsId = 'derivations-' + (derivationsIdCounter++);
+					var derivations = makeInstanceTable(derivationsId,
+							specific['generic_derivations']);
+					//var derivations = '';
+					//for (var i in specific['generic_derivations']) {
+					//	if (derivations != '') {
+					//		derivations += ', ';
+					//	}
+					//	derivations += '<code>' +
+					//		highlightType(specific['generic_derivations'][i],
+					//				highlightCallback) +
+					//		'</code>';
+					//}
 					specificData.push(['Derivations', derivations]);
 				}
 				var hl_entry = 'start';
@@ -161,38 +201,8 @@ function getResults(str, libs, page) {
 				break;
 			case 'ClassResult':
 				var instancesId = 'instances-' + specific['class_name'];
-				var instances = '<a href="javascript:toggle(\'' + instancesId + '\')">show / hide</a>';
-				instances += '<table id="' + instancesId + '" style="display:none;">';
-				var makeInstanceUrl = function(loc) {
-					var dclUrl =
-						'src/view.php?lib=' + encodeURIComponent(loc[0]) +
-						'&mod=' + encodeURIComponent(loc[1]) +
-						'&hl';
-					var iclUrl = dclUrl + '&icl';
-					if (loc[2].length > 1) {
-						dclUrl += '&line=' + loc[2][1] + '#line-' + loc[2][1];
-					}
-					return '<a target="_blank" ' +
-						'href="' + dclUrl + '" ' +
-						'title="' + loc[0] + '">' + loc[1] + '</a> (' +
-						'<a target="_blank" href="' + iclUrl + '">icl</a>)';
-				}
-				for (var i in specific['class_instances']) {
-					instances += '<tr><th><code>' +
-						highlightType(specific['class_instances'][i][0],
-								highlightCallback) +
-						'</code></th>';
-					var locs = '';
-					for (var j in specific['class_instances'][i][1]) {
-						var loc = specific['class_instances'][i][1][j];
-						if (locs != '') {
-							locs += ', ';
-						}
-						locs += makeInstanceUrl(loc);
-					}
-					instances += '<td>in: ' + locs + '</td></tr>';
-				}
-				instances += '</table>';
+				var instances = makeInstanceTable(instancesId,
+						specific['class_instances']);
 				var specificData = [['Instances', instances]];
 				var html = '<hr/>' +
 					makeTable(basicData.concat(specificData)) + '<pre>' +
@@ -221,7 +231,7 @@ function getResults(str, libs, page) {
 		}
 	}
 
-	function makeSuggestions(suggs) {
+	var makeSuggestions = function (suggs) {
 		var str = '<hr/><div id="suggestions"><b>Did you mean...</b><table>';
 		for (i in suggs) {
 			var sug = suggs[i][0];
@@ -241,7 +251,7 @@ function getResults(str, libs, page) {
 		return str;
 	}
 
-	xmlHttp.onreadystatechange = function() {
+	xmlHttp.onreadystatechange = function () {
 		if(xmlHttp.readyState == 4 && xmlHttp.status == 200){
 			document.getElementById('loading').remove();
 			var responsedata = JSON.parse(xmlHttp.responseText);
@@ -322,11 +332,11 @@ function formsubmit() {
 	return false;
 };
 
-advanced_checkbox.onchange = function() {
+advanced_checkbox.onchange = function () {
 	toggle('advanced');
 }
 
-window.onload = function() {
+window.onload = function () {
 	sform.onsubmit = formsubmit;
 	var str = decodeURIComponent(document.location.hash);
 	if(str !== ''){
@@ -341,7 +351,7 @@ window.onload = function() {
 	document.getElementById('search_str').focus();
 }
 
-window.onhashchange = function() {
+window.onhashchange = function () {
 	if (!refresh_on_hash) {
 		refresh_on_hash = true;
 	} else {

@@ -91,10 +91,10 @@ findType :: Name TypeDB -> [(Location, TypeDef)]
 findType` :: (Location TypeDef -> Bool) TypeDB -> [(Location, TypeDef)]
 findType`` :: [(Location TypeDef -> Bool)] TypeDB -> [(Location, TypeDef)]
 
-getDerivations :: Name TypeDB -> [Type]
-putDerivation :: Name Type TypeDB -> TypeDB
-putDerivations :: Name [Type] TypeDB -> TypeDB
-putDerivationss :: [(Name, [Type])] TypeDB -> TypeDB
+getDerivations :: Name TypeDB -> [(Type, [Location])]
+putDerivation :: Name Type Location TypeDB -> TypeDB
+putDerivations :: Name [(Type, Location)] TypeDB -> TypeDB
+putDerivationss :: [(Name, [(Type, Location)])] TypeDB -> TypeDB
 
 searchExact :: Type TypeDB -> [(Location, ExtendedType)]
 

@@ -1,7 +1,7 @@
 module CloogleServer
 
 import StdArray, StdBool, StdFile, StdList, StdOrdList, StdOverloaded, StdTuple
-from StdFunc import o, flip
+from StdFunc import o, flip, const
 from StdMisc import abort
 
 from TCPIP import :: IPAddress, :: Port, instance toString IPAddress
@@ -63,7 +63,7 @@ import Levenshtein
                           , cls                 :: Maybe ShortClassResult
                           , constructor_of      :: Maybe String
                           , recordfield_of      :: Maybe String
-                          , generic_derivations :: Maybe [String]
+                          , generic_derivations :: Maybe [(String, [(String,String,Maybe Int)])]
                           }
 
 :: TypeResult :== (BasicResult, TypeResultExtras)
@@ -262,9 +262,6 @@ where
 		            [(concat (print False t), map loc ls) \\ (t,ls) <- getInstances cls db]
 		    }
 		  )
-	where
-		loc :: Location -> (String, String, Maybe Int)
-		loc (Location lib mod ln _) = (lib, mod, ln)
 
 	makeTypeResult :: (Maybe String) Location TypeDef -> Result
 	makeTypeResult mbName (Location lib mod line t) td
@@ -332,7 +329,8 @@ where
 		        Nothing
 		    , generic_derivations
 		        = let derivs = getDerivations fname db in
-		          (\_ -> [concat $ print False d \\ d <-derivs]) <$>
+		          const (sortBy (\(a,_) (b,_) -> a < b)
+				    [(concat $ print False d, map loc ls) \\ (d,ls) <- derivs]) <$>
 		          tes.te_generic_vars
 		    }
 		  )
@@ -387,6 +385,9 @@ where
 	isLibMatch :: (![String], !Bool) Location -> Bool
 	isLibMatch (libs,_) (Location lib _ _ _) = any (\l -> indexOf l lib == 0) libs
 	isLibMatch (_,blti) (Builtin _)          = blti
+
+	loc :: Location -> (String, String, Maybe Int)
+	loc (Location lib mod ln _) = (lib, mod, ln)
 
 	log :: (LogMessage (Maybe Request) Response) IPAddress *World
 		-> *(IPAddress, *World)

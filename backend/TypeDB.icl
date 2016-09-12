@@ -19,7 +19,7 @@ import Type
 	  , classmap    :: Map Location ([TypeVar],ClassContext,[(Name, ExtendedType)])
 	  , instancemap :: Map Class [(Type, [Location])]
 	  , typemap     :: Map Location TypeDef
-	  , derivemap   :: Map Name [Type]
+	  , derivemap   :: Map Name [(Type, [Location])]
 	  }
 
 printersperse :: Bool a [b] -> [String] | print a & print b
@@ -231,18 +231,18 @@ findType` f {typemap} = toList $ filterWithKey f typemap
 findType`` :: [(Location TypeDef -> Bool)] TypeDB -> [(Location, TypeDef)]
 findType`` fs {typemap} = toList $ foldr filterWithKey typemap fs
 
-getDerivations :: Name TypeDB -> [Type]
+getDerivations :: Name TypeDB -> [(Type, [Location])]
 getDerivations gen {derivemap} = if (isNothing ts) [] (fromJust ts)
 where ts = get gen derivemap
 
-putDerivation :: Name Type TypeDB -> TypeDB
-putDerivation gen t db=:{derivemap} = {db & derivemap=put gen ts derivemap}
-where ts = removeDup [t : getDerivations gen db]
+putDerivation :: Name Type Location TypeDB -> TypeDB
+putDerivation gen t loc db=:{derivemap} = {db & derivemap=put gen ts derivemap}
+where ts = removeDup [(t, [loc]) : getDerivations gen db]
 
-putDerivations :: Name [Type] TypeDB -> TypeDB
-putDerivations gen ts db = foldr (\t db -> putDerivation gen t db) db ts
+putDerivations :: Name [(Type, Location)] TypeDB -> TypeDB
+putDerivations gen ts db = foldr (\(t,l) db -> putDerivation gen t l db) db ts
 
-putDerivationss :: [(Name, [Type])] TypeDB -> TypeDB
+putDerivationss :: [(Name, [(Type, Location)])] TypeDB -> TypeDB
 putDerivationss ds db = foldr (\(g,ts) db -> putDerivations g ts db) db ds
 
 searchExact :: Type TypeDB -> [(Location, ExtendedType)]

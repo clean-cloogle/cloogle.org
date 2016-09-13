@@ -11,6 +11,8 @@ Use any of the available frontends:
 	[camilstaps/CloogleBot](https://github.com/camilstaps/CloogleBot)).
 - [KDercksen/cloogle-cli](https://github.com/KDercksen/cloogle-cli), a command
 	line interface to the api.
+- The `:Cloogle` command in
+	[camilstaps/vim-clean](https://github.com/camilstaps/vim-clean).
 
 ---
 
@@ -22,7 +24,7 @@ Use any of the available frontends:
 - [API specification of the Clean backend](#talking-with-the-clean-backend-directly)
 - [Live statistics](#live-statistics)
 - [Authors](#authors)
-- [Licence](#licence)
+- [Copyright &amp; License](#copyright--license)
 
 ---
 
@@ -105,7 +107,6 @@ $ docker build -t cloogle .
 $ docker run -d --net=host --name=cloogle \
 	-v /var/log/cloogle.log:/usr/src/cloogle/cloogle.log \
 	cloogle
-$ docker start cloogle
 ```
 
 ### Live statistics
@@ -118,7 +119,6 @@ $ docker run -d --net=host --name=cloogle-stats \
 	-v /path/to/cert.pem:/srv/ssl/cert.pem \
 	-v /path/to/key.pem:/srv/ssl/key.pem \
 	cloogle-stats
-$ docker start cloogle-stats
 ```
 
 ## HTTP API specification
@@ -211,28 +211,7 @@ Contributors:
 
 - [KDercksen](https://github.com/KDercksen) (searching on module; help text)
 
-## Licence
+## Copyright &amp; License
 
-```
-The MIT License (MIT)
-
-Copyright (c) <2016> <Mart Lubbers and Camil Staps>
-
-Permission is hereby granted, free of charge, to any person obtaining a copy of
-this software and associated documentation files (the "Software"), to deal in
-the Software without restriction, including without limitation the rights to
-use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
-of the Software, and to permit persons to whom the Software is furnished to do
-so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-```
+Copyright &copy; Mart Lubbers and Camil Staps.
+Licensed under MIT; See the `LICENSE` file.

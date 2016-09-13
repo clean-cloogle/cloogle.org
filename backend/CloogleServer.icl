@@ -321,10 +321,10 @@ where
 		    , unifier  = toStrUnifier <$> finish_unification <$>
 		        (orgsearchtype >>= unify [] (prepare_unification False type))
 		    , cls      = mbCls
-		    , constructor_of = if (tes.te_isconstructor)
+		    , constructor_of = if tes.te_isconstructor
 		        (let (Func _ r _) = type in Just $ concat $ print False r)
 		        Nothing
-		    , recordfield_of = if (tes.te_isrecordfield)
+		    , recordfield_of = if tes.te_isrecordfield
 		        (let (Func [t:_] _ _) = type in Just $ concat $ print False t)
 		        Nothing
 		    , generic_derivations
@@ -352,10 +352,15 @@ where
 				# orgsearchtype = fromJust orgsearchtype
 				# (Just (ass1, ass2)) = finish_unification <$>
 					unify [] orgsearchtype (prepare_unification False type)
-				= toInt $ sum [typeComplexity t \\ (_,t)<-ass1 ++ ass2 | not (isVar t)]
+				= penalty + toInt (sum [typeComplexity t \\ (_,t)<-ass1 ++ ass2 | not (isVar t)])
 			# orgsearch = fromJust orgsearch
-			= levenshtein` orgsearch fname
+			= penalty + levenshtein` orgsearch fname
 		where
+			penalty
+			| tes.te_isrecordfield = 2
+			| tes.te_isconstructor = 1
+			| otherwise            = 0
+
 			typeComplexity :: Type -> Real
 			typeComplexity (Type _ ts) = 1.2 * foldr ((+) o typeComplexity) 1.0 ts
 			typeComplexity (Func is r _) = 2.0 * foldr ((+) o typeComplexity) 1.0 [r:is]

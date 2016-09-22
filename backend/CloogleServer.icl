@@ -256,7 +256,7 @@ where
 		  , { class_name = cls
 		    , class_heading = foldl ((+) o (flip (+) " ")) cls vars +
 		        if (isEmpty cc) "" " " + concat (print False cc)
-		    , class_funs = [concat $ print False fun \\ fun <- funs]
+		    , class_funs = [et.te_representation \\ (_,ET _ et) <- funs]
 		    , class_instances
 		        = sortBy (\(a,_) (b,_) -> a < b)
 		            [(concat (print False t), map loc ls) \\ (t,ls) <- getInstances cls db]
@@ -317,7 +317,7 @@ where
 		    , distance = distance
 		    , builtin  = builtin
 		    }
-		  , { func     = concat $ print False (fname,et)
+		  , { func     = tes.te_representation
 		    , unifier  = toStrUnifier <$> finish_unification <$>
 		        (orgsearchtype >>= unify [] (prepare_unification False type))
 		    , cls      = mbCls

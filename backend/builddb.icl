@@ -273,8 +273,8 @@ where
 		-> [('DB'.Location, 'DB'.ExtendedType)]
 	pd_typespecs lib mod pds
 		= [( 'DB'.Location lib mod (toLine pos) id_name
-		   , 'DB'.ET ('T'.toType t) {zero & te_priority=toPrio p}
-		   ) \\ PD_TypeSpec pos id=:{id_name} p (Yes t) funspecs <- pds]
+		   , 'DB'.ET ('T'.toType t) {zero & te_priority=toPrio p, te_representation=cpp ts}
+		   ) \\ ts=:(PD_TypeSpec pos id=:{id_name} p (Yes t) funspecs) <- pds]
 
 	pd_instances :: String String [ParsedDefinition]
 		-> [('DB'.Class, [('DB'.Type, 'DB'.Location)])]

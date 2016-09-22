@@ -15,7 +15,7 @@ import System.Directory, System.CommandLine
 
 // CleanTypeUnifier
 import qualified Type as T
-from Type import class print(print), instance print [a], instance print String
+from Type import class print(print), instance print [a], instance print String, instance print Type
 from Type import qualified ::TypeDef{..}, ::Constructor{..}
 import CoclUtils
 
@@ -303,13 +303,15 @@ where
 	constructor_functions :: ('DB'.Location, 'DB'.TypeDef)
 		-> [('DB'.Location, 'DB'.ExtendedType)]
 	constructor_functions ('DB'.Location lib mod line _, td)
-		= [('DB'.Location lib mod line c, 'DB'.ET f {zero & te_isconstructor=True})
+		= [('DB'.Location lib mod line c, 'DB'.ET f
+			{zero & te_isconstructor=True, te_representation=concat $ [c, " :: " : print False f]})
 		   \\ (c,f) <- 'T'.constructorsToFunctions td]
 
 	record_functions :: ('DB'.Location, 'DB'.TypeDef)
 		-> [('DB'.Location, 'DB'.ExtendedType)]
 	record_functions ('DB'.Location lib mod line _, td)
-		= [('DB'.Location lib mod line f, 'DB'.ET t {zero & te_isrecordfield=True})
+		= [('DB'.Location lib mod line f, 'DB'.ET t
+			{zero & te_isrecordfield=True, te_representation=concat $ [".", f, " :: " : print False t]})
 			\\ (f,t) <- 'T'.recordsToFunctions td]
 
 	toPrio :: Priority -> Maybe 'DB'.TE_Priority

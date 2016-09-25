@@ -21,7 +21,7 @@ from Type import ::Type, ::TypeVar, ::TVAssignment, ::TypeDef, class print(..),
                 , te_isconstructor  :: Bool
                 , te_isrecordfield  :: Bool
                 , te_generic_vars   :: Maybe [TypeVar]
-                , te_representation :: String
+                , te_representation :: Maybe String
                 }
 
 :: ExtendedType = ET Type TypeExtras

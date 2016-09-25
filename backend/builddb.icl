@@ -266,14 +266,17 @@ where
 		-> [('DB'.Location, 'DB'.ExtendedType)]
 	pd_generics lib mod pds
 		= [( 'DB'.Location lib mod (toLine gen_pos) id_name
-		   , 'DB'.ET ('T'.toType gen_type) {zero & te_generic_vars=Just $ map 'T'.toTypeVar gen_vars}
-		   ) \\ PD_Generic {gen_ident={id_name},gen_pos,gen_type,gen_vars} <- pds]
+		   , 'DB'.ET ('T'.toType gen_type)
+		       {zero & te_generic_vars=Just $ map 'T'.toTypeVar gen_vars
+		             , te_representation=Just $ cpp gen}
+		   ) \\ gen=:(PD_Generic {gen_ident={id_name},gen_pos,gen_type,gen_vars}) <- pds]
 
 	pd_typespecs :: String String [ParsedDefinition]
 		-> [('DB'.Location, 'DB'.ExtendedType)]
 	pd_typespecs lib mod pds
 		= [( 'DB'.Location lib mod (toLine pos) id_name
-		   , 'DB'.ET ('T'.toType t) {zero & te_priority=toPrio p, te_representation=cpp ts}
+		   , 'DB'.ET ('T'.toType t)
+		       {zero & te_priority=toPrio p, te_representation=Just $ cpp ts}
 		   ) \\ ts=:(PD_TypeSpec pos id=:{id_name} p (Yes t) funspecs) <- pds]
 
 	pd_instances :: String String [ParsedDefinition]
@@ -304,14 +307,16 @@ where
 		-> [('DB'.Location, 'DB'.ExtendedType)]
 	constructor_functions ('DB'.Location lib mod line _, td)
 		= [('DB'.Location lib mod line c, 'DB'.ET f
-			{zero & te_isconstructor=True, te_representation=concat $ [c, " :: " : print False f]})
+			{zero & te_isconstructor=True
+			      , te_representation=Just $ concat $ [c, " :: " : print False f]})
 		   \\ (c,f) <- 'T'.constructorsToFunctions td]
 
 	record_functions :: ('DB'.Location, 'DB'.TypeDef)
 		-> [('DB'.Location, 'DB'.ExtendedType)]
 	record_functions ('DB'.Location lib mod line _, td)
 		= [('DB'.Location lib mod line f, 'DB'.ET t
-			{zero & te_isrecordfield=True, te_representation=concat $ [".", f, " :: " : print False t]})
+			{zero & te_isrecordfield=True
+			      , te_representation=Just $ concat $ [".", f, " :: " : print False t]})
 			\\ (f,t) <- 'T'.recordsToFunctions td]
 
 	toPrio :: Priority -> Maybe 'DB'.TE_Priority

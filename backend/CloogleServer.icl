@@ -256,12 +256,16 @@ where
 		  , { class_name = cls
 		    , class_heading = foldl ((+) o (flip (+) " ")) cls vars +
 		        if (isEmpty cc) "" " " + concat (print False cc)
-		    , class_funs = [et.te_representation \\ (_,ET _ et) <- funs]
+		    , class_funs = [print_fun fun \\ fun <- funs]
 		    , class_instances
 		        = sortBy (\(a,_) (b,_) -> a < b)
 		            [(concat (print False t), map loc ls) \\ (t,ls) <- getInstances cls db]
 		    }
 		  )
+	where
+		print_fun :: (Name,ExtendedType) -> String
+		print_fun f=:(_,ET _ et) = fromJust $
+			et.te_representation <|> (pure $ concat $ print False f)
 
 	makeTypeResult :: (Maybe String) Location TypeDef -> Result
 	makeTypeResult mbName (Location lib mod line t) td
@@ -317,7 +321,8 @@ where
 		    , distance = distance
 		    , builtin  = builtin
 		    }
-		  , { func     = tes.te_representation
+		  , { func     = fromJust (tes.te_representation <|>
+		                           (pure $ concat $ print False (fname,et)))
 		    , unifier  = toStrUnifier <$> finish_unification <$>
 		        (orgsearchtype >>= unify [] (prepare_unification False type))
 		    , cls      = mbCls

@@ -70,7 +70,7 @@ where
 	       , te_isconstructor  = False
 	       , te_isrecordfield  = False
 	       , te_generic_vars   = Nothing
-	       , te_representation = ""
+	       , te_representation = Nothing
 	       }
 
 instance print TypeExtras

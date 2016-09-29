@@ -32,8 +32,14 @@ Use any of the available frontends:
 
 ### Frontend
 
-- The frontend heavily depends on [VanillaJS](http://vanilla-js.com/) so you
-	should have a browser that supports it.
+The frontend heavily depends on [VanillaJS](http://vanilla-js.com/) so you
+should have a browser that supports it. You will also need a HTTP server with
+PHP backend.
+
+If you want frontend-side statistics (timestamp, ip, query and response code of
+queries sent through the frontend), copy `conf.php.example` to `conf.php`, edit
+the settings, create a MySQL database and run `install.sql` on it. If you don't
+want this, you don't need to set it up.
 
 ### Backend
 

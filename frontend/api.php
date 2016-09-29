@@ -10,12 +10,34 @@ function log_request($code) {
 	if (defined('CLOOGLE_KEEP_STATISTICS')) {
 		$db = new mysqli(
 			CLOOGLE_DB_HOST, CLOOGLE_DB_USER, CLOOGLE_DB_PASS, CLOOGLE_DB_NAME);
-		if (!mysqli_connect_errno()) {
+		if (mysqli_connect_errno())
+			return;
+
+		$ua = $_SERVER['HTTP_USER_AGENT'];
+		$ua_hash = md5($ua);
+
+		$stmt = $db->prepare('SELECT `id` FROM `useragent` WHERE `ua_hash`=?');
+		$stmt->bind_param('s', $ua_hash);
+		$stmt->execute();
+		$stmt->bind_result($ua_id);
+		if ($stmt->fetch() !== true) {
+			$stmt->close();
 			$stmt = $db->prepare(
-				'INSERT INTO `log` (`ip`,`query`,`responsecode`) VALUES (?,?,?)');
-			$stmt->bind_param('ssi', $_SERVER['REMOTE_ADDR'], $_GET['str'], $code);
+				'INSERT INTO `useragent` (`useragent`,`ua_hash`) VALUES (?,?)');
+			$stmt->bind_param('ss', $ua, $ua_hash);
 			$stmt->execute();
+			$ua_id = $stmt->insert_id;
 		}
+		$stmt->close();
+
+		var_dump($ua_id);
+
+		$stmt = $db->prepare(
+			'INSERT INTO `log` (`ip`,`useragent_id`,`query`,`responsecode`) VALUES (?,?,?,?)');
+		$stmt->bind_param('sisi', $_SERVER['REMOTE_ADDR'], $ua_id, $_GET['str'], $code);
+		$stmt->execute();
+		$stmt->close();
+
 		$db->close();
 	}
 }

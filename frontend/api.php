@@ -30,8 +30,6 @@ function log_request($code) {
 		}
 		$stmt->close();
 
-		var_dump($ua_id);
-
 		$stmt = $db->prepare(
 			'INSERT INTO `log` (`ip`,`useragent_id`,`query`,`responsecode`) VALUES (?,?,?,?)');
 		$stmt->bind_param('sisi', $_SERVER['REMOTE_ADDR'], $ua_id, $_GET['str'], $code);

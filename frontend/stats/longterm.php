@@ -72,8 +72,6 @@ $sql =
 	WHERE `date` BETWEEN timestamp('$startTime') AND timestamp('$endTime')
 	GROUP BY $group";
 
-//print($sql . "\n");
-
 $stmt = $db->stmt_init();
 if (!$stmt->prepare($sql))
 	var_dump($stmt->error);
@@ -85,17 +83,24 @@ $expected_timestamp = $timemod === 'monthly'
 	? strtotime(date('Y-m-01 00:00:00', $start))
 	: floor($start / $timemod) * $timemod;
 
-while ($stmt->fetch()) {
-	while ($expected_timestamp < $timestamp) {
-		$results[] = "[" . $expected_timestamp*1000 . ",0]";
-		$expected_timestamp = $timemod === 'monthly'
-			? strtotime(date('Y-m-01', strtotime('next month', $expected_timestamp)))
-			: $expected_timestamp + $timemod;
-	}
-	$results[] = "[" . $timestamp*1000 . ",$count]";
+function update_expected_timestamp() {
+	global $expected_timestamp, $timemod;
 	$expected_timestamp = $timemod === 'monthly'
 		? strtotime(date('Y-m-01', strtotime('next month', $expected_timestamp)))
 		: $expected_timestamp + $timemod;
+}
+
+while ($stmt->fetch()) {
+	while ($expected_timestamp < $timestamp) {
+		$results[] = "[" . $expected_timestamp*1000 . ",0]";
+		update_expected_timestamp();
+	}
+	$results[] = "[" . $timestamp*1000 . ",$count]";
+	update_expected_timestamp();
+}
+while ($expected_timestamp <= $end) {
+	$results[] = "[" . $expected_timestamp*1000 . ",0]";
+	update_expected_timestamp();
 }
 
 header('Content-Type: text/javascript');

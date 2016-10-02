@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+	<meta name="viewport" content="width=device-width, initial-scale=1"/>
+	<meta name="description" content="Long term Cloogle statistics"/>
+	<title>Long Term Cloogle Stats</title>
+<script
+			  src="http://code.jquery.com/jquery-2.2.4.min.js"
+			  integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="
+			  crossorigin="anonymous"></script>
+	<script type="text/javascript" src="//code.highcharts.com/stock/highstock.js" defer="defer"></script>
+</head>
+<body>
+	<div id="container" style="height:400px;min-width:310px;"></div>
+
+	<script type="text/javascript">
+		function afterSetExtremes(e) {
+			console.log(e);
+			var chart = $('#container').highcharts();
+			chart.showLoading('Loading data...');
+			$.getJSON('longterm.php?' +
+					(typeof e.min != 'undefined' && !isNaN(e.min)
+						? ('start=' + Math.round(e.min / 1000)) + '&'
+						: '') +
+					(typeof e.max != 'undefined' && !isNaN(e.max)
+						? ('end=' + Math.round(e.max / 1000) + '&')
+						: '') +
+					'callback=?',
+					function(data) {
+				chart.series[0].setData(data);
+				chart.hideLoading();
+			});
+		}
+
+		$(function(){
+			$.getJSON('longterm.php?callback=?', function(data) {
+
+				console.log(data);
+				console.log(data.length);
+				console.log(data[data.length-1]);
+				console.log(data[data.length-1][0]);
+
+				data = [].concat(data, [[data[data.length-1][0] + 1000, null]]);
+				
+				console.log(data);
+
+				$('#container').highcharts('StockChart', {
+					chart: {
+						type: 'spline',
+						zoomType: 'x'
+					},
+					navigator: {
+						adaptToUpdatedData: false,
+						series: {
+							data: false
+						}
+					},
+					scrollbar: {
+						liveRedraw: false
+					},
+					title: {
+						text: 'Long Term Cloogle Statistics'
+					},
+					rangeSelector: {
+						buttons: [
+							{ type: 'hour',  count: 1, text: '1h' },
+							{ type: 'day',   count: 1, text: '1d' },
+							{ type: 'month', count: 1, text: '1m' },
+							{ type: 'year',  count: 1, text: '1y' },
+							{ type: 'all',             text: 'All' }
+						],
+						inputEnabled: false,
+						selected: 2
+					},
+					xAxis: {
+						events: {
+							afterSetExtremes: afterSetExtremes
+						},
+						minRange: 3600 * 1000
+					},
+					yAxis: {
+						floor: 0
+					},
+					series: [{
+						data: data,
+						dataGrouping: {
+							enabled: false
+						}
+					}]
+				});
+			});
+		});
+	</script>
+</body>
+</html>

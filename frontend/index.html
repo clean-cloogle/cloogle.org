@@ -5,7 +5,8 @@
 	<title>Cloogle</title>
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
 	<meta name="viewport" content="width=device-width, initial-scale=1"/>
-	<meta name="description" content="Search Clean functions on cloogle.org"/>
+	<meta name="description" content="Cloogle is the unofficial Clean language search engine"/>
+	<meta name="keywords" content="Clean,Clean language,Concurrent Clean,search,functions,search engine,programming language,clean platform,iTasks,cloogle,hoogle"/>
 	<script src="api.js" type="text/javascript" defer="defer"></script>
 	<script src="clean.js" type="text/javascript" defer="defer"></script>
 	<link rel="stylesheet" href="clean.css" type="text/css"/>
@@ -51,8 +52,9 @@
 			<img src="logo.jpg" alt="follow link for the sourcecode" />
 		</a>
 	</p>
+	<p>Cloogle is the unofficial <a href="http://clean.cs.ru.nl">Clean</a> language search engine.</p>
 	<p>
-		<a href="javascript:toggle('helptext')">How to use</a>
+		<a href="javascript:toggle('helptext')">How to use</a> | <a href="javascript:toggle('contributetext')">Contribute</a>
 	</p>
 	<div id="helptext" style="display:none;">
 		<p><b>The following search strings are recognised:</b></p>
@@ -82,6 +84,22 @@
 				<td class='description'>The class definition of <code>Text</code></td>
 			</tr>
 		</table>
+		<p><b>Besides this web app, there are other frontends available:</b></p>
+		<ul>
+			<li>The <code>!cloogle</code> bang on <a href="https://duckduckgo.com/">DuckDuckGo</a></li>
+			<li><a href="https://telegram.me/CloogleBot">@CloogleBot</a> on Telegram</li>
+			<li><a href="https://github.com/KDercksen/cloogle-cli">cloogle-cli</a>, a command line application</li>
+			<li>The <code>:Cloogle</code> command in Vim, if you use <a href="https://github.com/camilstaps/vim-clean">vim-clean</a></li>
+		</ul>
+	</div>
+	<div id="contributetext" style="display:none;">
+		<p>
+			Development takes place on <a href="https://github.com/dopefishh/cloogle">GitHub</a>.
+			Please read the <a href="https://github.com/dopefishh/cloogle/blob/master/CONTRIBUTING.md">contributing guidelines</a> first.
+		</p>
+		<p>
+			For bug reports, open an issue in the <a href="https://github.com/dopefishh/cloogle/issues">issue tracker</a>.
+		</p>
 	</div>
 	<form id="search_form" action="#">
 		<input type="text" id="search_str" placeholder="fix :: (a -> a) -> a" /><br/>

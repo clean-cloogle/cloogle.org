@@ -6,16 +6,58 @@ define('E_CLOOGLEDOWN', 150);
 define('E_ILLEGALMETHOD', 151);
 define('E_ILLEGALREQUEST', 152);
 
+function log_request($code) {
+	if (defined('CLOOGLE_KEEP_STATISTICS')) {
+		$db = new mysqli(
+			CLOOGLE_DB_HOST, CLOOGLE_DB_USER, CLOOGLE_DB_PASS, CLOOGLE_DB_NAME);
+		if (mysqli_connect_errno())
+			return;
+
+		$ua = $_SERVER['HTTP_USER_AGENT'];
+		$ua_hash = md5($ua);
+
+		$stmt = $db->prepare('SELECT `id` FROM `useragent` WHERE `ua_hash`=?');
+		$stmt->bind_param('s', $ua_hash);
+		$stmt->execute();
+		$stmt->bind_result($ua_id);
+		if ($stmt->fetch() !== true) {
+			$stmt->close();
+			$stmt = $db->prepare(
+				'INSERT INTO `useragent` (`useragent`,`ua_hash`) VALUES (?,?)');
+			$stmt->bind_param('ss', $ua, $ua_hash);
+			$stmt->execute();
+			$ua_id = $stmt->insert_id;
+		}
+		$stmt->close();
+
+		$stmt = $db->prepare(
+			'INSERT INTO `log` (`ip`,`useragent_id`,`query`,`responsecode`) VALUES (?,?,?,?)');
+		$stmt->bind_param('sisi', $_SERVER['REMOTE_ADDR'], $ua_id, $_GET['str'], $code);
+		$stmt->execute();
+		$stmt->close();
+
+		$db->close();
+	}
+}
+
+function respond($code, $msg, $data=[]) {
+	log_request($code);
+
+	echo json_encode([
+		'return' => $code,
+		'data' => $data,
+		'msg' => $msg
+	]);
+}
+
+if (file_exists('conf.php')) {
+	require_once('conf.php');
+}
+
 if($_SERVER['REQUEST_METHOD'] !== 'GET'){
-	echo json_encode(array(
-		"return" => E_ILLEGALMETHOD,
-		"data" => array(),
-		"msg" => "Can only be accessed by GET request"));
+	respond(E_ILLEGALMETHOD, 'Can only be accessed by GET request');
 } else if(!isset($_GET['str'])){
-	echo json_encode(array(
-		"return" => E_ILLEGALREQUEST,
-		"data" => array(),
-		"msg" => "GET variable 'str' should be set"));
+	respond(E_ILLEGALREQUEST, 'GET variable "str" must be set');
 } else {
 	$str = array_map('trim', explode('::', $_GET['str']));
 	$name = trim($str[0]);
@@ -54,19 +96,21 @@ if($_SERVER['REQUEST_METHOD'] !== 'GET'){
 
 	$skt = fsockopen(SERVER_HOSTNAME, SERVER_PORT);
 	if (!$skt) {
-		echo json_encode(array(
-			"return" => E_CLOOGLEDOWN,
-			"data" => array(),
-			"msg" => "Cloogle server unreachable"));
+		respond(E_CLOOGLEDOWN, 'Cloogle server unreachable');
 	} else {
+		$response = '';
 		fwrite($skt, json_encode($command));
 		while (!feof($skt)) {
-			$response = fgets($skt, 128);
-			echo $response;
+			$_response = fgets($skt, 128);
+			$response .= $_response;
 			if (strpos($response, "\n") !== false) {
 				break;
 			}
 		}
 		fclose($skt);
+		echo $response;
+
+		$decoded = json_decode($response, true);
+		log_request($decoded['return']);
 	}
 }

@@ -17,10 +17,11 @@ from Type import ::Type, ::TypeVar, ::TVAssignment, ::TypeDef, class print(..),
 
 :: TE_Priority = LeftAssoc Int | RightAssoc Int | NoAssoc Int
 
-:: TypeExtras = { te_priority      :: Maybe TE_Priority
-                , te_isconstructor :: Bool
-                , te_isrecordfield :: Bool
-                , te_generic_vars  :: Maybe [TypeVar]
+:: TypeExtras = { te_priority       :: Maybe TE_Priority
+                , te_isconstructor  :: Bool
+                , te_isrecordfield  :: Bool
+                , te_generic_vars   :: Maybe [TypeVar]
+                , te_representation :: Maybe String
                 }
 
 :: ExtendedType = ET Type TypeExtras

@@ -66,10 +66,11 @@ where
 
 instance zero TypeExtras
 where
-	zero = { te_priority      = Nothing
-	       , te_isconstructor = False
-	       , te_isrecordfield = False
-	       , te_generic_vars  = Nothing
+	zero = { te_priority       = Nothing
+	       , te_isconstructor  = False
+	       , te_isrecordfield  = False
+	       , te_generic_vars   = Nothing
+	       , te_representation = Nothing
 	       }
 
 instance print TypeExtras

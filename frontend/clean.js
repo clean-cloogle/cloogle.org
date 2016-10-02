@@ -103,7 +103,7 @@ function highlightFunction(func, callback, start) {
 		],
 		type: [
 			[/(\s+)/,        ['whitespace']],
-			[/([a-z][a-zA-Z]*)/, ['typevar']],
+			[/([a-z][\w`]*)/, ['typevar']],
 			[/(A)(\.)/,      ['keyword', 'punctuation'], 'univars'],
 			[/([A-Z]\w*)/,   ['type']],
 			[/(\|)/,         ['punctuation'], 'context'],

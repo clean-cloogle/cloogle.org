@@ -152,6 +152,7 @@ fields:
 	* `150`: the Clean backend could not be reached
 	* `151`: invalid request type (should use GET)
 	* `152`: no input (GET variable `str` should be set to the search string)
+	* `153`: the Clean backend timed out
 
 - `msg`
 

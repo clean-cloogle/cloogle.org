@@ -64,7 +64,8 @@ function addConnectionCallbacks(connection) {
 		}
 		console.log('Attempting connection...');
 		connection = new WebSocket(
-				'wss://' + window.location.hostname + ':31216/',
+				(window.location.protocol == 'https:' ? 'wss' : 'ws') + '://' +
+				window.location.hostname + ':31216/',
 				'cloogle-stats');
 		addConnectionCallbacks(connection);
 	}

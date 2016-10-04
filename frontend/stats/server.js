@@ -7,7 +7,7 @@ var filename = process.argv[2];
 if (!filename)
 	return util.puts("Usage: node server.js <LOG> [<SSL_CERT> <SSL_KEY>]");
 
-if (process.argv[3] && process.argv[4]) {
+if (process.argv.length >= 5) {
 	https = require('https');
 	var server = https.createServer({
 		cert: fs.readFileSync(process.argv[3]),

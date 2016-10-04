@@ -44,9 +44,9 @@ $endTime = gmstrftime('%Y-%m-%d %H:%M:%S', $end);
 
 if ($range < 24 * 3600) {
 	// up to 1 day: minute data
-	$group = 'DATE(`date`), HOUR(`date`), MINUTE(`date`)';
-	$timestamp = 'floor(unix_timestamp(MIN(`date`)) / 60) * 60';
-	$timemod = 60;
+	$group = 'DATE(`date`), HOUR(`date`), floor(MINUTE(`date`)/10)';
+	$timestamp = 'floor(unix_timestamp(MIN(`date`)) / 600) * 600';
+	$timemod = 600;
 } elseif ($range < 7 * 24 * 3600) {
 	// up to 7 days: hourly data
 	$group = 'DATE(`date`), HOUR(`date`)';

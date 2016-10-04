@@ -9,34 +9,35 @@
 	<script type="text/javascript" src="//code.highcharts.com/stock/highstock.js" defer="defer"></script>
 </head>
 <body>
-	<div id="container" style="height:400px;min-width:310px;"></div>
+	<div id="container" style="height:600px;min-width:310px;"></div>
 
 	<script type="text/javascript">
 		function afterSetExtremes(e) {
 			var chart = $('#container').highcharts();
 			chart.showLoading('Loading data...');
 			$.getJSON('longterm.php?' +
-					(typeof e.min != 'undefined' && !isNaN(e.min)
-						? ('start=' + Math.round(e.min / 1000)) + '&'
-						: '') +
-					(typeof e.max != 'undefined' && !isNaN(e.max)
-						? ('end=' + Math.round(e.max / 1000) + '&')
-						: '') +
-					'callback=?',
-					function(data) {
-				chart.series[0].setData(data);
-				chart.hideLoading();
-			});
+				(typeof e.min != 'undefined' && !isNaN(e.min)
+					? ('start=' + Math.round(e.min / 1000)) + '&'
+					: '') +
+				(typeof e.max != 'undefined' && !isNaN(e.max)
+					? ('end=' + Math.round(e.max / 1000) + '&')
+					: '') +
+				'callback=?',
+				function(data) {
+					for (var i in data)
+						chart.series[i].setData(data[i]);
+					chart.hideLoading();
+				}
+			);
 		}
 
 		$(function(){
 			$.getJSON('longterm.php?callback=?', function(data) {
 
-				data = [].concat(data, [[data[data.length-1][0] + 1000, null]]);
-
 				$('#container').highcharts('StockChart', {
+					colors: ['#00aa00', '#dd0000', '#aaaaff'],
 					chart: {
-						type: 'spline',
+						type: 'area',
 						zoomType: 'x'
 					},
 					navigator: {
@@ -68,15 +69,32 @@
 						},
 						minRange: 3600 * 1000
 					},
-					yAxis: {
-						floor: 0
+					yAxis: [
+						{ floor: 0, title: { text: 'Requests' }, opposite: true },
+						{ floor: 0, title: { text: 'Visitors' }, opposite: false }
+					],
+					plotOptions: {
+						area: {
+							stacking: 'normal'
+						},
+						spline: {
+							lineWidth: 1
+						}
 					},
 					series: [{
-						data: data,
-						dataGrouping: {
-							enabled: false
-						},
-						name: 'Requests'
+						data: data[0],
+						dataGrouping: { enabled: false },
+						name: 'Successful requests'
+					}, {
+						data: data[1],
+						dataGrouping: { enabled: false },
+						name: 'Failed requests'
+					}, {
+						type: 'spline',
+						yAxis: 1,
+						data: data[2],
+						dataGrouping: { enabled: false },
+						name: 'Unique visitors'
 					}]
 				});
 			});

@@ -67,7 +67,9 @@ if ($range < 24 * 3600) {
 $sql =
 	"SELECT
 		$timestamp as unixtime,
-		count(*) as querycount
+		count(*) as querycount,
+		count(case when `responsecode`=0 then NULL else 1 end) as failedcount,
+		count(distinct `ip`,`useragent_id`) as uniquecount
 	FROM `log`
 	WHERE `date` BETWEEN timestamp('$startTime') AND timestamp('$endTime')
 	GROUP BY $group";
@@ -76,8 +78,8 @@ $stmt = $db->stmt_init();
 if (!$stmt->prepare($sql))
 	var_dump($stmt->error);
 $stmt->execute();
-$stmt->bind_result($timestamp, $count);
-$results = [];
+$stmt->bind_result($timestamp, $count, $failedcount, $uniquecount);
+$results = [[], []];
 
 $expected_timestamp = $timemod === 'monthly'
 	? strtotime(date('Y-m-01 00:00:00', $start))
@@ -92,16 +94,24 @@ function update_expected_timestamp() {
 
 while ($stmt->fetch()) {
 	while ($expected_timestamp < $timestamp) {
-		$results[] = "[" . $expected_timestamp*1000 . ",0]";
+		for ($i=0; $i<3; $i++)
+			$results[$i][] = "[" . $expected_timestamp*1000 . ",0]";
 		update_expected_timestamp();
 	}
-	$results[] = "[" . $timestamp*1000 . ",$count]";
+	$results[0][] = "[" . $timestamp*1000 . "," . ($count-$failedcount) . "]";
+	$results[1][] = "[" . $timestamp*1000 . "," . ($failedcount > 0 ? $failedcount : 'null') . "]";
+	$results[2][] = "[" . $timestamp*1000 . ",$uniquecount]";
 	update_expected_timestamp();
 }
 while ($expected_timestamp <= $end) {
-	$results[] = "[" . $expected_timestamp*1000 . ",0]";
+	for ($i=0; $i<3; $i++)
+		$results[$i][] = "[" . $expected_timestamp*1000 . ",0]";
 	update_expected_timestamp();
 }
 
 header('Content-Type: text/javascript');
-echo "$callback([\n\t" . join(",\n\t", $results) . "\n]);";
+echo "$callback([" .
+	"[\n\t" . join(",\n\t", $results[0]) . "\n]," .
+	"[\n\t" . join(",\n\t", $results[1]) . "\n]," .
+	"[\n\t" . join(",\n\t", $results[2]) . "\n]" .
+	"]);";

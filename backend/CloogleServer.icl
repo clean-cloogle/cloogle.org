@@ -214,9 +214,9 @@ where
 		                    ]
 		# funs = map (\f -> makeFunctionResult name mbType Nothing f db) $ findFunction`` filts db
 		// Search macros
-		# macros = case name of
-			Nothing  = []
-			(Just n) = findMacro` (\loc _ -> isNameMatch (size n-2) n loc) db
+		# macros = case (isNothing mbType,name) of
+			(True,Just n) = findMacro` (\loc _ -> isNameMatch (size n-2) n loc) db
+			_             = []
 		# macros = map (\(lhs,rhs) -> makeMacroResult name lhs rhs) macros
 		// Search class members
 		# filts = catMaybes [ (\t _ _ _ _->isUnifiable t) <$> mbType
@@ -230,9 +230,9 @@ where
 		# lcName = if (isJust mbType && isType (fromJust mbType))
 			(let (Type name _) = fromJust mbType in Just $ toLowerCase name)
 			(toLowerCase <$> name)
-		# types = case lcName of
-			(Just n) = findType` (\loc _ -> toLowerCase (getName loc) == n) db
-			Nothing  = []
+		# types = case (isNothing mbType,lcName) of
+			(True,Just n) = findType` (\loc _ -> toLowerCase (getName loc) == n) db
+			_             = []
 		# types = map (\(tl,td) -> makeTypeResult name tl td) types
 		// Search classes
 		# classes = case (isNothing mbType, toLowerCase <$> name) of

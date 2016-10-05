@@ -99,7 +99,7 @@ while ($stmt->fetch()) {
 		update_expected_timestamp();
 	}
 	$results[0][] = "[" . $timestamp*1000 . "," . ($count-$failedcount) . "]";
-	$results[1][] = "[" . $timestamp*1000 . "," . ($failedcount > 0 ? $failedcount : 'null') . "]";
+	$results[1][] = "[" . $timestamp*1000 . ",$failedcount]";
 	$results[2][] = "[" . $timestamp*1000 . ",$uniquecount]";
 	update_expected_timestamp();
 }

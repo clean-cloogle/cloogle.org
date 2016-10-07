@@ -8,6 +8,8 @@ define('E_ILLEGALMETHOD', 151);
 define('E_ILLEGALREQUEST', 152);
 define('E_TIMEOUT', 153);
 
+$start_time = microtime(true);
+
 function log_request($code) {
 	if (defined('CLOOGLE_KEEP_STATISTICS')) {
 		$db = new mysqli(
@@ -32,9 +34,13 @@ function log_request($code) {
 		}
 		$stmt->close();
 
-		$stmt = $db->prepare(
-			'INSERT INTO `log` (`ip`,`useragent_id`,`query`,`responsecode`) VALUES (?,?,?,?)');
-		$stmt->bind_param('sisi', $_SERVER['REMOTE_ADDR'], $ua_id, $_GET['str'], $code);
+		global $start_time;
+		$time = (int) ((microtime(true) - $start_time) * 1000);
+
+		$stmt = $db->prepare('INSERT INTO `log`
+			(`ip`,`useragent_id`,`query`,`responsecode`,`responsetime`)
+			VALUES (?,?,?,?,?)');
+		$stmt->bind_param('sisii', $_SERVER['REMOTE_ADDR'], $ua_id, $_GET['str'], $code, $time);
 		$stmt->execute();
 		$stmt->close();
 

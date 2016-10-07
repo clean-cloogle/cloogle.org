@@ -3,7 +3,7 @@ CREATE TABLE IF NOT EXISTS `log` (
 	`ip` varchar(45) NOT NULL,
 	`useragent_id` int(10) unsigned NOT NULL,
 	`query` varchar(200) NOT NULL,
-	`responsecode` tinyint(4) NOT NULL,
+	`responsecode` tinyint(4) unsigned NOT NULL,
 	`responsetime` smallint(5) unsigned NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 

@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS `log` (
 	`useragent_id` int(10) unsigned NOT NULL,
 	`query` varchar(200) NOT NULL,
 	`responsecode` tinyint(4) NOT NULL,
-	`responsetime` mediumint(9) NOT NULL
+	`responsetime` smallint(5) unsigned NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 CREATE TABLE IF NOT EXISTS `useragent` (

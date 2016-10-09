@@ -210,18 +210,18 @@ where
 		# mbType = prepare_unification True <$> (unify >>= parseType o fromString)
 		// Search normal functions
 		# filts = catMaybes [ (\t _ -> isUnifiable t) <$> mbType
-		                    , (\n loc _ -> isNameMatch (size n-2) n loc) <$> name
+		                    , (\n loc _ -> isNameMatch (size n*2/3) n loc) <$> name
 		                    ]
 		# funs = map (\f -> makeFunctionResult name mbType Nothing f db) $ findFunction`` filts db
 		// Search macros
 		# macros = case (isNothing mbType,name) of
-			(True,Just n) = findMacro` (\loc _ -> isNameMatch (size n-2) n loc) db
+			(True,Just n) = findMacro` (\loc _ -> isNameMatch (size n*2/3) n loc) db
 			_             = []
 		# macros = map (\(lhs,rhs) -> makeMacroResult name lhs rhs) macros
 		// Search class members
 		# filts = catMaybes [ (\t _ _ _ _->isUnifiable t) <$> mbType
 		                    , (\n (Location lib mod _ _) _ _ f _ -> isNameMatch
-		                      (size n-2) n (Location lib mod Nothing f)) <$> name
+		                      (size n*2/3) n (Location lib mod Nothing f)) <$> name
 		                    ]
 		# members = findClassMembers`` filts db
 		# members = map (\(Location lib mod line cls,vs,_,f,et) -> makeFunctionResult name mbType

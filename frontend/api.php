@@ -1,7 +1,7 @@
 <?php
 define('SERVER_HOSTNAME', '127.0.0.1');
 define('SERVER_PORT', 31215);
-define('SERVER_TIMEOUT', 5);
+define('SERVER_TIMEOUT', 8);
 
 define('E_CLOOGLEDOWN', 150);
 define('E_ILLEGALMETHOD', 151);

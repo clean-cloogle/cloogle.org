@@ -28,9 +28,10 @@ if ($range < 24 * 3600) {
 $sql =
 	"SELECT
 		$timestamp as unixtime,
-		count(*) as querycount,
-		count(case when `responsecode`=0 then NULL else 1 end) as failedcount,
-		count(distinct `ip`,`useragent_id`) as uniquecount
+		count(*),
+		count(case when `responsecode`>=150 then 1 else null end),
+		count(case when `responsecode`>0 and `responsecode`<150 then 1 else null end),
+		count(distinct `ip`,`useragent_id`)
 	FROM `log`
 	WHERE `date` BETWEEN timestamp('$startTime') AND timestamp('$endTime')
 	GROUP BY $group";
@@ -39,7 +40,7 @@ $stmt = $db->stmt_init();
 if (!$stmt->prepare($sql))
 	var_dump($stmt->error);
 $stmt->execute();
-$stmt->bind_result($timestamp, $count, $failedcount, $uniquecount);
+$stmt->bind_result($timestamp, $count, $servererrcount, $usererrcount, $uniquecount);
 $results = [[], [], []];
 
 $expected_timestamp = $timemod === 'monthly'
@@ -55,17 +56,18 @@ function update_expected_timestamp() {
 
 while ($stmt->fetch()) {
 	while ($expected_timestamp < $timestamp) {
-		for ($i=0; $i<3; $i++)
+		for ($i=0; $i<4; $i++)
 			$results[$i][] = "[" . $expected_timestamp*1000 . ",0]";
 		update_expected_timestamp();
 	}
-	$results[0][] = "[" . $timestamp*1000 . "," . ($count-$failedcount) . "]";
-	$results[1][] = "[" . $timestamp*1000 . ",$failedcount]";
-	$results[2][] = "[" . $timestamp*1000 . ",$uniquecount]";
+	$results[0][] = "[" . $timestamp*1000 . "," . ($count-$servererrcount-$usererrcount) . "]";
+	$results[1][] = "[" . $timestamp*1000 . ",$usererrcount]";
+	$results[2][] = "[" . $timestamp*1000 . ",$servererrcount]";
+	$results[3][] = "[" . $timestamp*1000 . ",$uniquecount]";
 	update_expected_timestamp();
 }
-while ($expected_timestamp <= $end + $timemod) {
-	for ($i=0; $i<3; $i++)
+while ($expected_timestamp <= $end + ($timemod === 'monthly' ? 31 * 86400 : $timemod)) {
+	for ($i=0; $i<4; $i++)
 		$results[$i][] = "[" . $expected_timestamp*1000 . ",0]";
 	update_expected_timestamp();
 }
@@ -74,5 +76,6 @@ header('Content-Type: text/javascript');
 echo "$callback([" .
 	"[" . join(",", $results[0]) . "]," .
 	"[" . join(",", $results[1]) . "]," .
-	"[" . join(",", $results[2]) . "]" .
+	"[" . join(",", $results[2]) . "]," .
+	"[" . join(",", $results[3]) . "]" .
 	"]);";

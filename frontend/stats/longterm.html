@@ -6,8 +6,8 @@
 	<meta name="description" content="Long term Cloogle statistics"/>
 	<title>Long Term Cloogle Stats</title>
 	<script src="//code.jquery.com/jquery-2.2.4.min.js" integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
-	<script type="text/javascript" src="//code.highcharts.com/stock/highstock.js" defer="defer"></script>
-	<script type="text/javascript" src="//code.highcharts.com/highcharts-more.js" defer="defer"></script>
+	<script type="text/javascript" src="//code.highcharts.com/stock/2.1.10/highstock.js" defer="defer"></script>
+	<script type="text/javascript" src="//code.highcharts.com/stock/2.1.10/highcharts-more.js" defer="defer"></script>
 </head>
 <body>
 	<table style="width:100%">
@@ -41,8 +41,10 @@
 			over_time.showLoading('Loading data...');
 			$.getJSON('ajax/over-time.php' + query,
 				function(data) {
-					for (var i in data)
+					for (var i in data) {
+						over_time.series[i].setData([]);
 						over_time.series[i].setData(data[i]);
+					}
 					over_time.hideLoading();
 				}
 			);
@@ -69,7 +71,7 @@
 		$(function(){
 			$.getJSON('ajax/over-time.php?callback=?', function(data) {
 				$('#over-time').highcharts('StockChart', {
-					colors: ['#00aa00', '#dd0000', '#aaaaff'],
+					colors: ['#00aa00', '#dddd00', '#dd0000', '#aaaaff'],
 					chart: {
 						type: 'area',
 						zoomType: 'x'
@@ -123,11 +125,15 @@
 					}, {
 						data: data[1],
 						dataGrouping: { enabled: false },
-						name: 'Failed requests'
+						name: 'Failed requests (user error)'
+					}, {
+						data: data[2],
+						dataGrouping: { enabled: false },
+						name: 'Failed requests (server error)'
 					}, {
 						type: 'spline',
 						yAxis: 1,
-						data: data[2],
+						data: data[3],
 						dataGrouping: { enabled: false },
 						name: 'Unique visitors'
 					}]
@@ -163,7 +169,6 @@
 			});
 
 			$.getJSON('ajax/types.php?callback=?', function(data) {
-				console.log(data);
 				$('#types').highcharts({
 					chart: { type: 'pie' },
 					credits: { enabled: false },

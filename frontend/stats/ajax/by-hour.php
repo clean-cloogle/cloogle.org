@@ -5,7 +5,7 @@ $sql =
 	"SELECT dayofweek(`date`), hour(`date`), count(*) FROM `log`
 	WHERE `date` BETWEEN timestamp('$startTime') AND timestamp('$endTime')
 	GROUP BY dayofweek(`date`), hour(`date`)
-	ORDER BY concat(dayofweek(`date`), hour(`date`)) ASC";
+	ORDER BY dayofweek(`date`) asc, hour(`date`) ASC";
 
 $stmt = $db->stmt_init();
 if (!$stmt->prepare($sql))

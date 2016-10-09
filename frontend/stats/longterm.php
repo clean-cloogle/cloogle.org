@@ -103,7 +103,7 @@ while ($stmt->fetch()) {
 	$results[2][] = "[" . $timestamp*1000 . ",$uniquecount]";
 	update_expected_timestamp();
 }
-while ($expected_timestamp <= $end) {
+while ($expected_timestamp <= $end + $timemod) {
 	for ($i=0; $i<3; $i++)
 		$results[$i][] = "[" . $expected_timestamp*1000 . ",0]";
 	update_expected_timestamp();

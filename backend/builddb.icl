@@ -150,18 +150,18 @@ predefTypes :: [('DB'.Location, 'T'.TypeDef)]
 predefTypes
 	= [ ( 'DB'.Builtin "Bool"
 	    , { deft
-		  & 'Type'.td_name = "Bool"
+	      & 'Type'.td_name = "Bool"
 	      , 'Type'.td_rhs  = 'T'.TDRCons False
 	        [ { defc & 'Type'.cons_name="False" }
 	        , { defc & 'Type'.cons_name="True" }
-			]
+	        ]
 	      }
 	    )
 	  , ( 'DB'.Builtin "Int",     { deft & 'Type'.td_name = "Int"     } )
 	  , ( 'DB'.Builtin "Real",    { deft & 'Type'.td_name = "Real"    } )
 	  , ( 'DB'.Builtin "Char",    { deft & 'Type'.td_name = "Char"    } )
 	  , ( 'DB'.Builtin "String",  { deft & 'Type'.td_name = "String",
-	           'Type'.td_rhs = 'T'.TDRSynonym ('T'.Type "{#Char}" []) } )
+	      'Type'.td_rhs = 'T'.TDRSynonym ('T'.Type "_#Array" ['T'.Type "Char" []]) } )
 	  , ( 'DB'.Builtin "Dynamic", { deft & 'Type'.td_name = "Dynamic" } )
 	  , ( 'DB'.Builtin "File",    { deft & 'Type'.td_name = "File"    } )
 	  , ( 'DB'.Builtin "World",   { deft & 'Type'.td_name = "World",

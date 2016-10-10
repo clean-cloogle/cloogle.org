@@ -1,7 +1,11 @@
 implementation module TypeDB
 
 // Standard libraries
-import StdEnv
+from StdFunc import o, const
+import StdBool, StdFile, StdList, StdOverloaded, StdTuple
+
+import Control.Applicative
+import Control.Monad
 from Data.Func import $
 import Data.Functor
 from Data.List import intercalate
@@ -231,6 +235,40 @@ findType` f {typemap} = toList $ filterWithKey f typemap
 
 findType`` :: [(Location TypeDef -> Bool)] TypeDB -> [(Location, TypeDef)]
 findType`` fs {typemap} = toList $ foldr filterWithKey typemap fs
+
+resolveTypeSynonyms :: Type TypeDB -> Type
+resolveTypeSynonyms t db = resolve synonyms t
+where
+	synonyms = [(td_name,td_args,s) \\ {td_name,td_args,td_rhs=TDRSynonym s} <- elems db.typemap]
+
+	resolve :: [(String, [Type], Type)] Type -> Type
+	resolve syns (Func is r cc)
+		= Func (map (resolve syns) is) (resolve syns r) [(c,resolve syns t) \\ (c,t) <- cc]
+	resolve syns (Var tv)
+		= Var tv
+	resolve syns (Cons tv ts)
+		= Cons tv $ map (resolve syns) ts
+	resolve syns (Uniq t)
+		= Uniq (resolve syns t)
+	resolve syns (Forall tvs t cc)
+		= Forall tvs (resolve syns t) [(c,resolve syns t) \\ (c,t) <- cc]
+	resolve syns (Arrow mt)
+		= Arrow (resolve syns <$> mt)
+	resolve [] (Type t args)
+		= Type t $ map (resolve synonyms) args
+	resolve [(t`,args`,t``):syns] (Type t args)
+	| t == t` && length args >= length args`
+		= resolve synonyms $ appendArgs t``` $ drop (length args`) args
+		= resolve syns (Type t args)
+	where
+		matches = zip2 (map fromVarLenient args`) args
+		(Just t```) = assignAll matches t`` <|> pure (Type t args)
+
+		appendArgs :: Type [Type] -> Type
+		appendArgs (Type t args) args`   = Type t $ args ++ args`
+		appendArgs (Var tv) args`=:[_:_] = Cons tv args`
+		appendArgs (Cons tv args) args`  = Cons tv $ args ++ args`
+		appendArgs t _                   = t
 
 getDerivations :: Name TypeDB -> [(Type, [Location])]
 getDerivations gen {derivemap} = if (isNothing ts) [] (fromJust ts)

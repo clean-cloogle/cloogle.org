@@ -192,7 +192,8 @@ where
 	suggs _ _ _ = Nothing
 
 	search :: !Request !TypeDB -> [Result]
-	search {unify,name,className,typeName,modules,libraries,page} db
+	search {unify,name,className,typeName,modules,libraries,page} db_org
+		# db = db_org
 		# db = case libraries of
 			(Just ls) = filterLocations (isLibMatch ls) db
 			Nothing   = db
@@ -207,25 +208,25 @@ where
 			# typeName = fromJust typeName
 			# types = findType typeName db
 			= map (uncurry (makeTypeResult (Just typeName))) types
-		# mbType = prepare_unification True <$> (unify >>= parseType o fromString)
+		# mbType = prepare_unification` True db_org <$> (unify >>= parseType o fromString)
 		// Search normal functions
-		# filts = catMaybes [ (\t _ -> isUnifiable t) <$> mbType
+		# filts = catMaybes [ (\t _ -> isUnifiable t db_org) <$> mbType
 		                    , (\n loc _ -> isNameMatch (size n*2/3) n loc) <$> name
 		                    ]
-		# funs = map (\f -> makeFunctionResult name mbType Nothing f db) $ findFunction`` filts db
+		# funs = map (\f -> makeFunctionResult name mbType Nothing f db_org) $ findFunction`` filts db
 		// Search macros
 		# macros = case (isNothing mbType,name) of
 			(True,Just n) = findMacro` (\loc _ -> isNameMatch (size n*2/3) n loc) db
 			_             = []
 		# macros = map (\(lhs,rhs) -> makeMacroResult name lhs rhs) macros
 		// Search class members
-		# filts = catMaybes [ (\t _ _ _ _->isUnifiable t) <$> mbType
+		# filts = catMaybes [ (\t _ _ _ _ -> isUnifiable t db_org) <$> mbType
 		                    , (\n (Location lib mod _ _) _ _ f _ -> isNameMatch
 		                      (size n*2/3) n (Location lib mod Nothing f)) <$> name
 		                    ]
 		# members = findClassMembers`` filts db
 		# members = map (\(Location lib mod line cls,vs,_,f,et) -> makeFunctionResult name mbType
-			(Just {cls_name=cls,cls_vars=vs}) (Location lib mod line f,et) db) members
+			(Just {cls_name=cls,cls_vars=vs}) (Location lib mod line f,et) db_org) members
 		// Search types
 		# lcName = if (isJust mbType && isType (fromJust mbType))
 			(let (Type name _) = fromJust mbType in Just $ toLowerCase name)
@@ -324,7 +325,7 @@ where
 		  , { func     = fromJust (tes.te_representation <|>
 		                           (pure $ concat $ print False (fname,et)))
 		    , unifier  = toStrUnifier <$> finish_unification <$>
-		        (orgsearchtype >>= unify [] (prepare_unification False type))
+		        (orgsearchtype >>= unify [] (prepare_unification` False db type))
 		    , cls      = mbCls
 		    , constructor_of = if tes.te_isconstructor
 		        (let (Func _ r _) = type in Just $ concat $ print False r)
@@ -356,7 +357,7 @@ where
 				| isNothing orgsearchtype = 0
 				# orgsearchtype = fromJust orgsearchtype
 				# (Just (ass1, ass2)) = finish_unification <$>
-					unify [] orgsearchtype (prepare_unification False type)
+					unify [] orgsearchtype (prepare_unification` False db type)
 				= penalty + toInt (sum [typeComplexity t \\ (_,t)<-ass1 ++ ass2 | not (isVar t)])
 			# orgsearch = fromJust orgsearch
 			= penalty + levenshtein` orgsearch fname
@@ -373,6 +374,9 @@ where
 			typeComplexity (Cons _ ts) = 1.2 * foldr ((+) o typeComplexity) 1.0 ts
 			typeComplexity (Uniq t) = 3.0 + typeComplexity t
 
+	prepare_unification` :: !Bool !TypeDB !Type -> Type
+	prepare_unification` b db t = prepare_unification b (resolveTypeSynonyms t db)
+
 	levenshtein` :: String String -> Int
 	levenshtein` a b = if (indexOf a b == -1) 0 -100 + levenshtein a b
 
@@ -380,8 +384,10 @@ where
 	modToFilename mod = (toString $ reverse $ takeWhile ((<>)'.')
 	                              $ reverse $ fromString mod) + ".dcl"
 
-	isUnifiable :: Type ExtendedType -> Bool
-	isUnifiable t1 (ET t2 _) = isJust (unify [] t1 (prepare_unification False t2))
+	isUnifiable :: !Type !TypeDB !ExtendedType -> Bool
+	isUnifiable t1 db (ET t2 _) = isJust $ unify [] t1 t2`
+	where
+		t2` = (prepare_unification` False db t2)
 
 	isNameMatch :: !Int !String Location -> Bool
 	isNameMatch maxdist n1 loc

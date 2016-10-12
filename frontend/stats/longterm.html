@@ -209,7 +209,8 @@
 						categories: ['Linux', 'Macintosh', 'Windows', 'Other']
 					},
 					yAxis: {
-						min: 0
+						title: { enabled: false },
+						labels: { format: '{value}%' }
 					},
 					plotOptions: {
 						column: {
@@ -217,7 +218,23 @@
 						}
 					},
 					tooltip: {
-						pointFormat: '<span style="color:{point.color}">\u25cf</span> {series.name}: <b>{point.percentage:.1f}%</b> ({point.y})<br/>'
+						formatter: function () {
+							console.log(this);
+							var chart = this.series.chart;
+							var stack = this.series.userOptions.stack;
+							var pointIndex = this.point.index;
+							var label = this.key + ' ' + stack + ':<br/>';
+							for (var i in chart.series) {
+								var series = chart.series[i];
+								if (series.userOptions.stack == stack) {
+									var point = series.data[pointIndex];
+									label += '<span style="color:' + point.color + '">\u25cf</span> ' +
+										series.name + ': <b>' + point.percentage.toFixed(2) +
+										'%</b> (' + point.y + ')<br/>';
+								}
+							}
+							return label;
+						}
 					},
 					series: data
 				});

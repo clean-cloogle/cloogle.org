@@ -23,13 +23,13 @@ $oss = [
 ];
 
 $results = [
-	['name' => 'Success', 'data' => [], 'stack' => 'Response'],
-	['name' => 'Server error', 'data' => [], 'stack' => 'Response'],
-	['name' => 'User error', 'data' => [], 'stack' => 'Response'],
-	['name' => 'Name only', 'data' => [], 'stack' => 'Kind'],
-	['name' => 'Unification', 'data' => [], 'stack' => 'Kind'],
-	['name' => 'Type', 'data' => [], 'stack' => 'Kind'],
-	['name' => 'Class', 'data' => [], 'stack' => 'Kind']
+	['name' => 'Success', 'data' => [], 'stack' => 'response'],
+	['name' => 'Server error', 'data' => [], 'stack' => 'response'],
+	['name' => 'User error', 'data' => [], 'stack' => 'response'],
+	['name' => 'Name only', 'data' => [], 'stack' => 'search kind'],
+	['name' => 'Unification', 'data' => [], 'stack' => 'search kind'],
+	['name' => 'Type', 'data' => [], 'stack' => 'search kind'],
+	['name' => 'Class', 'data' => [], 'stack' => 'search kind']
 ];
 
 foreach ($oss as $os) {

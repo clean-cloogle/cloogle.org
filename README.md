@@ -31,7 +31,7 @@ Use any of the available frontends:
 
 After installing
 [docker-compose](https://www.docker.com/products/docker-compose) run the
-following commands:
+following command:
 
 ```bash
 docker-compose up
@@ -39,6 +39,21 @@ docker-compose up
 
 Your Cloogle server now runs at port `31215` on your local machine.
 The web frontend is available at port `31280`, live statistics at port `31216`.
+
+A basic nginx proxy would look like:
+
+```nginx
+server {
+	listen [::]:80;
+	server_name cloogle.org;
+
+	location / {
+		proxy_pass http://127.0.0.1:31280;
+		proxy_set_header Host $host;
+		proxy_set_header X-Forwarded-For $remote_addr;
+	}
+}
+```
 
 ## HTTP API specification
 `api.php` should be called with a `GET` request where the `str` variable

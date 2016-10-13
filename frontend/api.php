@@ -40,7 +40,12 @@ function log_request($code) {
 		$stmt = $db->prepare('INSERT INTO `log`
 			(`ip`,`useragent_id`,`query`,`responsecode`,`responsetime`)
 			VALUES (?,?,?,?,?)');
-		$stmt->bind_param('sisii', $_SERVER['REMOTE_ADDR'], $ua_id, $_GET['str'], $code, $time);
+		$stmt->bind_param('sisii',
+			$_SERVER['HTTP_X_FORWARDED_FOR'],
+			$ua_id,
+			$_GET['str'],
+			$code,
+			$time);
 		$stmt->execute();
 		$stmt->close();
 

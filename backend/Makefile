@@ -3,15 +3,15 @@ DB=types.json
 MAN:=builddb.1 # Others don't have --help/--version # $(addsuffix .1,$(BIN))
 CLM:=clm
 CLMFLAGS:=-dynamics -h 40M -nr -nt\
-	-I $$CLEAN_HOME/lib/clean-platform/OS-Independent\
-	-I $$CLEAN_HOME/lib/clean-platform/OS-Linux-64\
-	-I $$CLEAN_HOME/lib/clean-platform/OS-Linux\
-	-I $$CLEAN_HOME/lib/clean-platform/OS-Posix\
 	-I $$CLEAN_HOME/lib/ArgEnv\
 	-I $$CLEAN_HOME/lib/Dynamics\
 	-I $$CLEAN_HOME/lib/Generics\
 	-I $$CLEAN_HOME/lib/StdLib\
 	-I $$CLEAN_HOME/lib/TCPIP\
+	-I clean-platform/src/libraries/OS-Independent\
+	-I clean-platform/src/libraries/OS-Linux-64\
+	-I clean-platform/src/libraries/OS-Linux\
+	-I clean-platform/src/libraries/OS-Posix\
 	-I CleanTypeUnifier\
 	-I CleanLevenshtein\
 	-I CleanPrettyPrint\

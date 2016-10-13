@@ -24,7 +24,6 @@ from SimpleTCPServer import :: LogMessage{..}, serve, :: Logger
 import qualified SimpleTCPServer
 import TypeDB
 import Type
-import Levenshtein
 
 :: OldMaybe a :== 'SimpleTCPServer'.Maybe a
 
@@ -374,7 +373,7 @@ where
 			typeComplexity (Uniq t) = 3.0 + typeComplexity t
 
 	levenshtein` :: String String -> Int
-	levenshtein` a b = if (indexOf a b == -1) 0 -100 + levenshtein a b
+	levenshtein` a b = if (indexOf a b == -1) 0 -100 + levenshtein [c \\ c <-: a] [c \\ c <-: b]
 
 	modToFilename :: String -> String
 	modToFilename mod = (toString $ reverse $ takeWhile ((<>)'.')
@@ -386,7 +385,7 @@ where
 	isNameMatch :: !Int !String Location -> Bool
 	isNameMatch maxdist n1 loc
 		# (n1, n2) = ({toLower c \\ c <-: n1}, {toLower c \\ c <-: getName loc})
-		= n1 == "" || indexOf n1 n2 <> -1 || levenshtein n1 n2 <= maxdist
+		= n1 == "" || indexOf n1 n2 <> -1 || levenshtein [c \\ c <-: n1] [c \\ c <-: n2] <= maxdist
 
 	isModMatch :: ![String] Location -> Bool
 	isModMatch mods (Location _ mod _ _) = isMember mod mods

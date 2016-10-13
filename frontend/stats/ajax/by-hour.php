@@ -15,7 +15,7 @@ $stmt->bind_result($day, $hour, $querycount);
 $_results = [];
 
 while ($stmt->fetch())
-	$_results[$day % 7][$hour] = $querycount;
+	$_results[$day - 1][$hour] = $querycount;
 
 $stmt->close();
 

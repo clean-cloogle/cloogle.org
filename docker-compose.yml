@@ -1,0 +1,32 @@
+version: '2'
+services:
+  backend:
+    image: cloogle-backend
+    restart: always
+
+  frontend:
+    depends_on:
+      - backend
+    image: cloogle-frontend
+    ports:
+      - "80:80"
+    volumes:
+      - "./frontend/:/var/www/html/"
+    restart: always
+
+  stats:
+    depends_on:
+      - frontend
+      - db
+    image: cloogle-stats
+    restart: always
+
+  db:
+    image: mysql:latest
+    volumes:
+      - "./db/:/docker-entrypoint-initdb.d/"
+    environment:
+        MYSQL_ROOT_PASSWORD: cloogle
+        MYSQL_DATABASE: cloogledb
+        MYSQL_USER: cloogle
+        MYSQL_PASSWORD: cloogle

@@ -1,5 +1,6 @@
 <?php
-define('SERVER_HOSTNAME', '127.0.0.1');
+//define('SERVER_HOSTNAME', '127.0.0.1');
+define('SERVER_HOSTNAME', 'backend');
 define('SERVER_PORT', 31215);
 define('SERVER_TIMEOUT', 8);
 

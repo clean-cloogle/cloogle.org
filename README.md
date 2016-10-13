@@ -103,11 +103,15 @@ statistics are shown on `/stats/longterm.html`.
 
 ## Setup using Docker
 
-This is an experimental feature. There are two `Dockerfile`s available: one for
-the Cloogle server and one for the live statistics. We need them to share a
-`cloogle.log`. Also, both use `--net=host` to easily open their ports. In a
-production environment, you should not do this, but instead use `-p` and set up
-forwarding rules.
+This is the easiest way to setup a cloogle server. After installing
+[docker-compose](https://www.docker.com/products/docker-compose) run the
+following commands:
+```bash
+./make_compose_containers_local.sh
+docker-compose up
+```
+
+Your cloogle server now runs at port `80` on your local machine.
 
 ### Cloogle server
 

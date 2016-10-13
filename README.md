@@ -5,7 +5,7 @@ standard libraries.
 
 Use any of the available frontends:
 
-- Web app at [cloogle.org](http://cloogle.org/).
+- Web app at [cloogle.org](https://cloogle.org/).
 - The `!cloogle` bang on DuckDuckGo.
 - [@CloogleBot](https://telegram.me/CloogleBot) on Telegram (see
 	[camilstaps/CloogleBot](https://github.com/camilstaps/CloogleBot)).
@@ -19,7 +19,6 @@ Use any of the available frontends:
 ### Readme contents
 
 - [Setup](#setup)
-- [Setup using Docker](#setup-using-docker)
 - [API specification of the PHP wrapper](#api-specification-for-developers)
 - [API specification of the Clean backend](#talking-with-the-clean-backend-directly)
 - [Statistics](#statistics)
@@ -30,106 +29,32 @@ Use any of the available frontends:
 
 ## Setup
 
-### Frontend
-
-The frontend heavily depends on [VanillaJS](http://vanilla-js.com/) so you
-should have a browser that supports it. You will also need a HTTP server with
-PHP backend.
-
-If you want frontend-side statistics (timestamp, ip, user agent, query,
-response code and response time of queries sent through the frontend), copy
-`conf.php.example` to `conf.php`, edit the settings, create a MySQL database
-and run `install.sql` on it. If you don't want this, you don't need to set it
-up.
-
-### Backend
+After installing
+[docker-compose](https://www.docker.com/products/docker-compose) run the
+following command:
 
 ```bash
-$ cd backend
-$ cat env/envs.linux64 >> "$CLEAN_HOME/etc/IDEEnvs"
-$ make
+docker-compose up
 ```
 
-You have now built the necessary binaries and created `types.db`, which holds
-the internal database.
+Your Cloogle server now runs at port `31215` on your local machine.
+The web frontend is available at port `80`, live statistics at port `31216`.
 
-You can now run the CloogleServer with:
+If you intend to run this on a server that has port 80 occupied already, you
+can use nginx as a proxy. Change `80:80` to `31280:80` in `docker-compose.yml`
+and use the following nginx config:
 
-```bash
-$ ./CloogleServer 31215 < types.db
-```
+```nginx
+server {
+	listen [::]:80;
+	server_name cloogle.org;
 
-Alternatively, use `serve` as a wrapper. It will restart the server on
-crashes, and log to both stdout and cloogle.log:
-
-```bash
-$ ./serve
-```
-
-In this example, the server uses port 31215. You need to use the same settings
-in `frontend/api.php`.
-
-Leave the `CloogleServer` running.
-
-Install a web server with PHP support to handle requests for the `frontend`
-directory. When an HTTP request for `api.php` is made, that PHP script will
-communicate with the Clean backend server.
-
-### Statistics
-The live version's statistics pages are at
-[cloogle.org/stats/live.html](http://cloogle.org/stats/live.html) and
-[cloogle.org/stats/longterm.html](http://cloogle.org/stats/longterm.html).
-
-There is a possibility to set up a web page that shows live statistics.
-Currently, only the last few searches are shown. For this, you need to have
-`nodejs` installed. Then do:
-
-```bash
-$ cd frontend/stats
-$ npm install
-```
-
-And to run:
-
-```bash
-$ node server.js ../../backend/cloogle.log
-```
-
-This starts a WebSocket server on port 31216. You can navigate to
-`/stats/live.html` to view the statistics. This page will receive live updates.
-
-When frontend-side statistics have been enabled (see Frontend above), long term
-statistics are shown on `/stats/longterm.html`.
-
-## Setup using Docker
-
-This is an experimental feature. There are two `Dockerfile`s available: one for
-the Cloogle server and one for the live statistics. We need them to share a
-`cloogle.log`. Also, both use `--net=host` to easily open their ports. In a
-production environment, you should not do this, but instead use `-p` and set up
-forwarding rules.
-
-### Cloogle server
-
-```bash
-$ cd backend
-$ sudo touch /var/log/cloogle.log
-$ docker build -t cloogle .
-$ docker run -d --net=host --name=cloogle \
-	-v /var/log/cloogle.log:/usr/src/cloogle/cloogle.log \
-	cloogle
-```
-
-### Live statistics
-
-```bash
-$ cd frontend/stats
-$ docker build -t cloogle-stats .
-$ docker run -d --net=host --name=cloogle-stats \
-	-v /var/log/cloogle.log:/var/log/cloogle.log \
-	-v /path/to/cert.pem:/srv/ssl/cert.pem \
-	-v /path/to/key.pem:/srv/ssl/key.pem \
-	cloogle-stats
+	location / {
+		proxy_pass http://127.0.0.1:31280;
+		proxy_set_header Host $host;
+		proxy_set_header X-Forwarded-For $remote_addr;
+	}
+}
 ```
 
 ## HTTP API specification

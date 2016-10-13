@@ -38,9 +38,11 @@ docker-compose up
 ```
 
 Your Cloogle server now runs at port `31215` on your local machine.
-The web frontend is available at port `31280`, live statistics at port `31216`.
+The web frontend is available at port `80`, live statistics at port `31216`.
 
-A basic nginx proxy would look like:
+If you intend to run this on a server that has port 80 occupied already, you
+can use nginx as a proxy. Change `80:80` to `31280:80` in `docker-compose.yml`
+and use the following nginx config:
 
 ```nginx
 server {

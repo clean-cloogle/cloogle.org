@@ -1,7 +1,6 @@
 Clean System Files/
 builddb
 CloogleServer
-*.prj
 *.1
 types.json
 cloogle.log

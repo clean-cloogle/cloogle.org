@@ -1,10 +1,14 @@
 <?php
-define('SERVER_HOSTNAME', 'localhost');
+define('SERVER_HOSTNAME', '127.0.0.1');
 define('SERVER_PORT', 31215);
+define('SERVER_TIMEOUT', 8);
 
 define('E_CLOOGLEDOWN', 150);
 define('E_ILLEGALMETHOD', 151);
 define('E_ILLEGALREQUEST', 152);
+define('E_TIMEOUT', 153);
+
+$start_time = microtime(true);
 
 function log_request($code) {
 	if (defined('CLOOGLE_KEEP_STATISTICS')) {
@@ -30,9 +34,13 @@ function log_request($code) {
 		}
 		$stmt->close();
 
-		$stmt = $db->prepare(
-			'INSERT INTO `log` (`ip`,`useragent_id`,`query`,`responsecode`) VALUES (?,?,?,?)');
-		$stmt->bind_param('sisi', $_SERVER['REMOTE_ADDR'], $ua_id, $_GET['str'], $code);
+		global $start_time;
+		$time = (int) ((microtime(true) - $start_time) * 1000);
+
+		$stmt = $db->prepare('INSERT INTO `log`
+			(`ip`,`useragent_id`,`query`,`responsecode`,`responsetime`)
+			VALUES (?,?,?,?,?)');
+		$stmt->bind_param('sisii', $_SERVER['REMOTE_ADDR'], $ua_id, $_GET['str'], $code, $time);
 		$stmt->execute();
 		$stmt->close();
 
@@ -94,23 +102,25 @@ if($_SERVER['REQUEST_METHOD'] !== 'GET'){
 		$command['page'] = (int) $_GET['page'];
 	}
 
-	$skt = fsockopen(SERVER_HOSTNAME, SERVER_PORT);
-	if (!$skt) {
+	$skt = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
+	if (!socket_connect($skt, SERVER_HOSTNAME, SERVER_PORT)) {
 		respond(E_CLOOGLEDOWN, 'Cloogle server unreachable');
 	} else {
 		$response = '';
-		fwrite($skt, json_encode($command));
-		while (!feof($skt)) {
-			$_response = fgets($skt, 128);
-			$response .= $_response;
-			if (strpos($response, "\n") !== false) {
-				break;
+		socket_write($skt, json_encode($command));
+		$read = [$skt];
+		if (socket_select($read, $w = null, $e = null, SERVER_TIMEOUT) !== 1) {
+			respond(E_TIMEOUT, 'Connection to the Cloogle server timed out');
+		} else {
+			while (($_response = socket_read($skt, 128, PHP_NORMAL_READ)) !== false) {
+				$response .= $_response;
+				if (strpos($_response, "\n") !== false)
+					break;
 			}
+			echo $response;
+			$decoded = json_decode($response, true);
+			log_request($decoded['return']);
 		}
-		fclose($skt);
-		echo $response;
-
-		$decoded = json_decode($response, true);
-		log_request($decoded['return']);
+		socket_close($skt);
 	}
 }

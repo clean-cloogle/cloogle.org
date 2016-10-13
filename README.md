@@ -22,7 +22,7 @@ Use any of the available frontends:
 - [Setup using Docker](#setup-using-docker)
 - [API specification of the PHP wrapper](#api-specification-for-developers)
 - [API specification of the Clean backend](#talking-with-the-clean-backend-directly)
-- [Live statistics](#live-statistics)
+- [Statistics](#statistics)
 - [Authors](#authors)
 - [Copyright &amp; License](#copyright--license)
 
@@ -36,10 +36,11 @@ The frontend heavily depends on [VanillaJS](http://vanilla-js.com/) so you
 should have a browser that supports it. You will also need a HTTP server with
 PHP backend.
 
-If you want frontend-side statistics (timestamp, ip, query and response code of
-queries sent through the frontend), copy `conf.php.example` to `conf.php`, edit
-the settings, create a MySQL database and run `install.sql` on it. If you don't
-want this, you don't need to set it up.
+If you want frontend-side statistics (timestamp, ip, user agent, query,
+response code and response time of queries sent through the frontend), copy
+`conf.php.example` to `conf.php`, edit the settings, create a MySQL database
+and run `install.sql` on it. If you don't want this, you don't need to set it
+up.
 
 ### Backend
 
@@ -74,9 +75,10 @@ Install a web server with PHP support to handle requests for the `frontend`
 directory. When an HTTP request for `api.php` is made, that PHP script will
 communicate with the Clean backend server.
 
-### Live statistics
-The live version's statistics page is at
-[cloogle.org/stats](http://cloogle.org/stats).
+### Statistics
+The live version's statistics pages are at
+[cloogle.org/stats/live.html](http://cloogle.org/stats/live.html) and
+[cloogle.org/stats/longterm.html](http://cloogle.org/stats/longterm.html).
 
 There is a possibility to set up a web page that shows live statistics.
 Currently, only the last few searches are shown. For this, you need to have
@@ -93,8 +95,11 @@ And to run:
 $ node server.js ../../backend/cloogle.log
 ```
 
-This starts a WebSocket server on port 31216. You can navigate to `/stats` to
-view the statistics. This page will receive live updates.
+This starts a WebSocket server on port 31216. You can navigate to
+`/stats/live.html` to view the statistics. This page will receive live updates.
+
+When frontend-side statistics have been enabled (see Frontend above), long term
+statistics are shown on `/stats/longterm.html`.
 
 ## Setup using Docker
 
@@ -148,6 +153,7 @@ fields:
 	* `150`: the Clean backend could not be reached
 	* `151`: invalid request type (should use GET)
 	* `152`: no input (GET variable `str` should be set to the search string)
+	* `153`: the Clean backend timed out
 
 - `msg`
 

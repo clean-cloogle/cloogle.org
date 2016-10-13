@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+	<meta name="viewport" content="width=device-width, initial-scale=1"/>
+	<meta name="description" content="Long term Cloogle statistics"/>
+	<title>Long Term Cloogle Stats</title>
+	<script src="//code.jquery.com/jquery-2.2.4.min.js" integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
+	<script type="text/javascript" src="//code.highcharts.com/stock/2.1.10/highstock.js" defer="defer"></script>
+	<script type="text/javascript" src="//code.highcharts.com/stock/2.1.10/highcharts-more.js" defer="defer"></script>
+</head>
+<body>
+	<table style="width:100%">
+		<tr>
+			<td colspan="3">
+				<div id="over-time" style="height:400px;min-width:310px;"></div>
+			</td>
+		</tr>
+		<tr>
+			<td style="width:40%;">
+				<div id="by-hour" style="height:400px;"></div>
+			</td>
+			<td style="width:30%;">
+				<div id="types" style="height:400px;"></div>
+			</td>
+			<td style="width:30%;">
+				<div id="oss" style="height:400px;"></div>
+			</td>
+		</tr>
+	</table>
+
+	<script type="text/javascript">
+		function afterSetExtremes(e) {
+			var query = '?' +
+				(typeof e.min != 'undefined' && !isNaN(e.min)
+					? ('start=' + Math.round(e.min / 1000)) + '&'
+					: '') +
+				(typeof e.max != 'undefined' && !isNaN(e.max)
+					? ('end=' + Math.round(e.max / 1000) + '&')
+					: '') +
+				'callback=?';
+
+			var over_time = $('#over-time').highcharts();
+			over_time.showLoading('Loading data...');
+			$.getJSON('ajax/over-time.php' + query,
+				function(data) {
+					for (var i in data)
+						over_time.series[i].setData(data[i]);
+					over_time.hideLoading();
+				}
+			);
+
+			var by_hour = $('#by-hour').highcharts();
+			by_hour.showLoading('Loading data...');
+			$.getJSON('ajax/by-hour.php' + query,
+				function(data) {
+					by_hour.series[0].setData(data);
+					by_hour.hideLoading();
+				}
+			);
+
+			var types = $('#types').highcharts();
+			types.showLoading('Loading data...');
+			$.getJSON('ajax/types.php' + query,
+				function(data) {
+					types.series[0].setData(data);
+					types.hideLoading();
+				}
+			);
+
+			var oss = $('#oss').highcharts();
+			oss.showLoading('Loading data...');
+			$.getJSON('ajax/oss.php' + query,
+				function(data) {
+					for (var i in data)
+						oss.series[i].setData(data[i].data);
+					oss.hideLoading();
+				}
+			);
+		}
+
+		$(function(){
+			$.getJSON('ajax/over-time.php?callback=?', function(data) {
+				$('#over-time').highcharts('StockChart', {
+					colors: ['#00aa00', '#dddd00', '#dd0000', '#aaaaff'],
+					chart: {
+						type: 'area',
+						zoomType: 'x'
+					},
+					credits: { enabled: false },
+					navigator: {
+						adaptToUpdatedData: false,
+						series: {
+							data: false
+						}
+					},
+					scrollbar: {
+						liveRedraw: false
+					},
+					title: {
+						text: 'Long Term Cloogle Statistics'
+					},
+					rangeSelector: {
+						buttons: [
+							{ type: 'hour',  count: 1, text: '1h' },
+							{ type: 'day',   count: 1, text: '1d' },
+							{ type: 'day',   count: 7, text: '1w' },
+							{ type: 'month', count: 1, text: '1m' },
+							{ type: 'year',  count: 1, text: '1y' },
+							{ type: 'all',             text: 'All' }
+						],
+						inputEnabled: false,
+						selected: 3
+					},
+					xAxis: {
+						events: {
+							afterSetExtremes: afterSetExtremes
+						},
+						minRange: 3600 * 1000
+					},
+					yAxis: [
+						{ floor: 0, title: { text: 'Requests' }, opposite: true },
+						{ floor: 0, title: { text: 'Visitors' }, opposite: false }
+					],
+					plotOptions: {
+						area: {
+							stacking: 'normal'
+						},
+						spline: {
+							lineWidth: 1
+						}
+					},
+					series: [{
+						data: data[0],
+						dataGrouping: { enabled: false },
+						name: 'Successful requests'
+					}, {
+						data: data[1],
+						dataGrouping: { enabled: false },
+						name: 'Failed requests (user error)'
+					}, {
+						data: data[2],
+						dataGrouping: { enabled: false },
+						name: 'Failed requests (server error)'
+					}, {
+						type: 'spline',
+						yAxis: 1,
+						data: data[3],
+						dataGrouping: { enabled: false },
+						name: 'Unique visitors'
+					}]
+				});
+			});
+
+			$.getJSON('ajax/by-hour.php?callback=?', function(data) {
+				var days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+				$('#by-hour').highcharts({
+					chart: { type: 'bubble' },
+					credits: { enabled: false },
+					legend: { enabled: false },
+					title: { text: 'Punch card' },
+					xAxis: {
+						categories: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23]
+					},
+					yAxis: {
+						categories: days,
+						min: 0,
+						max: 6,
+						reversed: true
+					},
+					series: [{
+						data: data,
+						name: 'Requests',
+						minSize: 2,
+						maxSize: Math.round($(window).width() / 48) - 1,
+						tooltip: { pointFormatter: function() {
+							return days[this.y] + ' ' + this.x + ':00: <b>' + this.z + '</b>';
+						} }
+					}]
+				});
+			});
+
+			$.getJSON('ajax/types.php?callback=?', function(data) {
+				$('#types').highcharts({
+					chart: { type: 'pie' },
+					credits: { enabled: false },
+					title: { text: 'Search kinds' },
+					plotOptions: {
+						pie: {
+							dataLabels: { enabled: false },
+							showInLegend: true
+						}
+					},
+					series: [{
+						colorByPoint: true,
+						tooltip: { pointFormat: '<b>{point.percentage:.1f}%</b> ({point.y})' },
+						data: data
+					}]
+				});
+			});
+
+			$.getJSON('ajax/oss.php?callback=?', function(data) {
+				$('#oss').highcharts({
+					colors: ['#00aa00', '#dd0000', '#dddd00', '#f7a35c', '#7cb5ec', '#434348', '#90ed7d'],
+					chart: { type: 'column' },
+					credits: { enabled: false },
+					legend: { enabled: false },
+					title: { text: 'Per operating system' },
+					xAxis: {
+						categories: ['Linux', 'Macintosh', 'Windows', 'Other']
+					},
+					yAxis: {
+						title: { enabled: false },
+						labels: { format: '{value}%' }
+					},
+					plotOptions: {
+						column: {
+							stacking: 'percent'
+						}
+					},
+					tooltip: {
+						borderColor: '#000000',
+						followPointer: true,
+						formatter: function () {
+							console.log(this);
+							var chart = this.series.chart;
+							var stack = this.series.userOptions.stack;
+							var pointIndex = this.point.index;
+							var label = this.key + ' ' + stack + ':<br/>';
+							for (var i in chart.series) {
+								var series = chart.series[i];
+								if (series.userOptions.stack == stack) {
+									var point = series.data[pointIndex];
+									label += '<span style="color:' + point.color + '">\u25cf</span> ' +
+										series.name + ': <b>' + point.percentage.toFixed(2) +
+										'%</b> (' + point.y + ')<br/>';
+								}
+							}
+							return label;
+						}
+					},
+					series: data
+				});
+			});
+		});
+	</script>
+</body>
+</html>

@@ -9,7 +9,6 @@ Date.prototype.timeNow = function (seconds) {
 
 function updateSearches() {
 	query = searches[0];
-	console.log(query);
 	var last = document.getElementById('last-search');
 
 	var highlighter = highlightFunction;
@@ -29,6 +28,12 @@ function updateSearches() {
 		previous.innerHTML += '<tt style="color:' + color + ';">' +
 				escapeHTML(searches[i]) + '</tt><br/>';
 	}
+
+	var last = document.getElementById('last-search');
+	var fontSize = 70;
+	do {
+		last.style.fontSize = (--fontSize) + 'px';
+	} while (last.scrollWidth > (window.innerWidth || document.body.clientWidth));
 }
 
 function updateChart() {
@@ -59,7 +64,8 @@ function addConnectionCallbacks(connection) {
 		}
 		console.log('Attempting connection...');
 		connection = new WebSocket(
-				'wss://' + window.location.hostname + ':31216/',
+				(window.location.protocol == 'https:' ? 'wss' : 'ws') + '://' +
+				window.location.hostname + ':31216/',
 				'cloogle-stats');
 		addConnectionCallbacks(connection);
 	}
@@ -72,7 +78,6 @@ function addConnectionCallbacks(connection) {
 	};
 
 	connection.onmessage = function(msg) {
-		console.log(msg.data);
 		var req = JSON.parse(msg.data);
 		var query = (req.name ? req.name : '') +
 			(req.unify ? ' :: ' + req.unify : '');
@@ -81,7 +86,6 @@ function addConnectionCallbacks(connection) {
 		} else if ('typeName' in req) {
 			query = ':: ' + req.typeName;
 		}
-		console.log(query);
 
 		if (searches.length == 0 || !is_open_message) {
 			searches.splice(0, 0, query);

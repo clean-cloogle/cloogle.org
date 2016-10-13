@@ -1,4 +1,4 @@
-FROM php:5.6-apache
+FROM php:apache
 
 RUN docker-php-source extract \
 	&& apt-get update \

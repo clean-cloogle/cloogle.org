@@ -82,7 +82,7 @@
 		$(function(){
 			$.getJSON('ajax/over-time.php?callback=?', function(data) {
 				$('#over-time').highcharts('StockChart', {
-					colors: ['#00aa00', '#dddd00', '#dd0000', '#aaaaff'],
+					colors: ['#00aa00', '#dddd00', '#dd0000', '#2222aa'],
 					chart: {
 						type: 'area',
 						zoomType: 'x'
@@ -90,16 +90,10 @@
 					credits: { enabled: false },
 					navigator: {
 						adaptToUpdatedData: false,
-						series: {
-							data: false
-						}
+						series: { data: false }
 					},
-					scrollbar: {
-						liveRedraw: false
-					},
-					title: {
-						text: 'Long Term Cloogle Statistics'
-					},
+					scrollbar: { liveRedraw: false },
+					title: { text: 'Long Term Cloogle Statistics' },
 					rangeSelector: {
 						buttons: [
 							{ type: 'hour',  count: 1, text: '1h' },
@@ -113,9 +107,7 @@
 						selected: 3
 					},
 					xAxis: {
-						events: {
-							afterSetExtremes: afterSetExtremes
-						},
+						events: { afterSetExtremes: afterSetExtremes },
 						minRange: 3600 * 1000
 					},
 					yAxis: [
@@ -123,12 +115,8 @@
 						{ floor: 0, title: { text: 'Visitors' }, opposite: false }
 					],
 					plotOptions: {
-						area: {
-							stacking: 'normal'
-						},
-						spline: {
-							lineWidth: 1
-						}
+						area: { stacking: 'normal' },
+						spline: { lineWidth: 1.5 }
 					},
 					series: [{
 						data: data[0],
@@ -213,11 +201,7 @@
 						title: { enabled: false },
 						labels: { format: '{value}%' }
 					},
-					plotOptions: {
-						column: {
-							stacking: 'percent'
-						}
-					},
+					plotOptions: { column: { stacking: 'percent' } },
 					tooltip: {
 						borderColor: '#000000',
 						followPointer: true,

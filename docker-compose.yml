@@ -35,6 +35,7 @@ services:
       - "./db/:/docker-entrypoint-initdb.d/"
       - "./db/storage/:/var/lib/mysql/"
     environment:
+        MYSQL_ROOT_PASSWORD: cloogle
         MYSQL_DATABASE: cloogledb
         MYSQL_USER: cloogle
         MYSQL_PASSWORD: cloogle

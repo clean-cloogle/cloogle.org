@@ -347,7 +347,7 @@ where
 		toStrUnifier (tvas1, tvas2) = (map toStr tvas1, map toStr tvas2)
 		where toStr (var, type) = (var, concat $ print False type)
 
-		toStrPriority :: (Maybe TE_Priority) -> String
+		toStrPriority :: (Maybe Priority) -> String
 		toStrPriority p = case print False p of [] = ""; ss = concat [" ":ss]
 
 		distance

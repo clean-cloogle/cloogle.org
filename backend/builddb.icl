@@ -15,7 +15,8 @@ import System.Directory, System.CommandLine
 
 // CleanTypeUnifier
 import qualified Type as T
-from Type import class print(print), instance print [a], instance print String, instance print Type
+from Type import class print(print), instance print [a], instance print String,
+	instance print Type, instance print Priority
 from Type import qualified ::TypeDef{..}, ::Constructor{..}
 import CoclUtils
 
@@ -169,7 +170,7 @@ predefTypes
 	  ]
 where
 	deft = {'Type'.td_name="", 'Type'.td_uniq=False, 'Type'.td_args=[], 'Type'.td_rhs='T'.TDRAbstract}
-	defc = {'Type'.cons_name="", 'Type'.cons_args=[], 'Type'.cons_exi_vars=[], 'Type'.cons_context=[]}
+	defc = {'Type'.cons_name="", 'Type'.cons_args=[], 'Type'.cons_exi_vars=[], 'Type'.cons_context=[], 'Type'.cons_priority=Nothing}
 
 //             Exclude   Root    Library Base module            Library Module
 findModules :: ![String] !String !String !String !*World -> *(![(String,String)], !*World)
@@ -237,7 +238,7 @@ where
 	pd_macros lib mod pds
 		= [( 'DB'.Location lib mod (toLine pos) id.id_name
 		   , { macro_as_string = priostring id +++ cpp pd
-		     , macro_extras = {zero & te_priority = findPrio id >>= toPrio}
+		     , macro_extras = {zero & te_priority = findPrio id >>= 'T'.toMaybePriority}
 		     }
 		   ) \\ pd=:(PD_Function pos id isinfix args rhs FK_Macro) <- pds]
 	where
@@ -276,7 +277,7 @@ where
 	pd_typespecs lib mod pds
 		= [( 'DB'.Location lib mod (toLine pos) id_name
 		   , 'DB'.ET ('T'.toType t)
-		       {zero & te_priority=toPrio p, te_representation=Just $ cpp ts}
+		       {zero & te_priority='T'.toMaybePriority p, te_representation=Just $ cpp ts}
 		   ) \\ ts=:(PD_TypeSpec pos id=:{id_name} p (Yes t) funspecs) <- pds]
 
 	pd_instances :: String String [ParsedDefinition]
@@ -308,8 +309,14 @@ where
 	constructor_functions ('DB'.Location lib mod line _, td)
 		= [('DB'.Location lib mod line c, 'DB'.ET f
 			{zero & te_isconstructor=True
-			      , te_representation=Just $ concat $ [c, " :: " : print False f]})
-		   \\ (c,f) <- 'T'.constructorsToFunctions td]
+			      , te_representation=Just $ concat $
+				      [c] ++ print_prio p ++ [" :: "] ++ print False f//[c, " :: " : print False f]
+			      , te_priority=p})
+		   \\ (c,f,p) <- 'T'.constructorsToFunctions td]
+	where
+		print_prio :: (Maybe 'T'.Priority) -> [String]
+		print_prio Nothing  = []
+		print_prio (Just p) = [" "] ++ print False p
 
 	record_functions :: ('DB'.Location, 'DB'.TypeDef)
 		-> [('DB'.Location, 'DB'.ExtendedType)]
@@ -318,12 +325,6 @@ where
 			{zero & te_isrecordfield=True
 			      , te_representation=Just $ concat $ [".", f, " :: " : print False t]})
 			\\ (f,t) <- 'T'.recordsToFunctions td]
-
-	toPrio :: Priority -> Maybe 'DB'.TE_Priority
-	toPrio (Prio LeftAssoc i)  = Just $ 'DB'.LeftAssoc i
-	toPrio (Prio RightAssoc i) = Just $ 'DB'.RightAssoc i
-	toPrio (Prio NoAssoc i)    = Just $ 'DB'.NoAssoc i
-	toPrio _                   = Nothing
 
 	toLine :: Position -> 'DB'.LineNr
 	toLine (FunPos _ l _) = Just l

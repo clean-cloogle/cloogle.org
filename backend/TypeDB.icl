@@ -28,23 +28,23 @@ printersperse ia a bs = intercalate (print False a) (map (print ia) bs)
 (--) infixr 5 :: a b -> [String] | print a & print b
 (--) a b = print False a ++ print False b
 
-derive gEq ClassOrGeneric, Location, Type, TypeDB, TypeExtras, TE_Priority,
+derive gEq ClassOrGeneric, Location, Type, TypeDB, TypeExtras, Priority,
 	ExtendedType, TypeDef, TypeDefRhs, RecordField, Constructor, Kind, Macro
 derive JSONEncode ClassOrGeneric, Location, Type, TypeDB, TypeExtras,
-	TE_Priority, ExtendedType, TypeDef, TypeDefRhs, RecordField, Constructor,
+	Priority, ExtendedType, TypeDef, TypeDefRhs, RecordField, Constructor,
 	Kind, Macro
 derive JSONDecode ClassOrGeneric, Location, Type, TypeDB, TypeExtras,
-	TE_Priority, ExtendedType, TypeDef, TypeDefRhs, RecordField, Constructor,
+	Priority, ExtendedType, TypeDef, TypeDefRhs, RecordField, Constructor,
 	Kind, Macro
 
 instance zero TypeDB
 where
-	zero = { functionmap   = newMap
-	       , macromap      = newMap
-	       , classmap      = newMap
-	       , instancemap   = newMap
-	       , typemap       = newMap
-	       , derivemap     = newMap
+	zero = { functionmap = newMap
+	       , macromap    = newMap
+	       , classmap    = newMap
+	       , instancemap = newMap
+	       , typemap     = newMap
+	       , derivemap   = newMap
 	       }
 
 instance < (Maybe a) | < a
@@ -78,12 +78,6 @@ where
 	print b {te_priority=Just p} = print b p -- " "
 	print b {te_generic_vars=Just vars} = printersperse b " " vars -- " "
 	print _ _ = []
-
-instance print TE_Priority
-where
-	print _ (LeftAssoc i)  = "infixl " -- i
-	print _ (RightAssoc i) = "infixr " -- i
-	print _ (NoAssoc i)    = "infix " -- i
 
 instance print (Name, ExtendedType)
 where

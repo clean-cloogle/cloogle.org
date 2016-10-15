@@ -86,6 +86,9 @@ function highlightFunction(func, callback, start) {
 		],
 		startConstructor: [ // alternative entry point in case this is a constructor
 			[/(\s+)/,        ['whitespace']],
+			[/(.*)(infix[lr]?)(\s*)(\d*)(\s*)(::)/,
+			                 ['constructor', 'keyword', 'whitespace', 'keyword',
+							  'whitespace', 'punctuation'], 'type'],
 			[/(.*)(::)/,     ['constructor', 'punctuation'], 'type']
 		],
 		startRecordField: [ // alternative entry point in case this is a record field
@@ -223,6 +226,8 @@ function highlightTypeDef(type, callback, start) {
 		],
 		consargs: [
 			[/(\s+)/,        ['whitespace']],
+			[/(infix[lr]?)(\s*)(\d*)(\s+)/,
+			                 ['keyword', 'whitespace', 'keyword', 'whitespace']],
 			[/([a-z][\w`]*)/, ['typevar']],
 			[/([A-Z]\w*)/,   ['type']],
 			[/(\|)/,         ['punctuation'], 'conses'],

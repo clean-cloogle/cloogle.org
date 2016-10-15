@@ -11,13 +11,11 @@ from GenEq import generic gEq
 
 // CleanTypeUnifier
 from Type import ::Type, ::TypeVar, ::TVAssignment, ::TypeDef, class print(..),
-  ::ClassContext, ::ClassRestriction, ::ClassOrGeneric
+  ::ClassContext, ::ClassRestriction, ::ClassOrGeneric, ::Priority
 
 :: TypeDB
 
-:: TE_Priority = LeftAssoc Int | RightAssoc Int | NoAssoc Int
-
-:: TypeExtras = { te_priority       :: Maybe TE_Priority
+:: TypeExtras = { te_priority       :: Maybe Priority
                 , te_isconstructor  :: Bool
                 , te_isrecordfield  :: Bool
                 , te_generic_vars   :: Maybe [TypeVar]
@@ -44,7 +42,6 @@ derive gEq TypeDB
 instance zero TypeDB
 instance zero TypeExtras
 
-instance print TE_Priority
 instance print (Name, ExtendedType)
 
 getName :: Location -> Name

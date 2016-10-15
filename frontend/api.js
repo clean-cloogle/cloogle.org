@@ -13,6 +13,28 @@ function toggle(name) {
 	e.style.display = e.style.display == 'block' ? 'none' : 'block';
 }
 
+function highlightCallback(span, cls, str) {
+	if (cls == 'type') {
+		return '<a class="hidden" title="Search type ' + str + '" href="#' +
+			encodeURIComponent('type ' + str) + '">' +
+			span + '</a>';
+	} else if (cls == 'classname') {
+		return '<a class="hidden" title="Search class ' + str + '" href="#' +
+			encodeURIComponent('class ' + str) + '">' +
+			span + '</a>';
+	} else if (cls == 'generic') {
+		return '<a class="hidden" title="Search generic ' + str + '" href="#' +
+			encodeURIComponent(str) + '">' +
+			span + '</a>';
+	} else if (cls == 'funcname funcname-onlyused' || cls == 'constructor') {
+		return '<a class="hidden" title="Search ' + str + '" href="#' +
+			encodeURIComponent(str) + '">' +
+			span + '</a>';
+	} else {
+		return span;
+	}
+}
+
 var derivationsIdCounter = 0;
 function getResults(str, libs, page) {
 	if (str == null)  str  = old_str;
@@ -28,36 +50,12 @@ function getResults(str, libs, page) {
 		'&page=' + page;
 	var xmlHttp = new XMLHttpRequest();
 
-	console.log(url);
-
 	var elem = document.getElementById('page-' + page);
 
 	elem.innerHTML += '<p id="loading">Processing...</p>';
 	var more = document.getElementById('more');
 	if (more !== null) {
 		more.remove();
-	}
-
-	var highlightCallback = function (span, cls, str) {
-		if (cls == 'type') {
-			return '<a class="hidden" title="Search type ' + str + '" href="#' +
-				encodeURIComponent('type ' + str) + '">' +
-				span + '</a>';
-		} else if (cls == 'classname') {
-			return '<a class="hidden" title="Search class ' + str + '" href="#' +
-				encodeURIComponent('class ' + str) + '">' +
-				span + '</a>';
-		} else if (cls == 'generic') {
-			return '<a class="hidden" title="Search generic ' + str + '" href="#' +
-				encodeURIComponent(str) + '">' +
-				span + '</a>';
-		} else if (cls == 'funcname funcname-onlyused' || cls == 'constructor') {
-			return '<a class="hidden" title="Search ' + str + '" href="#' +
-				encodeURIComponent(str) + '">' +
-				span + '</a>';
-		} else {
-			return span;
-		}
 	}
 
 	var makeTable = function (d) {
@@ -312,12 +310,24 @@ function getLibs() {
 }
 
 function formsubmit() {
-	if (form_str.value === '') {
+	var q = form_str.value;
+	if (q === '') {
 		sresults.innerHTML = 'Can\'t search for the empty string';
 	} else {
+		sresults.innerHTML = '';
+
+		if (q.indexOf('::') == -1 && q.indexOf('->') != -1) {
+			var sug = ':: ' + q.replace('->', ' -> ');
+			sresults.innerHTML = '<p>' +
+				'Searching for <code>' + highlightFunction(q) + '</code>. ' +
+				'Did you mean to search for ' +
+				'<a class="hidden" href="#' + sug + '"><code>' +
+				highlightFunction(sug) + '</code></a>?</p>';
+		}
+
 		var libs = getLibs();
-		sresults.innerHTML = '<div id="page-0"></div>';
-		getResults(form_str.value, libs, 0);
+		sresults.innerHTML += '<div id="page-0"></div>';
+		getResults(q, libs, 0);
 	}
 	return false;
 };

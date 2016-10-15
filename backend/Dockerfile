@@ -13,12 +13,12 @@ FROM camilstaps/clean:2.4-itasks
 
 RUN apt-get update && apt-get install -y subversion ca-certificates
 
+RUN svn checkout https://svn.cs.ru.nl/repos/SoccerFun/src /opt/clean/lib/SoccerFun
+
 COPY . /usr/src/cloogle
 WORKDIR /usr/src/cloogle
 
-RUN svn checkout https://svn.cs.ru.nl/repos/SoccerFun/src /opt/clean/lib/SoccerFun
-
-RUN make
+RUN make distclean && make
 
 EXPOSE 31215
 

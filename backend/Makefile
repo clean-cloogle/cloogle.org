@@ -6,9 +6,9 @@ CLMFLAGS:=-dynamics -h 40M -nr -nt\
 	-I $$CLEAN_HOME/lib/ArgEnv\
 	-I $$CLEAN_HOME/lib/Dynamics\
 	-I $$CLEAN_HOME/lib/Generics\
-	-I $$CLEAN_HOME/lib/StdLib\
 	-I $$CLEAN_HOME/lib/TCPIP\
 	-I clean-platform/src/libraries/OS-Independent\
+	-I clean-platform/src/libraries/OS-Independent/Deprecated/StdLib\
 	-I clean-platform/src/libraries/OS-Linux-64\
 	-I clean-platform/src/libraries/OS-Linux\
 	-I clean-platform/src/libraries/OS-Posix\

@@ -19,13 +19,10 @@ from Text import class Text(concat,trim,indexOf,toLowerCase),
 
 import System.Time
 
-import qualified StdMaybe as OldMaybe
 from SimpleTCPServer import :: LogMessage{..}, serve, :: Logger
 import qualified SimpleTCPServer
 import TypeDB
 import Type
-
-:: OldMaybe a :== 'SimpleTCPServer'.Maybe a
 
 :: Request = { unify     :: Maybe String
              , name      :: Maybe String
@@ -144,7 +141,7 @@ Start w
 # (_, w) = fclose io w
 | isNothing db = abort "stdin does not have a TypeDB\n"
 #! db = fromJust db
-= serve (handle db) ('OldMaybe'.Just log) port w
+= serve (handle db) (Just log) port w
 where
 	help :: *File *World -> *World
 	help io w

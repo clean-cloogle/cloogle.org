@@ -46,6 +46,13 @@ instance print (Name, ExtendedType)
 
 getName :: Location -> Name
 
+functionCount :: TypeDB -> Int
+macroCount :: TypeDB -> Int
+classCount :: TypeDB -> Int
+instanceCount :: TypeDB -> Int
+typeCount :: TypeDB -> Int
+deriveCount :: TypeDB -> Int
+
 filterLocations :: (Location -> Bool) TypeDB -> TypeDB
 
 getFunction :: Location TypeDB -> Maybe ExtendedType

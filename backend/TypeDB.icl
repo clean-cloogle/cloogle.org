@@ -94,6 +94,25 @@ getName :: Location -> Name
 getName (Location _ _ _ name) = name
 getName (Builtin name)        = name
 
+functionCount :: TypeDB -> Int
+functionCount {functionmap} = mapSize functionmap
+
+macroCount :: TypeDB -> Int
+macroCount {macromap} = mapSize macromap
+
+classCount :: TypeDB -> Int
+classCount {classmap} = mapSize classmap
+
+instanceCount :: TypeDB -> Int
+instanceCount {instancemap} = sum $ map length $ elems instancemap
+
+typeCount :: TypeDB -> Int
+typeCount {typemap} = mapSize typemap
+
+deriveCount :: TypeDB -> Int
+deriveCount {derivemap} = sum $ map length $ elems derivemap
+
+
 filterLocations :: (Location -> Bool) TypeDB -> TypeDB
 filterLocations f db
 	= { db
@@ -102,6 +121,7 @@ filterLocations f db
 	  , classmap    = filterLoc db.classmap
 	  , typemap     = filterLoc db.typemap
 	  , instancemap = filtInstLocs <$> db.instancemap
+	  , derivemap   = filtInstLocs <$> db.derivemap
 	  }
 where
 	filterLoc :: ((Map Location a) -> Map Location a)

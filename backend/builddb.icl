@@ -117,8 +117,12 @@ Start w
 	# (db, w)     = loop cli.root mods 'DB'.newDb cache w
 	# db          = 'DB'.putFunctions predefFunctions db
 	# db          = 'DB'.putTypes predefTypes db
+	# io          = stderr
+	# io          = printStats db io
+	# (ok1,w)     = fclose io w
 	# f           = 'DB'.saveDb db f
-	= fclose f w
+	# (ok2,w)     = fclose f w
+	= (ok1 && ok2,w)
 | not ok = abort "Couldn't close stdio"
 = w
 where
@@ -139,6 +143,28 @@ where
 		("-r", [x:xs]) = (\c->{c & root=x}) <$> parseCLI xs
 		("-l", [x:xs]) = (\c->{c & libs=[x:c.libs]}) <$> parseCLI xs
 		(x, _) = Left $ "Unknown option '" +++ x +++ "'"
+
+	printStats :: !'DB'.TypeDB !*File -> *File
+	printStats db f = f
+		<<< "+-------------+------+\n"
+		<<< "| Functions   | " <<< funs    <<< " |\n"
+		<<< "| Types       | " <<< types   <<< " |\n"
+		<<< "| Macros      | " <<< macros  <<< " |\n"
+		<<< "| Classes     | " <<< classes <<< " |\n"
+		<<< "| Instances   | " <<< insts   <<< " |\n"
+		<<< "| Derivations | " <<< derives <<< " |\n"
+		<<< "+-------------+------+\n"
+	where
+		[funs,macros,types,classes,insts,derives:_]
+			= map (pad 4)
+				[ 'DB'.functionCount db
+				, 'DB'.macroCount db
+				, 'DB'.typeCount db
+				, 'DB'.classCount db
+				, 'DB'.instanceCount db
+				, 'DB'.deriveCount db
+				]
+		pad n i = {' ' \\ _ <- [0..n-size (toString i)-1]} +++ toString i
 
 predefFunctions :: [('DB'.Location, 'DB'.ExtendedType)]
 predefFunctions

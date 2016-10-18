@@ -41,7 +41,7 @@ if (!$stmt->prepare($sql))
 	var_dump($stmt->error);
 $stmt->execute();
 $stmt->bind_result($timestamp, $count, $servererrcount, $usererrcount, $uniquecount);
-$results = [[], [], []];
+$results = [[], [], [], []];
 
 $expected_timestamp = $timemod === 'monthly'
 	? strtotime(date('Y-m-01 00:00:00', $start))

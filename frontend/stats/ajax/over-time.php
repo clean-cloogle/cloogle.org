@@ -30,7 +30,7 @@ $sql =
 		$timestamp as unixtime,
 		count(*),
 		count(case when `responsecode`>=150 then 1 else null end),
-		count(case when `responsecode`>0 and `responsecode`<150 then 1 else null end),
+		count(case when `responsecode`>1 and `responsecode`<150 then 1 else null end),
 		count(distinct `ip`,`useragent_id`)
 	FROM `log`
 	WHERE `date` BETWEEN timestamp('$startTime') AND timestamp('$endTime')

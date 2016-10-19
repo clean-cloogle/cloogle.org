@@ -173,14 +173,16 @@ where
 			  (mbType >>= \t -> suggs name t db)
 		# results = take MAX_RESULTS results
 		// Response
-		| isEmpty results = (err E_NORESULTS "No results", w)
-		// Save cache file
-		= writeCache request {return = 0
+		# response = if (isEmpty results)
+			(err E_NORESULTS "No results")
+			{ return = 0
 		    , msg = "Success"
 		    , data           = results
 		    , more_available = Just more
 		    , suggestions    = suggestions
-		    } w
+		    }
+		// Save cache file
+		= (response, writeCache request response w)
 
 	suggs :: !(Maybe String) !Type !TypeDB -> Maybe [(Request, Int)]
 	suggs n (Func is r cc) db

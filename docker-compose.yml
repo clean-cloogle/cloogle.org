@@ -40,3 +40,9 @@ services:
         MYSQL_DATABASE: cloogledb
         MYSQL_USER: cloogle
         MYSQL_PASSWORD: cloogle
+
+  gc:
+    build: gc
+    volumes:
+      - "./cache:/var/cache"
+    restart: always

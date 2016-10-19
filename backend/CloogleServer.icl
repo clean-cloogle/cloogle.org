@@ -153,14 +153,16 @@ where
 	handle _ Nothing w = (err E_INVALIDINPUT "Couldn't parse input", w)
 	handle db (Just request=:{unify,name,page}) w
 		//Check cache
-		# (mr, w) = readCache request w
-		| isJust mr = let m = fromJust mr in ({m & return = 1}, w)
+		# (mbResponse, w) = readCache request w
+		| isJust mbResponse
+			# r = fromJust mbResponse
+			= ({r & return = if (r.return == 0) 1 r.return}, w)
 		| isJust name && size (fromJust name) > 40
-			= (err E_INVALIDNAME "function name too long", w)
+			= respond (err E_INVALIDNAME "Function name too long") w
 		| isJust name && any isSpace (fromString $ fromJust name)
-			= (err E_INVALIDNAME "name cannot contain spaces", w)
+			= respond (err E_INVALIDNAME "Name cannot contain spaces") w
 		| isJust unify && isNothing (parseType $ fromString $ fromJust unify)
-			= (err E_INVALIDTYPE "couldn't parse type", w)
+			= respond (err E_INVALIDTYPE "Couldn't parse type") w
 		// Results
 		# drop_n = fromJust (page <|> pure 0) * MAX_RESULTS
 		# results = drop drop_n $ sort $ search request db
@@ -182,7 +184,10 @@ where
 		    , suggestions    = suggestions
 		    }
 		// Save cache file
-		= (response, writeCache request response w)
+		= respond response w
+	where
+		respond :: Response *World -> *(Response, *World)
+		respond r w = (r, writeCache request r w)
 
 	suggs :: !(Maybe String) !Type !TypeDB -> Maybe [(Request, Int)]
 	suggs n (Func is r cc) db

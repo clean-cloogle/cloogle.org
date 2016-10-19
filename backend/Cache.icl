@@ -16,7 +16,6 @@ import System.FilePath
 import System.File
 import System.Time
 import Data.Tuple
-import GenLexOrd
 
 CACHE_DIR :== "./cache"
 CACHE_SIZE :== 100
@@ -50,4 +49,4 @@ where
 
 instance < Tm
 where
-	(<) a b = LT === ([a.year,a.yday,a.hour,a.min,a.sec] =?= [b.year,b.yday,b.hour,b.min,b.sec])
+	(<) a b = [a.year,a.yday,a.hour,a.min,a.sec] < [b.year,b.yday,b.hour,b.min,b.sec]

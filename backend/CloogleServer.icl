@@ -23,6 +23,7 @@ from SimpleTCPServer import :: LogMessage{..}, serve, :: Logger
 import qualified SimpleTCPServer
 import TypeDB
 import Type
+import Cache
 
 :: Request = { unify     :: Maybe String
              , name      :: Maybe String
@@ -80,7 +81,7 @@ import Type
 
 :: StrUnifier :== ([(String,String)], [(String,String)])
 
-:: ErrorResult = Error Int String
+:: ErrorResult = MaybeError Int String
 
 :: ShortClassResult = { cls_name :: String, cls_vars :: [String] }
 
@@ -151,6 +152,9 @@ where
 	handle :: !TypeDB !(Maybe Request) !*World -> *(!Response, !*World)
 	handle _ Nothing w = (err E_INVALIDINPUT "Couldn't parse input", w)
 	handle db (Just request=:{unify,name,page}) w
+		//Check cache
+		# (mr, w) = readCache request w
+		| isJust mr = let m = fromJust mr in ({m & return = 1}, w)
 		| isJust name && size (fromJust name) > 40
 			= (err E_INVALIDNAME "function name too long", w)
 		| isJust name && any isSpace (fromString $ fromJust name)
@@ -169,14 +173,16 @@ where
 			  (mbType >>= \t -> suggs name t db)
 		# results = take MAX_RESULTS results
 		// Response
-		| isEmpty results = (err E_NORESULTS "No results", w)
-		= ( { return = 0
+		# response = if (isEmpty results)
+			(err E_NORESULTS "No results")
+			{ return = 0
 		    , msg = "Success"
 		    , data           = results
 		    , more_available = Just more
 		    , suggestions    = suggestions
 		    }
-		  , w)
+		// Save cache file
+		= (response, writeCache request response w)
 
 	suggs :: !(Maybe String) !Type !TypeDB -> Maybe [(Request, Int)]
 	suggs n (Func is r cc) db

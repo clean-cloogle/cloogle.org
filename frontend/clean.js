@@ -289,7 +289,7 @@ function highlightMacro(macro, callback, start) {
 		args: [
 			[/(\s+)/,        ['whitespace']],
 			[/(:==)/,        ['punctuation'], 'rhs'],
-			[/(\S+)/,        ['funcname funcname-onlyused']]
+			[/(\S+)/,        ['macroargument']]
 		],
 		rhs: [
 			[/(\s+)/,        ['whitespace']],

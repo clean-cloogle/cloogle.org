@@ -16,8 +16,8 @@ import Data.Tuple
 toCacheFile :: (a -> FilePath) | toString a
 toCacheFile = ((</>) "./cache") o md5 o toString
 
-readCache :: !a !*World -> (Maybe b, !*World) | toString a & JSONDecode{|*|} b
-readCache k w = appFst (join o fmap (fromJSON o fromString) o error2mb) $ readFile (toCacheFile k) w
+readCache :: !a -> (!*World -> (Maybe b, !*World)) | toString a & JSONDecode{|*|} b
+readCache k = appFst (join o fmap (fromJSON o fromString) o error2mb) o readFile (toCacheFile k)
 
-writeCache :: !a !b !*World -> (!b, !*World) | toString a & JSONEncode{|*|} b
-writeCache k v w = appFst (const v) $ writeFile (toCacheFile k) (toString $ toJSON v) w
+writeCache :: !a !b -> (!*World -> (!b, !*World)) | toString a & JSONEncode{|*|} b
+writeCache k v = appFst (const v) o writeFile (toCacheFile k) (toString $ toJSON v)

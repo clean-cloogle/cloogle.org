@@ -8,29 +8,22 @@ from TCPIP import :: IPAddress, :: Port, instance toString IPAddress
 
 from Data.Func import $
 import Data.List
-import Data.List
-import Data.Tuple
 import Data.Maybe
 import System.CommandLine
 import Text.JSON
 import Data.Functor
 import Control.Applicative
 import Control.Monad
-import Data.Error
 from Text import class Text(concat,trim,indexOf,toLowerCase),
 	instance Text String, instance + String
 
 import System.Time
-import System.FilePath
-import System.File
-import Crypto.Hash.MD5
 
 from SimpleTCPServer import :: LogMessage{..}, serve, :: Logger
 import qualified SimpleTCPServer
 import TypeDB
 import Type
-
-CACHEPATH :== "./cache"
+import Cache
 
 :: Request = { unify     :: Maybe String
              , name      :: Maybe String
@@ -159,9 +152,9 @@ where
 	handle :: !TypeDB !(Maybe Request) !*World -> *(!Response, !*World)
 	handle _ Nothing w = (err E_INVALIDINPUT "Couldn't parse input", w)
 	handle db (Just request=:{unify,name,page}) w
-		# cachefile = CACHEPATH </> (md5 $ toString request)
-		# (mr, w) = readCache cachefile w
-		| isJust mr = (fromJust mr, w)
+		//Check cache
+		# (mr, w) = readCache request w
+		| isJust mr = let m = fromJust mr in ({m & return = 1}, w)
 		| isJust name && size (fromJust name) > 40
 			= (err E_INVALIDNAME "function name too long", w)
 		| isJust name && any isSpace (fromString $ fromJust name)
@@ -182,23 +175,12 @@ where
 		// Response
 		| isEmpty results = (err E_NORESULTS "No results", w)
 		// Save cache file
-		= writeCache cachefile { return = 0
+		= writeCache request {return = 0
 		    , msg = "Success"
 		    , data           = results
 		    , more_available = Just more
 		    , suggestions    = suggestions
 		    } w
-
-	readCache :: !String !*World -> (Maybe Response, !*World)
-	readCache fp w
-	= case readFile fp w of
-		(Error _, w) = (Nothing, w)
-		(Ok s, w) = case fromJSON $ fromString s of
-			Nothing = (Nothing, w)
-			(Just r) = (Just {r & return=1, msg="Success, cache hit"}, w)
-
-	writeCache :: !String !Response !*World -> (!Response, !*World)
-	writeCache fp r w = appFst (const r) (writeFile fp (toString $ toJSON r) w)
 
 	suggs :: !(Maybe String) !Type !TypeDB -> Maybe [(Request, Int)]
 	suggs n (Func is r cc) db

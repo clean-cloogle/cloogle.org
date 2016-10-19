@@ -6,6 +6,7 @@ services:
       - "31215:31215"
     volumes:
       - "./cloogle.log:/usr/src/cloogle/cloogle.log"
+      - "./cache:/usr/src/cloogle/cache"
     restart: always
 
   frontend:

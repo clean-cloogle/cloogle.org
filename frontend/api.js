@@ -243,7 +243,7 @@ function getResults(str, libs, page) {
 		if(xmlHttp.readyState == 4 && xmlHttp.status == 200){
 			document.getElementById('loading').remove();
 			var responsedata = JSON.parse(xmlHttp.responseText);
-			if(responsedata['return'] === 0){
+			if(responsedata['return'] >= 0 && responsedata['return'] <= 64){
 				for(var i = 0; i<responsedata['data'].length; i++){
 					var c = responsedata['data'][i];
 					elem.innerHTML += makeResultHTML(c);

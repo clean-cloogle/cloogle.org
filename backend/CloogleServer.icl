@@ -8,21 +8,30 @@ from TCPIP import :: IPAddress, :: Port, instance toString IPAddress
 
 from Data.Func import $
 import Data.List
+import StdDebug
+import Data.List
+import Data.Tuple
 import Data.Maybe
 import System.CommandLine
 import Text.JSON
 import Data.Functor
 import Control.Applicative
 import Control.Monad
+from Data.Error import :: MaybeError(Ok,Error)
 from Text import class Text(concat,trim,indexOf,toLowerCase),
 	instance Text String, instance + String
 
 import System.Time
+import System.FilePath
+import System.File
+import Crypto.Hash.MD5
 
 from SimpleTCPServer import :: LogMessage{..}, serve, :: Logger
 import qualified SimpleTCPServer
 import TypeDB
 import Type
+
+CACHEPATH :== "./cache"
 
 :: Request = { unify     :: Maybe String
              , name      :: Maybe String
@@ -80,7 +89,7 @@ import Type
 
 :: StrUnifier :== ([(String,String)], [(String,String)])
 
-:: ErrorResult = Error Int String
+:: ErrorResult = MaybeError Int String
 
 :: ShortClassResult = { cls_name :: String, cls_vars :: [String] }
 
@@ -151,6 +160,9 @@ where
 	handle :: !TypeDB !(Maybe Request) !*World -> *(!Response, !*World)
 	handle _ Nothing w = (err E_INVALIDINPUT "Couldn't parse input", w)
 	handle db (Just request=:{unify,name,page}) w
+		# cachefile = CACHEPATH </> (md5 $ toString request)
+		# (mr, w) = readCache cachefile w
+		| isJust mr = (fromJust mr, w)
 		| isJust name && size (fromJust name) > 40
 			= (err E_INVALIDNAME "function name too long", w)
 		| isJust name && any isSpace (fromString $ fromJust name)
@@ -170,13 +182,26 @@ where
 		# results = take MAX_RESULTS results
 		// Response
 		| isEmpty results = (err E_NORESULTS "No results", w)
-		= ( { return = 0
+		// Save cache file if it didn't exist
+		= writeCache cachefile { return = 0
 		    , msg = "Success"
 		    , data           = results
 		    , more_available = Just more
 		    , suggestions    = suggestions
-		    }
-		  , w)
+		    } w
+
+	readCache :: !String !*World -> (Maybe Response, !*World)
+	readCache fp w
+	= case readFile fp w of
+		(Error _, w) = (Nothing, w) // Probably doesn't exist
+		(Ok s, w) = case fromJSON $ fromString s of
+			Nothing = appFst (const Nothing) $ deleteFile fp w
+			(Just r) = (Just {r & return=1}, w)
+
+	writeCache :: !String !Response !*World -> (!Response, !*World)
+	writeCache fp r w = case writeFile fp (toString $ toJSON r) w of
+		(Error e, w) = abort $ "Error writing file...: " +++ toString e
+		(Ok _, w) = (r, w)
 
 	suggs :: !(Maybe String) !Type !TypeDB -> Maybe [(Request, Int)]
 	suggs n (Func is r cc) db

@@ -71,6 +71,7 @@ fields:
 	Return code:
 
 	* `0`: success
+	* `1`: cache hit, thus success
 	* `127`: no results
 	* `128`: ununderstandable input (usually shouldn't happen)
 	* `129`: invalid name field

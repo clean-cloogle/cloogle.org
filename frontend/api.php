@@ -37,11 +37,13 @@ function log_request($code) {
 		global $start_time;
 		$time = (int) ((microtime(true) - $start_time) * 1000);
 
+		$ip = isset($_SERVER['HTTP_X_FORWARDED_FOR']) ?
+			$_SERVER['HTTP_X_FORWARDED_FOR'] : $_SERVER['REMOTE_ADDR'];
 		$stmt = $db->prepare('INSERT INTO `log`
 			(`ip`,`useragent_id`,`query`,`responsecode`,`responsetime`)
 			VALUES (?,?,?,?,?)');
 		$stmt->bind_param('sisii',
-			$_SERVER['HTTP_X_FORWARDED_FOR'],
+			$ip,
 			$ua_id,
 			$_GET['str'],
 			$code,

@@ -8,7 +8,6 @@ from TCPIP import :: IPAddress, :: Port, instance toString IPAddress
 
 from Data.Func import $
 import Data.List
-import StdDebug
 import Data.List
 import Data.Tuple
 import Data.Maybe
@@ -17,7 +16,7 @@ import Text.JSON
 import Data.Functor
 import Control.Applicative
 import Control.Monad
-from Data.Error import :: MaybeError(Ok,Error)
+import Data.Error
 from Text import class Text(concat,trim,indexOf,toLowerCase),
 	instance Text String, instance + String
 
@@ -182,7 +181,7 @@ where
 		# results = take MAX_RESULTS results
 		// Response
 		| isEmpty results = (err E_NORESULTS "No results", w)
-		// Save cache file if it didn't exist
+		// Save cache file
 		= writeCache cachefile { return = 0
 		    , msg = "Success"
 		    , data           = results
@@ -193,15 +192,13 @@ where
 	readCache :: !String !*World -> (Maybe Response, !*World)
 	readCache fp w
 	= case readFile fp w of
-		(Error _, w) = (Nothing, w) // Probably doesn't exist
+		(Error _, w) = (Nothing, w)
 		(Ok s, w) = case fromJSON $ fromString s of
-			Nothing = appFst (const Nothing) $ deleteFile fp w
-			(Just r) = (Just {r & return=1}, w)
+			Nothing = (Nothing, w)
+			(Just r) = (Just {r & return=1, msg="Success, cache hit"}, w)
 
 	writeCache :: !String !Response !*World -> (!Response, !*World)
-	writeCache fp r w = case writeFile fp (toString $ toJSON r) w of
-		(Error e, w) = abort $ "Error writing file...: " +++ toString e
-		(Ok _, w) = (r, w)
+	writeCache fp r w = appFst (const r) (writeFile fp (toString $ toJSON r) w)
 
 	suggs :: !(Maybe String) !Type !TypeDB -> Maybe [(Request, Int)]
 	suggs n (Func is r cc) db

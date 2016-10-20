@@ -6,11 +6,20 @@ CACHE_DIR=/var/cache
 cd "$CACHE_DIR"
 
 while :; do
-	n="$(($(ls -l | wc -l)-1))"
+	# Long term cache
+	cd lt
+	n="$(($(ls -1 | wc -l)-1))"
 	if [ "$n" -gt "$CACHE_SIZE" ]; then
 		ls -1tu | tail -n "$((n-CACHE_SIZE))" | xargs -P$(nproc) -r rm -v
 	else
 		echo "$n / $CACHE_SIZE cache entries used"
 	fi
+	cd ..
+	# Brief cache
+	cd brief
+	echo "$(($(ls -1 | wc -l)-1)) entries removed from brief cache"
+	rm *
+	cd ..
+	# Wait
 	sleep $INTERVAL
 done

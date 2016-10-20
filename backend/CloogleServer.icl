@@ -131,6 +131,7 @@ E_INVALIDNAME  :== 129
 E_INVALIDTYPE  :== 130
 
 MAX_RESULTS    :== 15
+CACHE_PREFETCH :== 5
 
 Start w
 # (io, w) = stdio w
@@ -173,7 +174,7 @@ where
 			= sortBy (\a b -> snd a > snd b) <$>
 			  filter ((<)(length results) o snd) <$>
 			  (mbType >>= \t -> suggs name t db)
-		# results = take MAX_RESULTS results
+		# (results,nextpages) = splitAt MAX_RESULTS results
 		// Response
 		# response = if (isEmpty results)
 			(err E_NORESULTS "No results")
@@ -183,11 +184,28 @@ where
 		    , more_available = Just more
 		    , suggestions    = suggestions
 		    }
+		// Save page prefetches
+		# w = cachePages CACHE_PREFETCH 1 response nextpages w
 		// Save cache file
 		= respond response w
 	where
 		respond :: Response *World -> *(Response, *World)
-		respond r w = (r, writeCache request r w)
+		respond r w = (r, writeCache LongTerm request r w)
+
+		cachePages :: Int Int Response [Result] *World -> *World
+		cachePages _ _  _ [] w = w
+		cachePages 0 _  _ _  w = w
+		cachePages npages i response results w
+		# w = writeCache Brief req` resp` w
+		= cachePages (npages - 1) (i + 1) response keep w
+		where
+			req` = { request & page = ((+) i) <$> request.page <|> pure 0 }
+			resp` =
+				{ response
+				& more_available = Just $ max 0 (length results - MAX_RESULTS)
+				, data = give
+				}
+			(give,keep) = splitAt MAX_RESULTS results
 
 	suggs :: !(Maybe String) !Type !TypeDB -> Maybe [(Request, Int)]
 	suggs n (Func is r cc) db

@@ -14,13 +14,19 @@ import System.FilePath
 import System.File
 import Data.Tuple
 
-CACHE_DIR :== "./cache"
+cache_types :== [Brief, LongTerm]
 
-toCacheFile :: (a -> FilePath) | toString a
-toCacheFile = ((</>) CACHE_DIR) o md5 o toString
+cache_dir :: CacheType -> FilePath
+cache_dir LongTerm = "./cache/lt"
+cache_dir Brief = "./cache/brief"
 
-readCache :: !a -> *World -> (Maybe b, !*World) | toString a & JSONDecode{|*|} b
-readCache k = appFst (join o fmap (fromJSON o fromString) o error2mb) o readFile (toCacheFile k)
+toCacheFile :: CacheType -> a -> FilePath | toString a
+toCacheFile t = (</>) (cache_dir t) o md5 o toString
 
-writeCache :: !a !b -> *World -> *World | toString a & JSONEncode{|*|} b
-writeCache k v = snd o writeFile (toCacheFile k) (toString $ toJSON v)
+readCache :: !a *World -> (Maybe b, !*World) | toString a & JSONDecode{|*|} b
+readCache k w
+# (files,w) = seqList [appFst error2mb o readFile (toCacheFile t k) \\ t <- cache_types] w
+= (join o fmap (fromJSON o fromString) $ foldl (<|>) empty files, w)
+
+writeCache :: CacheType !a !b -> *World -> *World | toString a & JSONEncode{|*|} b
+writeCache t k v = snd o writeFile (toCacheFile t k) (toString $ toJSON v)

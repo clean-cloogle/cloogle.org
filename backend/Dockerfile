@@ -19,7 +19,6 @@ COPY . /usr/src/cloogle
 WORKDIR /usr/src/cloogle
 
 RUN make distclean && make
-RUN mkdir -p ./cache
 
 EXPOSE 31215
 

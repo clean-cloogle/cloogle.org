@@ -103,6 +103,9 @@ putDerivationss :: [(Name, [(Type, Location)])] TypeDB -> TypeDB
 
 searchExact :: Type TypeDB -> [(Location, ExtendedType)]
 
+getTypeInstances :: Name TypeDB -> [(Class, [Location])]
+getTypeDerivations :: Name TypeDB -> [(Name, [Location])]
+
 newDb :: TypeDB
 openDb :: *File -> *(Maybe TypeDB, *File)
 saveDb :: TypeDB *File -> *File

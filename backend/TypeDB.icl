@@ -4,7 +4,7 @@ implementation module TypeDB
 import StdEnv
 from Data.Func import $
 import Data.Functor
-from Data.List import intercalate
+from Data.List import intercalate, groupBy
 import Data.Map
 import Data.Maybe
 from Text import class Text(concat), instance Text String
@@ -14,12 +14,16 @@ import Text.JSON
 import Type
 
 :: TypeDB
-	= { functionmap :: Map Location ExtendedType
-	  , macromap    :: Map Location Macro
-	  , classmap    :: Map Location ([TypeVar],ClassContext,[(Name, ExtendedType)])
-	  , instancemap :: Map Class [(Type, [Location])]
-	  , typemap     :: Map Location TypeDef
-	  , derivemap   :: Map Name [(Type, [Location])]
+	= { // Base maps
+	    functionmap  :: Map Location ExtendedType
+	  , macromap     :: Map Location Macro
+	  , classmap     :: Map Location ([TypeVar],ClassContext,[(Name, ExtendedType)])
+	  , instancemap  :: Map Class [(Type, [Location])]
+	  , typemap      :: Map Location TypeDef
+	  , derivemap    :: Map Name [(Type, [Location])]
+	    // Derived maps
+	  , instancemap` :: Map Name [(Class, [Location])]
+	  , derivemap`   :: Map Name [(Name, [Location])]
 	  }
 
 printersperse :: Bool a [b] -> [String] | print a & print b
@@ -39,12 +43,14 @@ derive JSONDecode ClassOrGeneric, Location, Type, TypeDB, TypeExtras,
 
 instance zero TypeDB
 where
-	zero = { functionmap = newMap
-	       , macromap    = newMap
-	       , classmap    = newMap
-	       , instancemap = newMap
-	       , typemap     = newMap
-	       , derivemap   = newMap
+	zero = { functionmap  = newMap
+	       , macromap     = newMap
+	       , classmap     = newMap
+	       , instancemap  = newMap
+	       , typemap      = newMap
+	       , derivemap    = newMap
+	       , instancemap` = newMap
+	       , derivemap`   = newMap
 	       }
 
 instance < (Maybe a) | < a
@@ -263,6 +269,12 @@ putDerivationss ds db = foldr (\(g,ts) db -> putDerivations g ts db) db ds
 searchExact :: Type TypeDB -> [(Location, ExtendedType)]
 searchExact t db = filter ((\(ET t` _)->t==t`) o snd) $ toList db.functionmap
 
+getTypeInstances :: Name TypeDB -> [(Class, [Location])]
+getTypeInstances n db = case get n db.instancemap` of (Just cs) = cs; _ = []
+
+getTypeDerivations :: Name TypeDB -> [(Name, [Location])]
+getTypeDerivations n db = case get n db.derivemap` of (Just gs) = gs; _ = []
+
 newDb :: TypeDB
 newDb = zero
 
@@ -272,6 +284,20 @@ openDb f
 = (fromJSON $ fromString data, f)
 
 saveDb :: TypeDB *File -> *File
-saveDb db f = fwrites (toString $ toJSON db) f
+saveDb db f = fwrites (toString $ toJSON $ syncDb db) f
+
+syncDb :: TypeDB -> TypeDB
+syncDb db=:{instancemap,derivemap}
+	= { db
+	  & instancemap` = insts
+	  , derivemap`   = derivs
+	  }
+where
+	insts = fromList $ map (\cs=:[(t,_,_):_] -> (t,[(c,ls) \\ (_,c,ls) <- cs])) $
+		groupBy (\a b -> fst3 a == fst3 b) $ sort
+		[(t,c,ls) \\ (c,ts) <- toList instancemap, (Type t [],ls) <- ts]
+	derivs = fromList $ map (\gs=:[(t,_,_):_] -> (t,[(g,ls) \\ (_,g,ls) <- gs])) $
+		groupBy (\a b -> fst3 a == fst3 b) $ sort
+		[(t,g,ls) \\ (g,ts) <- toList derivemap, (Type t [],ls) <- ts]
 
 app5 f (a,b,c,d,e) :== f a b c d e

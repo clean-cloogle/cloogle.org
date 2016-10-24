@@ -8,6 +8,7 @@ from TCPIP import :: IPAddress, :: Port, instance toString IPAddress
 
 from Data.Func import $
 import Data.List
+import Data.Tuple
 import Data.Maybe
 import System.CommandLine
 import Text.JSON
@@ -60,24 +61,28 @@ import Cache
                           , cls                 :: Maybe ShortClassResult
                           , constructor_of      :: Maybe String
                           , recordfield_of      :: Maybe String
-                          , generic_derivations :: Maybe [(String, [(String,String,Maybe Int)])]
+                          , generic_derivations :: Maybe [(String, [LocationResult])]
                           }
 
 :: TypeResult :== (BasicResult, TypeResultExtras)
-:: TypeResultExtras = { type :: String
+:: TypeResultExtras = { type             :: String
+                      , type_instances   :: [(String, [LocationResult])]
+                      , type_derivations :: [(String, [LocationResult])]
                       }
 
 :: ClassResult :== (BasicResult, ClassResultExtras)
 :: ClassResultExtras = { class_name      :: String
                        , class_heading   :: String
                        , class_funs      :: [String]
-                       , class_instances :: [(String, [(String,String,Maybe Int)])]
+                       , class_instances :: [(String, [LocationResult])]
                        }
 
 :: MacroResult :== (BasicResult, MacroResultExtras)
 :: MacroResultExtras = { macro_name           :: String
                        , macro_representation :: String
                        }
+
+:: LocationResult :== (String, String, Maybe Int)
 
 :: StrUnifier :== ([(String,String)], [(String,String)])
 
@@ -231,7 +236,7 @@ where
 		| isJust typeName
 			# typeName = fromJust typeName
 			# types = findType typeName db
-			= map (uncurry (makeTypeResult (Just typeName))) types
+			= [makeTypeResult (Just typeName) l td db \\ (l,td) <- types]
 		# mbType = prepare_unification True <$> (unify >>= parseType o fromString)
 		// Search normal functions
 		# filts = catMaybes [ (\t _ -> isUnifiable t) <$> mbType
@@ -258,7 +263,7 @@ where
 		# types = case (isNothing mbType,lcName) of
 			(True,Just n) = findType` (\loc _ -> toLowerCase (getName loc) == n) db
 			_             = []
-		# types = map (\(tl,td) -> makeTypeResult name tl td) types
+		# types = map (\(tl,td) -> makeTypeResult name tl td db) types
 		// Search classes
 		# classes = case (isNothing mbType, toLowerCase <$> name) of
 			(True, Just c) = findClass` (\(Location _ _ _ c`) _ _ _ -> toLowerCase c` == c) db
@@ -292,8 +297,8 @@ where
 		print_fun f=:(_,ET _ et) = fromJust $
 			et.te_representation <|> (pure $ concat $ print False f)
 
-	makeTypeResult :: (Maybe String) Location TypeDef -> Result
-	makeTypeResult mbName (Location lib mod line t) td
+	makeTypeResult :: (Maybe String) Location TypeDef TypeDB -> Result
+	makeTypeResult mbName (Location lib mod line t) td db
 		= TypeResult
 		  ( { library  = lib
 		    , filename = modToFilename mod
@@ -303,9 +308,12 @@ where
 		        = if (isNothing mbName) -100 (levenshtein` t (fromJust mbName))
 		    , builtin  = Nothing
 		    }
-		  , { type = concat $ print False td }
+		  , { type             = concat $ print False td
+		    , type_instances   = map (appSnd (map loc)) $ getTypeInstances t db
+		    , type_derivations = map (appSnd (map loc)) $ getTypeDerivations t db
+		    }
 		  )
-	makeTypeResult mbName (Builtin t) td
+	makeTypeResult mbName (Builtin t) td db
 		= TypeResult
 		  ( { library  = ""
 		    , filename = ""
@@ -315,7 +323,10 @@ where
 		        = if (isNothing mbName) -100 (levenshtein` t (fromJust mbName))
 		    , builtin  = Just True
 		    }
-		  , { type = concat $ print False td }
+		  , { type             = concat $ print False td
+		    , type_instances   = map (appSnd (map loc)) $ getTypeInstances t db
+		    , type_derivations = map (appSnd (map loc)) $ getTypeDerivations t db
+		    }
 		  )
 
 	makeMacroResult :: (Maybe String) Location Macro -> Result
@@ -421,7 +432,7 @@ where
 	isLibMatch (libs,_) (Location lib _ _ _) = any (\l -> indexOf l lib == 0) libs
 	isLibMatch (_,blti) (Builtin _)          = blti
 
-	loc :: Location -> (String, String, Maybe Int)
+	loc :: Location -> LocationResult
 	loc (Location lib mod ln _) = (lib, mod, ln)
 
 	log :: (LogMessage (Maybe Request) Response) IPAddress *World

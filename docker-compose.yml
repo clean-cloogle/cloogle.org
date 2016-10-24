@@ -20,7 +20,7 @@ services:
     restart: always
 
   stats:
-    build: frontend/stats
+    build: stats
     depends_on:
       - frontend
       - db

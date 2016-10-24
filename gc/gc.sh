@@ -8,7 +8,7 @@ cd "$CACHE_DIR"
 while :; do
 	# Long term cache
 	cd lt
-	n="$(($(ls -1 | wc -l)-1))"
+	n="$(ls -1 | wc -l)"
 	if [ "$n" -gt "$CACHE_SIZE" ]; then
 		ls -1tu | tail -n "$((n-CACHE_SIZE))" | xargs -P$(nproc) -r rm -v
 	else
@@ -17,8 +17,9 @@ while :; do
 	cd ..
 	# Brief cache
 	cd brief
-	echo "$(($(ls -1 | wc -l)-1)) entries removed from brief cache"
-	rm *
+	n="$(ls -1 | wc -l)"
+	echo "$n entries removed from brief cache"
+	if [ "$n" -gt "0" ]; then rm *; fi
 	cd ..
 	# Wait
 	sleep $INTERVAL

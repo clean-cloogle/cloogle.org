@@ -97,7 +97,7 @@ function highlightFunction(func, callback, start) {
 		],
 		generic: [
 			[/(\s+)/,        ['whitespace']],
-			[/(\S+)/,        ['funcname'], 'genericVars']
+			[/(\S+)/,        ['funcname funcname-generic'], 'genericVars']
 		],
 		genericVars: [
 			[/(\s+)/,        ['whitespace']],

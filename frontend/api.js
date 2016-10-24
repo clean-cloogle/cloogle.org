@@ -30,11 +30,16 @@ function highlightCallback(span, cls, str) {
 		return '<a class="hidden" title="Search ' + str + '" href="#' +
 			encodeURIComponent(str) + '">' +
 			span + '</a>';
+	} else if (cls == 'funcname funcname-generic') {
+		return '<a class="hidden" title="Search ' + str + '" href="#' +
+			encodeURIComponent(str) + '">' +
+			span + '</a>';
 	} else {
 		return span;
 	}
 }
 
+var instancesIdCounter = 0;
 var derivationsIdCounter = 0;
 function getResults(str, libs, page) {
 	if (str == null)  str  = old_str;
@@ -72,7 +77,7 @@ function getResults(str, libs, page) {
 		return html;
 	}
 
-	var makeInstanceTable = function (id, list) {
+	var makeInstanceTable = function (id, list, highlightf, highlightstart) {
 		var instances = '<a href="javascript:toggle(\'' + id + '\')">show / hide</a>';
 		instances += '<table id="' + id + '" style="display:none;">';
 		var makeInstanceUrl = function (loc) {
@@ -90,9 +95,10 @@ function getResults(str, libs, page) {
 				'<a target="_blank" href="' + iclUrl + '">icl</a>)';
 		}
 		for (var i in list) {
+			console.log(list[i][0]);
 			instances += '<tr><th><code>' +
-				highlightType(list[i][0],
-						highlightCallback) +
+				highlightf(list[i][0],
+						highlightCallback, highlightstart) +
 				'</code></th>';
 			var locs = '';
 			for (var j in list[i][1]) {
@@ -154,8 +160,10 @@ function getResults(str, libs, page) {
 				);
 				if ('generic_derivations' in specific) {
 					var derivationsId = 'derivations-' + (derivationsIdCounter++);
-					var derivations = makeInstanceTable(derivationsId,
-							specific['generic_derivations']);
+					var derivations = makeInstanceTable(
+							derivationsId,
+							specific['generic_derivations'],
+							highlightType);
 					specificData.push(['Derivations', derivations]);
 				}
 				var hl_entry = 'start';
@@ -181,16 +189,35 @@ function getResults(str, libs, page) {
 					'</code>';
 				break;
 			case 'TypeResult':
+				var specificData = [];
+				if (specific['type_instances'].length > 0) {
+					var instancesId = 'instances-' + (instancesIdCounter++);
+					specificData.push(['Instances',
+							makeInstanceTable(
+								instancesId,
+								specific['type_instances'],
+								highlightClassDef, 'className')]);
+				}
+				if (specific['type_derivations'].length > 0) {
+					var derivationsId = 'derivations-' + (derivationsIdCounter++);
+					specificData.push(['Derivations',
+							makeInstanceTable(
+								derivationsId,
+								specific['type_derivations'],
+								highlightFunction, 'generic')]);
+				}
 				return '<hr/>' +
-					makeTable(basicData) +
+					makeTable(basicData.concat(specificData)) +
 					'<pre>' +
 					highlightTypeDef(specific['type'], highlightCallback) +
 					'</pre>';
 				break;
 			case 'ClassResult':
-				var instancesId = 'instances-' + specific['class_name'];
-				var instances = makeInstanceTable(instancesId,
-						specific['class_instances']);
+				var instancesId = 'instances-' + (instancesIdCounter++);
+				var instances = makeInstanceTable(
+						instancesId,
+						specific['class_instances'],
+						highlightType);
 				var specificData = [['Instances', instances]];
 				var html = '<hr/>' +
 					makeTable(basicData.concat(specificData)) + '<pre>' +

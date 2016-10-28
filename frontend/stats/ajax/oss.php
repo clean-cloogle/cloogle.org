@@ -19,7 +19,13 @@ $oss = [
 	"`useragent` LIKE '%Linux%'",
 	"`useragent` LIKE '%Macintosh%'",
 	"`useragent` LIKE '%Windows%'",
-	"`useragent` NOT LIKE '%Linux%' AND `useragent` NOT LIKE '%Macintosh' AND `useragent` NOT LIKE '%Windows%'"
+	"`useragent` LIKE 'CloogleBot'",
+	"`useragent` LIKE 'vim-clean'",
+	"`useragent` NOT LIKE '%Linux%' " .
+		"AND `useragent` NOT LIKE '%Macintosh' " .
+		"AND `useragent` NOT LIKE '%Windows%'" .
+		"AND `useragent` NOT LIKE 'CloogleBot'" .
+		"AND `useragent` NOT LIKE 'vim-clean'"
 ];
 
 $results = [

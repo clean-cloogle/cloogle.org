@@ -26,7 +26,7 @@ CLMFLAGS:=-dynamics -h 40M -nr -nt\
 all: $(BIN) $(DB)
 
 clean-compiler:
-	svn checkout https://svn.cs.ru.nl/repos/clean-compiler/branches/itask/ clean-compiler
+	svn checkout -r 2746 https://svn.cs.ru.nl/repos/clean-compiler/branches/itask/ clean-compiler
 	$(MAKE) -j -C clean-compiler/main/Unix
 	$(MAKE) -j -C clean-compiler/backendC/CleanCompilerSources -f Makefile.linux64
 	ln -s ../../backendC/CleanCompilerSources/backend.a clean-compiler/backend/Clean\ System\ Files/backend_library

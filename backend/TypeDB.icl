@@ -10,6 +10,8 @@ import Data.Maybe
 from Text import class Text(concat), instance Text String
 import Text.JSON
 
+import GenLexOrd
+
 // CleanTypeUnifier
 import Type
 
@@ -18,11 +20,11 @@ import Type
 	    functionmap  :: Map Location ExtendedType
 	  , macromap     :: Map Location Macro
 	  , classmap     :: Map Location ([TypeVar],ClassContext,[(Name, ExtendedType)])
-	  , instancemap  :: Map Class [(Type, [Location])]
+	  , instancemap  :: Map Class [([Type], [Location])]
 	  , typemap      :: Map Location TypeDef
 	  , derivemap    :: Map Name [(Type, [Location])]
 	    // Derived maps
-	  , instancemap` :: Map Name [(Class, [Location])]
+	  , instancemap` :: Map Name [(Class, [Type], [Location])]
 	  , derivemap`   :: Map Name [(Name, [Location])]
 	  }
 
@@ -65,6 +67,12 @@ where
 	(<) (Location _ _ _ _) (Builtin _)        = True
 	(<) (Builtin _)        (Location _ _ _ _) = False
 	(<) (Builtin a)        (Builtin b)        = a < b
+
+derive gLexOrd Maybe, ClassOrGeneric, Kind, Type
+instance < Type where (<) a b = (a =?= b) === LT
+
+instance < (a,b,c,d) | Ord a & Ord b & Ord c & Ord d
+where (<) (a,b,c,d) (e,f,g,h) = ((a,b),(c,d)) < ((e,f),(g,h))
 
 instance == Location
 where
@@ -133,7 +141,7 @@ where
 	filterLoc :: ((Map Location a) -> Map Location a)
 	filterLoc = filterWithKey (const o f)
 
-	filtInstLocs :: [(Type, [Location])] -> [(Type, [Location])]
+	filtInstLocs :: [(a, [Location])] -> [(a, [Location])]
 	filtInstLocs [] = []
 	filtInstLocs [(t,ls):rest] = case ls` of
 		[] =          filtInstLocs rest
@@ -177,25 +185,22 @@ findMacro` f {macromap} = toList $ filterWithKey f macromap
 findMacro`` :: [(Location Macro -> Bool)] TypeDB -> [(Location, Macro)]
 findMacro`` fs {macromap} = toList $ foldr filterWithKey macromap fs
 
-getInstances :: Class TypeDB -> [(Type, [Location])]
+getInstances :: Class TypeDB -> [([Type], [Location])]
 getInstances c {instancemap} = if (isNothing ts) [] (fromJust ts)
 where ts = get c instancemap
 
-putInstance :: Class Type Location TypeDB -> TypeDB
+putInstance :: Class [Type] Location TypeDB -> TypeDB
 putInstance c t l db=:{instancemap}
 	= {db & instancemap=put c (update (getInstances c db)) instancemap}
 where
-	update :: [(Type, [Location])] -> [(Type, [Location])]
+	update :: [([Type], [Location])] -> [([Type], [Location])]
 	update []   = [(t,[l])]
 	update [(t`,ls):rest]
 	| t` == t   = [(t`, removeDup [l:ls]):rest]
 	| otherwise = [(t`,ls):update rest]
 
-putInstances :: Class [(Type, Location)] TypeDB -> TypeDB
-putInstances c ts db = foldr (\(t,l) db -> putInstance c t l db) db ts
-
-putInstancess :: [(Class, [(Type, Location)])] TypeDB -> TypeDB
-putInstancess is db = foldr (\(c,ts) db -> putInstances c ts db) db is
+putInstances :: [(Class, [Type], Location)] TypeDB -> TypeDB
+putInstances is db = foldr (\(c,ts,l) db -> putInstance c ts l db) db is
 
 getClass :: Location TypeDB -> Maybe ([TypeVar],ClassContext,[(Name,ExtendedType)])
 getClass loc {classmap} = get loc classmap
@@ -269,7 +274,7 @@ putDerivationss ds db = foldr (\(g,ts) db -> putDerivations g ts db) db ds
 searchExact :: Type TypeDB -> [(Location, ExtendedType)]
 searchExact t db = filter ((\(ET t` _)->t==t`) o snd) $ toList db.functionmap
 
-getTypeInstances :: Name TypeDB -> [(Class, [Location])]
+getTypeInstances :: Name TypeDB -> [(Class, [Type], [Location])]
 getTypeInstances n db = case get n db.instancemap` of (Just cs) = cs; _ = []
 
 getTypeDerivations :: Name TypeDB -> [(Name, [Location])]
@@ -293,11 +298,13 @@ syncDb db=:{instancemap,derivemap}
 	  , derivemap`   = derivs
 	  }
 where
-	insts = fromList $ map (\cs=:[(t,_,_):_] -> (t,[(c,ls) \\ (_,c,ls) <- cs])) $
-		groupBy (\a b -> fst3 a == fst3 b) $ sort
-		[(t,c,ls) \\ (c,ts) <- toList instancemap, (Type t [],ls) <- ts]
+	insts = fromList $ map (\cs=:[(t,_,_,_):_] -> (t,[(c,ts,ls) \\ (_,c,ls,ts) <- cs])) $
+		groupBy (\a b -> fst4 a == fst4 b) $ sort
+		[(t,c,ls,ts`)
+			\\ (c,ts) <- toList instancemap, (ts`,ls) <- ts, Type t [] <- ts`]
 	derivs = fromList $ map (\gs=:[(t,_,_):_] -> (t,[(g,ls) \\ (_,g,ls) <- gs])) $
 		groupBy (\a b -> fst3 a == fst3 b) $ sort
 		[(t,g,ls) \\ (g,ts) <- toList derivemap, (Type t [],ls) <- ts]
 
 app5 f (a,b,c,d,e) :== f a b c d e
+fst4 (a,_,_,_) :== a

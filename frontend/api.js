@@ -96,13 +96,36 @@ function getResults(str, libs, page) {
 		}
 		for (var i in list) {
 			console.log(list[i][0]);
-			instances += '<tr><th><code>' +
-				highlightf(list[i][0],
-						highlightCallback, highlightstart) +
-				'</code></th>';
+			instances += '<tr><th>';
+			if (typeof list[i][0] === 'object') {
+				for (var k in list[i][0]) {
+					instances += '<code>' +
+						highlightf(list[i][0][k],
+								highlightCallback, highlightstart) +
+						'</code> ';
+				}
+			} else {
+				instances += '<code>' +
+					highlightf(list[i][0],
+							highlightCallback, highlightstart) +
+					'</code>';
+			}
+			instances += '</th>';
+
+			if (list[i].length == 3) {
+				instances += '<td>';
+				for (var k in list[i][1]) {
+					instances += '<code>' +
+						highlightType(list[i][1][k], highlightCallback) +
+						'</code> ';
+				}
+				instances += '</td>';
+			}
+
 			var locs = '';
-			for (var j in list[i][1]) {
-				var loc = list[i][1][j];
+			var locsidx = list[i].length - 1;
+			for (var j in list[i][locsidx]) {
+				var loc = list[i][locsidx][j];
 				if (locs != '') {
 					locs += ', ';
 				}

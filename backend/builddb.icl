@@ -235,7 +235,7 @@ getModuleTypes root mod lib cache db w
 # mod = pm.mod_ident.id_name
 # lib = cleanlib mod lib
 # db = 'DB'.putFunctions (pd_typespecs lib mod pm.mod_defs) db
-# db = 'DB'.putInstancess (pd_instances lib mod pm.mod_defs) db
+# db = 'DB'.putInstances (pd_instances lib mod pm.mod_defs) db
 # db = 'DB'.putClasses (pd_classes lib mod pm.mod_defs) db
 # typedefs = pd_types lib mod pm.mod_defs
 # db = 'DB'.putTypes typedefs db
@@ -307,10 +307,11 @@ where
 		   ) \\ ts=:(PD_TypeSpec pos id=:{id_name} p (Yes t) funspecs) <- pds]
 
 	pd_instances :: String String [ParsedDefinition]
-		-> [('DB'.Class, [('DB'.Type, 'DB'.Location)])]
+		-> [('DB'.Class, ['DB'.Type], 'DB'.Location)]
 	pd_instances lib mod pds
 		= [( pi_ident.id_name
-		   , [('T'.toType t, 'DB'.Location lib mod (toLine pi_pos) "") \\ t <- pi_types]
+		   , map 'T'.toType pi_types
+		   , 'DB'.Location lib mod (toLine pi_pos) ""
 		   ) \\ PD_Instance {pim_pi={pi_ident,pi_types,pi_pos}} <- pds]
 
 	pd_classes :: String String [ParsedDefinition]

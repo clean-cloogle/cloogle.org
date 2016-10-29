@@ -1,24 +1,36 @@
-# Installation:
-# docker build -t cloogle . 
-#
-# Usage:
-# docker run \
-#   -d \
-#   --net=host \
-#   --name=cloogle \
-#   -v /path/to/cloogle/cloogle.log:/usr/src/cloogle/cloogle.log \
-#   cloogle
-
 FROM camilstaps/clean:2.4-itasks
 
-RUN apt-get update && apt-get install -y subversion ca-certificates
-
-RUN svn checkout https://svn.cs.ru.nl/repos/SoccerFun/src /opt/clean/lib/SoccerFun
+RUN PACKAGES="subversion ca-certificates" \
+	&& apt-get update \
+	&& apt-get install -qq subversion ca-certificates \
+	&& svn checkout https://svn.cs.ru.nl/repos/SoccerFun/src /opt/clean/lib/SoccerFun \
+# Cleanup
+	&& ADDED_PACKAGES=`apt-mark showauto` \
+	&& apt-get remove --purge -qq $PACKAGES $ADDED_PACKAGES\
+	&& rm -rf /var/lib/apt/lists/*
 
 COPY . /usr/src/cloogle
 WORKDIR /usr/src/cloogle
 
-RUN make distclean && make
+RUN PACKAGES="make subversion ca-certificates gcc" \
+	&& apt-get update \
+	&& apt-get install -qq $PACKAGES \
+	&& make distclean \
+	&& make \
+# Cleanup
+	&& rm -rf \
+		CleanPrettyPrint \
+		CleanTypeUnifier \
+		Clean\ System\ Files \
+		clean-compiler \
+		clean-platform \
+		*.dcl *.icl \
+		Dockerfile \
+		Makefile \
+	&& rm -rf /opt/clean \
+	&& ADDED_PACKAGES=`apt-mark showauto` \
+	&& apt-get remove --purge -qq $PACKAGES $ADDED_PACKAGES \
+	&& rm -rf /var/lib/apt/lists/*
 
 EXPOSE 31215
 

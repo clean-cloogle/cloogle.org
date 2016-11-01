@@ -266,7 +266,7 @@ where
 		# types = map (\(tl,td) -> makeTypeResult name tl td db) types
 		// Search classes
 		# classes = case (isNothing mbType, toLowerCase <$> name) of
-			(True, Just c) = findClass` (\(Location _ _ _ c`) _ _ _ -> toLowerCase c` == c) db
+			(True, Just c) = findClass` (\loc _ _ _ -> toLowerCase (getName loc) == c) db
 			_              = []
 		# classes = map (flip makeClassResult db) classes
 		// Merge results

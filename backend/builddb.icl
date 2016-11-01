@@ -116,6 +116,7 @@ Start w
 	# cache       = empty_cache st
 	# (db, w)     = loop cli.root mods 'DB'.newDb cache w
 	# db          = 'DB'.putFunctions predefFunctions db
+	# db          = 'DB'.putClasses predefClasses db
 	# db          = 'DB'.putTypes predefTypes db
 	# io          = stderr
 	# io          = printStats db io
@@ -171,6 +172,11 @@ predefFunctions
 	= [ ( 'DB'.Builtin "if"
 	    , 'DB'.ET ('T'.Func ['T'.Type "Bool" [], 'T'.Var "a", 'T'.Var "a"] ('T'.Var "a") []) zero
 	    )
+	  ]
+
+predefClasses :: [('DB'.Location, ['T'.TypeVar], 'T'.ClassContext, [('DB'.Name, 'DB'.ExtendedType)])]
+predefClasses
+	= [ ( 'DB'.Builtin "TC", ["v"], [], [])
 	  ]
 
 predefTypes :: [('DB'.Location, 'T'.TypeDef)]

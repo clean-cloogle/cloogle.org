@@ -213,7 +213,7 @@ putClasses cs db = foldr (\(cl,tvs,cc,fs) db -> putClass cl tvs cc fs db) db cs
 
 findClass :: Class TypeDB -> [(Location, [TypeVar], ClassContext, [(Name, ExtendedType)])]
 findClass c {classmap} = map (\(k,(x,y,z))->(k,x,y,z)) results
-where results = toList $ filterWithKey (\(Location _ _ _ c`) _->c==c`) classmap
+where results = toList $ filterWithKey (\tl _ -> getName tl == c) classmap
 
 findClass` :: (Location [TypeVar] ClassContext [(Name,ExtendedType)] -> Bool) TypeDB
 		-> [(Location, [TypeVar], ClassContext, [(Name,ExtendedType)])]

@@ -274,7 +274,18 @@ where
 
 	makeClassResult :: (Location, [TypeVar], ClassContext, [(Name,ExtendedType)])
 		TypeDB -> Result
-	makeClassResult (Location lib mod line cls, vars, cc, funs) db
+	makeClassResult rec=:(Builtin _, _, _, _) db
+		= ClassResult
+		  ( { library  = ""
+		    , filename = ""
+		    , dcl_line = Nothing
+		    , modul    = ""
+		    , distance = -100
+		    , builtin  = Just True
+		    }
+		  , makeClassResultExtras rec db
+		  )
+	makeClassResult rec=:(Location lib mod line cls, vars, cc, funs) db
 		= ClassResult
 		  ( { library  = lib
 		    , filename = modToFilename mod
@@ -283,17 +294,25 @@ where
 		    , distance = -100
 		    , builtin  = Nothing
 		    }
-		  , { class_name = cls
-		    , class_heading = foldl ((+) o (flip (+) " ")) cls vars +
-		        if (isEmpty cc) "" " " + concat (print False cc)
-		    , class_funs = [print_fun fun \\ fun <- funs]
-		    , class_instances
-		        = sortBy (\(a,_) (b,_) -> a < b)
-		            [([concat (print False t) \\ t <- ts], map loc ls)
-		            \\ (ts,ls) <- getInstances cls db]
-		    }
+		  , makeClassResultExtras rec db
 		  )
+	makeClassResultExtras :: (Location, [TypeVar], ClassContext, [(Name,ExtendedType)])
+		TypeDB -> ClassResultExtras
+	makeClassResultExtras (l, vars, cc, funs) db
+		= { class_name = cls
+		  , class_heading = foldl ((+) o (flip (+) " ")) cls vars +
+		      if (isEmpty cc) "" " " + concat (print False cc)
+		  , class_funs = [print_fun fun \\ fun <- funs]
+		  , class_instances
+		      = sortBy (\(a,_) (b,_) -> a < b)
+		          [([concat (print False t) \\ t <- ts], map loc ls)
+		          \\ (ts,ls) <- getInstances cls db]
+		  }
 	where
+		cls = case l of
+			Builtin c = c
+			Location _ _ _ c = c
+
 		print_fun :: (Name,ExtendedType) -> String
 		print_fun f=:(_,ET _ et) = fromJust $
 			et.te_representation <|> (pure $ concat $ print False f)

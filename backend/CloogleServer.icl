@@ -155,14 +155,14 @@ where
 	# io = io <<< "Usage: ./CloogleServer <port>\n"
 	= snd $ fclose io w
 
-	handle :: !TypeDB !(Maybe Request) !*World -> *(!Response, !*World)
-	handle _ Nothing w = (err E_INVALIDINPUT "Couldn't parse input", w)
+	handle :: !TypeDB !(Maybe Request) !*World -> *(!Response, CacheKey, !*World)
+	handle _ Nothing w = (err E_INVALIDINPUT "Couldn't parse input", "", w)
 	handle db (Just request=:{unify,name,page}) w
 		//Check cache
 		# (mbResponse, w) = readCache request w
 		| isJust mbResponse
 			# r = fromJust mbResponse
-			= ({r & return = if (r.return == 0) 1 r.return}, w)
+			= ({r & return = if (r.return == 0) 1 r.return}, cacheKey request, w)
 		| isJust name && size (fromJust name) > 40
 			= respond (err E_INVALIDNAME "Function name too long") w
 		| isJust name && any isSpace (fromString $ fromJust name)
@@ -194,8 +194,8 @@ where
 		// Save cache file
 		= respond response w
 	where
-		respond :: Response *World -> *(Response, *World)
-		respond r w = (r, writeCache LongTerm request r w)
+		respond :: Response *World -> *(Response, CacheKey, *World)
+		respond r w = (r, cacheKey request, writeCache LongTerm request r w)
 
 		cachePages :: Int Int Response [Result] *World -> *World
 		cachePages _ _  _ [] w = w
@@ -457,7 +457,7 @@ where
 	loc :: Location -> LocationResult
 	loc (Location lib mod ln _) = (lib, mod, ln)
 
-	log :: (LogMessage (Maybe Request) Response) IPAddress *World
+	log :: (LogMessage (Maybe Request) Response CacheKey) IPAddress *World
 		-> *(IPAddress, *World)
 	log msg s w
 	| not needslog = (newS msg s, w)
@@ -466,18 +466,19 @@ where
 	# io = io <<< trim (toString tm) <<< " " <<< msgToString msg s
 	= (newS msg s, snd (fclose io w))
 	where
-		needslog = case msg of (Received _) = True; (Sent _) = True; _ = False
+		needslog = case msg of (Received _) = True; (Sent _ _) = True; _ = False
 
-	newS :: (LogMessage (Maybe Request) Response) IPAddress -> IPAddress
+	newS :: (LogMessage (Maybe Request) Response CacheKey) IPAddress -> IPAddress
 	newS m s = case m of (Connected ip) = ip; _ = s
 
-	msgToString :: (LogMessage (Maybe Request) Response) IPAddress -> String
+	msgToString :: (LogMessage (Maybe Request) Response CacheKey) IPAddress -> String
 	msgToString (Received Nothing) ip
 		= toString ip + " <-- Nothing\n"
 	msgToString (Received (Just a)) ip
 		= toString ip + " <-- " + toString a + "\n"
-	msgToString (Sent {return,data,msg,more_available}) ip
+	msgToString (Sent {return,data,msg,more_available} ck) ip
 		= toString ip + " --> " + toString (length data)
-			+ " results (" + toString return + "; " + msg +
-			if (isJust more_available) ("; " + toString (fromJust more_available) + " more") "" + ")\n"
+			+ " results (" + toString return + "; " + msg
+			+ if (isJust more_available) ("; " + toString (fromJust more_available) + " more") ""
+			+ "; cache: " + ck + ")\n"
 	msgToString _ _ = ""

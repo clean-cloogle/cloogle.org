@@ -20,8 +20,11 @@ cache_dir :: CacheType -> FilePath
 cache_dir LongTerm = "./cache/lt"
 cache_dir Brief = "./cache/brief"
 
+cacheKey :: (a -> CacheKey) | toString a
+cacheKey = md5 o toString
+
 toCacheFile :: CacheType -> a -> FilePath | toString a
-toCacheFile t = (</>) (cache_dir t) o md5 o toString
+toCacheFile t = (</>) (cache_dir t) o cacheKey
 
 readCache :: !a *World -> (Maybe b, !*World) | toString a & JSONDecode{|*|} b
 readCache k w

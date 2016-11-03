@@ -8,6 +8,7 @@ from TCPIP import :: IPAddress, :: Port, instance toString IPAddress
 
 from Data.Func import $
 import Data.List
+import Data.Tuple
 import Data.Maybe
 import System.CommandLine
 import Text.JSON
@@ -19,14 +20,11 @@ from Text import class Text(concat,trim,indexOf,toLowerCase),
 
 import System.Time
 
-import qualified StdMaybe as OldMaybe
 from SimpleTCPServer import :: LogMessage{..}, serve, :: Logger
 import qualified SimpleTCPServer
 import TypeDB
 import Type
-import Levenshtein
-
-:: OldMaybe a :== 'SimpleTCPServer'.Maybe a
+import Cache
 
 :: Request = { unify     :: Maybe String
              , name      :: Maybe String
@@ -63,18 +61,20 @@ import Levenshtein
                           , cls                 :: Maybe ShortClassResult
                           , constructor_of      :: Maybe String
                           , recordfield_of      :: Maybe String
-                          , generic_derivations :: Maybe [(String, [(String,String,Maybe Int)])]
+                          , generic_derivations :: Maybe [(String, [LocationResult])]
                           }
 
 :: TypeResult :== (BasicResult, TypeResultExtras)
-:: TypeResultExtras = { type :: String
+:: TypeResultExtras = { type             :: String
+                      , type_instances   :: [(String, [String], [LocationResult])]
+                      , type_derivations :: [(String, [LocationResult])]
                       }
 
 :: ClassResult :== (BasicResult, ClassResultExtras)
 :: ClassResultExtras = { class_name      :: String
                        , class_heading   :: String
                        , class_funs      :: [String]
-                       , class_instances :: [(String, [(String,String,Maybe Int)])]
+                       , class_instances :: [([String], [LocationResult])]
                        }
 
 :: MacroResult :== (BasicResult, MacroResultExtras)
@@ -82,9 +82,11 @@ import Levenshtein
                        , macro_representation :: String
                        }
 
+:: LocationResult :== (String, String, Maybe Int)
+
 :: StrUnifier :== ([(String,String)], [(String,String)])
 
-:: ErrorResult = Error Int String
+:: ErrorResult = MaybeError Int String
 
 :: ShortClassResult = { cls_name :: String, cls_vars :: [String] }
 
@@ -134,6 +136,7 @@ E_INVALIDNAME  :== 129
 E_INVALIDTYPE  :== 130
 
 MAX_RESULTS    :== 15
+CACHE_PREFETCH :== 5
 
 Start w
 # (io, w) = stdio w
@@ -145,22 +148,27 @@ Start w
 # (_, w) = fclose io w
 | isNothing db = abort "stdin does not have a TypeDB\n"
 #! db = fromJust db
-= serve (handle db) ('OldMaybe'.Just log) port w
+= serve (handle db) (Just log) port w
 where
 	help :: *File *World -> *World
 	help io w
 	# io = io <<< "Usage: ./CloogleServer <port>\n"
 	= snd $ fclose io w
 
-	handle :: !TypeDB !(Maybe Request) !*World -> *(!Response, !*World)
-	handle _ Nothing w = (err E_INVALIDINPUT "Couldn't parse input", w)
+	handle :: !TypeDB !(Maybe Request) !*World -> *(!Response, CacheKey, !*World)
+	handle _ Nothing w = (err E_INVALIDINPUT "Couldn't parse input", "", w)
 	handle db (Just request=:{unify,name,page}) w
+		//Check cache
+		# (mbResponse, w) = readCache request w
+		| isJust mbResponse
+			# r = fromJust mbResponse
+			= ({r & return = if (r.return == 0) 1 r.return}, cacheKey request, w)
 		| isJust name && size (fromJust name) > 40
-			= (err E_INVALIDNAME "function name too long", w)
+			= respond (err E_INVALIDNAME "Function name too long") w
 		| isJust name && any isSpace (fromString $ fromJust name)
-			= (err E_INVALIDNAME "name cannot contain spaces", w)
+			= respond (err E_INVALIDNAME "Name cannot contain spaces") w
 		| isJust unify && isNothing (parseType $ fromString $ fromJust unify)
-			= (err E_INVALIDTYPE "couldn't parse type", w)
+			= respond (err E_INVALIDTYPE "Couldn't parse type") w
 		// Results
 		# drop_n = fromJust (page <|> pure 0) * MAX_RESULTS
 		# results = drop drop_n $ sort $ search request db
@@ -171,16 +179,38 @@ where
 			= sortBy (\a b -> snd a > snd b) <$>
 			  filter ((<)(length results) o snd) <$>
 			  (mbType >>= \t -> suggs name t db)
-		# results = take MAX_RESULTS results
+		# (results,nextpages) = splitAt MAX_RESULTS results
 		// Response
-		| isEmpty results = (err E_NORESULTS "No results", w)
-		= ( { return = 0
+		# response = if (isEmpty results)
+			(err E_NORESULTS "No results")
+			{ return = 0
 		    , msg = "Success"
 		    , data           = results
 		    , more_available = Just more
 		    , suggestions    = suggestions
 		    }
-		  , w)
+		// Save page prefetches
+		# w = cachePages CACHE_PREFETCH 1 response nextpages w
+		// Save cache file
+		= respond response w
+	where
+		respond :: Response *World -> *(Response, CacheKey, *World)
+		respond r w = (r, cacheKey request, writeCache LongTerm request r w)
+
+		cachePages :: Int Int Response [Result] *World -> *World
+		cachePages _ _  _ [] w = w
+		cachePages 0 _  _ _  w = w
+		cachePages npages i response results w
+		# w = writeCache Brief req` resp` w
+		= cachePages (npages - 1) (i + 1) response keep w
+		where
+			req` = { request & page = ((+) i) <$> request.page <|> pure 0 }
+			resp` =
+				{ response
+				& more_available = Just $ max 0 (length results - MAX_RESULTS)
+				, data = give
+				}
+			(give,keep) = splitAt MAX_RESULTS results
 
 	suggs :: !(Maybe String) !Type !TypeDB -> Maybe [(Request, Int)]
 	suggs n (Func is r cc) db
@@ -207,8 +237,8 @@ where
 		| isJust typeName
 			# typeName = fromJust typeName
 			# types = findType typeName db
-			= map (uncurry (makeTypeResult (Just typeName))) types
-		# mbType = prepare_unification` True db_org <$> (unify >>= parseType o fromString)
+			= [makeTypeResult (Just typeName) l td db \\ (l,td) <- types]
+		# mbType = prepare_unification True <$> (unify >>= parseType o fromString)
 		// Search normal functions
 		# filts = catMaybes [ (\t _ -> isUnifiable t db_org) <$> mbType
 		                    , (\n loc _ -> isNameMatch (size n*2/3) n loc) <$> name
@@ -234,10 +264,10 @@ where
 		# types = case (isNothing mbType,lcName) of
 			(True,Just n) = findType` (\loc _ -> toLowerCase (getName loc) == n) db
 			_             = []
-		# types = map (\(tl,td) -> makeTypeResult name tl td) types
+		# types = map (\(tl,td) -> makeTypeResult name tl td db) types
 		// Search classes
 		# classes = case (isNothing mbType, toLowerCase <$> name) of
-			(True, Just c) = findClass` (\(Location _ _ _ c`) _ _ _ -> toLowerCase c` == c) db
+			(True, Just c) = findClass` (\loc _ _ _ -> toLowerCase (getName loc) == c) db
 			_              = []
 		# classes = map (flip makeClassResult db) classes
 		// Merge results
@@ -245,7 +275,18 @@ where
 
 	makeClassResult :: (Location, [TypeVar], ClassContext, [(Name,ExtendedType)])
 		TypeDB -> Result
-	makeClassResult (Location lib mod line cls, vars, cc, funs) db
+	makeClassResult rec=:(Builtin _, _, _, _) db
+		= ClassResult
+		  ( { library  = ""
+		    , filename = ""
+		    , dcl_line = Nothing
+		    , modul    = ""
+		    , distance = -100
+		    , builtin  = Just True
+		    }
+		  , makeClassResultExtras rec db
+		  )
+	makeClassResult rec=:(Location lib mod line cls, vars, cc, funs) db
 		= ClassResult
 		  ( { library  = lib
 		    , filename = modToFilename mod
@@ -254,22 +295,31 @@ where
 		    , distance = -100
 		    , builtin  = Nothing
 		    }
-		  , { class_name = cls
-		    , class_heading = foldl ((+) o (flip (+) " ")) cls vars +
-		        if (isEmpty cc) "" " " + concat (print False cc)
-		    , class_funs = [print_fun fun \\ fun <- funs]
-		    , class_instances
-		        = sortBy (\(a,_) (b,_) -> a < b)
-		            [(concat (print False t), map loc ls) \\ (t,ls) <- getInstances cls db]
-		    }
+		  , makeClassResultExtras rec db
 		  )
+	makeClassResultExtras :: (Location, [TypeVar], ClassContext, [(Name,ExtendedType)])
+		TypeDB -> ClassResultExtras
+	makeClassResultExtras (l, vars, cc, funs) db
+		= { class_name = cls
+		  , class_heading = foldl ((+) o (flip (+) " ")) cls vars +
+		      if (isEmpty cc) "" " " + concat (print False cc)
+		  , class_funs = [print_fun fun \\ fun <- funs]
+		  , class_instances
+		      = sortBy (\(a,_) (b,_) -> a < b)
+		          [([concat (print False t) \\ t <- ts], map loc ls)
+		          \\ (ts,ls) <- getInstances cls db]
+		  }
 	where
+		cls = case l of
+			Builtin c = c
+			Location _ _ _ c = c
+
 		print_fun :: (Name,ExtendedType) -> String
 		print_fun f=:(_,ET _ et) = fromJust $
 			et.te_representation <|> (pure $ concat $ print False f)
 
-	makeTypeResult :: (Maybe String) Location TypeDef -> Result
-	makeTypeResult mbName (Location lib mod line t) td
+	makeTypeResult :: (Maybe String) Location TypeDef TypeDB -> Result
+	makeTypeResult mbName (Location lib mod line t) td db
 		= TypeResult
 		  ( { library  = lib
 		    , filename = modToFilename mod
@@ -279,9 +329,13 @@ where
 		        = if (isNothing mbName) -100 (levenshtein` t (fromJust mbName))
 		    , builtin  = Nothing
 		    }
-		  , { type = concat $ print False td }
+		  , { type             = concat $ print False td
+		    , type_instances   = map (appSnd3 (map (concat o (print False)))) $
+		        map (appThd3 (map loc)) $ getTypeInstances t db
+		    , type_derivations = map (appSnd (map loc)) $ getTypeDerivations t db
+		    }
 		  )
-	makeTypeResult mbName (Builtin t) td
+	makeTypeResult mbName (Builtin t) td db
 		= TypeResult
 		  ( { library  = ""
 		    , filename = ""
@@ -291,7 +345,11 @@ where
 		        = if (isNothing mbName) -100 (levenshtein` t (fromJust mbName))
 		    , builtin  = Just True
 		    }
-		  , { type = concat $ print False td }
+		  , { type             = concat $ print False td
+		    , type_instances   = map (appSnd3 (map (concat o (print False)))) $
+		        map (appThd3 (map loc)) $ getTypeInstances t db
+		    , type_derivations = map (appSnd (map loc)) $ getTypeDerivations t db
+		    }
 		  )
 
 	makeMacroResult :: (Maybe String) Location Macro -> Result
@@ -349,7 +407,7 @@ where
 		toStrUnifier (tvas1, tvas2) = (map toStr tvas1, map toStr tvas2)
 		where toStr (var, type) = (var, concat $ print False type)
 
-		toStrPriority :: (Maybe TE_Priority) -> String
+		toStrPriority :: (Maybe Priority) -> String
 		toStrPriority p = case print False p of [] = ""; ss = concat [" ":ss]
 
 		distance
@@ -378,7 +436,7 @@ where
 	prepare_unification` b db t = prepare_unification b (resolveTypeSynonyms t db)
 
 	levenshtein` :: String String -> Int
-	levenshtein` a b = if (indexOf a b == -1) 0 -100 + levenshtein a b
+	levenshtein` a b = if (indexOf a b == -1) 0 -100 + levenshtein [c \\ c <-: a] [c \\ c <-: b]
 
 	modToFilename :: String -> String
 	modToFilename mod = (toString $ reverse $ takeWhile ((<>)'.')
@@ -392,7 +450,7 @@ where
 	isNameMatch :: !Int !String Location -> Bool
 	isNameMatch maxdist n1 loc
 		# (n1, n2) = ({toLower c \\ c <-: n1}, {toLower c \\ c <-: getName loc})
-		= n1 == "" || indexOf n1 n2 <> -1 || levenshtein n1 n2 <= maxdist
+		= n1 == "" || indexOf n1 n2 <> -1 || levenshtein [c \\ c <-: n1] [c \\ c <-: n2] <= maxdist
 
 	isModMatch :: ![String] Location -> Bool
 	isModMatch mods (Location _ mod _ _) = isMember mod mods
@@ -402,10 +460,10 @@ where
 	isLibMatch (libs,_) (Location lib _ _ _) = any (\l -> indexOf l lib == 0) libs
 	isLibMatch (_,blti) (Builtin _)          = blti
 
-	loc :: Location -> (String, String, Maybe Int)
+	loc :: Location -> LocationResult
 	loc (Location lib mod ln _) = (lib, mod, ln)
 
-	log :: (LogMessage (Maybe Request) Response) IPAddress *World
+	log :: (LogMessage (Maybe Request) Response CacheKey) IPAddress *World
 		-> *(IPAddress, *World)
 	log msg s w
 	| not needslog = (newS msg s, w)
@@ -414,18 +472,19 @@ where
 	# io = io <<< trim (toString tm) <<< " " <<< msgToString msg s
 	= (newS msg s, snd (fclose io w))
 	where
-		needslog = case msg of (Received _) = True; (Sent _) = True; _ = False
+		needslog = case msg of (Received _) = True; (Sent _ _) = True; _ = False
 
-	newS :: (LogMessage (Maybe Request) Response) IPAddress -> IPAddress
+	newS :: (LogMessage (Maybe Request) Response CacheKey) IPAddress -> IPAddress
 	newS m s = case m of (Connected ip) = ip; _ = s
 
-	msgToString :: (LogMessage (Maybe Request) Response) IPAddress -> String
+	msgToString :: (LogMessage (Maybe Request) Response CacheKey) IPAddress -> String
 	msgToString (Received Nothing) ip
 		= toString ip + " <-- Nothing\n"
 	msgToString (Received (Just a)) ip
 		= toString ip + " <-- " + toString a + "\n"
-	msgToString (Sent {return,data,msg,more_available}) ip
+	msgToString (Sent {return,data,msg,more_available} ck) ip
 		= toString ip + " --> " + toString (length data)
-			+ " results (" + toString return + "; " + msg +
-			if (isJust more_available) ("; " + toString (fromJust more_available) + " more") "" + ")\n"
+			+ " results (" + toString return + "; " + msg
+			+ if (isJust more_available) ("; " + toString (fromJust more_available) + " more") ""
+			+ "; cache: " + ck + ")\n"
 	msgToString _ _ = ""

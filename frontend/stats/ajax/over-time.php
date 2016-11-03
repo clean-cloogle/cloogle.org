@@ -30,7 +30,7 @@ $sql =
 		$timestamp as unixtime,
 		count(*),
 		count(case when `responsecode`>=150 then 1 else null end),
-		count(case when `responsecode`>0 and `responsecode`<150 then 1 else null end),
+		count(case when `responsecode`>1 and `responsecode`<150 then 1 else null end),
 		count(distinct `ip`,`useragent_id`)
 	FROM `log`
 	WHERE `date` BETWEEN timestamp('$startTime') AND timestamp('$endTime')
@@ -41,7 +41,7 @@ if (!$stmt->prepare($sql))
 	var_dump($stmt->error);
 $stmt->execute();
 $stmt->bind_result($timestamp, $count, $servererrcount, $usererrcount, $uniquecount);
-$results = [[], [], []];
+$results = [[], [], [], []];
 
 $expected_timestamp = $timemod === 'monthly'
 	? strtotime(date('Y-m-01 00:00:00', $start))

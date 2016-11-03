@@ -12,16 +12,19 @@
 <body>
 	<table style="width:100%">
 		<tr>
-			<td colspan="2">
+			<td colspan="3">
 				<div id="over-time" style="height:400px;min-width:310px;"></div>
 			</td>
 		</tr>
 		<tr>
-			<td style="width:60%;">
+			<td style="width:40%;">
 				<div id="by-hour" style="height:400px;"></div>
 			</td>
-			<td style="width:40%;">
+			<td style="width:30%;">
 				<div id="types" style="height:400px;"></div>
+			</td>
+			<td style="width:30%;">
+				<div id="oss" style="height:400px;"></div>
 			</td>
 		</tr>
 	</table>
@@ -41,10 +44,8 @@
 			over_time.showLoading('Loading data...');
 			$.getJSON('ajax/over-time.php' + query,
 				function(data) {
-					for (var i in data) {
-						over_time.series[i].setData([]);
+					for (var i in data)
 						over_time.series[i].setData(data[i]);
-					}
 					over_time.hideLoading();
 				}
 			);
@@ -66,12 +67,22 @@
 					types.hideLoading();
 				}
 			);
+
+			var oss = $('#oss').highcharts();
+			oss.showLoading('Loading data...');
+			$.getJSON('ajax/oss.php' + query,
+				function(data) {
+					for (var i in data)
+						oss.series[i].setData(data[i].data);
+					oss.hideLoading();
+				}
+			);
 		}
 
 		$(function(){
 			$.getJSON('ajax/over-time.php?callback=?', function(data) {
 				$('#over-time').highcharts('StockChart', {
-					colors: ['#00aa00', '#dddd00', '#dd0000', '#aaaaff'],
+					colors: ['#00aa00', '#dddd00', '#dd0000', '#2222aa'],
 					chart: {
 						type: 'area',
 						zoomType: 'x'
@@ -79,31 +90,24 @@
 					credits: { enabled: false },
 					navigator: {
 						adaptToUpdatedData: false,
-						series: {
-							data: false
-						}
+						series: { data: false }
 					},
-					scrollbar: {
-						liveRedraw: false
-					},
-					title: {
-						text: 'Long Term Cloogle Statistics'
-					},
+					scrollbar: { liveRedraw: false },
+					title: { text: 'Long Term Cloogle Statistics' },
 					rangeSelector: {
 						buttons: [
 							{ type: 'hour',  count: 1, text: '1h' },
 							{ type: 'day',   count: 1, text: '1d' },
+							{ type: 'day',   count: 7, text: '1w' },
 							{ type: 'month', count: 1, text: '1m' },
 							{ type: 'year',  count: 1, text: '1y' },
 							{ type: 'all',             text: 'All' }
 						],
 						inputEnabled: false,
-						selected: 2
+						selected: 3
 					},
 					xAxis: {
-						events: {
-							afterSetExtremes: afterSetExtremes
-						},
+						events: { afterSetExtremes: afterSetExtremes },
 						minRange: 3600 * 1000
 					},
 					yAxis: [
@@ -111,12 +115,8 @@
 						{ floor: 0, title: { text: 'Visitors' }, opposite: false }
 					],
 					plotOptions: {
-						area: {
-							stacking: 'normal'
-						},
-						spline: {
-							lineWidth: 1
-						}
+						area: { stacking: 'normal' },
+						spline: { lineWidth: 1.5 }
 					},
 					series: [{
 						data: data[0],
@@ -173,11 +173,57 @@
 					chart: { type: 'pie' },
 					credits: { enabled: false },
 					title: { text: 'Search kinds' },
+					plotOptions: {
+						pie: {
+							dataLabels: { enabled: false },
+							showInLegend: true
+						}
+					},
 					series: [{
 						colorByPoint: true,
 						tooltip: { pointFormat: '<b>{point.percentage:.1f}%</b> ({point.y})' },
 						data: data
 					}]
+				});
+			});
+
+			$.getJSON('ajax/oss.php?callback=?', function(data) {
+				$('#oss').highcharts({
+					colors: ['#00aa00', '#dd0000', '#dddd00', '#f7a35c', '#7cb5ec', '#434348', '#90ed7d'],
+					chart: { type: 'column' },
+					credits: { enabled: false },
+					legend: { enabled: false },
+					title: { text: 'Per operating system' },
+					xAxis: {
+						categories: ['Linux', 'Macintosh', 'Windows', 'CloogleBot', 'vim-clean', 'Other']
+					},
+					yAxis: {
+						title: { enabled: false },
+						labels: { format: '{value}%' }
+					},
+					plotOptions: { column: { stacking: 'percent' } },
+					tooltip: {
+						borderColor: '#000000',
+						followPointer: true,
+						formatter: function () {
+							console.log(this);
+							var chart = this.series.chart;
+							var stack = this.series.userOptions.stack;
+							var pointIndex = this.point.index;
+							var label = this.key + ' ' + stack + ':<br/>';
+							for (var i in chart.series) {
+								var series = chart.series[i];
+								if (series.userOptions.stack == stack) {
+									var point = series.data[pointIndex];
+									label += '<span style="color:' + point.color + '">\u25cf</span> ' +
+										series.name + ': <b>' + point.percentage.toFixed(2) +
+										'%</b> (' + point.y + ')<br/>';
+								}
+							}
+							return label;
+						}
+					},
+					series: data
 				});
 			});
 		});

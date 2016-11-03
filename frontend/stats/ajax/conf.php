@@ -34,7 +34,7 @@ $end = @$_GET['end'];
 if ($end && !preg_match('/^\d+$/', $end))
 	die ("Invalid end parameter: $end");
 
-if (!$end)
+if (!$end || $end > time())
 	$end = time();
 
 $startTime = gmstrftime('%Y-%m-%d %H:%M:%S', $start);

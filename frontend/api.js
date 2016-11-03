@@ -13,6 +13,33 @@ function toggle(name) {
 	e.style.display = e.style.display == 'block' ? 'none' : 'block';
 }
 
+function highlightCallback(span, cls, str) {
+	if (cls == 'type') {
+		return '<a class="hidden" title="Search type ' + str + '" href="#' +
+			encodeURIComponent('type ' + str) + '">' +
+			span + '</a>';
+	} else if (cls == 'classname') {
+		return '<a class="hidden" title="Search class ' + str + '" href="#' +
+			encodeURIComponent('class ' + str) + '">' +
+			span + '</a>';
+	} else if (cls == 'generic') {
+		return '<a class="hidden" title="Search generic ' + str + '" href="#' +
+			encodeURIComponent(str) + '">' +
+			span + '</a>';
+	} else if (cls == 'funcname funcname-onlyused' || cls == 'constructor') {
+		return '<a class="hidden" title="Search ' + str + '" href="#' +
+			encodeURIComponent(str) + '">' +
+			span + '</a>';
+	} else if (cls == 'funcname funcname-generic') {
+		return '<a class="hidden" title="Search ' + str + '" href="#' +
+			encodeURIComponent(str) + '">' +
+			span + '</a>';
+	} else {
+		return span;
+	}
+}
+
+var instancesIdCounter = 0;
 var derivationsIdCounter = 0;
 function getResults(str, libs, page) {
 	if (str == null)  str  = old_str;
@@ -28,36 +55,12 @@ function getResults(str, libs, page) {
 		'&page=' + page;
 	var xmlHttp = new XMLHttpRequest();
 
-	console.log(url);
-
 	var elem = document.getElementById('page-' + page);
 
 	elem.innerHTML += '<p id="loading">Processing...</p>';
 	var more = document.getElementById('more');
 	if (more !== null) {
 		more.remove();
-	}
-
-	var highlightCallback = function (span, cls, str) {
-		if (cls == 'type') {
-			return '<a class="hidden" title="Search type ' + str + '" href="#' +
-				encodeURIComponent('type ' + str) + '">' +
-				span + '</a>';
-		} else if (cls == 'classname') {
-			return '<a class="hidden" title="Search class ' + str + '" href="#' +
-				encodeURIComponent('class ' + str) + '">' +
-				span + '</a>';
-		} else if (cls == 'generic') {
-			return '<a class="hidden" title="Search generic ' + str + '" href="#' +
-				encodeURIComponent(str) + '">' +
-				span + '</a>';
-		} else if (cls == 'funcname funcname-onlyused' || cls == 'constructor') {
-			return '<a class="hidden" title="Search ' + str + '" href="#' +
-				encodeURIComponent(str) + '">' +
-				span + '</a>';
-		} else {
-			return span;
-		}
 	}
 
 	var makeTable = function (d) {
@@ -74,7 +77,7 @@ function getResults(str, libs, page) {
 		return html;
 	}
 
-	var makeInstanceTable = function (id, list) {
+	var makeInstanceTable = function (id, list, highlightf, highlightstart) {
 		var instances = '<a href="javascript:toggle(\'' + id + '\')">show / hide</a>';
 		instances += '<table id="' + id + '" style="display:none;">';
 		var makeInstanceUrl = function (loc) {
@@ -92,13 +95,37 @@ function getResults(str, libs, page) {
 				'<a target="_blank" href="' + iclUrl + '">icl</a>)';
 		}
 		for (var i in list) {
-			instances += '<tr><th><code>' +
-				highlightType(list[i][0],
-						highlightCallback) +
-				'</code></th>';
+			console.log(list[i][0]);
+			instances += '<tr><th>';
+			if (typeof list[i][0] === 'object') {
+				for (var k in list[i][0]) {
+					instances += '<code>' +
+						highlightf(list[i][0][k],
+								highlightCallback, highlightstart) +
+						'</code> ';
+				}
+			} else {
+				instances += '<code>' +
+					highlightf(list[i][0],
+							highlightCallback, highlightstart) +
+					'</code>';
+			}
+			instances += '</th>';
+
+			if (list[i].length == 3) {
+				instances += '<td>';
+				for (var k in list[i][1]) {
+					instances += '<code>' +
+						highlightType(list[i][1][k], highlightCallback) +
+						'</code> ';
+				}
+				instances += '</td>';
+			}
+
 			var locs = '';
-			for (var j in list[i][1]) {
-				var loc = list[i][1][j];
+			var locsidx = list[i].length - 1;
+			for (var j in list[i][locsidx]) {
+				var loc = list[i][locsidx][j];
 				if (locs != '') {
 					locs += ', ';
 				}
@@ -156,8 +183,10 @@ function getResults(str, libs, page) {
 				);
 				if ('generic_derivations' in specific) {
 					var derivationsId = 'derivations-' + (derivationsIdCounter++);
-					var derivations = makeInstanceTable(derivationsId,
-							specific['generic_derivations']);
+					var derivations = makeInstanceTable(
+							derivationsId,
+							specific['generic_derivations'],
+							highlightType);
 					specificData.push(['Derivations', derivations]);
 				}
 				var hl_entry = 'start';
@@ -183,16 +212,35 @@ function getResults(str, libs, page) {
 					'</code>';
 				break;
 			case 'TypeResult':
+				var specificData = [];
+				if (specific['type_instances'].length > 0) {
+					var instancesId = 'instances-' + (instancesIdCounter++);
+					specificData.push(['Instances',
+							makeInstanceTable(
+								instancesId,
+								specific['type_instances'],
+								highlightClassDef, 'className')]);
+				}
+				if (specific['type_derivations'].length > 0) {
+					var derivationsId = 'derivations-' + (derivationsIdCounter++);
+					specificData.push(['Derivations',
+							makeInstanceTable(
+								derivationsId,
+								specific['type_derivations'],
+								highlightFunction, 'generic')]);
+				}
 				return '<hr/>' +
-					makeTable(basicData) +
+					makeTable(basicData.concat(specificData)) +
 					'<pre>' +
 					highlightTypeDef(specific['type'], highlightCallback) +
 					'</pre>';
 				break;
 			case 'ClassResult':
-				var instancesId = 'instances-' + specific['class_name'];
-				var instances = makeInstanceTable(instancesId,
-						specific['class_instances']);
+				var instancesId = 'instances-' + (instancesIdCounter++);
+				var instances = makeInstanceTable(
+						instancesId,
+						specific['class_instances'],
+						highlightType);
 				var specificData = [['Instances', instances]];
 				var html = '<hr/>' +
 					makeTable(basicData.concat(specificData)) + '<pre>' +
@@ -245,7 +293,7 @@ function getResults(str, libs, page) {
 		if(xmlHttp.readyState == 4 && xmlHttp.status == 200){
 			document.getElementById('loading').remove();
 			var responsedata = JSON.parse(xmlHttp.responseText);
-			if(responsedata['return'] === 0){
+			if(responsedata['return'] >= 0 && responsedata['return'] <= 64){
 				for(var i = 0; i<responsedata['data'].length; i++){
 					var c = responsedata['data'][i];
 					elem.innerHTML += makeResultHTML(c);
@@ -312,12 +360,24 @@ function getLibs() {
 }
 
 function formsubmit() {
-	if (form_str.value === '') {
+	var q = form_str.value;
+	if (q === '') {
 		sresults.innerHTML = 'Can\'t search for the empty string';
 	} else {
+		sresults.innerHTML = '';
+
+		if (q.indexOf('::') == -1 && q.indexOf('->') != -1) {
+			var sug = ':: ' + q.replace('->', ' -> ');
+			sresults.innerHTML = '<p>' +
+				'Searching for <code>' + highlightFunction(q) + '</code>. ' +
+				'Did you mean to search for ' +
+				'<a class="hidden" href="#' + sug + '"><code>' +
+				highlightFunction(sug) + '</code></a>?</p>';
+		}
+
 		var libs = getLibs();
-		sresults.innerHTML = '<div id="page-0"></div>';
-		getResults(form_str.value, libs, 0);
+		sresults.innerHTML += '<div id="page-0"></div>';
+		getResults(q, libs, 0);
 	}
 	return false;
 };

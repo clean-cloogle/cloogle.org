@@ -1,4 +1,5 @@
 #!/bin/sh
+mkdir -p ./cache/lt ./cache/brief
 while :
 do
 	< types.json \

@@ -1,5 +1,5 @@
 <?php
-define('SERVER_HOSTNAME', '127.0.0.1');
+define('SERVER_HOSTNAME', 'backend');
 define('SERVER_PORT', 31215);
 define('SERVER_TIMEOUT', 8);
 
@@ -37,10 +37,17 @@ function log_request($code) {
 		global $start_time;
 		$time = (int) ((microtime(true) - $start_time) * 1000);
 
+		$ip = isset($_SERVER['HTTP_X_FORWARDED_FOR']) ?
+			$_SERVER['HTTP_X_FORWARDED_FOR'] : $_SERVER['REMOTE_ADDR'];
 		$stmt = $db->prepare('INSERT INTO `log`
 			(`ip`,`useragent_id`,`query`,`responsecode`,`responsetime`)
 			VALUES (?,?,?,?,?)');
-		$stmt->bind_param('sisii', $_SERVER['REMOTE_ADDR'], $ua_id, $_GET['str'], $code, $time);
+		$stmt->bind_param('sisii',
+			$ip,
+			$ua_id,
+			$_GET['str'],
+			$code,
+			$time);
 		$stmt->execute();
 		$stmt->close();
 

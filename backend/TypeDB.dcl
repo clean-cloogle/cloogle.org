@@ -11,13 +11,11 @@ from GenEq import generic gEq
 
 // CleanTypeUnifier
 from Type import ::Type, ::TypeVar, ::TVAssignment, ::TypeDef, class print(..),
-  ::ClassContext, ::ClassRestriction, ::ClassOrGeneric
+  ::ClassContext, ::ClassRestriction, ::ClassOrGeneric, ::Priority
 
 :: TypeDB
 
-:: TE_Priority = LeftAssoc Int | RightAssoc Int | NoAssoc Int
-
-:: TypeExtras = { te_priority       :: Maybe TE_Priority
+:: TypeExtras = { te_priority       :: Maybe Priority
                 , te_isconstructor  :: Bool
                 , te_isrecordfield  :: Bool
                 , te_generic_vars   :: Maybe [TypeVar]
@@ -44,10 +42,16 @@ derive gEq TypeDB
 instance zero TypeDB
 instance zero TypeExtras
 
-instance print TE_Priority
 instance print (Name, ExtendedType)
 
 getName :: Location -> Name
+
+functionCount :: TypeDB -> Int
+macroCount :: TypeDB -> Int
+classCount :: TypeDB -> Int
+instanceCount :: TypeDB -> Int
+typeCount :: TypeDB -> Int
+deriveCount :: TypeDB -> Int
 
 filterLocations :: (Location -> Bool) TypeDB -> TypeDB
 
@@ -66,10 +70,9 @@ putMacros :: [(Location, Macro)] TypeDB -> TypeDB
 findMacro` :: (Location Macro -> Bool) TypeDB -> [(Location, Macro)]
 findMacro`` :: [(Location Macro -> Bool)] TypeDB -> [(Location, Macro)]
 
-getInstances :: Class TypeDB -> [(Type, [Location])]
-putInstance :: Class Type Location TypeDB -> TypeDB
-putInstances :: Class [(Type, Location)] TypeDB -> TypeDB
-putInstancess :: [(Class, [(Type, Location)])] TypeDB -> TypeDB
+getInstances :: Class TypeDB -> [([Type], [Location])]
+putInstance :: Class [Type] Location TypeDB -> TypeDB
+putInstances :: [(Class, [Type], Location)] TypeDB -> TypeDB
 
 getClass :: Location TypeDB -> Maybe ([TypeVar],ClassContext,[(Name,ExtendedType)])
 putClass :: Location [TypeVar] ClassContext [(Name,ExtendedType)] TypeDB -> TypeDB
@@ -100,6 +103,9 @@ putDerivations :: Name [(Type, Location)] TypeDB -> TypeDB
 putDerivationss :: [(Name, [(Type, Location)])] TypeDB -> TypeDB
 
 searchExact :: Type TypeDB -> [(Location, ExtendedType)]
+
+getTypeInstances :: Name TypeDB -> [(Class, [Type], [Location])]
+getTypeDerivations :: Name TypeDB -> [(Name, [Location])]
 
 newDb :: TypeDB
 openDb :: *File -> *(Maybe TypeDB, *File)

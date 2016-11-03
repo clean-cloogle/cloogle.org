@@ -1,0 +1,48 @@
+version: '2'
+services:
+  backend:
+    build: backend
+    ports:
+      - "31215:31215"
+    volumes:
+      - "./cloogle.log:/usr/src/cloogle/cloogle.log"
+      - "./cache:/usr/src/cloogle/cache"
+    restart: always
+
+  frontend:
+    build: frontend
+    depends_on:
+      - backend
+    ports:
+      - "80:80"
+    volumes:
+      - "./frontend/:/var/www/html/"
+    restart: always
+
+  stats:
+    build: stats
+    depends_on:
+      - frontend
+      - db
+    ports:
+      - "31216:31216"
+    volumes:
+      - "./cloogle.log:/var/log/cloogle.log"
+    restart: always
+
+  db:
+    image: mysql:latest
+    volumes:
+      - "./db/:/docker-entrypoint-initdb.d/"
+      - "./db/storage/:/var/lib/mysql/"
+    environment:
+        MYSQL_ROOT_PASSWORD: cloogle
+        MYSQL_DATABASE: cloogledb
+        MYSQL_USER: cloogle
+        MYSQL_PASSWORD: cloogle
+
+  gc:
+    build: gc
+    volumes:
+      - "./cache:/var/cache"
+    restart: always

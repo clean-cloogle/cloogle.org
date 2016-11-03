@@ -4,13 +4,12 @@ from StdOverloaded import class zero, class fromString, class toString
 from StdMaybe import :: Maybe
 from TCPIP import ::IPAddress, ::Port
 
-:: LogMessage a b = Connected IPAddress
-                  | Received a
-                  | Sent b
-                  | Disconnected
+:: LogMessage a b t = Connected IPAddress
+                    | Received a
+                    | Sent b t
+                    | Disconnected
 
-:: Logger a b s :== (LogMessage a b) s *World -> *(s, *World)
+:: Logger a b s t :== (LogMessage a b t) s *World -> *(s, *World)
 
-serve :: (a *World -> *(b,*World)) (Maybe (Logger a b s)) Port *World
-         -> *World | fromString a & toString b
-
+serve :: (a *World -> *(b,t,*World)) (Maybe (Logger a b s t)) Port *World
+	-> *World | fromString a & toString b

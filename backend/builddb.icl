@@ -15,7 +15,8 @@ import System.Directory, System.CommandLine
 
 // CleanTypeUnifier
 import qualified Type as T
-from Type import class print(print), instance print [a], instance print String, instance print Type
+from Type import class print(print), instance print [a], instance print String,
+	instance print Type, instance print Priority
 from Type import qualified ::TypeDef{..}, ::Constructor{..}
 import CoclUtils
 
@@ -115,9 +116,14 @@ Start w
 	# cache       = empty_cache st
 	# (db, w)     = loop cli.root mods 'DB'.newDb cache w
 	# db          = 'DB'.putFunctions predefFunctions db
+	# db          = 'DB'.putClasses predefClasses db
 	# db          = 'DB'.putTypes predefTypes db
+	# io          = stderr
+	# io          = printStats db io
+	# (ok1,w)     = fclose io w
 	# f           = 'DB'.saveDb db f
-	= fclose f w
+	# (ok2,w)     = fclose f w
+	= (ok1 && ok2,w)
 | not ok = abort "Couldn't close stdio"
 = w
 where
@@ -139,11 +145,38 @@ where
 		("-l", [x:xs]) = (\c->{c & libs=[x:c.libs]}) <$> parseCLI xs
 		(x, _) = Left $ "Unknown option '" +++ x +++ "'"
 
+	printStats :: !'DB'.TypeDB !*File -> *File
+	printStats db f = f
+		<<< "+-------------+------+\n"
+		<<< "| Functions   | " <<< funs    <<< " |\n"
+		<<< "| Types       | " <<< types   <<< " |\n"
+		<<< "| Macros      | " <<< macros  <<< " |\n"
+		<<< "| Classes     | " <<< classes <<< " |\n"
+		<<< "| Instances   | " <<< insts   <<< " |\n"
+		<<< "| Derivations | " <<< derives <<< " |\n"
+		<<< "+-------------+------+\n"
+	where
+		[funs,macros,types,classes,insts,derives:_]
+			= map (pad 4)
+				[ 'DB'.functionCount db
+				, 'DB'.macroCount db
+				, 'DB'.typeCount db
+				, 'DB'.classCount db
+				, 'DB'.instanceCount db
+				, 'DB'.deriveCount db
+				]
+		pad n i = {' ' \\ _ <- [0..n-size (toString i)-1]} +++ toString i
+
 predefFunctions :: [('DB'.Location, 'DB'.ExtendedType)]
 predefFunctions
 	= [ ( 'DB'.Builtin "if"
 	    , 'DB'.ET ('T'.Func ['T'.Type "Bool" [], 'T'.Var "a", 'T'.Var "a"] ('T'.Var "a") []) zero
 	    )
+	  ]
+
+predefClasses :: [('DB'.Location, ['T'.TypeVar], 'T'.ClassContext, [('DB'.Name, 'DB'.ExtendedType)])]
+predefClasses
+	= [ ( 'DB'.Builtin "TC", ["v"], [], [])
 	  ]
 
 predefTypes :: [('DB'.Location, 'T'.TypeDef)]
@@ -169,7 +202,7 @@ predefTypes
 	  ]
 where
 	deft = {'Type'.td_name="", 'Type'.td_uniq=False, 'Type'.td_args=[], 'Type'.td_rhs='T'.TDRAbstract}
-	defc = {'Type'.cons_name="", 'Type'.cons_args=[], 'Type'.cons_exi_vars=[], 'Type'.cons_context=[]}
+	defc = {'Type'.cons_name="", 'Type'.cons_args=[], 'Type'.cons_exi_vars=[], 'Type'.cons_context=[], 'Type'.cons_priority=Nothing}
 
 //             Exclude   Root    Library Base module            Library Module
 findModules :: ![String] !String !String !String !*World -> *(![(String,String)], !*World)
@@ -208,7 +241,7 @@ getModuleTypes root mod lib cache db w
 # mod = pm.mod_ident.id_name
 # lib = cleanlib mod lib
 # db = 'DB'.putFunctions (pd_typespecs lib mod pm.mod_defs) db
-# db = 'DB'.putInstancess (pd_instances lib mod pm.mod_defs) db
+# db = 'DB'.putInstances (pd_instances lib mod pm.mod_defs) db
 # db = 'DB'.putClasses (pd_classes lib mod pm.mod_defs) db
 # typedefs = pd_types lib mod pm.mod_defs
 # db = 'DB'.putTypes typedefs db
@@ -237,7 +270,7 @@ where
 	pd_macros lib mod pds
 		= [( 'DB'.Location lib mod (toLine pos) id.id_name
 		   , { macro_as_string = priostring id +++ cpp pd
-		     , macro_extras = {zero & te_priority = findPrio id >>= toPrio}
+		     , macro_extras = {zero & te_priority = findPrio id >>= 'T'.toMaybePriority}
 		     }
 		   ) \\ pd=:(PD_Function pos id isinfix args rhs FK_Macro) <- pds]
 	where
@@ -276,14 +309,15 @@ where
 	pd_typespecs lib mod pds
 		= [( 'DB'.Location lib mod (toLine pos) id_name
 		   , 'DB'.ET ('T'.toType t)
-		       {zero & te_priority=toPrio p, te_representation=Just $ cpp ts}
+		       {zero & te_priority='T'.toMaybePriority p, te_representation=Just $ cpp ts}
 		   ) \\ ts=:(PD_TypeSpec pos id=:{id_name} p (Yes t) funspecs) <- pds]
 
 	pd_instances :: String String [ParsedDefinition]
-		-> [('DB'.Class, [('DB'.Type, 'DB'.Location)])]
+		-> [('DB'.Class, ['DB'.Type], 'DB'.Location)]
 	pd_instances lib mod pds
 		= [( pi_ident.id_name
-		   , [('T'.toType t, 'DB'.Location lib mod (toLine pi_pos) "") \\ t <- pi_types]
+		   , map 'T'.toType pi_types
+		   , 'DB'.Location lib mod (toLine pi_pos) ""
 		   ) \\ PD_Instance {pim_pi={pi_ident,pi_types,pi_pos}} <- pds]
 
 	pd_classes :: String String [ParsedDefinition]
@@ -308,8 +342,14 @@ where
 	constructor_functions ('DB'.Location lib mod line _, td)
 		= [('DB'.Location lib mod line c, 'DB'.ET f
 			{zero & te_isconstructor=True
-			      , te_representation=Just $ concat $ [c, " :: " : print False f]})
-		   \\ (c,f) <- 'T'.constructorsToFunctions td]
+			      , te_representation=Just $ concat $
+				      [c] ++ print_prio p ++ [" :: "] ++ print False f//[c, " :: " : print False f]
+			      , te_priority=p})
+		   \\ (c,f,p) <- 'T'.constructorsToFunctions td]
+	where
+		print_prio :: (Maybe 'T'.Priority) -> [String]
+		print_prio Nothing  = []
+		print_prio (Just p) = [" "] ++ print False p
 
 	record_functions :: ('DB'.Location, 'DB'.TypeDef)
 		-> [('DB'.Location, 'DB'.ExtendedType)]
@@ -318,12 +358,6 @@ where
 			{zero & te_isrecordfield=True
 			      , te_representation=Just $ concat $ [".", f, " :: " : print False t]})
 			\\ (f,t) <- 'T'.recordsToFunctions td]
-
-	toPrio :: Priority -> Maybe 'DB'.TE_Priority
-	toPrio (Prio LeftAssoc i)  = Just $ 'DB'.LeftAssoc i
-	toPrio (Prio RightAssoc i) = Just $ 'DB'.RightAssoc i
-	toPrio (Prio NoAssoc i)    = Just $ 'DB'.NoAssoc i
-	toPrio _                   = Nothing
 
 	toLine :: Position -> 'DB'.LineNr
 	toLine (FunPos _ l _) = Just l

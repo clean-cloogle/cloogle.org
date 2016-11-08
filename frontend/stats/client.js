@@ -14,6 +14,11 @@ function updateSearches() {
 	var highlighter = highlightFunction;
 	if (query.substring(0,6) == 'class ') {
 		highlighter = highlightClassDef;
+	} else if (query.substring(0,5) == 'type ') {
+		highlighter = function(q) {
+			return '<span class="keyword">type</span> ' +
+				highlightFunction(q.substring(5));
+		}
 	}
 
 	last.innerHTML = '<pre>' + highlighter(query) + '</pre>';
@@ -84,7 +89,7 @@ function addConnectionCallbacks(connection) {
 		if ('className' in req) {
 			query = 'class ' + req.className;
 		} else if ('typeName' in req) {
-			query = ':: ' + req.typeName;
+			query = 'type ' + req.typeName;
 		}
 
 		if (searches.length == 0 || !is_open_message) {

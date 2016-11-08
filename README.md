@@ -13,6 +13,9 @@ Use any of the available frontends:
 	line interface to the api.
 - The `:Cloogle` command in
 	[camilstaps/vim-clean](https://github.com/camilstaps/vim-clean).
+- An email to `cloogle@camilstaps.nl` with the query in the subject (see
+	[this gist](https://gist.github.com/camilstaps/bf719319d90d974329ee7e4ad08f1aa2)
+	for the implementation).
 
 ---
 

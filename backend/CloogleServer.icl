@@ -301,7 +301,7 @@ where
 	makeClassResultExtras (l, vars, cc, funs) db
 		= { class_name = cls
 		  , class_heading = foldl ((+) o (flip (+) " ")) cls vars +
-		      if (isEmpty cc) "" " " + concat (print False cc)
+		      if (isEmpty cc) "" " | " + concat (print False cc)
 		  , class_funs = [print_fun fun \\ fun <- funs]
 		  , class_instances
 		      = sortBy (\(a,_) (b,_) -> a < b)

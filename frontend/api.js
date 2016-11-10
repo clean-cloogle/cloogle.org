@@ -150,12 +150,16 @@ function getResults(str, libs, page) {
 		if ('dcl_line' in basic) {
 			dclUrl += '&line=' + basic['dcl_line'] + '#line-' + basic['dcl_line'];
 		}
+		if ('icl_line' in basic) {
+			iclUrl += '&line=' + basic['icl_line'] + '#line-' + basic['icl_line'];
+		}
 
 		var basicData = [
 			['Library',  basic['library']],
 			['Filename', '<a href="' + dclUrl + '" target="_blank">' +
 				basic['filename'] + ('dcl_line' in basic ? ':' + basic['dcl_line'] : '') +
-				'</a> (<a href="' + iclUrl + '" target="_blank">icl</a>)'],
+				'</a> (<a href="' + iclUrl + '" target="_blank">icl' +
+				('icl_line' in basic ? ':' + basic['icl_line'] : '') + '</a>)'],
 			['Module',   basic['modul']],
 			['Distance', basic['distance']]
 		];

@@ -51,6 +51,7 @@ import Cache
                  , filename :: String
                  , modul    :: String
                  , dcl_line :: Maybe Int
+                 , icl_line :: Maybe Int
                  , distance :: Int
                  , builtin  :: Maybe Bool
                  }
@@ -279,6 +280,7 @@ where
 		  ( { library  = ""
 		    , filename = ""
 		    , dcl_line = Nothing
+		    , icl_line = Nothing
 		    , modul    = ""
 		    , distance = -100
 		    , builtin  = Just True
@@ -290,6 +292,7 @@ where
 		  ( { library  = lib
 		    , filename = modToFilename mod
 		    , dcl_line = line
+		    , icl_line = Nothing
 		    , modul    = mod
 		    , distance = -100
 		    , builtin  = Nothing
@@ -323,6 +326,7 @@ where
 		  ( { library  = lib
 		    , filename = modToFilename mod
 		    , dcl_line = line
+		    , icl_line = line
 		    , modul    = mod
 		    , distance
 		        = if (isNothing mbName) -100 (levenshtein` t (fromJust mbName))
@@ -339,6 +343,7 @@ where
 		  ( { library  = ""
 		    , filename = ""
 		    , dcl_line = Nothing
+		    , icl_line = Nothing
 		    , modul    = ""
 		    , distance
 		        = if (isNothing mbName) -100 (levenshtein` t (fromJust mbName))
@@ -357,6 +362,7 @@ where
 		  ( { library  = lib
 		    , filename = modToFilename mod
 		    , dcl_line = line
+		    , icl_line = Nothing
 		    , modul    = mod
 		    , distance
 		        = if (isNothing mbName) -100 (levenshtein` (fromJust mbName) m)
@@ -375,6 +381,7 @@ where
 		  ( { library  = lib
 		    , filename = modToFilename mod
 		    , dcl_line = line
+		    , icl_line = tes.te_iclline
 		    , modul    = mod
 		    , distance = distance
 		    , builtin  = builtin

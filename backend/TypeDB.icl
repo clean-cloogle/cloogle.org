@@ -85,6 +85,7 @@ where
 	       , te_isrecordfield  = False
 	       , te_generic_vars   = Nothing
 	       , te_representation = Nothing
+	       , te_iclline        = Nothing
 	       }
 
 instance print TypeExtras

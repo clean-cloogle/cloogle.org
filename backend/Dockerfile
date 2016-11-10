@@ -1,5 +1,8 @@
 FROM camilstaps/clean:2.4-itasks
 
+# Move StdEnv implementation modules to builddb root
+RUN mv /opt/clean/StdEnv/*.icl /opt/clean/lib/StdEnv
+
 RUN PACKAGES="subversion ca-certificates" \
 	&& apt-get update \
 	&& apt-get install -qq subversion ca-certificates \

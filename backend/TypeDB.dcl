@@ -20,6 +20,7 @@ from Type import ::Type, ::TypeVar, ::TVAssignment, ::TypeDef, class print(..),
                 , te_isrecordfield  :: Bool
                 , te_generic_vars   :: Maybe [TypeVar]
                 , te_representation :: Maybe String
+                , te_iclline        :: Maybe Int
                 }
 
 :: ExtendedType = ET Type TypeExtras

@@ -229,27 +229,20 @@ where
 
 getModuleTypes :: String String String *DclCache 'DB'.TypeDB *World -> *('DB'.TypeDB, *DclCache, *World)
 getModuleTypes root mod lib cache db w
-# filename = root +++ "/" +++ lib +++ "/" +++ mkdir mod +++ ".dcl"
-# (ok,f,w) = fopen filename FReadText w
-| not ok = abort ("Couldn't open file " +++ filename +++ ".\n")
-# (mod_id, ht) = putIdentInHashTable mod (IC_Module NoQualifiedIdents) cache.hash_table
-  cache = {cache & hash_table=ht}
-# ((b1,b2,pm,ht,f),w) = accFiles (wantModule` f "" False mod_id.boxed_ident NoPos True cache.hash_table stderr) w
-  cache = {cache & hash_table=ht}
-# (ok,w) = fclose f w
-| not ok = abort ("Couldn't close file " +++ filename +++ ".\n")
-# mod = pm.mod_ident.id_name
+# (Right dcl,cache,w) = readModule False cache w
+# (icl,cache,w) = readModule True cache w
+# mod = dcl.mod_ident.id_name
 # lib = cleanlib mod lib
-# db = 'DB'.putFunctions (pd_typespecs lib mod pm.mod_defs) db
-# db = 'DB'.putInstances (pd_instances lib mod pm.mod_defs) db
-# db = 'DB'.putClasses (pd_classes lib mod pm.mod_defs) db
-# typedefs = pd_types lib mod pm.mod_defs
-# db = 'DB'.putTypes typedefs db
-# db = 'DB'.putFunctions (flatten $ map constructor_functions typedefs) db
-# db = 'DB'.putFunctions (flatten $ map record_functions typedefs) db
-# db = 'DB'.putFunctions (pd_generics lib mod pm.mod_defs) db
-# db = 'DB'.putDerivationss (pd_derivations lib mod pm.mod_defs) db
-# db = 'DB'.putMacros (pd_macros lib mod pm.mod_defs) db
+# db  = 'DB'.putFunctions (pd_typespecs lib mod dcl.mod_defs icl) db
+# db  = 'DB'.putInstances (pd_instances lib mod dcl.mod_defs) db
+# db  = 'DB'.putClasses (pd_classes lib mod dcl.mod_defs icl) db
+# typedefs = pd_types lib mod dcl.mod_defs
+# db  = 'DB'.putTypes typedefs db
+# db  = 'DB'.putFunctions (flatten $ map constructor_functions typedefs) db
+# db  = 'DB'.putFunctions (flatten $ map record_functions typedefs) db
+# db  = 'DB'.putFunctions (pd_generics lib mod dcl.mod_defs) db
+# db  = 'DB'.putDerivationss (pd_derivations lib mod dcl.mod_defs) db
+# db  = 'DB'.putMacros (pd_macros lib mod dcl.mod_defs) db
 = (db,cache,w)
 where
 	mkdir :: String -> String
@@ -267,75 +260,85 @@ where
 			= lib
 
 	pd_macros :: String String [ParsedDefinition] -> [('DB'.Location, 'DB'.Macro)]
-	pd_macros lib mod pds
+	pd_macros lib mod dcl
 		= [( 'DB'.Location lib mod (toLine pos) id.id_name
 		   , { macro_as_string = priostring id +++ cpp pd
 		     , macro_extras = {zero & te_priority = findPrio id >>= 'T'.toMaybePriority}
 		     }
-		   ) \\ pd=:(PD_Function pos id isinfix args rhs FK_Macro) <- pds]
+		   ) \\ pd=:(PD_Function pos id isinfix args rhs FK_Macro) <- dcl]
 	where
 		priostring :: Ident -> String
-		priostring id = case findTypeSpec id pds of
+		priostring id = case findTypeSpec id dcl of
 			Nothing    = ""
 			(Just pri) = cpp pri +++ "\n"
 
 		findPrio :: Ident -> Maybe Priority
-		findPrio id = (\(PD_TypeSpec _ _ p _ _) -> p) <$> findTypeSpec id pds
+		findPrio id = (\(PD_TypeSpec _ _ p _ _) -> p) <$> findTypeSpec id dcl
 
 		findTypeSpec :: Ident [ParsedDefinition] -> Maybe ParsedDefinition
 		findTypeSpec _  []          = Nothing
-		findTypeSpec id [pd=:(PD_TypeSpec _ id` prio _ _):pds]
+		findTypeSpec id [pd=:(PD_TypeSpec _ id` prio _ _):dcl]
 		| id`.id_name == id.id_name = Just pd
-		findTypeSpec id [_:pds]     = findTypeSpec id pds
+		findTypeSpec id [_:dcl]     = findTypeSpec id dcl
 
 	pd_derivations :: String String [ParsedDefinition]
 		-> [('DB'.Name, [('DB'.Type, 'DB'.Location)])]
-	pd_derivations lib mod pds
+	pd_derivations lib mod dcl
 		= [( id.id_name
 		   , [('T'.toType gc_type, 'DB'.Location lib mod (toLine gc_pos) "")]
-		   ) \\ PD_Derive gcdefs <- pds, {gc_type,gc_pos,gc_gcf=GCF id _} <- gcdefs]
+		   ) \\ PD_Derive gcdefs <- dcl, {gc_type,gc_pos,gc_gcf=GCF id _} <- gcdefs]
 
 	pd_generics :: String String [ParsedDefinition]
 		-> [('DB'.Location, 'DB'.ExtendedType)]
-	pd_generics lib mod pds
+	pd_generics lib mod dcl
 		= [( 'DB'.Location lib mod (toLine gen_pos) id_name
 		   , 'DB'.ET ('T'.toType gen_type)
 		       {zero & te_generic_vars=Just $ map 'T'.toTypeVar gen_vars
 		             , te_representation=Just $ cpp gen}
-		   ) \\ gen=:(PD_Generic {gen_ident={id_name},gen_pos,gen_type,gen_vars}) <- pds]
+		   ) \\ gen=:(PD_Generic {gen_ident={id_name},gen_pos,gen_type,gen_vars}) <- dcl]
 
-	pd_typespecs :: String String [ParsedDefinition]
+	pd_typespecs :: String String [ParsedDefinition] (Either String ParsedModule)
 		-> [('DB'.Location, 'DB'.ExtendedType)]
-	pd_typespecs lib mod pds
+	pd_typespecs lib mod dcl icl
 		= [( 'DB'.Location lib mod (toLine pos) id_name
 		   , 'DB'.ET ('T'.toType t)
-		       {zero & te_priority='T'.toMaybePriority p, te_representation=Just $ cpp ts}
-		   ) \\ ts=:(PD_TypeSpec pos id=:{id_name} p (Yes t) funspecs) <- pds]
+		       { zero & te_priority = 'T'.toMaybePriority p
+		              , te_representation = Just $ cpp ts
+		              , te_iclline = findIclLine id_name icl}
+		   ) \\ ts=:(PD_TypeSpec pos id=:{id_name} p (Yes t) funspecs) <- dcl]
+	where
+		findIclLine :: String (Either String ParsedModule) -> Maybe Int
+		findIclLine _ (Left _) = Nothing
+		findIclLine name (Right {mod_defs=pms})
+			= case [pos \\ PD_TypeSpec pos id _ _ _ <- pms | id.id_name == name] of
+				[FunPos _ l _:_] = Just l
+				[LinePos _ l:_] = Just l
+				_ = Nothing
 
 	pd_instances :: String String [ParsedDefinition]
 		-> [('DB'.Class, ['DB'.Type], 'DB'.Location)]
-	pd_instances lib mod pds
+	pd_instances lib mod dcl
 		= [( pi_ident.id_name
 		   , map 'T'.toType pi_types
 		   , 'DB'.Location lib mod (toLine pi_pos) ""
-		   ) \\ PD_Instance {pim_pi={pi_ident,pi_types,pi_pos}} <- pds]
+		   ) \\ PD_Instance {pim_pi={pi_ident,pi_types,pi_pos}} <- dcl]
 
-	pd_classes :: String String [ParsedDefinition]
+	pd_classes :: String String [ParsedDefinition] (Either String ParsedModule)
 		-> [('DB'.Location, ['T'.TypeVar], 'T'.ClassContext,
 			[('DB'.Name, 'DB'.ExtendedType)])]
-	pd_classes lib mod pds
-	# pds = filter (\pd->case pd of (PD_Class _ _)=True; _=False) pds
-	= map (\(PD_Class {class_ident={id_name},class_pos,class_args,class_context} pds)
-		-> let typespecs = pd_typespecs lib mod pds
+	pd_classes lib mod dcl icl
+	# dcl = filter (\pd->case pd of (PD_Class _ _)=True; _=False) dcl
+	= map (\(PD_Class {class_ident={id_name},class_pos,class_args,class_context} dcl)
+		-> let typespecs = pd_typespecs lib mod dcl icl
 		in ('DB'.Location lib mod (toLine class_pos) id_name, map 'T'.toTypeVar class_args,
 		    flatten $ map 'T'.toClassContext class_context,
-		    [(f,et) \\ ('DB'.Location _ _ _ f, et) <- typespecs])) pds
+		    [(f,et) \\ ('DB'.Location _ _ _ f, et) <- typespecs])) dcl
 
 	pd_types :: String String [ParsedDefinition]
 		-> [('DB'.Location, 'DB'.TypeDef)]
-	pd_types lib mod pds
+	pd_types lib mod dcl
 		= [('DB'.Location lib mod (toLine ptd.td_pos) ('T'.td_name td), td)
-		   \\ PD_Type ptd <- pds, td <- ['T'.toTypeDef ptd]]
+		   \\ PD_Type ptd <- dcl, td <- ['T'.toTypeDef ptd]]
 
 	constructor_functions :: ('DB'.Location, 'DB'.TypeDef)
 		-> [('DB'.Location, 'DB'.ExtendedType)]
@@ -343,7 +346,7 @@ where
 		= [('DB'.Location lib mod line c, 'DB'.ET f
 			{zero & te_isconstructor=True
 			      , te_representation=Just $ concat $
-				      [c] ++ print_prio p ++ [" :: "] ++ print False f//[c, " :: " : print False f]
+			          [c] ++ print_prio p ++ [" :: "] ++ print False f
 			      , te_priority=p})
 		   \\ (c,f,p) <- 'T'.constructorsToFunctions td]
 	where
@@ -363,6 +366,19 @@ where
 	toLine (FunPos _ l _) = Just l
 	toLine (LinePos _ l)  = Just l
 	toLine _              = Nothing
+
+	readModule :: Bool *DclCache *World -> *(Either String ParsedModule, *DclCache, *World)
+	readModule icl cache w
+	# filename = root +++ "/" +++ lib +++ "/" +++ mkdir mod +++ if icl ".icl" ".dcl"
+	# (ok,f,w) = fopen filename FReadText w
+	| not ok = (Left $ "Couldn't open " +++ filename, cache, w)
+	# (mod_id, ht) = putIdentInHashTable mod (IC_Module NoQualifiedIdents) cache.hash_table
+	  cache = {cache & hash_table=ht}
+	# ((b1,b2,pm,ht,f),w) = accFiles (wantModule` f "" icl mod_id.boxed_ident NoPos True cache.hash_table stderr) w
+	  cache = {cache & hash_table=ht}
+	# (ok,w) = fclose f w
+	| not ok = (Left $ "Couldn't open " +++ filename, cache, w)
+	= (Right pm, cache, w)
 
 wantModule` :: !*File !{#Char} !Bool !Ident !Position !Bool !*HashTable !*File !*Files
 	-> ((!Bool,!Bool,!ParsedModule, !*HashTable, !*File), !*Files)

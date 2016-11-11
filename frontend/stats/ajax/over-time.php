@@ -18,6 +18,11 @@ if ($range < 24 * 3600) {
 	$group = 'date(`date`)';
 	$timestamp = 'floor(unix_timestamp(MIN(`date`)) / 86400) * 86400';
 	$timemod = 86400;
+} elseif ($range < 365 * 24 * 3600) {
+	// up to 1 year: weekly data
+	$group = 'year(`date`), weekofyear(`date`)';
+	$timestamp = 'floor(unix_timestamp(adddate(min(`date`), interval -weekday(min(`date`)) day)) / 86400) * 86400';
+	$timemod = 7 * 86400;
 } else {
 	// otherwise: monthly data
 	$group = 'year(`date`), month(`date`)';

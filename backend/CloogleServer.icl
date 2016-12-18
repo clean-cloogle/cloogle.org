@@ -205,7 +205,7 @@ where
 		# w = writeCache Brief req` resp` w
 		= cachePages (npages - 1) (i + 1) response keep w
 		where
-			req` = { request & page = ((+) i) <$> request.page <|> pure 0 }
+			req` = { request & page = ((+) i) <$> (request.page <|> pure 0) }
 			resp` =
 				{ response
 				& more_available = Just $ max 0 (length results - MAX_RESULTS)

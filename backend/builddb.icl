@@ -172,6 +172,9 @@ predefFunctions
 	= [ ( 'DB'.Builtin "if"
 	    , 'DB'.ET ('T'.Func ['T'.Type "Bool" [], 'T'.Var "a", 'T'.Var "a"] ('T'.Var "a") []) zero
 	    )
+	  , ( 'DB'.Builtin "dynamic"
+	    , 'DB'.ET ('T'.Func ['T'.Var "a"] ('T'.Type "Dynamic" []) []) zero
+	    )
 	  ]
 
 predefClasses :: [('DB'.Location, ['T'.TypeVar], 'T'.ClassContext, [('DB'.Name, 'DB'.ExtendedType)])]

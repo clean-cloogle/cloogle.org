@@ -1,6 +1,13 @@
 module CloogleServer
 
-import StdArray, StdBool, StdFile, StdList, StdOrdList, StdOverloaded, StdTuple
+import StdArray
+import StdBool
+import StdFile
+import StdList
+import StdOrdList
+import StdOverloaded
+import StdString
+import StdTuple
 from StdFunc import o, flip, const
 from StdMisc import abort
 
@@ -11,7 +18,6 @@ import Data.List
 import Data.Tuple
 import Data.Maybe
 import System.CommandLine
-import Text.JSON
 import Data.Functor
 import Control.Applicative
 import Control.Monad
@@ -25,116 +31,7 @@ import qualified SimpleTCPServer
 import TypeDB
 import Type
 import Cache
-
-:: Request = { unify     :: Maybe String
-             , name      :: Maybe String
-             , className :: Maybe String
-             , typeName  :: Maybe String
-             , modules   :: Maybe [String]
-             , libraries :: Maybe ([String], Bool)
-             , page      :: Maybe Int
-             }
-
-:: Response = { return         :: Int
-              , data           :: [Result]
-              , msg            :: String
-              , more_available :: Maybe Int
-              , suggestions    :: Maybe [(Request, Int)]
-              }
-
-:: Result = FunctionResult FunctionResult
-          | TypeResult TypeResult
-          | ClassResult ClassResult
-          | MacroResult MacroResult
-
-:: BasicResult = { library  :: String
-                 , filename :: String
-                 , modul    :: String
-                 , dcl_line :: Maybe Int
-                 , icl_line :: Maybe Int
-                 , distance :: Int
-                 , builtin  :: Maybe Bool
-                 }
-
-:: FunctionResult :== (BasicResult, FunctionResultExtras)
-:: FunctionResultExtras = { func                :: String
-                          , unifier             :: Maybe StrUnifier
-                          , cls                 :: Maybe ShortClassResult
-                          , constructor_of      :: Maybe String
-                          , recordfield_of      :: Maybe String
-                          , generic_derivations :: Maybe [(String, [LocationResult])]
-                          }
-
-:: TypeResult :== (BasicResult, TypeResultExtras)
-:: TypeResultExtras = { type             :: String
-                      , type_instances   :: [(String, [String], [LocationResult])]
-                      , type_derivations :: [(String, [LocationResult])]
-                      }
-
-:: ClassResult :== (BasicResult, ClassResultExtras)
-:: ClassResultExtras = { class_name      :: String
-                       , class_heading   :: String
-                       , class_funs      :: [String]
-                       , class_instances :: [([String], [LocationResult])]
-                       }
-
-:: MacroResult :== (BasicResult, MacroResultExtras)
-:: MacroResultExtras = { macro_name           :: String
-                       , macro_representation :: String
-                       }
-
-:: LocationResult :== (String, String, Maybe Int, Maybe Int)
-
-:: StrUnifier :== ([(String,String)], [(String,String)])
-
-:: ErrorResult = MaybeError Int String
-
-:: ShortClassResult = { cls_name :: String, cls_vars :: [String] }
-
-derive JSONEncode Request, Response, Result, ShortClassResult, BasicResult,
-	FunctionResultExtras, TypeResultExtras, ClassResultExtras, MacroResultExtras
-derive JSONDecode Request, Response, Result, ShortClassResult, BasicResult,
-	FunctionResultExtras, TypeResultExtras, ClassResultExtras, MacroResultExtras
-
-instance zero Request
-where
-	zero = { unify     = Nothing
-	       , name      = Nothing
-	       , className = Nothing
-	       , typeName  = Nothing
-	       , modules   = Nothing
-	       , libraries = Nothing
-	       , page      = Nothing
-	       }
-
-instance toString Response where toString r = toString (toJSON r) + "\n"
-instance toString Request where toString r = toString $ toJSON r
-
-instance fromString (Maybe Request) where fromString s = fromJSON $ fromString s
-
-instance < BasicResult where (<) r1 r2 = r1.distance < r2.distance
-instance < Result
-where
-	(<) r1 r2 = basic r1 < basic r2
-	where
-		basic :: Result -> BasicResult
-		basic (FunctionResult (br,_)) = br
-		basic (TypeResult     (br,_)) = br
-		basic (ClassResult    (br,_)) = br
-		basic (MacroResult    (br,_)) = br
-
-err :: Int String -> Response
-err c m = { return         = c
-          , data           = []
-          , msg            = m
-          , more_available = Nothing
-          , suggestions    = Nothing
-          }
-
-E_NORESULTS    :== 127
-E_INVALIDINPUT :== 128
-E_INVALIDNAME  :== 129
-E_INVALIDTYPE  :== 130
+import Cloogle
 
 MAX_RESULTS    :== 15
 CACHE_PREFETCH :== 5
@@ -157,7 +54,7 @@ where
 	= snd $ fclose io w
 
 	handle :: !TypeDB !(Maybe Request) !*World -> *(!Response, CacheKey, !*World)
-	handle _ Nothing w = (err E_INVALIDINPUT "Couldn't parse input", "", w)
+	handle _ Nothing w = (err CLOOGLE_E_INVALIDINPUT "Couldn't parse input", "", w)
 	handle db (Just request=:{unify,name,page}) w
 		//Check cache
 		# (mbResponse, w) = readCache request w
@@ -165,11 +62,11 @@ where
 			# r = fromJust mbResponse
 			= ({r & return = if (r.return == 0) 1 r.return}, cacheKey request, w)
 		| isJust name && size (fromJust name) > 40
-			= respond (err E_INVALIDNAME "Function name too long") w
+			= respond (err CLOOGLE_E_INVALIDNAME "Function name too long") w
 		| isJust name && any isSpace (fromString $ fromJust name)
-			= respond (err E_INVALIDNAME "Name cannot contain spaces") w
+			= respond (err CLOOGLE_E_INVALIDNAME "Name cannot contain spaces") w
 		| isJust unify && isNothing (parseType $ fromString $ fromJust unify)
-			= respond (err E_INVALIDTYPE "Couldn't parse type") w
+			= respond (err CLOOGLE_E_INVALIDTYPE "Couldn't parse type") w
 		// Results
 		# drop_n = fromJust (page <|> pure 0) * MAX_RESULTS
 		# results = drop drop_n $ sort $ search request db
@@ -183,7 +80,7 @@ where
 		# (results,nextpages) = splitAt MAX_RESULTS results
 		// Response
 		# response = if (isEmpty results)
-			(err E_NORESULTS "No results")
+			(err CLOOGLE_E_NORESULTS "No results")
 			{ return = 0
 		    , msg = "Success"
 		    , data           = results

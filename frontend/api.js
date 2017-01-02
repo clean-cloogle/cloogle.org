@@ -99,7 +99,6 @@ function getResults(str, libs, page) {
 				'</a>)';
 		}
 		for (var i in list) {
-			console.log(list[i][0]);
 			instances += '<tr><th>';
 			if (typeof list[i][0] === 'object') {
 				for (var k in list[i][0]) {

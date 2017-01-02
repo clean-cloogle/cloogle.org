@@ -55,24 +55,12 @@ where
 	       , derivemap`   = newMap
 	       }
 
-instance < (Maybe a) | < a
-where
-	(<) (Just a) (Just b) = a < b
-	(<) (Just _) Nothing  = True
-	(<) Nothing  _        = False
-
-instance < Location
-where
-	(<) (Location a b c d) (Location e f g h) = ((a,b),(c,d)) < ((e,f),(g,h))
-	(<) (Location _ _ _ _) (Builtin _)        = True
-	(<) (Builtin _)        (Location _ _ _ _) = False
-	(<) (Builtin a)        (Builtin b)        = a < b
-
-derive gLexOrd Maybe, ClassOrGeneric, Kind, Type
+derive gLexOrd Location, Maybe, ClassOrGeneric, Kind, Type
+instance < Location where (<) a b = (a =?= b) === LT
+instance < (Maybe a) | gLexOrd{|*|} a where (<) a b = (a =?= b) === LT
 instance < Type where (<) a b = (a =?= b) === LT
-
-instance < (a,b,c,d) | Ord a & Ord b & Ord c & Ord d
-where (<) (a,b,c,d) (e,f,g,h) = ((a,b),(c,d)) < ((e,f),(g,h))
+instance < (a,b,c,d) | gLexOrd{|*|} a & gLexOrd{|*|} b & gLexOrd{|*|} c & gLexOrd{|*|} d
+	where (<) a b = (a =?= b) === LT
 
 instance == Location
 where
@@ -85,7 +73,6 @@ where
 	       , te_isrecordfield  = False
 	       , te_generic_vars   = Nothing
 	       , te_representation = Nothing
-	       , te_iclline        = Nothing
 	       }
 
 instance print TypeExtras
@@ -106,8 +93,8 @@ where
 		| otherwise            = f
 
 getName :: Location -> Name
-getName (Location _ _ _ name) = name
-getName (Builtin name)        = name
+getName (Location _ _ _ _ name) = name
+getName (Builtin name)          = name
 
 functionCount :: TypeDB -> Int
 functionCount {functionmap} = mapSize functionmap

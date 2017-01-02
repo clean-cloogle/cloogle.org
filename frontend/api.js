@@ -86,13 +86,17 @@ function getResults(str, libs, page) {
 				'&mod=' + encodeURIComponent(loc[1]) +
 				'&hl';
 			var iclUrl = dclUrl + '&icl';
-			if (loc[2].length > 1) {
+			if (loc[2].length > 1)
 				dclUrl += '&line=' + loc[2][1] + '#line-' + loc[2][1];
-			}
+			if (loc[3].length > 1)
+				iclUrl += '&line=' + loc[3][1] + '#line-' + loc[3][1];
 			return '<a target="_blank" ' +
 				'href="' + dclUrl + '" ' +
-				'title="' + loc[0] + '">' + loc[1] + '</a> (' +
-				'<a target="_blank" href="' + iclUrl + '">icl</a>)';
+				'title="' + loc[0] + '">' + loc[1] +
+				(loc[2].length > 1 ? ':' + loc[2][1] : '') +
+				'</a> (<a target="_blank" href="' + iclUrl + '">icl' +
+				(loc[3].length > 1 ? ':' + loc[3][1] : '') +
+				'</a>)';
 		}
 		for (var i in list) {
 			console.log(list[i][0]);

@@ -20,7 +20,6 @@ from Type import ::Type, ::TypeVar, ::TVAssignment, ::TypeDef, class print(..),
                 , te_isrecordfield  :: Bool
                 , te_generic_vars   :: Maybe [TypeVar]
                 , te_representation :: Maybe String
-                , te_iclline        :: Maybe Int
                 }
 
 :: ExtendedType = ET Type TypeExtras
@@ -29,8 +28,8 @@ from Type import ::Type, ::TypeVar, ::TVAssignment, ::TypeDef, class print(..),
            , macro_extras :: TypeExtras
            }
 
-:: Location = Location Library Module LineNr Name
-            | Builtin                        Name
+:: Location = Location Library Module LineNr LineNr Name
+            | Builtin                               Name
 
 :: Name         :== String
 :: Library      :== String

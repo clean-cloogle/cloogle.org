@@ -83,7 +83,7 @@ import Cache
                        , macro_representation :: String
                        }
 
-:: LocationResult :== (String, String, Maybe Int)
+:: LocationResult :== (String, String, Maybe Int, Maybe Int)
 
 :: StrUnifier :== ([(String,String)], [(String,String)])
 
@@ -251,12 +251,12 @@ where
 		# macros = map (\(lhs,rhs) -> makeMacroResult name lhs rhs) macros
 		// Search class members
 		# filts = catMaybes [ (\t _ _ _ _->isUnifiable t) <$> mbType
-		                    , (\n (Location lib mod _ _) _ _ f _ -> isNameMatch
-		                      (size n*2/3) n (Location lib mod Nothing f)) <$> name
+		                    , (\n (Location lib mod _ _ _) _ _ f _ -> isNameMatch
+		                      (size n*2/3) n (Location lib mod Nothing Nothing f)) <$> name
 		                    ]
 		# members = findClassMembers`` filts db
-		# members = map (\(Location lib mod line cls,vs,_,f,et) -> makeFunctionResult name mbType
-			(Just {cls_name=cls,cls_vars=vs}) (Location lib mod line f,et) db) members
+		# members = map (\(Location lib mod line iclline cls,vs,_,f,et) -> makeFunctionResult name mbType
+			(Just {cls_name=cls,cls_vars=vs}) (Location lib mod line iclline f,et) db) members
 		// Search types
 		# lcName = if (isJust mbType && isType (fromJust mbType))
 			(let (Type name _) = fromJust mbType in Just $ toLowerCase name)
@@ -287,12 +287,12 @@ where
 		    }
 		  , makeClassResultExtras rec db
 		  )
-	makeClassResult rec=:(Location lib mod line cls, vars, cc, funs) db
+	makeClassResult rec=:(Location lib mod line iclline cls, vars, cc, funs) db
 		= ClassResult
 		  ( { library  = lib
 		    , filename = modToFilename mod
 		    , dcl_line = line
-		    , icl_line = Nothing
+		    , icl_line = iclline
 		    , modul    = mod
 		    , distance = -100
 		    , builtin  = Nothing
@@ -314,19 +314,19 @@ where
 	where
 		cls = case l of
 			Builtin c = c
-			Location _ _ _ c = c
+			Location _ _ _ _ c = c
 
 		print_fun :: (Name,ExtendedType) -> String
 		print_fun f=:(_,ET _ et) = fromJust $
 			et.te_representation <|> (pure $ concat $ print False f)
 
 	makeTypeResult :: (Maybe String) Location TypeDef TypeDB -> Result
-	makeTypeResult mbName (Location lib mod line t) td db
+	makeTypeResult mbName (Location lib mod line iclline t) td db
 		= TypeResult
 		  ( { library  = lib
 		    , filename = modToFilename mod
 		    , dcl_line = line
-		    , icl_line = line
+		    , icl_line = iclline
 		    , modul    = mod
 		    , distance
 		        = if (isNothing mbName) -100 (levenshtein` t (fromJust mbName))
@@ -357,12 +357,12 @@ where
 		  )
 
 	makeMacroResult :: (Maybe String) Location Macro -> Result
-	makeMacroResult mbName (Location lib mod line m) mac
+	makeMacroResult mbName (Location lib mod line iclline m) mac
 		= MacroResult
 		  ( { library  = lib
 		    , filename = modToFilename mod
 		    , dcl_line = line
-		    , icl_line = Nothing
+		    , icl_line = iclline
 		    , modul    = mod
 		    , distance
 		        = if (isNothing mbName) -100 (levenshtein` (fromJust mbName) m)
@@ -381,7 +381,7 @@ where
 		  ( { library  = lib
 		    , filename = modToFilename mod
 		    , dcl_line = line
-		    , icl_line = tes.te_iclline
+		    , icl_line = iclline
 		    , modul    = mod
 		    , distance = distance
 		    , builtin  = builtin
@@ -405,9 +405,9 @@ where
 		    }
 		  )
 	where
-		(lib,mod,fname,line,builtin) = case fl of
-			(Location l m ln f) = (l,  m,  f, ln,      Nothing)
-			(Builtin f)         = ("", "", f, Nothing, Just True)
+		(lib,mod,fname,line,iclline,builtin) = case fl of
+			(Location l m ln iln f) = (l,  m,  f, ln,      iln,     Nothing)
+			(Builtin f)             = ("", "", f, Nothing, Nothing, Just True)
 
 		toStrUnifier :: Unifier -> StrUnifier
 		toStrUnifier (tvas1, tvas2) = (map toStr tvas1, map toStr tvas2)
@@ -454,15 +454,15 @@ where
 		= n1 == "" || indexOf n1 n2 <> -1 || levenshtein [c \\ c <-: n1] [c \\ c <-: n2] <= maxdist
 
 	isModMatch :: ![String] Location -> Bool
-	isModMatch mods (Location _ mod _ _) = isMember mod mods
-	isModMatch _    (Builtin _)          = False
+	isModMatch mods (Location _ mod _ _ _) = isMember mod mods
+	isModMatch _    (Builtin _)            = False
 
 	isLibMatch :: (![String], !Bool) Location -> Bool
-	isLibMatch (libs,_) (Location lib _ _ _) = any (\l -> indexOf l lib == 0) libs
-	isLibMatch (_,blti) (Builtin _)          = blti
+	isLibMatch (libs,_) (Location lib _ _ _ _) = any (\l -> indexOf l lib == 0) libs
+	isLibMatch (_,blti) (Builtin _)            = blti
 
 	loc :: Location -> LocationResult
-	loc (Location lib mod ln _) = (lib, mod, ln)
+	loc (Location lib mod ln iln _) = (lib, mod, ln, iln)
 
 	log :: (LogMessage (Maybe Request) Response CacheKey) IPAddress *World
 		-> *(IPAddress, *World)

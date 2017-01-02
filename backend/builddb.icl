@@ -37,7 +37,7 @@ from syntax import ::SymbolTable, ::SymbolTableEntry, ::Ident{..}, ::SymbolPtr,
 	::FunSpecials, ::Priority, ::ParsedModule, ::SymbolType,
 	::ParsedInstanceAndMembers{..}, ::ParsedInstance{pi_ident,pi_pos,pi_types},
 	::Type, ::ClassDef{class_ident,class_pos,class_args,class_context},
-	::TypeVar, ::ParsedTypeDef, ::TypeDef{td_pos},
+	::TypeVar, ::ParsedTypeDef, ::TypeDef{td_pos,td_ident},
 	::GenericDef{gen_ident,gen_pos,gen_type,gen_vars},
 	::GenericCaseDef{gc_type,gc_pos,gc_gcf}, ::GenericCaseFunctions(GCF), ::GCF,
 	::FunKind(FK_Macro),
@@ -234,12 +234,13 @@ getModuleTypes :: String String String *DclCache 'DB'.TypeDB *World -> *('DB'.Ty
 getModuleTypes root mod lib cache db w
 # (Right dcl,cache,w) = readModule False cache w
 # (icl,cache,w) = readModule True cache w
+# icl = case icl of (Left _) = Nothing; (Right x) = Just x
 # mod = dcl.mod_ident.id_name
 # lib = cleanlib mod lib
 # db  = 'DB'.putFunctions (pd_typespecs lib mod dcl.mod_defs icl) db
-# db  = 'DB'.putInstances (pd_instances lib mod dcl.mod_defs) db
+# db  = 'DB'.putInstances (pd_instances lib mod dcl.mod_defs icl) db
 # db  = 'DB'.putClasses (pd_classes lib mod dcl.mod_defs icl) db
-# typedefs = pd_types lib mod dcl.mod_defs
+# typedefs = pd_types lib mod dcl.mod_defs icl
 # db  = 'DB'.putTypes typedefs db
 # db  = 'DB'.putFunctions (flatten $ map constructor_functions typedefs) db
 # db  = 'DB'.putFunctions (flatten $ map record_functions typedefs) db
@@ -264,7 +265,7 @@ where
 
 	pd_macros :: String String [ParsedDefinition] -> [('DB'.Location, 'DB'.Macro)]
 	pd_macros lib mod dcl
-		= [( 'DB'.Location lib mod (toLine pos) id.id_name
+		= [( 'DB'.Location lib mod (toLine pos) Nothing id.id_name
 		   , { macro_as_string = priostring id +++ cpp pd
 		     , macro_extras = {zero & te_priority = findPrio id >>= 'T'.toMaybePriority}
 		     }
@@ -288,65 +289,83 @@ where
 		-> [('DB'.Name, [('DB'.Type, 'DB'.Location)])]
 	pd_derivations lib mod dcl
 		= [( id.id_name
-		   , [('T'.toType gc_type, 'DB'.Location lib mod (toLine gc_pos) "")]
+		   , [('T'.toType gc_type, 'DB'.Location lib mod (toLine gc_pos) Nothing "")]
 		   ) \\ PD_Derive gcdefs <- dcl, {gc_type,gc_pos,gc_gcf=GCF id _} <- gcdefs]
 
 	pd_generics :: String String [ParsedDefinition]
 		-> [('DB'.Location, 'DB'.ExtendedType)]
 	pd_generics lib mod dcl
-		= [( 'DB'.Location lib mod (toLine gen_pos) id_name
+		= [( 'DB'.Location lib mod (toLine gen_pos) Nothing id_name
 		   , 'DB'.ET ('T'.toType gen_type)
 		       {zero & te_generic_vars=Just $ map 'T'.toTypeVar gen_vars
 		             , te_representation=Just $ cpp gen}
 		   ) \\ gen=:(PD_Generic {gen_ident={id_name},gen_pos,gen_type,gen_vars}) <- dcl]
 
-	pd_typespecs :: String String [ParsedDefinition] (Either String ParsedModule)
+	pd_typespecs :: String String [ParsedDefinition] (Maybe ParsedModule)
 		-> [('DB'.Location, 'DB'.ExtendedType)]
 	pd_typespecs lib mod dcl icl
-		= [( 'DB'.Location lib mod (toLine pos) id_name
+		= [( 'DB'.Location lib mod (toLine pos) (findIclLine id_name =<< icl) id_name
 		   , 'DB'.ET ('T'.toType t)
 		       { zero & te_priority = 'T'.toMaybePriority p
-		              , te_representation = Just $ cpp ts
-		              , te_iclline = findIclLine id_name icl}
+		              , te_representation = Just $ cpp ts}
 		   ) \\ ts=:(PD_TypeSpec pos id=:{id_name} p (Yes t) funspecs) <- dcl]
 	where
-		findIclLine :: String (Either String ParsedModule) -> Maybe Int
-		findIclLine _ (Left _) = Nothing
-		findIclLine name (Right {mod_defs=pms})
+		findIclLine :: String ParsedModule -> Maybe Int
+		findIclLine name {mod_defs=pms}
 			= case [pos \\ PD_TypeSpec pos id _ _ _ <- pms | id.id_name == name] of
 				[FunPos _ l _:_] = Just l
 				[LinePos _ l:_] = Just l
 				_ = Nothing
 
-	pd_instances :: String String [ParsedDefinition]
+	pd_instances :: String String [ParsedDefinition] (Maybe ParsedModule)
 		-> [('DB'.Class, ['DB'.Type], 'DB'.Location)]
-	pd_instances lib mod dcl
-		= [( pi_ident.id_name
+	pd_instances lib mod dcl icl
+		= [( id_name
 		   , map 'T'.toType pi_types
-		   , 'DB'.Location lib mod (toLine pi_pos) ""
-		   ) \\ PD_Instance {pim_pi={pi_ident,pi_types,pi_pos}} <- dcl]
+		   , 'DB'.Location lib mod (toLine pi_pos) (findIclLine id_name =<< icl) ""
+		   ) \\ PD_Instance {pim_pi={pi_ident={id_name},pi_types,pi_pos}} <- dcl]
+	where
+		findIclLine :: String ParsedModule -> Maybe Int
+		findIclLine name {mod_defs=pms}
+			= case [pi_pos \\ PD_Instance {pim_pi={pi_pos,pi_ident}} <- pms | pi_ident.id_name == name] of
+				[LinePos _ l:_] = Just l
+				_ = Nothing
 
-	pd_classes :: String String [ParsedDefinition] (Either String ParsedModule)
+	pd_classes :: String String [ParsedDefinition] (Maybe ParsedModule)
 		-> [('DB'.Location, ['T'.TypeVar], 'T'.ClassContext,
 			[('DB'.Name, 'DB'.ExtendedType)])]
 	pd_classes lib mod dcl icl
 	# dcl = filter (\pd->case pd of (PD_Class _ _)=True; _=False) dcl
 	= map (\(PD_Class {class_ident={id_name},class_pos,class_args,class_context} dcl)
 		-> let typespecs = pd_typespecs lib mod dcl icl
-		in ('DB'.Location lib mod (toLine class_pos) id_name, map 'T'.toTypeVar class_args,
-		    flatten $ map 'T'.toClassContext class_context,
-		    [(f,et) \\ ('DB'.Location _ _ _ f, et) <- typespecs])) dcl
+		in ('DB'.Location lib mod (toLine class_pos) (findIclLine id_name =<< icl) id_name
+		   , map 'T'.toTypeVar class_args
+		   , flatten $ map 'T'.toClassContext class_context
+		   , [(f,et) \\ ('DB'.Location _ _ _ _ f, et) <- typespecs])) dcl
+	where
+		findIclLine :: String ParsedModule -> Maybe Int
+		findIclLine name {mod_defs=pms}
+			= case [class_pos \\ PD_Class {class_ident,class_pos} _ <- pms | class_ident.id_name == name] of
+				[LinePos _ l:_] = Just l
+				_ = Nothing
 
-	pd_types :: String String [ParsedDefinition]
+	pd_types :: String String [ParsedDefinition] (Maybe ParsedModule)
 		-> [('DB'.Location, 'DB'.TypeDef)]
-	pd_types lib mod dcl
-		= [('DB'.Location lib mod (toLine ptd.td_pos) ('T'.td_name td), td)
+	pd_types lib mod dcl icl
+		= [let name = 'T'.td_name td in
+			('DB'.Location lib mod (toLine ptd.td_pos) (findIclLine name =<< icl) name, td)
 		   \\ PD_Type ptd <- dcl, td <- ['T'.toTypeDef ptd]]
+	where
+		findIclLine :: String ParsedModule -> Maybe Int
+		findIclLine name {mod_defs=pms}
+			= case [td_pos \\ PD_Type {td_ident,td_pos} <- pms | td_ident.id_name == name] of
+				[LinePos _ l:_] = Just l
+				_ = Nothing
 
 	constructor_functions :: ('DB'.Location, 'DB'.TypeDef)
 		-> [('DB'.Location, 'DB'.ExtendedType)]
-	constructor_functions ('DB'.Location lib mod line _, td)
-		= [('DB'.Location lib mod line c, 'DB'.ET f
+	constructor_functions ('DB'.Location lib mod line iclline _, td)
+		= [('DB'.Location lib mod line iclline c, 'DB'.ET f
 			{zero & te_isconstructor=True
 			      , te_representation=Just $ concat $
 			          [c] ++ print_prio p ++ [" :: "] ++ print False f
@@ -359,8 +378,8 @@ where
 
 	record_functions :: ('DB'.Location, 'DB'.TypeDef)
 		-> [('DB'.Location, 'DB'.ExtendedType)]
-	record_functions ('DB'.Location lib mod line _, td)
-		= [('DB'.Location lib mod line f, 'DB'.ET t
+	record_functions ('DB'.Location lib mod line iclline _, td)
+		= [('DB'.Location lib mod line iclline f, 'DB'.ET t
 			{zero & te_isrecordfield=True
 			      , te_representation=Just $ concat $ [".", f, " :: " : print False t]})
 			\\ (f,t) <- 'T'.recordsToFunctions td]

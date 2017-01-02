@@ -39,7 +39,8 @@ $sql =
 		count(distinct `ip`,`useragent_id`)
 	FROM `log`
 	WHERE `date` BETWEEN timestamp('$startTime') AND timestamp('$endTime')
-	GROUP BY $group";
+	GROUP BY $group
+	ORDER BY min(`date`) ASC";
 
 $stmt = $db->stmt_init();
 if (!$stmt->prepare($sql))

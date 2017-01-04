@@ -23,6 +23,7 @@ import Control.Applicative
 import Control.Monad
 from Text import class Text(concat,trim,indexOf,toLowerCase),
 	instance Text String, instance + String
+import Text.JSON
 
 import System.Time
 
@@ -35,6 +36,31 @@ import Cloogle
 
 MAX_RESULTS    :== 15
 CACHE_PREFETCH :== 5
+
+:: RequestCacheKey
+	= { c_unify     :: Maybe Type
+	  , c_name      :: Maybe String
+	  , c_className :: Maybe String
+	  , c_typeName  :: Maybe String
+	  , c_modules   :: Maybe [String]
+	  , c_libraries :: Maybe ([String], Bool)
+	  , c_page      :: Maybe Int
+	  }
+
+derive JSONEncode Kind, ClassOrGeneric, Type, RequestCacheKey
+instance toString RequestCacheKey
+where toString rck = toString $ toJSON rck
+
+toRequestCacheKey :: Request -> RequestCacheKey
+toRequestCacheKey r =
+	{ c_unify     = r.unify >>= parseType o fromString
+	, c_name      = r.name
+	, c_className = r.className
+	, c_typeName  = r.typeName
+	, c_modules   = sort <$> r.modules
+	, c_libraries = appFst sort <$> r.libraries
+	, c_page      = r.page
+	}
 
 Start w
 # (io, w) = stdio w
@@ -92,8 +118,10 @@ where
 		// Save cache file
 		= respond response w
 	where
+		key = toRequestCacheKey request
+
 		respond :: Response *World -> *(Response, CacheKey, *World)
-		respond r w = (r, cacheKey request, writeCache LongTerm request r w)
+		respond r w = (r, cacheKey key, writeCache LongTerm key r w)
 
 		cachePages :: Int Int Response [Result] *World -> *World
 		cachePages _ _  _ [] w = w
@@ -102,7 +130,7 @@ where
 		# w = writeCache Brief req` resp` w
 		= cachePages (npages - 1) (i + 1) response keep w
 		where
-			req` = { request & page = ((+) i) <$> (request.page <|> pure 0) }
+			req` = { key & c_page = ((+) i) <$> (key.c_page <|> pure 0) }
 			resp` =
 				{ response
 				& more_available = Just $ max 0 (length results - MAX_RESULTS)

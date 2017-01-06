@@ -83,7 +83,7 @@ where
 	handle _ Nothing w = (err CLOOGLE_E_INVALIDINPUT "Couldn't parse input", "", w)
 	handle db (Just request=:{unify,name,page}) w
 		//Check cache
-		# (mbResponse, w) = readCache request w
+		# (mbResponse, w) = readCache key w
 		| isJust mbResponse
 			# r = fromJust mbResponse
 			= ({r & return = if (r.return == 0) 1 r.return}, cacheKey request, w)

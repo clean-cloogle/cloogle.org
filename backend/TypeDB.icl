@@ -276,8 +276,8 @@ openDb f
 # (data, f) = freadline f
 = (fromJSON $ fromString data, f)
 
-saveDb :: TypeDB *File -> *File
-saveDb db f = fwrites (toString $ toJSON $ syncDb db) f
+saveDb :: !TypeDB !*File -> *File
+saveDb db f = f <<< (toJSON $ syncDb db)
 
 syncDb :: TypeDB -> TypeDB
 syncDb db=:{instancemap,derivemap}

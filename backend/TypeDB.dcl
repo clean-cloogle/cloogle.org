@@ -107,4 +107,4 @@ getTypeDerivations :: Name TypeDB -> [(Name, [Location])]
 
 newDb :: TypeDB
 openDb :: *File -> *(Maybe TypeDB, *File)
-saveDb :: TypeDB *File -> *File
+saveDb :: !TypeDB !*File -> *File

@@ -1,5 +1,5 @@
 var form_str = document.getElementById('search_str');
-var form_libs = document.getElementById('search_libs');
+var form_libs = document.getElementsByClassName('search_libs');
 var sform = document.getElementById('search_form');
 var sresults = document.getElementById('search_results');
 var advanced_checkbox = document.getElementById('search_advanced');
@@ -11,6 +11,18 @@ var old_libs = null;
 function toggle(name) {
 	var e = document.getElementById(name);
 	e.style.display = e.style.display == 'block' ? 'none' : 'block';
+}
+
+function toggleLibSelection(className) {
+	var boxes =
+		document.getElementById(className).getElementsByClassName('search_libs');
+	var checkAll = true;
+	for (var i in boxes)
+		if (boxes[i].checked)
+			checkAll = false;
+
+	for (var i in boxes)
+		boxes[i].checked = checkAll;
 }
 
 function highlightCallback(span, cls, str) {
@@ -355,7 +367,7 @@ function getLibs() {
 	var builtin = false;
 	var libs = [];
 	for (var i = 0; i < form_libs.length; i++) {
-		if (form_libs[i].selected) {
+		if (form_libs[i].checked) {
 			if (form_libs[i].value == '__builtin')
 				builtin = true;
 			else

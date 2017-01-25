@@ -10,41 +10,7 @@
 	<script src="api.js" type="text/javascript" defer="defer"></script>
 	<script src="clean.js" type="text/javascript" defer="defer"></script>
 	<link rel="stylesheet" href="clean.css" type="text/css"/>
-	<style type="text/css">
-		#helptext {
-			margin-bottom: 1em;
-		}
-
-		#helptext code, #helptext .code {
-			background-color: #f9f2f4;
-			font-family: monospace;
-			font-size: 90%;
-			padding: 1px 4px;
-		}
-
-		#helptext td.description {
-			padding-left: 1em;
-		}
-
-		a.hidden {
-			text-decoration: none;
-		}
-
-		#suggestions {
-			margin: 10px 0;
-		}
-
-		td.wide {
-			width: 99%;
-		}
-
-		th {
-			padding-right: 1em;
-			text-align: left;
-			vertical-align: top;
-			white-space: nowrap;
-		}
-	</style>
+	<link rel="stylesheet" href="frontend.css" type="text/css"/>
 </head>
 <body>
 	<p>
@@ -108,41 +74,48 @@
 		&nbsp;
 		<label><input type="checkbox" id="search_advanced"/> advanced</label>
 		<div id="advanced" style="display:none;">
-			<h4 style="margin:1em 0 .2em;">Libraries</h4>
-			<select multiple="multiple" size="10" id="search_libs">
-				<optgroup label="Clean 2.4">
-					<option selected="selected" value="__builtin">Language builtins</option>
-					<option selected="selected" value="StdEnv">StdEnv</option>
-					<option selected="selected" value="StdLib">StdLib</option>
-					<option selected="selected" value="ArgEnv">ArgEnv</option>
-					<option selected="selected" value="Directory">Directory</option>
-					<option selected="selected" value="Dynamics">Dynamics</option>
-					<option selected="selected" value="Gast">Gast</option>
-					<option selected="selected" value="Generics">Generics</option>
-					<option selected="selected" value="MersenneTwister">MersenneTwister</option>
-					<option selected="selected" value="TCPIP">TCPIP</option>
-				</optgroup>
-				<optgroup label="clean-platform">
-					<option selected="selected" value="clean-platform/OS-Independent">clean-platform/OS-Independent</option>
-					<option selected="selected" value="clean-platform/OS-Linux">clean-platform/OS-Linux</option>
-					<option selected="selected" value="clean-platform/OS-Linux-32">clean-platform/OS-Linux-32</option>
-					<option selected="selected" value="clean-platform/OS-Linux-64">clean-platform/OS-Linux-64</option>
-					<option selected="selected" value="clean-platform/OS-Mac">clean-platform/OS-Mac</option>
-					<option selected="selected" value="clean-platform/OS-Posix">clean-platform/OS-Posix</option>
-					<option selected="selected" value="clean-platform/OS-Windows">clean-platform/OS-Windows</option>
-					<option selected="selected" value="clean-platform/OS-Windows-32">clean-platform/OS-Windows-32</option>
-					<option selected="selected" value="clean-platform/OS-Windows-64">clean-platform/OS-Windows-64</option>
-				</optgroup>
-				<optgroup label="iTasks">
-					<option selected="selected" value="iTasks-SDK/Dependencies/graph_copy">iTasks-SDK/Dependencies/graph_copy</option>
-					<option selected="selected" value="iTasks-SDK/Dependencies/clean-sapl/src">iTasks-SDK/Dependencies/clean-sapl/src</option>
-					<option selected="selected" value="iTasks-SDK/Server">iTasks-SDK/Server</option>
-					<option selected="selected" value="iTasks-SDK/Tests">iTasks-SDK/Tests</option>
-				</optgroup>
-				<optgroup label="Miscellaneous">
-					<option value="SoccerFun">SoccerFun</option>
-				</optgroup>
-			</select>
+			<table id="lib_selection">
+				<tr>
+					<th onclick="toggleLibSelection('libs-clean-2.4');">Clean 2.4</th>
+					<th onclick="toggleLibSelection('libs-clean-platform');">clean-platform</th>
+					<th onclick="toggleLibSelection('libs-itasks');">iTasks</th>
+					<th onclick="toggleLibSelection('libs-misc');">Miscellaneous</th>
+				</tr>
+				<tr>
+					<td id="libs-clean-2.4">
+						<label><input type="checkbox" class="search_libs" checked="checked" value="__builtin"/> Language builtins</label><br/>
+						<label><input type="checkbox" class="search_libs" checked="checked" value="StdEnv"/> StdEnv</label><br/>
+						<label><input type="checkbox" class="search_libs" checked="checked" value="StdLib"/> StdLib</label><br/>
+						<label><input type="checkbox" class="search_libs" checked="checked" value="ArgEnv"/> ArgEnv</label><br/>
+						<label><input type="checkbox" class="search_libs" checked="checked" value="Directory"/> Directory</label><br/>
+						<label><input type="checkbox" class="search_libs" checked="checked" value="Dynamics"/> Dynamics</label><br/>
+						<label><input type="checkbox" class="search_libs" checked="checked" value="Gast"/> Gast</label><br/>
+						<label><input type="checkbox" class="search_libs" checked="checked" value="Generics"/> Generics</label><br/>
+						<label><input type="checkbox" class="search_libs" checked="checked" value="MersenneTwister"/> MersenneTwister</label><br/>
+						<label><input type="checkbox" class="search_libs" checked="checked" value="TCPIP"/> TCPIP</label><br/>
+					</td>
+					<td id="libs-clean-platform">
+						<label><input type="checkbox" class="search_libs" checked="checked" value="clean-platform/OS-Independent"/> clean-platform/OS-Independent</label><br/>
+						<label><input type="checkbox" class="search_libs" checked="checked" value="clean-platform/OS-Linux"/> clean-platform/OS-Linux</label><br/>
+						<label><input type="checkbox" class="search_libs" checked="checked" value="clean-platform/OS-Linux-32"/> clean-platform/OS-Linux-32</label><br/>
+						<label><input type="checkbox" class="search_libs" checked="checked" value="clean-platform/OS-Linux-64"/> clean-platform/OS-Linux-64</label><br/>
+						<label><input type="checkbox" class="search_libs" checked="checked" value="clean-platform/OS-Mac"/> clean-platform/OS-Mac</label><br/>
+						<label><input type="checkbox" class="search_libs" checked="checked" value="clean-platform/OS-Posix"/> clean-platform/OS-Posix</label><br/>
+						<label><input type="checkbox" class="search_libs" checked="checked" value="clean-platform/OS-Windows"/> clean-platform/OS-Windows</label><br/>
+						<label><input type="checkbox" class="search_libs" checked="checked" value="clean-platform/OS-Windows-32"/> clean-platform/OS-Windows-32</label><br/>
+						<label><input type="checkbox" class="search_libs" checked="checked" value="clean-platform/OS-Windows-64"/> clean-platform/OS-Windows-64</label><br/>
+					</td>
+					<td id="libs-itasks">
+						<label><input type="checkbox" class="search_libs" checked="checked" value="iTasks-SDK/Dependencies/graph_copy"/> iTasks-SDK/Dependencies/graph_copy</label><br/>
+						<label><input type="checkbox" class="search_libs" checked="checked" value="iTasks-SDK/Dependencies/clean-sapl/src"/> iTasks-SDK/Dependencies/clean-sapl/src</label><br/>
+						<label><input type="checkbox" class="search_libs" checked="checked" value="iTasks-SDK/Server"/> iTasks-SDK/Server</label><br/>
+						<label><input type="checkbox" class="search_libs" checked="checked" value="iTasks-SDK/Tests"/> iTasks-SDK/Tests</label><br/>
+					</td>
+					<td id="libs-misc">
+						<label><input type="checkbox" class="search_libs" value="SoccerFun">SoccerFun</label>
+					</td>
+				</tr>
+			</table>
 		</div>
 	</form>
 	<div id="search_results"></div>

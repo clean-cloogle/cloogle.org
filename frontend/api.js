@@ -402,7 +402,8 @@ function formsubmit() {
 };
 
 advanced_checkbox.onchange = function () {
-	this.style.display = this.checked ? 'block' : 'none';
+	var el = document.getElementByName('advanced');
+	el.style.display = this.checked ? 'block' : 'none';
 }
 
 window.onload = function () {

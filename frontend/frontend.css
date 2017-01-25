@@ -33,12 +33,7 @@ th {
 }
 
 #lib_selection th {
-	cursor: pointer;
 	text-align: center;
-}
-
-#lib_selection th:hover {
-	text-decoration: underline;
 }
 
 #lib_selection td {

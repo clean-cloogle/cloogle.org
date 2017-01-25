@@ -402,7 +402,7 @@ function formsubmit() {
 };
 
 advanced_checkbox.onchange = function () {
-	var el = document.getElementByName('advanced');
+	var el = document.getElementById('advanced');
 	el.style.display = this.checked ? 'block' : 'none';
 }
 

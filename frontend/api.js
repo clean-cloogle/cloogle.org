@@ -402,7 +402,7 @@ function formsubmit() {
 };
 
 advanced_checkbox.onchange = function () {
-	toggle('advanced');
+	this.style.display = this.checked ? 'block' : 'none';
 }
 
 window.onload = function () {

@@ -34,6 +34,9 @@ function highlight(lex, istr, start) {
 					var new_state = lex[state][i][2];
 					if (new_state == 'pop') {
 						state = state_stack.pop();
+					} if (new_state.substring(0,4) == 'pop:') {
+						for (var p = 0; p < parseInt(new_state.substring(4)); p++)
+							state = state_stack.pop();
 					} else {
 						state_stack.push(state);
 						state = new_state;
@@ -137,7 +140,7 @@ function highlightFunction(func, callback, start) {
 		contextType: [
 			[/(\s+)/,        ['whitespace']],
 			[/(,)/,          ['punctuation']],
-			[/(&)/,          ['punctuation'], 'pop'],
+			[/(&)/,          ['punctuation'], 'pop:2'],
 			[/(\[)/,         ['punctuation'], 'attrenv'],
 			[/([\(\[])/,     ['punctuation'], 'contextType'],
 			[/([\)\]])/,     ['punctuation'], 'pop'],

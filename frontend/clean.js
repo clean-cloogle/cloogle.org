@@ -34,7 +34,7 @@ function highlight(lex, istr, start) {
 					var new_state = lex[state][i][2];
 					if (new_state == 'pop') {
 						state = state_stack.pop();
-					} if (new_state.substring(0,4) == 'pop:') {
+					} else if (new_state.substring(0,4) == 'pop:') {
 						for (var p = 0; p < parseInt(new_state.substring(4)); p++)
 							state = state_stack.pop();
 					} else {

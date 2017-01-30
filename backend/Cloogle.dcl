@@ -84,9 +84,10 @@ derive JSONDecode Request, Response, Result, ShortClassResult, BasicResult,
 	FunctionResultExtras, TypeResultExtras, ClassResultExtras, MacroResultExtras
 
 instance zero Request
+instance zero Response
 
-instance toString Response
 instance toString Request
+instance toString Response
 
 instance fromString (Maybe Request)
 

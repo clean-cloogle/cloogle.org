@@ -8,7 +8,7 @@ import StdOrdList
 import StdOverloaded
 import StdString
 import StdTuple
-from StdFunc import o, flip, const
+from StdFunc import o, flip, const, seq
 from StdMisc import abort
 
 from TCPIP import :: IPAddress, :: Port, instance toString IPAddress
@@ -59,7 +59,7 @@ toRequestCacheKey r =
 	, c_typeName  = r.typeName
 	, c_modules   = sort <$> r.modules
 	, c_libraries = appFst sort <$> r.libraries
-	, c_page      = r.page
+	, c_page      = r.page <|> Just 0
 	}
 
 Start w
@@ -86,7 +86,7 @@ where
 		# (mbResponse, w) = readCache key w
 		| isJust mbResponse
 			# r = fromJust mbResponse
-			= ({r & return = if (r.return == 0) 1 r.return}, cacheKey request, w)
+			= ({r & return = if (r.return == 0) 1 r.return}, cacheKey key, w)
 		| isJust name && size (fromJust name) > 40
 			= respond (err CLOOGLE_E_INVALIDNAME "Function name too long") w
 		| isJust name && any isSpace (fromString $ fromJust name)
@@ -99,22 +99,27 @@ where
 		# more = max 0 (length results - MAX_RESULTS)
 		// Suggestions
 		# mbType = unify >>= parseType o fromString
+		# suggestions = mbType >>= flip (suggs name) db
+		# w = seq [cachePages
+				(toRequestCacheKey req) CACHE_PREFETCH 0 zero suggs
+				\\ (req,suggs) <- mb2list suggestions] w
+			with
+				mb2list Nothing = []; mb2list (Just xs) = xs
 		# suggestions
 			= sortBy (\a b -> snd a > snd b) <$>
-			  filter ((<)(length results) o snd) <$>
-			  (mbType >>= \t -> suggs name t db)
+			  filter ((<) (length results) o snd) <$>
+			  map (appSnd length) <$> suggestions
 		# (results,nextpages) = splitAt MAX_RESULTS results
 		// Response
 		# response = if (isEmpty results)
 			(err CLOOGLE_E_NORESULTS "No results")
-			{ return = 0
-		    , msg = "Success"
-		    , data           = results
+			{ zero
+		    & data           = results
 		    , more_available = Just more
 		    , suggestions    = suggestions
 		    }
 		// Save page prefetches
-		# w = cachePages CACHE_PREFETCH 1 response nextpages w
+		# w = cachePages key CACHE_PREFETCH 1 response nextpages w
 		// Save cache file
 		= respond response w
 	where
@@ -123,12 +128,12 @@ where
 		respond :: Response *World -> *(Response, CacheKey, *World)
 		respond r w = (r, cacheKey key, writeCache LongTerm key r w)
 
-		cachePages :: Int Int Response [Result] *World -> *World
-		cachePages _ _  _ [] w = w
-		cachePages 0 _  _ _  w = w
-		cachePages npages i response results w
+		cachePages :: RequestCacheKey Int Int Response [Result] *World -> *World
+		cachePages key _ _  _ [] w = w
+		cachePages key 0 _  _ _  w = w
+		cachePages key npages i response results w
 		# w = writeCache Brief req` resp` w
-		= cachePages (npages - 1) (i + 1) response keep w
+		= cachePages key (npages - 1) (i + 1) response keep w
 		where
 			req` = { key & c_page = ((+) i) <$> (key.c_page <|> pure 0) }
 			resp` =
@@ -138,12 +143,12 @@ where
 				}
 			(give,keep) = splitAt MAX_RESULTS results
 
-	suggs :: !(Maybe String) !Type !TypeDB -> Maybe [(Request, Int)]
+	suggs :: !(Maybe String) !Type !TypeDB -> Maybe [(Request, [Result])]
 	suggs n (Func is r cc) db
 		| length is < 3
 			= Just [let t` = concat $ print False $ Func is` r cc in
 			        let request = {zero & name=n, unify=Just t`} in
-			        (request, length $ search request db)
+			        (request, search request db)
 			        \\ is` <- permutations is | is` <> is]
 	suggs _ _ _ = Nothing
 

@@ -20,8 +20,17 @@ where
 	       , page      = Nothing
 	       }
 
-instance toString Response where toString r = toString (toJSON r) + "\n"
+instance zero Response
+where
+	zero = { return         = 0
+	       , msg            = "Success"
+	       , data           = []
+	       , more_available = Nothing
+	       , suggestions    = Nothing
+	       }
+
 instance toString Request where toString r = toString $ toJSON r
+instance toString Response where toString r = toString (toJSON r) + "\n"
 
 instance fromString (Maybe Request) where fromString s = fromJSON $ fromString s
 

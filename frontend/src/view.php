@@ -24,6 +24,12 @@ if ($highlight) {
 	$cmd = 'pygmentize -v -l clean -f html -O full,linenos,linespans=line,' . $hl_lines . ',encoding=iso8859';
 	exec("$cmd $efname", $out, $code);
 	$out = array_filter($out, function($str) { return $str != '<h2></h2>'; });
+	$out = array_map(function ($str) {
+		return str_replace(
+			'</style>',
+			'.hll { background-color: #fc8 !important; }</style>',
+			$str);
+	}, $out);
 	echo implode("\n", $out);
 } else {
 	header('Content-Type: text/plain');

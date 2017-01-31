@@ -17,7 +17,8 @@ where
 	       , typeName         = Nothing
 	       , modules          = Nothing
 	       , libraries        = Nothing
-		   , include_builtins = Nothing
+	       , include_builtins = Nothing
+	       , include_core     = Nothing
 	       , page             = Nothing
 	       }
 

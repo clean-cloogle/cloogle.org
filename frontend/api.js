@@ -3,10 +3,14 @@ var form_libs = document.getElementsByClassName('search_libs');
 var sform = document.getElementById('search_form');
 var sresults = document.getElementById('search_results');
 var advanced_checkbox = document.getElementById('search_advanced');
+var include_builtins_checkbox = document.getElementById('include_builtins');
+var include_core_checkbox = document.getElementById('include_core');
 var refresh_on_hash = true;
 
 var old_str = null;
 var old_libs = null;
+var old_include_builtins = null;
+var old_include_core = null;
 
 function toggle(name) {
 	var e = document.getElementById(name);
@@ -53,17 +57,25 @@ function highlightCallback(span, cls, str) {
 
 var instancesIdCounter = 0;
 var derivationsIdCounter = 0;
-function getResults(str, libs, page) {
+function getResults(str, libs, include_builtins, include_core, page) {
 	if (str == null)  str  = old_str;
 	if (libs == null) libs = old_libs;
+	if (include_builtins == null) include_builtins = old_include_builtins;
+	if (include_core == null) include_core = old_include_core;
 
 	old_str  = str;
 	old_libs = libs;
+	old_include_builtins = include_builtins;
+	old_include_core = include_core;
 
 	var url = 'api.php' +
 		'?str='  + encodeURIComponent(str) +
-		(libs.length > 0 ? ('&lib=' + encodeURIComponent(libs[0])) : '') +
-		(libs.length > 0 ? ('&libs_builtin=' + encodeURIComponent(libs[1])) : '') +
+		(libs != -1
+			? ('&lib=' + encodeURIComponent(libs)) : '') +
+		(include_builtins != -1
+			? '&include_builtins=' + encodeURIComponent(include_builtins) : '') +
+		(include_core != -1
+			? '&include_core=' + encodeURIComponent(include_core) : '') +
 		'&page=' + page;
 	var xmlHttp = new XMLHttpRequest();
 
@@ -321,7 +333,7 @@ function getResults(str, libs, page) {
 				var par = elem.parentNode
 				if (responsedata['more_available'] != 0) {
 					par.innerHTML += '<div id="page-' + (page+1) + '">' +
-						'<p id="more"><a href="javascript:getResults(null,null,' + (page+1) +
+						'<p id="more"><a href="javascript:getResults(null,null,null,null,' + (page+1) +
 						')">' + responsedata['more_available'] + ' more...</a></p>' +
 						'</div>';
 				}
@@ -362,20 +374,17 @@ function makeUnifier(ufr) {
 
 function getLibs() {
 	if (!advanced_checkbox.checked)
-		return [];
+		return -1;
 
-	var builtin = false;
 	var libs = [];
 	for (var i = 0; i < form_libs.length; i++) {
 		if (form_libs[i].checked) {
-			if (form_libs[i].value == '__builtin')
-				builtin = true;
-			else
+			if (form_libs[i].value != '__builtin')
 				libs.push(form_libs[i].value);
 		}
 	}
 
-	return [libs, builtin];
+	return libs;
 }
 
 function formsubmit() {
@@ -395,8 +404,15 @@ function formsubmit() {
 		}
 
 		var libs = getLibs();
+		var include_builtins = -1;
+		var include_core = -1;
+		if (advanced_checkbox.checked) {
+			var include_builtins = include_builtins_checkbox.checked;
+			var include_core = include_core_checkbox.checked;
+		}
+
 		sresults.innerHTML += '<div id="page-0"></div>';
-		getResults(q, libs, 0);
+		getResults(q, libs, include_builtins, include_core, 0);
 	}
 	return false;
 };

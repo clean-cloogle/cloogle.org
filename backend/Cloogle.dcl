@@ -13,6 +13,7 @@ from Text.JSON import generic JSONEncode, generic JSONDecode, :: JSONNode
 	  , modules          :: Maybe [String]
 	  , libraries        :: Maybe [String]
 	  , include_builtins :: Maybe Bool
+	  , include_core     :: Maybe Bool
 	  , page             :: Maybe Int
 	  }
 

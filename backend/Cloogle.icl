@@ -11,13 +11,15 @@ derive JSONDecode Request, Response, Result, ShortClassResult, BasicResult,
 
 instance zero Request
 where
-	zero = { unify     = Nothing
-	       , name      = Nothing
-	       , className = Nothing
-	       , typeName  = Nothing
-	       , modules   = Nothing
-	       , libraries = Nothing
-	       , page      = Nothing
+	zero = { unify            = Nothing
+	       , name             = Nothing
+	       , className        = Nothing
+	       , typeName         = Nothing
+	       , modules          = Nothing
+	       , libraries        = Nothing
+	       , include_builtins = Nothing
+	       , include_core     = Nothing
+	       , page             = Nothing
 	       }
 
 instance zero Response

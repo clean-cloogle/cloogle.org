@@ -92,13 +92,15 @@ if($_SERVER['REQUEST_METHOD'] !== 'GET'){
 	}
 
 	if (isset($_GET['lib'])) {
-		$command['libraries'] = [explode(',', $_GET['lib']), false];
+		$command['libraries'] = explode(',', $_GET['lib']);
 	}
 
-	if (isset($_GET['libs_builtin'])) {
-		if (!isset($command['libraries'][0]))
-			$command['libraries'][0] = [];
-		$command['libraries'][1] = $_GET['libs_builtin'] == 'true';
+	if (isset($_GET['include_builtins'])) {
+		$command['include_builtins'] = $_GET['include_builtins'] == 'true';
+	}
+
+	if (isset($_GET['include_core'])) {
+		$command['include_core'] = $_GET['include_core'] == 'true';
 	}
 
 	if (isset($_GET['mod'])) {

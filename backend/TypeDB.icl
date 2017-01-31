@@ -23,6 +23,7 @@ import Type
 	  , instancemap  :: Map Class [([Type], [Location])]
 	  , typemap      :: Map Location TypeDef
 	  , derivemap    :: Map Name [(Type, [Location])]
+	  , modulemap    :: Map (Library, Module) ModuleInfo
 	    // Derived maps
 	  , instancemap` :: Map Name [(Class, [Type], [Location])]
 	  , derivemap`   :: Map Name [(Name, [Location])]
@@ -34,14 +35,14 @@ printersperse ia a bs = intercalate (print False a) (map (print ia) bs)
 (--) infixr 5 :: a b -> [String] | print a & print b
 (--) a b = print False a ++ print False b
 
-derive gEq ClassOrGeneric, Location, Type, TypeDB, TypeExtras, Priority,
+derive gEq ClassOrGeneric, Location, Type, TypeExtras, Priority,
 	ExtendedType, TypeDef, TypeDefRhs, RecordField, Constructor, Kind, Macro
 derive JSONEncode ClassOrGeneric, Location, Type, TypeDB, TypeExtras,
 	Priority, ExtendedType, TypeDef, TypeDefRhs, RecordField, Constructor,
-	Kind, Macro
+	Kind, Macro, ModuleInfo
 derive JSONDecode ClassOrGeneric, Location, Type, TypeDB, TypeExtras,
 	Priority, ExtendedType, TypeDef, TypeDefRhs, RecordField, Constructor,
-	Kind, Macro
+	Kind, Macro, ModuleInfo
 
 instance zero TypeDB
 where
@@ -51,6 +52,7 @@ where
 	       , instancemap  = newMap
 	       , typemap      = newMap
 	       , derivemap    = newMap
+	       , modulemap    = newMap
 	       , instancemap` = newMap
 	       , derivemap`   = newMap
 	       }
@@ -75,6 +77,8 @@ where
 	       , te_representation = Nothing
 	       }
 
+instance zero ModuleInfo where zero = {is_core = False}
+
 instance print TypeExtras
 where
 	print b {te_priority=Just p} = print b p -- " "
@@ -95,6 +99,10 @@ where
 getName :: Location -> Name
 getName (Location _ _ _ _ name) = name
 getName (Builtin name)          = name
+
+isBuiltin :: Location -> Bool
+isBuiltin (Builtin _) = True
+isBuiltin _           = False
 
 functionCount :: TypeDB -> Int
 functionCount {functionmap} = mapSize functionmap
@@ -267,6 +275,12 @@ getTypeInstances n db = case get n db.instancemap` of (Just cs) = cs; _ = []
 
 getTypeDerivations :: Name TypeDB -> [(Name, [Location])]
 getTypeDerivations n db = case get n db.derivemap` of (Just gs) = gs; _ = []
+
+getModule :: Library Module TypeDB -> Maybe ModuleInfo
+getModule lib mod {modulemap} = get (lib,mod) modulemap
+
+putModule :: Library Module ModuleInfo TypeDB -> TypeDB
+putModule lib mod info db = {db & modulemap = put (lib,mod) info db.modulemap}
 
 newDb :: TypeDB
 newDb = zero

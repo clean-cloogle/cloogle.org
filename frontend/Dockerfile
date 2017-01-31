@@ -16,7 +16,8 @@ RUN mkdir -p /opt/clean && cd /opt/clean &&\
 	make -j &&\
 	mv StdEnv/*.icl lib/StdEnv
 
-RUN svn checkout https://svn.cs.ru.nl/repos/SoccerFun/src /opt/clean/lib/SoccerFun
+RUN svn checkout https://svn.cs.ru.nl/repos/SoccerFun/src /opt/clean/lib/SoccerFun &&\
+	svn checkout https://svn.cs.ru.nl/repos/clean-libraries/trunk/Libraries/ObjectIO/ObjectIO /opt/clean/lib/ObjectIO
 
 # Pygments, for highlighting
 RUN apt-get update && apt-get install -y python3.4 python3-pip mercurial

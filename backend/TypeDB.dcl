@@ -31,20 +31,22 @@ from Type import ::Type, ::TypeVar, ::TVAssignment, ::TypeDef, class print(..),
 :: Location = Location Library Module LineNr LineNr Name
             | Builtin                               Name
 
+:: ModuleInfo = { is_core :: Bool }
+
 :: Name         :== String
 :: Library      :== String
 :: Module       :== String
 :: Class        :== String
 :: LineNr       :== Maybe Int
 
-derive gEq TypeDB
-
 instance zero TypeDB
 instance zero TypeExtras
+instance zero ModuleInfo
 
 instance print (Name, ExtendedType)
 
 getName :: Location -> Name
+isBuiltin :: Location -> Bool
 
 functionCount :: TypeDB -> Int
 macroCount :: TypeDB -> Int
@@ -99,6 +101,9 @@ getDerivations :: Name TypeDB -> [(Type, [Location])]
 putDerivation :: Name Type Location TypeDB -> TypeDB
 putDerivations :: Name [(Type, Location)] TypeDB -> TypeDB
 putDerivationss :: [(Name, [(Type, Location)])] TypeDB -> TypeDB
+
+getModule :: Library Module TypeDB -> Maybe ModuleInfo
+putModule :: Library Module ModuleInfo TypeDB -> TypeDB
 
 searchExact :: Type TypeDB -> [(Location, ExtendedType)]
 

@@ -2,15 +2,18 @@ module builddb
 
 // Project libraries
 import qualified TypeDB as DB
-from TypeDB import ::TypeExtras{..}, instance zero TypeExtras, ::Macro{..}
+from TypeDB import ::TypeExtras{..}, ::Macro{..}, ::ModuleInfo{..},
+	instance zero TypeExtras, instance zero ModuleInfo
 
 // StdEnv
+from StdFunc import const, flip, o
 import StdFile, StdList, StdMisc, StdArray, StdBool, StdString, StdTuple
 
 // CleanPlatform
 import Data.Maybe, Data.Either, Data.Error, Data.Func, Data.Tuple, Data.Functor
 import Control.Applicative, Control.Monad
-from Text import class Text(concat,replaceSubString,indexOf), instance Text String
+from Text import class Text(concat,replaceSubString,indexOf,startsWith),
+	instance Text String
 import System.Directory, System.CommandLine
 
 // CleanTypeUnifier
@@ -48,7 +51,7 @@ from parse import wantModule
 :: CLI = { help    :: Bool
          , version :: Bool
          , root    :: String
-         , libs    :: [String]
+         , libs    :: [(String, String -> Bool)]
          , exclude :: [String]
          }
 
@@ -56,33 +59,34 @@ instance zero CLI where
 	zero = { version = False
 	       , help    = False
 	       , root    = "/opt/clean/lib/"
-	       , libs    = [ "StdEnv"
-	                   , "StdLib"
-	                   , "ArgEnv"
-	                   , "Directory"
-	                   , "Dynamics"
-	                   , "Gast"
-	                   , "Generics"
-	                   , "MersenneTwister"
-	                   , "TCPIP"
-	                   , "clean-platform/OS-Independent"
-	                   , "clean-platform/OS-Linux"
-	                   , "clean-platform/OS-Linux-32"
-	                   , "clean-platform/OS-Linux-64"
-	                   , "clean-platform/OS-Mac"
-	                   , "clean-platform/OS-Posix"
-	                   , "clean-platform/OS-Windows"
-	                   , "clean-platform/OS-Windows-32"
-	                   , "clean-platform/OS-Windows-64"
-	                   , "iTasks-SDK/Dependencies/graph_copy"
-	                   , "iTasks-SDK/Dependencies/clean-sapl/src"
-	                   , "iTasks-SDK/Server"
-	                   , "iTasks-SDK/Tests"
-	                   , "SoccerFun/Game"
-	                   , "SoccerFun/Gui"
-	                   , "SoccerFun/StdLibExt"
-	                   , "SoccerFun/StdReferee"
-	                   , "SoccerFun/StdTeam"
+	       , libs    = [ ("StdEnv", const False)
+	                   , ("StdLib", const False)
+	                   , ("ArgEnv", const False)
+	                   , ("Directory", const False)
+	                   , ("Dynamics", const False)
+	                   , ("Gast", const False)
+	                   , ("Generics", const False)
+	                   , ("MersenneTwister", const False)
+	                   , ("TCPIP", const False)
+	                   , ("clean-platform/OS-Independent", const False)
+	                   , ("clean-platform/OS-Linux", const False)
+	                   , ("clean-platform/OS-Linux-32", const False)
+	                   , ("clean-platform/OS-Linux-64", const False)
+	                   , ("clean-platform/OS-Mac", const False)
+	                   , ("clean-platform/OS-Posix", const False)
+	                   , ("clean-platform/OS-Windows", const False)
+	                   , ("clean-platform/OS-Windows-32", const False)
+	                   , ("clean-platform/OS-Windows-64", const False)
+	                   , ("iTasks-SDK/Dependencies/graph_copy", const False)
+	                   , ("iTasks-SDK/Dependencies/clean-sapl/src", const False)
+	                   , ("iTasks-SDK/Server", startsWith "iTasks._Framework")
+	                   , ("iTasks-SDK/Tests", const False)
+	                   , ("ObjectIO", not o startsWith "Std")
+	                   , ("SoccerFun/Game", const False)
+	                   , ("SoccerFun/Gui", const False)
+	                   , ("SoccerFun/StdLibExt", const False)
+	                   , ("SoccerFun/StdReferee", const False)
+	                   , ("SoccerFun/StdTeam", const False)
 	                   ]
 	       , exclude = [ "StdEnv/_startup"
 	                   , "StdEnv/_system"
@@ -110,7 +114,7 @@ Start w
 	(Right cli)
 	| cli.help    = fclose (f <<< USAGE) w
 	| cli.version = fclose (f <<< VERSION) w
-	# (modss, w)  = mapSt (\l -> findModules cli.exclude cli.root l "") cli.libs w
+	# (modss, w)  = mapSt (flip (uncurry $ findModules cli.exclude cli.root) "") cli.libs w
 	# mods        = flatten modss
 	# (st, w)     = init_identifiers newHeap w
 	# cache       = empty_cache st
@@ -127,10 +131,11 @@ Start w
 | not ok = abort "Couldn't close stdio"
 = w
 where
-	loop :: String [(String,String)] 'DB'.TypeDB *DclCache *World -> *('DB'.TypeDB, *World)
+	loop :: String [(String,String,Bool)] 'DB'.TypeDB
+		*DclCache *World -> *('DB'.TypeDB, *World)
 	loop _ [] db _ w = (db,w)
-	loop root [(lib,mod):list] db cache w
-	# (db, cache, w) = getModuleTypes root mod lib cache db w
+	loop root [(lib,mod,iscore):list] db cache w
+	# (db, cache, w) = getModuleTypes root mod lib iscore cache db w
 	# w = snd (fclose (stderr <<< lib <<< ": " <<< mod <<< "\n") w)
 	= loop root list db cache w
 
@@ -142,7 +147,7 @@ where
 		("-l", []) = Left "'-l' requires an argument"
 		("-r", []) = Left "'-r' requires an argument"
 		("-r", [x:xs]) = (\c->{c & root=x}) <$> parseCLI xs
-		("-l", [x:xs]) = (\c->{c & libs=[x:c.libs]}) <$> parseCLI xs
+		("-l", [x:xs]) = (\c->{c & libs=[(x,const False):c.libs]}) <$> parseCLI xs
 		(x, _) = Left $ "Unknown option '" +++ x +++ "'"
 
 	printStats :: !'DB'.TypeDB !*File -> *File
@@ -207,15 +212,17 @@ where
 	deft = {'Type'.td_name="", 'Type'.td_uniq=False, 'Type'.td_args=[], 'Type'.td_rhs='T'.TDRAbstract}
 	defc = {'Type'.cons_name="", 'Type'.cons_args=[], 'Type'.cons_exi_vars=[], 'Type'.cons_context=[], 'Type'.cons_priority=Nothing}
 
-//             Exclude   Root    Library Base module            Library Module
-findModules :: ![String] !String !String !String !*World -> *(![(String,String)], !*World)
-findModules ex root lib base w
+//             Exclude   Root    Library        Check for core       Base module
+findModules :: ![String] !String !'DB'.Library ('DB'.Module -> Bool) !String !*World
+	-> *(![('DB'.Library, 'DB'.Module, Bool)], !*World)
+findModules ex root lib iscore base w
 | any (\e -> indexOf e path <> -1) ex = ([], w)
 #! (fps, w)   = readDirectory path w
 | isError fps = ([], w)
 #! fps        = fromOk fps
-#! mods       = map (\s -> (lib, basedot +++ s % (0, size s - 5))) $ filter included $ filter isDclModule fps
-#! (moremodss,w) = mapSt (\d -> findModules ex root lib (basedot +++ d)) (filter isDirectory fps) w
+#! mods       = map (\s -> let mod = basedot +++ s % (0, size s - 5) in
+	(lib, mod, iscore mod)) $ filter included $ filter isDclModule fps
+#! (moremodss,w) = mapSt (\d -> findModules ex root lib iscore (basedot +++ d)) (filter isDirectory fps) w
 = (removeDup (mods ++ flatten moremodss), w)
 where
 	path = root +++ "/" +++ lib +++ if (base == "") "" "/" +++ replaceSubString "." "/" base
@@ -230,8 +237,9 @@ where
 	isDirectory :: String -> Bool
 	isDirectory s = not $ isMember '.' $ fromString s
 
-getModuleTypes :: String String String *DclCache 'DB'.TypeDB *World -> *('DB'.TypeDB, *DclCache, *World)
-getModuleTypes root mod lib cache db w
+getModuleTypes :: String 'DB'.Module 'DB'.Library Bool
+	*DclCache 'DB'.TypeDB *World -> *('DB'.TypeDB, *DclCache, *World)
+getModuleTypes root mod lib iscore cache db w
 # (Right dcl,cache,w) = readModule False cache w
 # (icl,cache,w) = readModule True cache w
 # icl = case icl of (Left _) = Nothing; (Right x) = Just x
@@ -247,6 +255,7 @@ getModuleTypes root mod lib cache db w
 # db  = 'DB'.putFunctions (pd_generics lib mod dcl.mod_defs) db
 # db  = 'DB'.putDerivationss (pd_derivations lib mod dcl.mod_defs) db
 # db  = 'DB'.putMacros (pd_macros lib mod dcl.mod_defs) db
+# db  = 'DB'.putModule lib mod {zero & is_core=iscore} db
 = (db,cache,w)
 where
 	mkdir :: String -> String

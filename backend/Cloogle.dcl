@@ -6,13 +6,15 @@ from Data.Maybe import :: Maybe
 from Text.JSON import generic JSONEncode, generic JSONDecode, :: JSONNode
 
 :: Request
-	= { unify     :: Maybe String
-	  , name      :: Maybe String
-	  , className :: Maybe String
-	  , typeName  :: Maybe String
-	  , modules   :: Maybe [String]
-	  , libraries :: Maybe ([String], Bool)
-	  , page      :: Maybe Int
+	= { unify            :: Maybe String
+	  , name             :: Maybe String
+	  , className        :: Maybe String
+	  , typeName         :: Maybe String
+	  , modules          :: Maybe [String]
+	  , libraries        :: Maybe [String]
+	  , include_builtins :: Maybe Bool
+	  , include_core     :: Maybe Bool
+	  , page             :: Maybe Int
 	  }
 
 :: Response

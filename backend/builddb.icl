@@ -6,7 +6,7 @@ from TypeDB import ::TypeExtras{..}, ::Macro{..}, ::ModuleInfo{..},
 	instance zero TypeExtras, instance zero ModuleInfo
 
 // StdEnv
-from StdFunc import const, flip
+from StdFunc import const, flip, o
 import StdFile, StdList, StdMisc, StdArray, StdBool, StdString, StdTuple
 
 // CleanPlatform
@@ -81,6 +81,7 @@ instance zero CLI where
 	                   , ("iTasks-SDK/Dependencies/clean-sapl/src", const False)
 	                   , ("iTasks-SDK/Server", startsWith "iTasks._Framework")
 	                   , ("iTasks-SDK/Tests", const False)
+	                   , ("ObjectIO", not o startsWith "Std")
 	                   , ("SoccerFun/Game", const False)
 	                   , ("SoccerFun/Gui", const False)
 	                   , ("SoccerFun/StdLibExt", const False)

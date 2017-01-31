@@ -38,13 +38,14 @@ MAX_RESULTS    :== 15
 CACHE_PREFETCH :== 5
 
 :: RequestCacheKey
-	= { c_unify     :: Maybe Type
-	  , c_name      :: Maybe String
-	  , c_className :: Maybe String
-	  , c_typeName  :: Maybe String
-	  , c_modules   :: Maybe [String]
-	  , c_libraries :: Maybe ([String], Bool)
-	  , c_page      :: Maybe Int
+	= { c_unify            :: Maybe Type
+	  , c_name             :: Maybe String
+	  , c_className        :: Maybe String
+	  , c_typeName         :: Maybe String
+	  , c_modules          :: Maybe [String]
+	  , c_libraries        :: Maybe [String]
+	  , c_include_builtins :: Bool
+	  , c_page             :: Int
 	  }
 
 derive JSONEncode Kind, ClassOrGeneric, Type, RequestCacheKey
@@ -53,13 +54,14 @@ where toString rck = toString $ toJSON rck
 
 toRequestCacheKey :: Request -> RequestCacheKey
 toRequestCacheKey r =
-	{ c_unify     = r.unify >>= parseType o fromString
-	, c_name      = r.name
-	, c_className = r.className
-	, c_typeName  = r.typeName
-	, c_modules   = sort <$> r.modules
-	, c_libraries = appFst sort <$> r.libraries
-	, c_page      = r.page <|> Just 0
+	{ c_unify            = r.unify >>= parseType o fromString
+	, c_name             = r.name
+	, c_className        = r.className
+	, c_typeName         = r.typeName
+	, c_modules          = sort <$> r.modules
+	, c_libraries        = sort <$> r.libraries
+	, c_include_builtins = fromJust (r.include_builtins <|> Just True)
+	, c_page             = fromJust (r.page <|> Just 0)
 	}
 
 Start w
@@ -135,7 +137,7 @@ where
 		# w = writeCache Brief req` resp` w
 		= cachePages key (npages - 1) (i + 1) response keep w
 		where
-			req` = { key & c_page = ((+) i) <$> (key.c_page <|> pure 0) }
+			req` = { key & c_page = key.c_page + i }
 			resp` =
 				{ response
 				& more_available = Just $ max 0 (length results - MAX_RESULTS)
@@ -153,9 +155,10 @@ where
 	suggs _ _ _ = Nothing
 
 	search :: !Request !TypeDB -> [Result]
-	search {unify,name,className,typeName,modules,libraries,page} db
+	search {unify,name,className,typeName,modules,libraries,page,include_builtins} db
+		# include_builtins = fromJust (include_builtins <|> Just True)
 		# db = case libraries of
-			(Just ls) = filterLocations (isLibMatch ls) db
+			(Just ls) = filterLocations (isLibMatch include_builtins ls) db
 			Nothing   = db
 		# db = case modules of
 			(Just ms) = filterLocations (isModMatch ms) db
@@ -387,9 +390,9 @@ where
 	isModMatch mods (Location _ mod _ _ _) = isMember mod mods
 	isModMatch _    (Builtin _)            = False
 
-	isLibMatch :: (![String], !Bool) Location -> Bool
-	isLibMatch (libs,_) (Location lib _ _ _ _) = any (\l -> indexOf l lib == 0) libs
-	isLibMatch (_,blti) (Builtin _)            = blti
+	isLibMatch :: !Bool ![String] Location -> Bool
+	isLibMatch _    libs (Location lib _ _ _ _) = any (\l -> indexOf l lib == 0) libs
+	isLibMatch blti _    (Builtin _)            = blti
 
 	loc :: Location -> LocationResult
 	loc (Location lib mod ln iln _) = (lib, mod, ln, iln)

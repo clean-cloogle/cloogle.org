@@ -348,11 +348,18 @@ where
 	pd_classes lib mod dcl icl
 	# dcl = filter (\pd->case pd of (PD_Class _ _)=True; _=False) dcl
 	= map (\(PD_Class {class_ident={id_name},class_pos,class_args,class_context} dcl)
-		-> let typespecs = pd_typespecs lib mod dcl icl
+		-> let
+			typespecs = pd_typespecs lib mod dcl icl
+			macros = pd_macros lib mod dcl
+			getMacro n = case filter ((==) n o 'DB'.getName o fst) macros of
+				[]        = Nothing
+				[(_,m):_] = Just m.macro_as_string
+			updateRepresentation n ('DB'.ET t te)
+				= 'DB'.ET t {te & te_representation = getMacro n <|> te.te_representation}
 		in ('DB'.Location lib mod (toLine class_pos) (findIclLine id_name =<< icl) id_name
 		   , map 'T'.toTypeVar class_args
 		   , flatten $ map 'T'.toClassContext class_context
-		   , [(f,et) \\ ('DB'.Location _ _ _ _ f, et) <- typespecs])) dcl
+		   , [(f,updateRepresentation f et) \\ ('DB'.Location _ _ _ _ f, et) <- typespecs])) dcl
 	where
 		findIclLine :: String ParsedModule -> Maybe Int
 		findIclLine name {mod_defs=pms}

@@ -281,12 +281,11 @@ function getResults(str, libs, include_builtins, include_core, page) {
 					highlightClassDef(
 							'class ' + specific['class_heading'] +
 							(specific['class_funs'].length > 0 ? ' where' : ''),
-							highlightCallback) +
-					'<br/>';
+							highlightCallback);
 				for (var i in specific['class_funs']) {
-					html += '<br/>    ' +
-						highlightFunction(specific['class_funs'][i],
-								highlightCallback);
+					html += highlightMacro(
+							'\n\n\t' + specific['class_funs'][i].replace(/\n/g, '\n\t'),
+							highlightCallback);
 				}
 				html += '</pre>';
 				return html;

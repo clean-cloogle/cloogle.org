@@ -287,6 +287,8 @@ function highlightMacro(macro, callback, start) {
 			[/(\s+)/,        ['whitespace']],
 			[/(\(.+\)\s+infix.*)/,
 			                 ['__type__']],
+			[/([\w`]+\s*::.*)/,
+			                 ['__type__']],
 			[/(\()(\S+)(\))/, ['punctuation', 'funcname', 'punctuation'], 'args'],
 			[/(\S+)/,        ['funcname'], 'args']
 		],

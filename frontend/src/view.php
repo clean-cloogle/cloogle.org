@@ -19,8 +19,7 @@ $fname = CLEANHOME . '/lib/' . $lib . '/' . $mod . '.' . $iclordcl;
 $efname = escapeshellarg($fname);
 
 if ($highlight) {
-	# Output is printed to stdout
-	exec("python2 cloogle_pygments.py $hl_lines < $efname");
+	system("python3 cloogle_pygments.py $hl_lines < $efname");
 } else {
 	header('Content-Type: text/plain');
 	echo file_get_contents($fname);

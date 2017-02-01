@@ -48,7 +48,7 @@ class CloogleHtmlFormatter(pygments.formatters.HtmlFormatter):
                     and value not in ['=', '|', '->', '(', ')', ':', '::',
                                       '..', '_', '\\']:
                 value = u'<a href="https://cloogle.org/#%s">%s</a>' % (
-                    urllib.quote(value), safe_value)
+                    urllib.parse.quote(value), safe_value)
             else:
                 value = safe_value
             parts = value.split('\n')
@@ -98,7 +98,7 @@ class CloogleHtmlFormatter(pygments.formatters.HtmlFormatter):
             yield 1, ''.join(line)
 
 
-print pygments.highlight(
+print(pygments.highlight(
     ''.join(sys.stdin),
     pygments.lexers.get_lexer_by_name('clean'),
     CloogleHtmlFormatter(
@@ -106,7 +106,7 @@ print pygments.highlight(
         linenos=True,
         linespans='line',
         encoding='iso8859',
-        hl_lines=[] if len(sys.argv) == 0 else map(int, sys.argv[1:]),
+        hl_lines=[] if len(sys.argv) == 0 else [int(a) for a in sys.argv[1:]],
         cssfile='view.css',
         noclobber_cssfile=True,
-        ))
+        )).decode('utf-8'))

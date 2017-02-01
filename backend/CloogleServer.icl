@@ -410,7 +410,11 @@ where
 		levenshtein [c \\ c <-: a] [c \\ c <-: b]
 
 	modLevenshtein :: String Module -> Int
-	modLevenshtein s mod = minList $ map (levenshtein` s) [mod:split "." mod]
+	modLevenshtein s mod
+	| s == mod        = -100
+	| isMember s path = length path
+	| otherwise       = levenshtein` s mod
+	where path = split "." mod
 
 	modToFilename :: String -> String
 	modToFilename mod = (toString $ reverse $ takeWhile ((<>)'.')
@@ -426,7 +430,7 @@ where
 
 	isModNameMatch :: !Int !String !Module -> Bool
 	isModNameMatch maxdist name mod
-		= any (isNameMatch maxdist name) [mod:split "." mod]
+		= isNameMatch maxdist name mod || isMember name (split "." mod)
 
 	isModMatch :: ![String] Location -> Bool
 	isModMatch mods (Location _ mod _ _ _) = isMember mod mods

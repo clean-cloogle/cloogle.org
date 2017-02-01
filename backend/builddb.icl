@@ -79,7 +79,7 @@ instance zero CLI where
 	                   , ("clean-platform/OS-Windows-64", const False)
 	                   , ("iTasks-SDK/Dependencies/graph_copy", const False)
 	                   , ("iTasks-SDK/Dependencies/clean-sapl/src", const False)
-	                   , ("iTasks-SDK/Server", startsWith "iTasks._Framework")
+	                   , ("iTasks-SDK/Server", const False)
 	                   , ("iTasks-SDK/Tests", const False)
 	                   , ("ObjectIO", not o startsWith "Std")
 	                   , ("SoccerFun/Game", const False)

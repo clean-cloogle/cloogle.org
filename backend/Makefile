@@ -40,7 +40,7 @@ $(BIN): clean-compiler .FORCE
 	$(CLM) $(CLMFLAGS) $@ -o $@
 
 $(DB): builddb
-	./$< -h 80M > $(DB)
+	./$< > $(DB)
 
 clean:
 	$(RM) -r 'Clean System Files' $(BIN) $(MAN) $(DB)

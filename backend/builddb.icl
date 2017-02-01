@@ -153,6 +153,7 @@ where
 	printStats :: !'DB'.TypeDB !*File -> *File
 	printStats db f = f
 		<<< "+-------------+------+\n"
+		<<< "| Modules     | " <<< modules <<< " |\n"
 		<<< "| Functions   | " <<< funs    <<< " |\n"
 		<<< "| Types       | " <<< types   <<< " |\n"
 		<<< "| Macros      | " <<< macros  <<< " |\n"
@@ -161,9 +162,10 @@ where
 		<<< "| Derivations | " <<< derives <<< " |\n"
 		<<< "+-------------+------+\n"
 	where
-		[funs,macros,types,classes,insts,derives:_]
+		[modules,funs,macros,types,classes,insts,derives:_]
 			= map (pad 4)
-				[ 'DB'.functionCount db
+				[ 'DB'.moduleCount db
+				, 'DB'.functionCount db
 				, 'DB'.macroCount db
 				, 'DB'.typeCount db
 				, 'DB'.classCount db

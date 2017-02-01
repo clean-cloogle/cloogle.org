@@ -102,6 +102,9 @@ function getResults(str, libs, include_builtins, include_core, page) {
 	}
 
 	var makeInstanceTable = function (id, list, highlightf, highlightstart) {
+		if (list.length == 0)
+			return '0';
+
 		var instances = '<a href="javascript:toggle(\'' + id + '\')">show / hide</a>';
 		instances += '<table id="' + id + '" style="display:none;">';
 		var makeInstanceUrl = function (loc) {

@@ -37,6 +37,8 @@ function highlight(lex, istr, start) {
 					} else if (new_state.substring(0,4) == 'pop:') {
 						for (var p = 0; p < parseInt(new_state.substring(4)); p++)
 							state = state_stack.pop();
+					} else if (new_state.substring(0,5) == 'jump:') {
+						state = new_state.substring(5);
 					} else {
 						state_stack.push(state);
 						state = new_state;
@@ -136,12 +138,12 @@ function highlightFunction(func, callback, start) {
 		],
 		genericContext: [
 			[/([*>-]+\|\},)/, ['punctuation'], 'pop'],
-			[/([*>-]+\|\})/, ['punctuation'], 'contextType']
+			[/([*>-]+\|\})/, ['punctuation'], 'jump:contextType']
 		],
 		contextType: [
 			[/(\s+)/,        ['whitespace']],
 			[/(,)/,          ['punctuation']],
-			[/(&)/,          ['punctuation'], 'pop:2'],
+			[/(&)/,          ['punctuation'], 'pop'],
 			[/(\[)/,         ['punctuation'], 'attrenv'],
 			[/([\(\[])/,     ['punctuation'], 'contextType'],
 			[/([\)\]])/,     ['punctuation'], 'pop'],

@@ -30,6 +30,7 @@ from Text.JSON import generic JSONEncode, generic JSONDecode, :: JSONNode
 	| TypeResult TypeResult
 	| ClassResult ClassResult
 	| MacroResult MacroResult
+	| ModuleResult ModuleResult
 
 :: BasicResult
 	= { library  :: String
@@ -72,6 +73,11 @@ from Text.JSON import generic JSONEncode, generic JSONDecode, :: JSONNode
 	  , macro_representation :: String
 	  }
 
+:: ModuleResult :== (BasicResult, ModuleResultExtras)
+:: ModuleResultExtras
+	= { module_is_core :: Bool
+	  }
+
 :: LocationResult :== (String, String, Maybe Int, Maybe Int)
 
 :: StrUnifier :== ([(String,String)], [(String,String)])
@@ -81,9 +87,11 @@ from Text.JSON import generic JSONEncode, generic JSONDecode, :: JSONNode
 :: ShortClassResult = { cls_name :: String, cls_vars :: [String] }
 
 derive JSONEncode Request, Response, Result, ShortClassResult, BasicResult,
-	FunctionResultExtras, TypeResultExtras, ClassResultExtras, MacroResultExtras
+	FunctionResultExtras, TypeResultExtras, ClassResultExtras,
+	MacroResultExtras, ModuleResultExtras
 derive JSONDecode Request, Response, Result, ShortClassResult, BasicResult,
-	FunctionResultExtras, TypeResultExtras, ClassResultExtras, MacroResultExtras
+	FunctionResultExtras, TypeResultExtras, ClassResultExtras,
+	MacroResultExtras, ModuleResultExtras
 
 instance zero Request
 instance zero Response

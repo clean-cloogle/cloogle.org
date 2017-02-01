@@ -122,6 +122,9 @@ typeCount {typemap} = mapSize typemap
 deriveCount :: TypeDB -> Int
 deriveCount {derivemap} = sum $ map length $ elems derivemap
 
+moduleCount :: TypeDB -> Int
+moduleCount {modulemap} = mapSize modulemap
+
 
 filterLocations :: (Location -> Bool) TypeDB -> TypeDB
 filterLocations f db
@@ -132,6 +135,7 @@ filterLocations f db
 	  , typemap     = filterLoc db.typemap
 	  , instancemap = filtInstLocs <$> db.instancemap
 	  , derivemap   = filtInstLocs <$> db.derivemap
+	  , modulemap   = filtModules db.modulemap
 	  }
 where
 	filterLoc :: ((Map Location a) -> Map Location a)
@@ -144,6 +148,9 @@ where
 		_  = [(t,ls`):filtInstLocs rest]
 	where
 		ls` = filter f ls
+
+	filtModules :: ((Map (Library, Module) a) -> Map (Library, Module) a)
+	filtModules = filterWithKey (\(l,m) _ -> f (Location l m Nothing Nothing undef))
 
 getFunction :: Location TypeDB -> Maybe ExtendedType
 getFunction loc {functionmap} = get loc functionmap
@@ -281,6 +288,10 @@ getModule lib mod {modulemap} = get (lib,mod) modulemap
 
 putModule :: Library Module ModuleInfo TypeDB -> TypeDB
 putModule lib mod info db = {db & modulemap = put (lib,mod) info db.modulemap}
+
+findModule` :: (Library Module ModuleInfo -> Bool) TypeDB -> [(Library, Module, ModuleInfo)]
+findModule` f {modulemap} = map (\((l,m),i) -> (l,m,i)) $ toList $
+	filterWithKey (uncurry f) modulemap
 
 newDb :: TypeDB
 newDb = zero

@@ -5,9 +5,11 @@ import Text
 import Text.JSON
 
 derive JSONEncode Request, Response, Result, ShortClassResult, BasicResult,
-	FunctionResultExtras, TypeResultExtras, ClassResultExtras, MacroResultExtras
+	FunctionResultExtras, TypeResultExtras, ClassResultExtras,
+	MacroResultExtras, ModuleResultExtras
 derive JSONDecode Request, Response, Result, ShortClassResult, BasicResult,
-	FunctionResultExtras, TypeResultExtras, ClassResultExtras, MacroResultExtras
+	FunctionResultExtras, TypeResultExtras, ClassResultExtras,
+	MacroResultExtras, ModuleResultExtras
 
 instance zero Request
 where
@@ -46,6 +48,7 @@ where
 		basic (TypeResult     (br,_)) = br
 		basic (ClassResult    (br,_)) = br
 		basic (MacroResult    (br,_)) = br
+		basic (ModuleResult   (br,_)) = br
 
 err :: Int String -> Response
 err c m = { return         = c

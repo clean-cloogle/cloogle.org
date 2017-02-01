@@ -54,6 +54,7 @@ classCount :: TypeDB -> Int
 instanceCount :: TypeDB -> Int
 typeCount :: TypeDB -> Int
 deriveCount :: TypeDB -> Int
+moduleCount :: TypeDB -> Int
 
 filterLocations :: (Location -> Bool) TypeDB -> TypeDB
 
@@ -104,6 +105,7 @@ putDerivationss :: [(Name, [(Type, Location)])] TypeDB -> TypeDB
 
 getModule :: Library Module TypeDB -> Maybe ModuleInfo
 putModule :: Library Module ModuleInfo TypeDB -> TypeDB
+findModule` :: (Library Module ModuleInfo -> Bool) TypeDB -> [(Library, Module, ModuleInfo)]
 
 searchExact :: Type TypeDB -> [(Location, ExtendedType)]
 

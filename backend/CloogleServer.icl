@@ -188,18 +188,18 @@ where
 		# mbType = prepare_unification True <$> (unify >>= parseType o fromString)
 		// Search normal functions
 		# filts = catMaybes [ (\t _ -> isUnifiable t) <$> mbType
-		                    , (\n loc _ -> isNameMatch (size n*2/3) n loc) <$> name
+		                    , (\n loc _ -> isNameMatch (size n*2/3) n $ getName loc) <$> name
 		                    ]
 		# funs = map (\f -> makeFunctionResult name mbType Nothing f db) $ findFunction`` filts db
 		// Search macros
 		# macros = case (isNothing mbType,name) of
-			(True,Just n) = findMacro` (\loc _ -> isNameMatch (size n*2/3) n loc) db
+			(True,Just n) = findMacro` (\loc _ -> isNameMatch (size n*2/3) n $ getName loc) db
 			_             = []
 		# macros = map (\(lhs,rhs) -> makeMacroResult name lhs rhs) macros
 		// Search class members
 		# filts = catMaybes [ (\t _ _ _ _->isUnifiable t) <$> mbType
 		                    , (\n (Location lib mod _ _ _) _ _ f _ -> isNameMatch
-		                      (size n*2/3) n (Location lib mod Nothing Nothing f)) <$> name
+		                      (size n*2/3) n f) <$> name
 		                    ]
 		# members = findClassMembers`` filts db
 		# members = map (\(Location lib mod line iclline cls,vs,_,f,et) -> makeFunctionResult name mbType
@@ -217,8 +217,28 @@ where
 			(True, Just c) = findClass` (\loc _ _ _ -> toLowerCase (getName loc) == c) db
 			_              = []
 		# classes = map (flip makeClassResult db) classes
+		// Search modules
+		# modules = case (mbType, name) of
+			(Nothing, Just n) = findModule` (\_ m _ -> isNameMatch (size n*2/3) n m) db
+			_                 = []
+		# modules = map (makeModuleResult name) modules
 		// Merge results
-		= sort $ funs ++ members ++ types ++ classes ++ macros
+		= sort $ funs ++ members ++ types ++ classes ++ macros ++ modules
+
+	makeModuleResult :: (Maybe String) (Library, Module, ModuleInfo) -> Result
+	makeModuleResult mbName (lib, mod, info)
+		= ModuleResult
+		  ( { library = lib
+		    , modul   = mod
+		    , filename = modToFilename mod
+		    , dcl_line = Nothing
+		    , icl_line = Nothing
+		    , distance = levenshtein` mod (fromJust mbName)
+		    , builtin  = Nothing
+		    }
+		  , { module_is_core = info.is_core
+		    }
+		  )
 
 	makeClassResult :: (Location, [TypeVar], ClassContext, [(Name,ExtendedType)])
 		TypeDB -> Result
@@ -395,9 +415,9 @@ where
 	isUnifiable :: Type ExtendedType -> Bool
 	isUnifiable t1 (ET t2 _) = isJust (unify [] t1 (prepare_unification False t2))
 
-	isNameMatch :: !Int !String Location -> Bool
-	isNameMatch maxdist n1 loc
-		# (n1, n2) = ({toLower c \\ c <-: n1}, {toLower c \\ c <-: getName loc})
+	isNameMatch :: !Int !String !String -> Bool
+	isNameMatch maxdist n1 name
+		# (n1, n2) = ({toLower c \\ c <-: n1}, {toLower c \\ c <-: name})
 		= n1 == "" || indexOf n1 n2 <> -1 || levenshtein [c \\ c <-: n1] [c \\ c <-: n2] <= maxdist
 
 	isModMatch :: ![String] Location -> Bool

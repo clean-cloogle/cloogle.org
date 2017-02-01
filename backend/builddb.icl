@@ -122,6 +122,8 @@ Start w
 	# db          = 'DB'.putFunctions predefFunctions db
 	# db          = 'DB'.putClasses predefClasses db
 	# db          = 'DB'.putTypes predefTypes db
+	# db          = 'DB'.putFunctions (flatten $ map constructor_functions predefTypes) db
+	# db          = 'DB'.putFunctions (flatten $ map record_functions predefTypes) db
 	# io          = stderr
 	# io          = printStats db io
 	# (ok1,w)     = fclose io w
@@ -380,28 +382,6 @@ where
 				[LinePos _ l:_] = Just l
 				_ = Nothing
 
-	constructor_functions :: ('DB'.Location, 'DB'.TypeDef)
-		-> [('DB'.Location, 'DB'.ExtendedType)]
-	constructor_functions ('DB'.Location lib mod line iclline _, td)
-		= [('DB'.Location lib mod line iclline c, 'DB'.ET f
-			{zero & te_isconstructor=True
-			      , te_representation=Just $ concat $
-			          [c] ++ print_prio p ++ [" :: "] ++ print False f
-			      , te_priority=p})
-		   \\ (c,f,p) <- 'T'.constructorsToFunctions td]
-	where
-		print_prio :: (Maybe 'T'.Priority) -> [String]
-		print_prio Nothing  = []
-		print_prio (Just p) = [" "] ++ print False p
-
-	record_functions :: ('DB'.Location, 'DB'.TypeDef)
-		-> [('DB'.Location, 'DB'.ExtendedType)]
-	record_functions ('DB'.Location lib mod line iclline _, td)
-		= [('DB'.Location lib mod line iclline f, 'DB'.ET t
-			{zero & te_isrecordfield=True
-			      , te_representation=Just $ concat $ [".", f, " :: " : print False t]})
-			\\ (f,t) <- 'T'.recordsToFunctions td]
-
 	toLine :: Position -> 'DB'.LineNr
 	toLine (FunPos _ l _) = Just l
 	toLine (LinePos _ l)  = Just l
@@ -419,6 +399,40 @@ where
 	# (ok,w) = fclose f w
 	| not ok = (Left $ "Couldn't open " +++ filename, cache, w)
 	= (Right pm, cache, w)
+
+constructor_functions :: ('DB'.Location, 'DB'.TypeDef)
+	-> [('DB'.Location, 'DB'.ExtendedType)]
+constructor_functions ('DB'.Builtin _, td)
+	= [('DB'.Builtin c, 'DB'.ET f
+		{zero & te_isconstructor=True
+		      , te_representation=Just $ concat $
+		          [c] ++ print_prio p ++ [" :: "] ++ print False f
+		      , te_priority=p})
+	   \\ (c,f,p) <- 'T'.constructorsToFunctions td]
+constructor_functions ('DB'.Location lib mod line iclline _, td)
+	= [('DB'.Location lib mod line iclline c, 'DB'.ET f
+		{zero & te_isconstructor=True
+		      , te_representation=Just $ concat $
+		          [c] ++ print_prio p ++ [" :: "] ++ print False f
+		      , te_priority=p})
+	   \\ (c,f,p) <- 'T'.constructorsToFunctions td]
+
+print_prio :: (Maybe 'T'.Priority) -> [String]
+print_prio Nothing  = []
+print_prio (Just p) = [" "] ++ print False p
+
+record_functions :: ('DB'.Location, 'DB'.TypeDef)
+	-> [('DB'.Location, 'DB'.ExtendedType)]
+record_functions ('DB'.Builtin _, td)
+	= [('DB'.Builtin f, 'DB'.ET t
+		{zero & te_isrecordfield=True
+		      , te_representation=Just $ concat $ [".", f, " :: " : print False t]})
+		\\ (f,t) <- 'T'.recordsToFunctions td]
+record_functions ('DB'.Location lib mod line iclline _, td)
+	= [('DB'.Location lib mod line iclline f, 'DB'.ET t
+		{zero & te_isrecordfield=True
+		      , te_representation=Just $ concat $ [".", f, " :: " : print False t]})
+		\\ (f,t) <- 'T'.recordsToFunctions td]
 
 wantModule` :: !*File !{#Char} !Bool !Ident !Position !Bool !*HashTable !*File !*Files
 	-> ((!Bool,!Bool,!ParsedModule, !*HashTable, !*File), !*Files)

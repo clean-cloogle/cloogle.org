@@ -1,4 +1,5 @@
 a { color: inherit; text-decoration: inherit; }
+h2 { display: none; }
 td.linenos { background-color: #f0f0f0; padding-right: 10px; }
 span.lineno { background-color: #f0f0f0; padding: 0 5px 0 5px; }
 pre { line-height: 125%; }

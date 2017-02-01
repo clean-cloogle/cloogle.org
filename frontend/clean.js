@@ -74,6 +74,7 @@ function highlightFunction(func, callback, start) {
 			[/(\s+)/,        ['whitespace']],
 			[/(generic)(\s)/,
 			                 ['keyword', 'whitespace'], 'generic'],
+			[/(import)(\s)/, ['keyword', 'whitespace']],
 			[/(\S+)(\s+)(::)/,
 			                 ['funcname', 'whitespace', 'punctuation'], 'type'],
 			[/(\()(\S+)(\))(\s+)(infix[rl]?)(\s*)(\d*)(\s*)(::)/,

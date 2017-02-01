@@ -295,6 +295,15 @@ function getResults(str, libs, include_builtins, include_core, page) {
 					highlightMacro(specific['macro_representation'], highlightCallback) +
 					'</pre>';
 				break;
+			case 'ModuleResult':
+				specificData = [];
+				if (specific['module_is_core'])
+					specificData.push(['<span class="core-module">' +
+							'This is a core module and should usually only be used internally.' +
+							'</span>']);
+				return '<hr/>' + makeTable(basicData.concat(specificData)) +
+					'<pre>' + highlightFunction('import ' + basic['modul']) + '</pre>';
+				break;
 			default:
 				return '';
 		}

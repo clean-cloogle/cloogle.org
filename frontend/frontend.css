@@ -40,3 +40,7 @@ th {
 	font-size: 90%;
 	vertical-align: top;
 }
+
+.core-module {
+	font-style: italic;
+}

@@ -21,7 +21,7 @@ import System.CommandLine
 import Data.Functor
 import Control.Applicative
 import Control.Monad
-from Text import class Text(concat,trim,indexOf,toLowerCase),
+from Text import class Text(concat,trim,indexOf,toLowerCase,split),
 	instance Text String, instance + String
 import Text.JSON
 
@@ -219,7 +219,7 @@ where
 		# classes = map (flip makeClassResult db) classes
 		// Search modules
 		# modules = case (mbType, name) of
-			(Nothing, Just n) = findModule` (\_ m _ -> isNameMatch (size n*2/3) n m) db
+			(Nothing, Just n) = findModule` (\_ m _ -> isModNameMatch (size n*2/3) n m) db
 			_                 = []
 		# modules = map (makeModuleResult name) modules
 		// Merge results
@@ -228,12 +228,12 @@ where
 	makeModuleResult :: (Maybe String) (Library, Module, ModuleInfo) -> Result
 	makeModuleResult mbName (lib, mod, info)
 		= ModuleResult
-		  ( { library = lib
-		    , modul   = mod
+		  ( { library  = lib
+		    , modul    = mod
 		    , filename = modToFilename mod
 		    , dcl_line = Nothing
 		    , icl_line = Nothing
-		    , distance = levenshtein` mod (fromJust mbName)
+		    , distance = modLevenshtein (fromJust mbName) mod
 		    , builtin  = Nothing
 		    }
 		  , { module_is_core = info.is_core
@@ -406,7 +406,11 @@ where
 			typeComplexity (Uniq t) = 3.0 + typeComplexity t
 
 	levenshtein` :: String String -> Int
-	levenshtein` a b = if (indexOf a b == -1) 0 -100 + levenshtein [c \\ c <-: a] [c \\ c <-: b]
+	levenshtein` a b = if (indexOf a b == -1) 0 -100 +
+		levenshtein [c \\ c <-: a] [c \\ c <-: b]
+
+	modLevenshtein :: String Module -> Int
+	modLevenshtein s mod = minList $ map (levenshtein` s) [mod:split "." mod]
 
 	modToFilename :: String -> String
 	modToFilename mod = (toString $ reverse $ takeWhile ((<>)'.')
@@ -419,6 +423,10 @@ where
 	isNameMatch maxdist n1 name
 		# (n1, n2) = ({toLower c \\ c <-: n1}, {toLower c \\ c <-: name})
 		= n1 == "" || indexOf n1 n2 <> -1 || levenshtein [c \\ c <-: n1] [c \\ c <-: n2] <= maxdist
+
+	isModNameMatch :: !Int !String !Module -> Bool
+	isModNameMatch maxdist name mod
+		= any (isNameMatch maxdist name) [mod:split "." mod]
 
 	isModMatch :: ![String] Location -> Bool
 	isModMatch mods (Location _ mod _ _ _) = isMember mod mods

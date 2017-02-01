@@ -3,7 +3,7 @@ import sys
 import pygments
 import pygments.lexers
 import pygments.formatters
-from pygments.token import Token
+from pygments.token import Literal, Name, Operator
 
 _escape_html_table = {
     ord('&'): u'&amp;',
@@ -12,6 +12,9 @@ _escape_html_table = {
     ord('"'): u'&quot;',
     ord("'"): u'&#39;',
 }
+
+CLEAN_SYNTAX_TOKENS = ['=', '=:', ':==', '|', '->', '(', ')', ':', '::', '::!',
+        '..', '_', '\\', '.', '#', '#!', '!', '\\\\', '<-', '<-:', '<-|']
 
 
 # This is blatantly stolen from the HTML formatter
@@ -44,16 +47,15 @@ class CloogleHtmlFormatter(pygments.formatters.HtmlFormatter):
                 cspan = cls and '<span class="%s">' % cls or ''
 
             safe_value = value.translate(escape_table)
-            if ttype in [Token.Name.Class, Token.Name, Token.Operator] \
-                    and value not in ['=', '|', '->', '(', ')', ':', '::',
-                                      '..', '_', '\\']:
+            if ttype in [Name.Class, Name, Operator, Literal] \
+                    and value not in CLEAN_SYNTAX_TOKENS:
                 value = u'<a href="https://cloogle.org/#%s">%s</a>' % (
                     urllib.parse.quote(value), safe_value)
             else:
                 value = safe_value
             parts = value.split('\n')
 
-            if tagsfile and ttype in Token.Name:
+            if tagsfile and ttype in Name:
                 filename, linenumber = self._lookup_ctag(value)
                 if linenumber:
                     base, filename = os.path.split(filename)

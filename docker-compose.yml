@@ -40,6 +40,7 @@ services:
         MYSQL_DATABASE: cloogledb
         MYSQL_USER: cloogle
         MYSQL_PASSWORD: cloogle
+    restart: always
 
   gc:
     build: gc

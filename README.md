@@ -22,8 +22,8 @@ Use any of the available frontends:
 ### Readme contents
 
 - [Setup](#setup)
-- [API specification of the PHP wrapper](#api-specification-for-developers)
-- [API specification of the Clean backend](#talking-with-the-clean-backend-directly)
+- [HTTP API Specification](#http-api-specification)
+- [TCP API Specification](#tcp-api-specification)
 - [Statistics](#statistics)
 - [Authors](#authors)
 - [Copyright &amp; License](#copyright--license)
@@ -31,7 +31,6 @@ Use any of the available frontends:
 ---
 
 ## Setup
-
 After installing
 [docker-compose](https://www.docker.com/products/docker-compose) run the
 following command:
@@ -142,8 +141,16 @@ The Clean backend will return a JSON string, similar to the output of the PHP
 script described above. The error codes above 150 are specific to the script
 and cannot be returned by the Clean backend.
 
-## Authors
+## Statistics
+A websocket server on port 31216 provides you with the realtime log.
 
+On [cloogle.org/stats/live.html](https://cloogle.org/stats/live.html), a
+realtime usage chart is shown.
+
+For longterm statistics you can see
+[cloogle.org/stats/longterm.html](https://cloogle.org/stats/longterm.html).
+
+## Authors
 Maintainers:
 
 - [dopefishh](https://github.com/dopefishh)
@@ -154,6 +161,5 @@ Contributors:
 - [KDercksen](https://github.com/KDercksen) (searching on module; help text)
 
 ## Copyright &amp; License
-
 Copyright &copy; Mart Lubbers and Camil Staps.
 Licensed under MIT; See the `LICENSE` file.

@@ -304,7 +304,7 @@ function highlightMacro(macro, callback, start) {
 			[/\b(if|let|in|with|where|case|of|otherwise)\b/,
 			                 ['keyword']],
 			[/('[\w`]+'\.)/, ['qualifiedname']],
-			[/('([^'\\]|\\(x[0-9a-fA-F]+|\d+|.))')/,
+			[/('(?:[^'\\]|\\(?:x[0-9a-fA-F]+|\d+|.))')/,
 			                 ['literal literal-char']],
 			[/\b([+~-]?0[0-7]+)\b/,
 			                 ['literal literal-int literal-int-oct']],

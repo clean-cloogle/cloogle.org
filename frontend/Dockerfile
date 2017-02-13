@@ -8,7 +8,7 @@ RUN docker-php-source extract \
 	&& docker-php-source delete
 
 # Clean libraries, for /srv/view.php
-RUN apt-get update && apt-get install -y subversion ca-certificates
+RUN apt-get update && apt-get install -y subversion ca-certificates git
 
 RUN mkdir -p /opt/clean && cd /opt/clean &&\
 	curl -sSL http://ftp.cs.ru.nl/Clean/nightly/clean-itasks-linux64-20160531.tar.gz\
@@ -17,7 +17,8 @@ RUN mkdir -p /opt/clean && cd /opt/clean &&\
 	mv StdEnv/*.icl lib/StdEnv
 
 RUN svn checkout https://svn.cs.ru.nl/repos/SoccerFun/src /opt/clean/lib/SoccerFun &&\
-	svn checkout https://svn.cs.ru.nl/repos/clean-libraries/trunk/Libraries/ObjectIO/ObjectIO /opt/clean/lib/ObjectIO
+	svn checkout https://svn.cs.ru.nl/repos/clean-libraries/trunk/Libraries/ObjectIO/ObjectIO /opt/clean/lib/ObjectIO &&\
+	git clone https://gitlab.science.ru.nl/mlubbers/CleanSerial /opt/clean/lib/CleanSerial
 
 # Pygments, for highlighting
 RUN apt-get update && apt-get install -y python3.4 python3-pip mercurial

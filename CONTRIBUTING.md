@@ -57,6 +57,9 @@ whether it is suitable to be indexed by cloogle.
 
 To add a library you have to add it in to the following three places:
 
+- `backend/builddb.icl`
+
+	Add your library to the `zero` instance of `CLI` to get it indexed.
 - `backend/Dockerfile`
 
 	In this file you have to add the download of the library. E.g. add a line
@@ -66,6 +69,6 @@ To add a library you have to add it in to the following three places:
 
 	In this file do the same as in the backend to make the files through the
 	web frontend.
-- `backend/builddb.icl`
+- `frontend/index.html`
 
-	Add your library to the `zero` instance of `CLI` to get it indexed.
+	Add your library to the checkboxes in the miscellaneous column.

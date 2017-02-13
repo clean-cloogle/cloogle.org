@@ -150,21 +150,6 @@ realtime usage chart is shown.
 For longterm statistics you can see
 [cloogle.org/stats/longterm.html](https://cloogle.org/stats/longterm.html).
 
-## How to add new libraries
-To add a library you have to add it in to the following places:
-
-- `backend/Dockerfile`
-
-	In this file you have to add the download of the library. E.g. add the
-	`subversion checkout` or `git clone` to `/opt/clean/lib`.
-- `frontend/Dockerfile`
-
-	In this file do the same as in the backend to make the files through the
-	web frontend.
-- `backend/builddb.icl`
-
-	Add your library to the `zero` instance of `CLI` to get it indexed.
-
 ## Authors
 Maintainers:
 

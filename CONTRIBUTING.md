@@ -52,7 +52,7 @@ We will take immediate action.
 - Add yourself to the authors list in `README.md`
 
 ## 3. I just want to add library X
-If the library is not well known it is adviced to first open an issue to see
+If the library is not well known it is advised to first open an issue to see
 whether it is suitable to be indexed by cloogle.
 
 To add a library you have to add it in to the following three places:
@@ -72,3 +72,6 @@ To add a library you have to add it in to the following three places:
 - `frontend/index.html`
 
 	Add your library to the checkboxes in the miscellaneous column.
+
+See [this](https://github.com/dopefishh/cloogle/commit/2b44a070fa802d290ebce13ab3689fc895aa5d9c)
+commit for an example.

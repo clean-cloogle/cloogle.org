@@ -12,10 +12,11 @@ function highlight(lex, istr, start) {
 
 	var state_stack = [];
 	var state = 'start';
-	if (typeof start != 'undefined') {
+	if (typeof start != 'undefined')
 		state = start;
-	}
+
 	while (true) {
+		console.log(state, istr);
 		var found = false;
 		for (var i in lex[state]) {
 			var patt = lex[state][i][0];
@@ -31,17 +32,21 @@ function highlight(lex, istr, start) {
 
 				found = true;
 				if (lex[state][i].length > 2) {
-					var new_state = lex[state][i][2];
-					if (new_state == 'pop') {
-						state = state_stack.pop();
-					} else if (new_state.substring(0,4) == 'pop:') {
-						for (var p = 0; p < parseInt(new_state.substring(4)); p++)
+					var new_states = lex[state][i][2];
+					new_states = new_states.split(';');
+					for (var i in new_states) {
+						var new_state = new_states[i];
+						if (new_state == 'pop') {
 							state = state_stack.pop();
-					} else if (new_state.substring(0,5) == 'jump:') {
-						state = new_state.substring(5);
-					} else {
-						state_stack.push(state);
-						state = new_state;
+						} else if (new_state.substring(0,4) == 'pop:') {
+							for (var p = 0; p < parseInt(new_state.substring(4)); p++)
+								state = state_stack.pop();
+						} else if (new_state.substring(0,5) == 'jump:') {
+							state = new_state.substring(5);
+						} else {
+							state_stack.push(state);
+							state = new_state;
+						}
 					}
 				}
 
@@ -203,7 +208,7 @@ function highlightTypeDef(type, callback, start) {
 		],
 		fieldtype: [
 			[/(\s+)/,        ['whitespace']],
-			[/([a-z][a-zA-Z]*)/, ['typevar']],
+			[/([a-z]\w*)/,   ['typevar']],
 			[/([A-Z]\w*)/,   ['type']],
 			[/(\()/,         ['punctuation'], 'tuple'],
 			[/([\[\{])/,     ['punctuation'], 'fieldtype'],
@@ -212,7 +217,7 @@ function highlightTypeDef(type, callback, start) {
 		],
 		tuple: [
 			[/(\s+)/,        ['whitespace']],
-			[/([a-z][a-zA-Z]*)/, ['typevar']],
+			[/([a-z]\w*)/,   ['typevar']],
 			[/([A-Z]\w*)/,   ['type']],
 			[/([\(\[\{])/,   ['punctuation'], 'tuple'],
 			[/([\)\]\}])/,   ['punctuation'], 'pop'],
@@ -228,7 +233,7 @@ function highlightTypeDef(type, callback, start) {
 		consexi: [
 			[/(\s+)/,        ['whitespace']],
 			[/([a-z][\w`]*)/, ['typevar']],
-			[/(:)/,          ['punctuation'], 'conses']
+			[/(:)/,          ['punctuation'], 'pop']
 		],
 		consargs: [
 			[/(\s+)/,        ['whitespace']],
@@ -236,8 +241,26 @@ function highlightTypeDef(type, callback, start) {
 			                 ['keyword', 'whitespace', 'keyword', 'whitespace']],
 			[/([a-z][\w`]*)/, ['typevar']],
 			[/([A-Z]\w*)/,   ['type']],
-			[/(\|)/,         ['punctuation'], 'conses'],
+			[/(\|)/,         ['punctuation'], 'pop'],
+			[/(&)/,          ['punctuation'], 'context'],
 			[/(\W)/,         ['punctuation']]
+		],
+		context: [
+			[/(\s+)/,        ['whitespace']],
+			[/(,)/,          ['punctuation']],
+			[/(\S+)(\{\|)/,  ['generic', 'punctuation'], 'generic'],
+			[/([^\s{]+)(,)/, ['classname', 'punctuation']],
+			[/([^\s{]+)/,    ['classname'], 'contextType']
+		],
+		generic: [
+			[/([*>-]+\|\},)/, ['punctuation'], 'pop'],
+			[/([*>-]+\|\})/, ['punctuation'], 'pop;contextType']
+		],
+		contextType: [
+			[/(\s+)/,        ['whitespace']],
+			[/(&)/,          ['punctuation'], 'pop'],
+			[/(\|)/,         ['punctuation'], 'pop:3'],
+			[/([^\s,]+)/,    ['typevar']]
 		]
 	}, type, callback, start);
 }

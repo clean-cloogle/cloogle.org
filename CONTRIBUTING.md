@@ -7,6 +7,7 @@ contributing to avoid wasting your or our time.
 
 1. [Bug reports](#1-bug-reports)
 2. [Submitting patches](#2-submitting-patches)
+3. [I just want to add library X](#3-i-just-want-to-add-library-x)
 
 ---
 
@@ -49,3 +50,24 @@ We will take immediate action.
 ### Other stuff
 
 - Add yourself to the authors list in `README.md`
+
+## 3. I just want to add library X
+If the library is not well known it is adviced to first open an issue to see
+whether it is suitable to be indexed by cloogle.
+
+To add a library you have to add it in to the following three places:
+
+- `backend/Dockerfile`
+
+	In this file you have to add the download of the library. E.g. add a line
+	to get the files to the docker (e.g. with subversion, git, mercurial etc.)
+	to `/opt/clean/lib`.
+- `frontend/Dockerfile`
+
+	In this file do the same as in the backend to make the files through the
+	web frontend.
+- `backend/builddb.icl`
+
+	Add your library to the `zero` instance of `CLI` to get it indexed.
+
+See [this](https://github.com/dopefishh/cloogle/commit/2b44a070fa802d290ebce13ab3689fc895aa5d9c) commit for an example.

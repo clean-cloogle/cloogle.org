@@ -14,11 +14,12 @@ RUN PACKAGES="subversion ca-certificates" \
 COPY . /usr/src/cloogle
 WORKDIR /usr/src/cloogle
 
-RUN PACKAGES="make subversion ca-certificates gcc" \
+RUN PACKAGES="make subversion ca-certificates gcc git" \
 	&& apt-get update \
 	&& apt-get install -qq $PACKAGES \
 	&& svn checkout https://svn.cs.ru.nl/repos/SoccerFun/src /opt/clean/lib/SoccerFun \
 	&& svn checkout https://svn.cs.ru.nl/repos/clean-libraries/trunk/Libraries/ObjectIO/ObjectIO /opt/clean/lib/ObjectIO \
+	&& git clone https://gitlab.science.ru.nl/mlubbers/CleanSerial /opt/clean/lib/CleanSerial \
 	&& make distclean \
 	&& make \
 # Cleanup

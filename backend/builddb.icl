@@ -68,6 +68,7 @@ instance zero CLI where
 	                   , ("Generics", const False)
 	                   , ("MersenneTwister", const False)
 	                   , ("TCPIP", const False)
+	                   , ("CleanSerial", const False)
 	                   , ("clean-platform/OS-Independent", const False)
 	                   , ("clean-platform/OS-Linux", const False)
 	                   , ("clean-platform/OS-Linux-32", const False)

@@ -8,7 +8,9 @@ $sql =
 		sum(case when `query` LIKE 'type %' then 1 else null end),
 		sum(case when `query` LIKE 'class %' then 1 else null end)
 	FROM `log`
-	WHERE `date` BETWEEN timestamp('$startTime') AND timestamp('$endTime')";
+	WHERE
+		`responsecode` <> " . E_DOSPROTECT . " AND
+		`date` BETWEEN timestamp('$startTime') AND timestamp('$endTime')";
 
 $stmt = $db->stmt_init();
 if (!$stmt->prepare($sql))

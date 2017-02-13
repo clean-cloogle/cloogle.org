@@ -38,7 +38,9 @@ $sql =
 		count(case when `responsecode`>1 and `responsecode`<150 then 1 else null end),
 		count(distinct `ip`,`useragent_id`)
 	FROM `log`
-	WHERE `date` BETWEEN timestamp('$startTime') AND timestamp('$endTime')
+	WHERE
+		`responsecode` <> " . E_DOSPROTECT . " AND
+		`date` BETWEEN timestamp('$startTime') AND timestamp('$endTime')
 	GROUP BY $group
 	ORDER BY min(`date`) ASC";
 

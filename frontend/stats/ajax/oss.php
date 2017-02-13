@@ -12,6 +12,7 @@ $sql =
 	FROM `log`
 	INNER JOIN `useragent` ON `log`.`useragent_id` = `useragent`.`id`
 	WHERE
+		`responsecode` <> " . E_DOSPROTECT . " AND
 		`date` BETWEEN timestamp('$startTime') AND timestamp('$endTime')
 		AND ";
 

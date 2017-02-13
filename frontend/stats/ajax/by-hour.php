@@ -3,7 +3,9 @@ require_once('./conf.php');
 
 $sql =
 	"SELECT dayofweek(`date`), hour(`date`), count(*) FROM `log`
-	WHERE `date` BETWEEN timestamp('$startTime') AND timestamp('$endTime')
+	WHERE
+		`responsecode` <> " . E_DOSPROTECT . " AND
+		`date` BETWEEN timestamp('$startTime') AND timestamp('$endTime')
 	GROUP BY dayofweek(`date`), hour(`date`)
 	ORDER BY dayofweek(`date`) asc, hour(`date`) ASC";
 

@@ -1,5 +1,6 @@
 import urllib
 import sys
+import codecs
 import pygments
 import pygments.lexers
 import pygments.formatters
@@ -101,15 +102,21 @@ class CloogleHtmlFormatter(pygments.formatters.HtmlFormatter):
             yield 1, ''.join(line)
 
 
-print(pygments.highlight(
-    ''.join(sys.stdin),
+
+with open(sys.argv[1], 'rb') as f:
+    inp = u''
+    for l in f:
+        inp += l.decode('latin1')
+outp = pygments.highlight(
+    inp,
     pygments.lexers.get_lexer_by_name('clean'),
     CloogleHtmlFormatter(
         full=True,
         linenos=True,
         linespans='line',
-        encoding='iso8859',
-        hl_lines=[] if len(sys.argv) == 0 else [int(a) for a in sys.argv[1:]],
+        encoding='latin1',
+        hl_lines=[] if len(sys.argv) == 1 else [int(a) for a in sys.argv[2:]],
         cssfile='view.css',
         noclobber_cssfile=True,
-        )).decode('utf-8'))
+        ))
+print(codecs.decode(outp, 'utf-8', 'ignore'))

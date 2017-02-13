@@ -16,7 +16,6 @@ function highlight(lex, istr, start) {
 		state = start;
 
 	while (true) {
-		console.log(state, istr);
 		var found = false;
 		for (var i in lex[state]) {
 			var patt = lex[state][i][0];

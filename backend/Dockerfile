@@ -35,10 +35,10 @@ RUN PACKAGES="make subversion ca-certificates gcc git curl" \
 		*.dcl *.icl \
 		Dockerfile \
 		Makefile \
-	&& rm -rf /opt/clean/* \
+	&& rm -rf /opt/clean \
 	&& ADDED_PACKAGES=`apt-mark showauto` \
 	&& apt-get remove --purge -qq $PACKAGES $ADDED_PACKAGES \
-	&& rm -rf /var/lib/apt/lists/*
+	&& rm -rf /var/lib/apt/lists
 
 EXPOSE 31215
 

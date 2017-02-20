@@ -11,10 +11,8 @@ RUN docker-php-source extract \
 RUN apt-get update && apt-get install -y subversion ca-certificates git
 
 RUN mkdir -p /opt/clean && cd /opt/clean &&\
-	curl -sSL http://ftp.cs.ru.nl/Clean/nightly/clean-itasks-linux64-20160531.tar.gz\
-		| tar --strip-components=1 -xz &&\
-	make -j &&\
-	mv StdEnv/*.icl lib/StdEnv
+	curl -sSL ftp://ftp.cs.ru.nl/pub/Clean/builds/linux-x64/clean-bundle-complete-linux-x64-latest.tgz |\
+	 	tar -xz --strip-components=1
 
 RUN svn checkout https://svn.cs.ru.nl/repos/SoccerFun/src /opt/clean/lib/SoccerFun &&\
 	svn checkout https://svn.cs.ru.nl/repos/clean-libraries/trunk/Libraries/ObjectIO/ObjectIO /opt/clean/lib/ObjectIO &&\

@@ -3,6 +3,10 @@ define('SERVER_HOSTNAME', 'backend');
 define('SERVER_PORT', 31215);
 define('SERVER_TIMEOUT', 8);
 
+define('DOS_INITIAL_BLOCK', 1);
+define('DOS_BLOCK_MULTIPLY', 2);
+define('DOS_MAX_BLOCK', 60);
+
 if (file_exists('conf.php'))
 	require_once('conf.php');
 
@@ -46,14 +50,54 @@ function dos_protect() {
 	if (!has_database)
 		return false;
 
+	$stmt = $db->prepare('SELECT COUNT(*) FROM `blacklist`
+		WHERE `ip`=? AND `useragent_id`=? AND `end` >= NOW()');
+	$stmt->bind_param('si', $ip, $ua_id);
+	$stmt->execute();
+	$stmt->bind_result($count);
+	$stmt->fetch();
+	$stmt->close();
+
+	if ($count)
+		return true;
+
 	$stmt = $db->prepare('SELECT COUNT(*) FROM `log`
 		WHERE `useragent_id`=? AND `ip`=? AND `date`>=NOW() - INTERVAL 1 SECOND');
 	$stmt->bind_param('is', $ua_id, $ip);
 	$stmt->execute();
 	$stmt->bind_result($count);
 	$stmt->fetch();
+	$stmt->close();
 
-	return $count >= DOS_MAX_REQUESTS_PER_SECOND;
+	$protect = $count >= DOS_MAX_REQUESTS_PER_SECOND;
+
+	if ($protect) {
+		$stmt = $db->prepare('SELECT
+			UNIX_TIMESTAMP(MAX(`start`)), UNIX_TIMESTAMP(MAX(`end`)) FROM `blacklist`
+			WHERE `ip`=? AND `useragent_id`=? AND
+				`end` >= DATE_ADD(NOW(), INTERVAL -10 MINUTE)');
+		$stmt->bind_param('si', $ip, $ua_id);
+		$stmt->execute();
+		$stmt->bind_result($start, $end);
+		$stmt->fetch();
+		$stmt->close();
+
+		if (is_null($start) || is_null($end))
+			$block = DOS_INITIAL_BLOCK;
+		else
+			$block = ($end - $start) * DOS_BLOCK_MULTIPLY;
+		if ($block > DOS_MAX_BLOCK)
+			$block = DOS_MAX_BLOCK;
+
+		$stmt = $db->prepare('INSERT INTO `blacklist`
+			(`ip`, `useragent_id`, `end`) VALUES
+			(?,?,DATE_ADD(NOW(), INTERVAL ' . $block . ' SECOND))');
+		$stmt->bind_param('si', $ip, $ua_id);
+		$stmt->execute();
+		$stmt->close();
+	}
+
+	return $protect;
 }
 
 function log_request($code) {

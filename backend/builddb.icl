@@ -59,29 +59,18 @@ instance zero CLI where
 	zero = { version = False
 	       , help    = False
 	       , root    = "/opt/clean/lib/"
-	       , libs    = [ ("StdEnv", const False)
-	                   , ("StdLib", const False)
-	                   , ("ArgEnv", const False)
+	       , libs    = [ ("ArgEnv", const False)
+	                   , ("CleanSerial", const False)
 	                   , ("Directory", const False)
 	                   , ("Dynamics", const False)
-	                   , ("Gast", const False)
 	                   , ("Generics", const False)
-	                   , ("MersenneTwister", const False)
+	                   , ("GraphCopy", const False)
+	                   , ("iTasks", const False)
+	                   , ("Platform", const False)
+	                   , ("Sapl", const False)
+	                   , ("StdEnv", const False)
+	                   , ("StdLib", const False)
 	                   , ("TCPIP", const False)
-	                   , ("CleanSerial", const False)
-	                   , ("clean-platform/OS-Independent", const False)
-	                   , ("clean-platform/OS-Linux", const False)
-	                   , ("clean-platform/OS-Linux-32", const False)
-	                   , ("clean-platform/OS-Linux-64", const False)
-	                   , ("clean-platform/OS-Mac", const False)
-	                   , ("clean-platform/OS-Posix", const False)
-	                   , ("clean-platform/OS-Windows", const False)
-	                   , ("clean-platform/OS-Windows-32", const False)
-	                   , ("clean-platform/OS-Windows-64", const False)
-	                   , ("iTasks-SDK/Dependencies/graph_copy", const False)
-	                   , ("iTasks-SDK/Dependencies/clean-sapl/src", const False)
-	                   , ("iTasks-SDK/Server", const False)
-	                   , ("iTasks-SDK/Tests", const False)
 	                   , ("ObjectIO", not o startsWith "Std")
 	                   , ("SoccerFun/Game", const False)
 	                   , ("SoccerFun/Gui", const False)
@@ -91,8 +80,6 @@ instance zero CLI where
 	                   ]
 	       , exclude = [ "StdEnv/_startup"
 	                   , "StdEnv/_system"
-	                   , "clean-platform/OS-Independent/Deprecated"
-	                   , "iTasks-SDK/Server/lib"
 	                   , "SoccerFun/StdReferee/RefereeCoach_"
 	                   , "SoccerFun/StdTeam/Team_"
 	                   ]

@@ -63,6 +63,7 @@ instance zero CLI where
 	                   , ("CleanSerial", const False)
 	                   , ("Directory", const False)
 	                   , ("Dynamics", const False)
+	                   , ("Gast", const False)
 	                   , ("Generics", const False)
 	                   , ("GraphCopy", const False)
 	                   , ("iTasks", const False)

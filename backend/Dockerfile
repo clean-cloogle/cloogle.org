@@ -19,6 +19,7 @@ RUN PACKAGES="make subversion ca-certificates gcc git curl" \
 	&& apt-get install -qq $PACKAGES \
 	&& svn checkout https://svn.cs.ru.nl/repos/SoccerFun/src /opt/clean/lib/SoccerFun \
 	&& svn checkout https://svn.cs.ru.nl/repos/clean-libraries/trunk/Libraries/ObjectIO/ObjectIO /opt/clean/lib/ObjectIO \
+	&& svn checkout https://svn.cs.ru.nl/repos/gast/trunk/ /opt/clean/lib/Gast \
 	&& git clone https://gitlab.science.ru.nl/mlubbers/CleanSerial /opt/clean/lib/CleanSerial \
 	&& make distclean \
 	&& make CloogleServer builddb\

@@ -74,7 +74,7 @@ function highlightToHTML(lex, istr, callback, start) {
 	return ostr;
 }
 
-function highlightFunction(func, callback, start) {
+function highlightFunctionHeader(func, callback, start) {
 	return highlightToHTML({
 		start: [
 			[/(\s+)/,        ['whitespace']],
@@ -145,6 +145,7 @@ function highlightFunction(func, callback, start) {
 			[/([*>-]+\|\})/, ['punctuation'], 'jump:contextType']
 		],
 		contextType: [
+			[/(\n)/,         ['whitespace'], 'pop:2'],
 			[/(\s+)/,        ['whitespace']],
 			[/(,)/,          ['punctuation']],
 			[/(&)/,          ['punctuation'], 'pop'],
@@ -301,7 +302,7 @@ function highlightClassDef(cls, callback, start) {
 function highlightMacro(macro, callback, start) {
 	var myCallback = function(span, cls, str) {
 		if (cls == '__type__') {
-			return highlightFunction(str, callback);
+			return highlightFunctionHeader(str, callback);
 		}
 		return callback(span, cls, str);
 	}
@@ -357,7 +358,7 @@ function highlightMacro(macro, callback, start) {
 }
 
 function highlightType(type, callback) {
-	return highlightFunction(type, callback, 'type');
+	return highlightFunctionHeader(type, callback, 'type');
 }
 
 function escapeHTML(unsafe) {

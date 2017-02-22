@@ -227,23 +227,23 @@ function getResults(str, libs, include_builtins, include_core, page) {
 				if ('constructor_of' in specific) {
 					specificData.push([
 						'This function is a type constructor of <code>' +
-						highlightFunction(':: ' + specific['constructor_of'],
+						highlightFunctionHeader(':: ' + specific['constructor_of'],
 							highlightCallback) + '</code>.'
 					]);
 					hl_entry = 'startConstructor';
 				} else if ('recordfield_of' in specific) {
 					specificData.push([
 						'This is a record field of <code>' +
-						highlightFunction(':: ' + specific['recordfield_of'],
+						highlightFunctionHeader(':: ' + specific['recordfield_of'],
 							highlightCallback) + '</code>.'
 					]);
 					hl_entry = 'startRecordField';
 				}
 				return '<hr/>' +
 					makeTable(basicData.concat(specificData)) +
-					'<code>' +
-					highlightFunction(specific['func'], highlightCallback, hl_entry) +
-					'</code>';
+					'<pre>' +
+					highlightMacro(specific['func'], highlightCallback, hl_entry) +
+					'</pre>';
 				break;
 			case 'TypeResult':
 				var specificData = [];
@@ -261,7 +261,7 @@ function getResults(str, libs, include_builtins, include_core, page) {
 							makeInstanceTable(
 								derivationsId,
 								specific['type_derivations'],
-								highlightFunction, 'generic')]);
+								highlightFunctionHeader, 'generic')]);
 				}
 				return '<hr/>' +
 					makeTable(basicData.concat(specificData)) +
@@ -304,7 +304,7 @@ function getResults(str, libs, include_builtins, include_core, page) {
 							'This is a core module and should usually only be used internally.' +
 							'</span>']);
 				return '<hr/>' + makeTable(basicData.concat(specificData)) +
-					'<pre>' + highlightFunction('import ' + basic['modul']) + '</pre>';
+					'<pre>' + highlightFunctionHeader('import ' + basic['modul']) + '</pre>';
 				break;
 			default:
 				return '';
@@ -324,7 +324,7 @@ function getResults(str, libs, include_builtins, include_core, page) {
 			}
 			sugstr = sugstr.join(' ');
 			str += '<tr><td><a class="hidden" href="#' + encodeURIComponent(sugstr) + '"><code>' +
-				highlightFunction(sugstr) + '</code></a></td><td>' +
+				highlightFunctionHeader(sugstr) + '</code></a></td><td>' +
 				suggs[i][1] + ' results</td></tr>';
 		}
 		str += '</table></div>';
@@ -408,10 +408,10 @@ function formsubmit() {
 		if (q.indexOf('::') == -1 && q.indexOf('->') != -1) {
 			var sug = ':: ' + q.replace('->', ' -> ');
 			sresults.innerHTML = '<p>' +
-				'Searching for <code>' + highlightFunction(q) + '</code>. ' +
+				'Searching for <code>' + highlightFunctionHeader(q) + '</code>. ' +
 				'Did you mean to search for ' +
 				'<a class="hidden" href="#' + sug + '"><code>' +
-				highlightFunction(sug) + '</code></a>?</p>';
+				highlightFunctionHeader(sug) + '</code></a>?</p>';
 		}
 
 		var libs = getLibs();

@@ -7,9 +7,13 @@
 	font-weight: bold;
 }
 
-.funcname.funcname-onlyused, .macroargument{
+.funcname.funcname-onlyused, .macroargument {
 	color: #6e94ad;
 	font-weight: normal;
+}
+
+.macroargumentinrhs {
+	color: #888;
 }
 
 .classname, .generic {

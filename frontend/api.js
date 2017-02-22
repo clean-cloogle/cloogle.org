@@ -227,14 +227,14 @@ function getResults(str, libs, include_builtins, include_core, page) {
 				if ('constructor_of' in specific) {
 					specificData.push([
 						'This function is a type constructor of <code>' +
-						highlightFunctionHeader(':: ' + specific['constructor_of'],
+						highlightFunction(':: ' + specific['constructor_of'],
 							highlightCallback) + '</code>.'
 					]);
 					hl_entry = 'startConstructor';
 				} else if ('recordfield_of' in specific) {
 					specificData.push([
 						'This is a record field of <code>' +
-						highlightFunctionHeader(':: ' + specific['recordfield_of'],
+						highlightFunction(':: ' + specific['recordfield_of'],
 							highlightCallback) + '</code>.'
 					]);
 					hl_entry = 'startRecordField';
@@ -242,7 +242,7 @@ function getResults(str, libs, include_builtins, include_core, page) {
 				return '<hr/>' +
 					makeTable(basicData.concat(specificData)) +
 					'<pre>' +
-					highlightMacro(specific['func'], highlightCallback, hl_entry) +
+					highlightFunction(specific['func'], highlightCallback, hl_entry) +
 					'</pre>';
 				break;
 			case 'TypeResult':
@@ -261,7 +261,7 @@ function getResults(str, libs, include_builtins, include_core, page) {
 							makeInstanceTable(
 								derivationsId,
 								specific['type_derivations'],
-								highlightFunctionHeader, 'generic')]);
+								highlightFunction, 'generic')]);
 				}
 				return '<hr/>' +
 					makeTable(basicData.concat(specificData)) +
@@ -283,9 +283,9 @@ function getResults(str, libs, include_builtins, include_core, page) {
 							(specific['class_funs'].length > 0 ? ' where' : ''),
 							highlightCallback);
 				for (var i in specific['class_funs']) {
-					html += highlightMacro(
+					html += highlightFunction(
 							'\n\n\t' + specific['class_funs'][i].replace(/\n/g, '\n\t'),
-							highlightCallback);
+							highlightCallback, 'macro');
 				}
 				html += '</pre>';
 				return html;
@@ -294,7 +294,7 @@ function getResults(str, libs, include_builtins, include_core, page) {
 				return '<hr/>' +
 					makeTable(basicData) +
 					'<pre>' +
-					highlightMacro(specific['macro_representation'], highlightCallback) +
+					highlightFunction(specific['macro_representation'], highlightCallback, 'macro') +
 					'</pre>';
 				break;
 			case 'ModuleResult':
@@ -304,7 +304,7 @@ function getResults(str, libs, include_builtins, include_core, page) {
 							'This is a core module and should usually only be used internally.' +
 							'</span>']);
 				return '<hr/>' + makeTable(basicData.concat(specificData)) +
-					'<pre>' + highlightFunctionHeader('import ' + basic['modul']) + '</pre>';
+					'<pre>' + highlightFunction('import ' + basic['modul']) + '</pre>';
 				break;
 			default:
 				return '';
@@ -324,7 +324,7 @@ function getResults(str, libs, include_builtins, include_core, page) {
 			}
 			sugstr = sugstr.join(' ');
 			str += '<tr><td><a class="hidden" href="#' + encodeURIComponent(sugstr) + '"><code>' +
-				highlightFunctionHeader(sugstr) + '</code></a></td><td>' +
+				highlightFunction(sugstr) + '</code></a></td><td>' +
 				suggs[i][1] + ' results</td></tr>';
 		}
 		str += '</table></div>';
@@ -408,10 +408,10 @@ function formsubmit() {
 		if (q.indexOf('::') == -1 && q.indexOf('->') != -1) {
 			var sug = ':: ' + q.replace('->', ' -> ');
 			sresults.innerHTML = '<p>' +
-				'Searching for <code>' + highlightFunctionHeader(q) + '</code>. ' +
+				'Searching for <code>' + highlightFunction(q) + '</code>. ' +
 				'Did you mean to search for ' +
 				'<a class="hidden" href="#' + sug + '"><code>' +
-				highlightFunctionHeader(sug) + '</code></a>?</p>';
+				highlightFunction(sug) + '</code></a>?</p>';
 		}
 
 		var libs = getLibs();

@@ -52,7 +52,6 @@ function dos_protect() {
 
 	$stmt = $db->prepare('SELECT COUNT(*) FROM `blacklist`
 		WHERE `ip`=? AND `useragent_id`=? AND `end` >= NOW()');
-	echo mysqli_stmt_error($stmt);
 	$stmt->bind_param('si', $ip, $ua_id);
 	$stmt->execute();
 	$stmt->bind_result($count);

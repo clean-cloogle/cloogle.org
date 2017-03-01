@@ -14,8 +14,8 @@ Use any of the available frontends:
 - The `:Cloogle` command in
 	[camilstaps/vim-clean](https://github.com/camilstaps/vim-clean).
 - An email to `query@cloogle.org` with the query in the subject (see
-	[this gist](https://gist.github.com/camilstaps/bf719319d90d974329ee7e4ad08f1aa2)
-	for the implementation).
+	[cloogle-mail](https://github.com/clean-cloogle/cloogle-mail) for the
+	implementation).
 
 ---
 

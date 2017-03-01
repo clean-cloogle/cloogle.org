@@ -13,12 +13,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/dopefishh/cloogle.git"
+    "url": "git+https://github.com/clean-cloogle/cloogle.git"
   },
   "author": ["Mart Lubbers", "Camil Staps"],
   "license": "GPL-3.0",
   "bugs": {
-    "url": "https://github.com/dopefishh/cloogle/issues"
+    "url": "https://github.com/clean-cloogle/cloogle/issues"
   },
-  "homepage": "https://github.com/dopefishh/cloogle#readme"
+  "homepage": "https://github.com/clean-cloogle/cloogle#readme"
 }

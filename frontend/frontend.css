@@ -1,3 +1,7 @@
+body {
+	color: #222;
+}
+
 #helptext {
 	margin-bottom: 1em;
 }
@@ -43,4 +47,33 @@ th {
 
 .core-module {
 	font-style: italic;
+}
+
+#search_results {
+	margin-top: 1.5em;
+}
+
+#search_results a {
+	color: #26c;
+}
+
+.result-basic {
+	background-color: #f0f0f0;
+	padding: .2em;
+}
+
+.result-basic .more {
+	color: #444;
+	cursor: pointer;
+}
+
+.result-extra {
+	background-color: #e8e8e8;
+	display: none;
+	font-size: 85%;
+	padding-left: 1.2em;
+}
+
+.result-code {
+	margin: .5em 0 1.5em 1em;
 }

@@ -57,23 +57,29 @@ th {
 	color: #26c;
 }
 
+.toggle-container .toggler {
+	cursor: pointer;
+}
+
+.toggle-container .togglee {
+	display: none;
+}
+
 .result-basic {
 	background-color: #f0f0f0;
 	padding: .2em;
 }
 
-.result-basic .more {
-	color: #444;
-	cursor: pointer;
-}
-
 .result-extra {
-	background-color: #e8e8e8;
-	display: none;
+	background-color: #f8f8f8;
 	font-size: 85%;
 	padding-left: 1.2em;
 }
 
+.result-extra .toggler {
+	margin-left: -1em;
+}
+
 .result-code {
-	margin: .5em 0 1.5em 1em;
+	margin: 1em 0 1.5em 1em;
 }

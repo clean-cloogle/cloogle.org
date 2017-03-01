@@ -16,7 +16,27 @@ function toggleElement(e) {
 	e.style.display = e.style.display == 'block' ? 'none' : 'block';
 }
 
-function toggle(name) {
+function toggle(toggler) {
+	var e = toggler;
+	while (!e.classList.contains('toggle-container'))
+		e = e.parentNode;
+	var es = e.getElementsByClassName('togglee');
+
+	for (var i = 0; i < es.length; i++)
+		toggleElement(es[i]);
+
+	var icons = e.getElementsByClassName('toggle-icon');
+	for (var i in icons) {
+		switch (icons[i].innerHTML) {
+			case 'show': icons[i].innerHTML = 'hide'; break;
+			case 'hide': icons[i].innerHTML = 'show'; break;
+			case '\u229e': icons[i].innerHTML = '&#x229f;'; break;
+			case '\u229f': icons[i].innerHTML = '&#x229e;'; break;
+		}
+	}
+}
+
+function toggleById(name) {
 	toggleElement(document.getElementById(name));
 }
 
@@ -58,6 +78,35 @@ function highlightCallback(span, cls, str) {
 	}
 }
 
+function makeSummary(extraData) {
+	var sumlen = 0;
+	var restore = false;
+	for (var i in extraData)
+		if (extraData[i].length == 3)
+			sumlen++;
+	if (sumlen != extraData.length) {
+		extraData.push([null, null, 'more information']);
+		restore = true;
+	}
+
+	var summ = '';
+	for (var i in extraData) {
+		if (extraData[i].length == 3) {
+			summ += extraData[i][2];
+			if (i == sumlen - 2)
+				summ += ' and ';
+			else if (i < sumlen - 2)
+				summ += ', ';
+			sumlen--;
+		}
+	}
+
+	if (restore)
+		extraData.splice(extraData.length-1, 1);
+
+	return summ;
+}
+
 function getResults(str, libs, include_builtins, include_core, page) {
 	if (str == null)  str  = old_str;
 	if (libs == null) libs = old_libs;
@@ -93,7 +142,7 @@ function getResults(str, libs, include_builtins, include_core, page) {
 		for (i in d) {
 			if (d[i].length == 1) {
 				html += '<tr><td colspan="2">' + d[i][0] + '</td></tr>';
-			} else if (d[i].length == 2) {
+			} else if (d[i].length >= 2) {
 				html += '<tr><th>' + d[i][0] + ': </th><td class="wide">' +
 					d[i][1] + '</td></tr>';
 			}
@@ -197,15 +246,19 @@ function getResults(str, libs, include_builtins, include_core, page) {
 		if ('builtin' in basic && basic['builtin'])
 			basicText = [['Clean core (actual implementation may differ)']];
 
+		var toggler = '';
 		if (extraData.length > 0) {
-			basicText = '<span class="more" title="More details" ' +
-				'onclick="toggleElement(this.parentNode.parentNode.getElementsByClassName(\'result-extra\')[0])">' +
-				'&#8862;</span>&nbsp;' + basicText;
+			toggler = '<div class="toggler" title="More details" onclick="toggle(this)">' +
+				'<span class="toggle-icon">&#x229e;</span>' +
+				'&nbsp;' + makeSummary(extraData) +
+				'</div>';
 		}
 
 		return '<div class="result">' +
 				'<div class="result-basic">' + basicText + '</div>' +
-				'<div class="result-extra">' + makeTable(extraData) + '</div>' +
+				'<div class="result-extra toggle-container">' +
+					toggler +
+					'<div class="togglee">' + makeTable(extraData) + '</div></div>' +
 				'<pre class="result-code">' + code + '</pre>' +
 			'</div>';
 	}
@@ -221,8 +274,9 @@ function getResults(str, libs, include_builtins, include_core, page) {
 			case 'FunctionResult':
 				if ('cls' in extra)
 					extraData.push(
-						[ 'Class', '<code>' +
-						  highlightClassDef(extra['cls']['cls_name'] +
+						[ 'Class',
+							'<code>' +
+							  highlightClassDef(extra['cls']['cls_name'] +
 							  ' ' + extra['cls']['cls_vars'].join(' '),
 							  highlightCallback, 'className') + '</code>']);
 
@@ -234,7 +288,8 @@ function getResults(str, libs, include_builtins, include_core, page) {
 					var derivations = makeInstanceTable(
 							extra['generic_derivations'],
 							highlightType);
-					extraData.push(['Derivations', derivations]);
+					extraData.push(['Derivations', derivations,
+							extra['generic_derivations'].length + ' derivations']);
 				}
 
 				var hl_entry = 'start';

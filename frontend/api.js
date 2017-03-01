@@ -12,6 +12,10 @@ var old_libs = null;
 var old_include_builtins = null;
 var old_include_core = null;
 
+function pluralise(n, what) {
+	return n + ' ' + what + (n == 1 ? '' : 's');
+}
+
 function toggleElement(e) {
 	e.style.display = e.style.display == 'block' ? 'none' : 'block';
 }
@@ -289,7 +293,7 @@ function getResults(str, libs, include_builtins, include_core, page) {
 							extra['generic_derivations'],
 							highlightType);
 					extraData.push(['Derivations', derivations,
-							extra['generic_derivations'].length + ' derivations']);
+							pluralise(extra['generic_derivations'].length, 'derivation')]);
 				}
 
 				var hl_entry = 'start';
@@ -314,27 +318,31 @@ function getResults(str, libs, include_builtins, include_core, page) {
 
 			case 'TypeResult':
 				if (extra['type_instances'].length > 0) {
-					extraData.push(['Instances',
+					extraData.push([
+							'Instances',
 							makeInstanceTable(
 								extra['type_instances'],
-								highlightClassDef, 'className')]);
+								highlightClassDef, 'className'),
+							pluralise(extra['type_instances'].length, 'instance')]);
 				}
 
 				if (extra['type_derivations'].length > 0) {
-					extraData.push(['Derivations',
+					extraData.push([
+							'Derivations',
 							makeInstanceTable(
 								extra['type_derivations'],
-								highlightFunction, 'generic')]);
+								highlightFunction, 'generic'),
+							pluralise(extra['type_derivations'].length, 'derivation')]);
 				}
 
 				return makeGenericResultHTML(basic, extraData,
 						highlightTypeDef(extra['type'], highlightCallback));
 
 			case 'ClassResult':
-				var instances = makeInstanceTable(
-						extra['class_instances'],
-						highlightType);
-				extraData.push(['Instances', instances]);
+				extraData.push([
+						'Instances',
+						makeInstanceTable(extra['class_instances'], highlightType),
+						pluralise(extra['class_instances'].length, 'instance')]);
 
 				var html = highlightClassDef(
 						'class ' + extra['class_heading'] +

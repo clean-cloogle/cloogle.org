@@ -8,14 +8,14 @@ Use any of the available frontends:
 - Web app at [cloogle.org](https://cloogle.org/).
 - The `!cloogle` bang on DuckDuckGo.
 - [@CloogleBot](https://telegram.me/CloogleBot) on Telegram (see
-	[camilstaps/CloogleBot](https://github.com/camilstaps/CloogleBot)).
-- [KDercksen/cloogle-cli](https://github.com/KDercksen/cloogle-cli), a command
-	line interface to the api.
+	[camilstaps/CloogleBot](https://github.com/clean-cloogle/CloogleBot)).
+- [cloogle-cli](https://github.com/clean-cloogle/cloogle-cli), a command line
+	interface to the api.
 - The `:Cloogle` command in
 	[camilstaps/vim-clean](https://github.com/camilstaps/vim-clean).
 - An email to `query@cloogle.org` with the query in the subject (see
-	[this gist](https://gist.github.com/camilstaps/bf719319d90d974329ee7e4ad08f1aa2)
-	for the implementation).
+	[cloogle-mail](https://github.com/clean-cloogle/cloogle-mail) for the
+	implementation).
 
 ---
 

@@ -1,9 +1,9 @@
 [submodule "CleanTypeUnifier"]
 	path = backend/CleanTypeUnifier
-	url = https://github.com/camilstaps/CleanTypeUnifier
+	url = https://github.com/clean-cloogle/CleanTypeUnifier
 [submodule "backend/CleanPrettyPrint"]
 	path = backend/CleanPrettyPrint
-	url = https://github.com/camilstaps/CleanPrettyPrint.git
+	url = https://github.com/clean-cloogle/CleanPrettyPrint.git
 [submodule "backend/clean-platform"]
 	path = backend/clean-platform
 	url = https://gitlab.science.ru.nl/clean-and-itasks/clean-platform.git

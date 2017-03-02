@@ -66,14 +66,15 @@ instance zero CLI where
 	                   , ("Gast", const False)
 	                   , ("Generics", const False)
 	                   , ("GraphCopy", const False)
-	                   , ("iTasks", const False)
+	                   , ("MersenneTwister", const False)
+	                   , ("ObjectIO", not o startsWith "Std")
 	                   , ("Platform", const False)
 	                   , ("Sapl", const False)
+	                   , ("SoccerFun", const False)
 	                   , ("StdEnv", const False)
 	                   , ("StdLib", const False)
 	                   , ("TCPIP", const False)
-	                   , ("ObjectIO", not o startsWith "Std")
-	                   , ("SoccerFun", const False)
+	                   , ("iTasks", const False)
 	                   ]
 	       , exclude = [ "StdEnv/_startup"
 	                   , "StdEnv/_system"

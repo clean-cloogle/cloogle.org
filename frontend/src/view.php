@@ -23,6 +23,7 @@
 					'Directory',
 					'Dynamics',
 					'Generics',
+					'MersenneTwister',
 					'StdLib',
 					'TCPIP',
 				],

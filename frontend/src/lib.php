@@ -7,7 +7,6 @@ else :
 
 $lib = preg_replace('/[^\\w\\/\\-]/', '', $_REQUEST['lib']);
 
-$ignored_dirs = ['Clean System Files', 'Sapl', '.git', '.svn'];
 $ignored_files = [
 	'_startup',
 	'_library',
@@ -15,6 +14,22 @@ $ignored_files = [
 	'_startupTrace',
 	'_system'];
 
+function containsModules($dir) {
+	global $ignored_files;
+	try {
+		$d = new DirectoryIterator($dir);
+		foreach ($d as $f) {
+			if ($f->isDot())
+				continue;
+			if ($f->isDir() && containsModules($dir . '/' . $f->getFilename()))
+				return true;
+			else if ($f->isFile() && $f->getExtension() == 'dcl' &&
+					!in_array($f->getBasename('.dcl'), $ignored_files))
+				return true;
+		}
+	} catch (Exception $e) { }
+	return false;
+}
 
 function getDirsAndModules($dir) {
 	global $ignored_files;
@@ -27,7 +42,7 @@ function getDirsAndModules($dir) {
 		foreach ($d as $f) {
 			if ($f->isDot())
 				continue;
-			if ($f->isDir() && !in_array($f->getFilename(), $ignored_dirs))
+			if ($f->isDir() && containsModules($dir . '/' . $f->getFilename()))
 				$ds[] = $f->getFilename();
 			else if ($f->getExtension() == 'dcl' &&
 					!in_array($f->getBasename('.dcl'), $ignored_files))

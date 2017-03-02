@@ -7,10 +7,18 @@ else :
 
 $lib = preg_replace('/[^\\w\\/\\-]/', '', $_REQUEST['lib']);
 
-$ignored = ['Clean System Files', 'Sapl', '.git', '.svn'];
+$ignored_dirs = ['Clean System Files', 'Sapl', '.git', '.svn'];
+$ignored_files = [
+	'_startup',
+	'_library',
+	'_startupProfile',
+	'_startupTrace',
+	'_system'];
+
 
 function getDirsAndModules($dir) {
-	global $ignored;
+	global $ignored_files;
+	global $ignored_dirs;
 	$ds = [];
 	$ms = [];
 
@@ -19,9 +27,10 @@ function getDirsAndModules($dir) {
 		foreach ($d as $f) {
 			if ($f->isDot())
 				continue;
-			if ($f->isDir() && !in_array($f->getFilename(), $ignored))
+			if ($f->isDir() && !in_array($f->getFilename(), $ignored_dirs))
 				$ds[] = $f->getFilename();
-			else if ($f->getExtension() == 'dcl')
+			else if ($f->getExtension() == 'dcl' &&
+					!in_array($f->getBasename('.dcl'), $ignored_files))
 				$ms[] = $f->getBasename('.dcl');
 		}
 

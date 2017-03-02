@@ -73,11 +73,7 @@ instance zero CLI where
 	                   , ("StdLib", const False)
 	                   , ("TCPIP", const False)
 	                   , ("ObjectIO", not o startsWith "Std")
-	                   , ("SoccerFun/Game", const False)
-	                   , ("SoccerFun/Gui", const False)
-	                   , ("SoccerFun/StdLibExt", const False)
-	                   , ("SoccerFun/StdReferee", const False)
-	                   , ("SoccerFun/StdTeam", const False)
+	                   , ("SoccerFun", const False)
 	                   ]
 	       , exclude = [ "StdEnv/_startup"
 	                   , "StdEnv/_system"

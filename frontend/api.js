@@ -12,9 +12,36 @@ var old_libs = null;
 var old_include_builtins = null;
 var old_include_core = null;
 
-function toggle(name) {
-	var e = document.getElementById(name);
+function pluralise(n, what) {
+	return n + ' ' + what + (n == 1 ? '' : 's');
+}
+
+function toggleElement(e) {
 	e.style.display = e.style.display == 'block' ? 'none' : 'block';
+}
+
+function toggle(toggler) {
+	var e = toggler;
+	while (!e.classList.contains('toggle-container'))
+		e = e.parentNode;
+	var es = e.getElementsByClassName('togglee');
+
+	for (var i = 0; i < es.length; i++)
+		toggleElement(es[i]);
+
+	var icons = e.getElementsByClassName('toggle-icon');
+	for (var i in icons) {
+		switch (icons[i].innerHTML) {
+			case 'show': icons[i].innerHTML = 'hide'; break;
+			case 'hide': icons[i].innerHTML = 'show'; break;
+			case '\u229e': icons[i].innerHTML = '&#x229f;'; break;
+			case '\u229f': icons[i].innerHTML = '&#x229e;'; break;
+		}
+	}
+}
+
+function toggleById(name) {
+	toggleElement(document.getElementById(name));
 }
 
 function toggleLibSelection(className) {
@@ -55,8 +82,35 @@ function highlightCallback(span, cls, str) {
 	}
 }
 
-var instancesIdCounter = 0;
-var derivationsIdCounter = 0;
+function makeSummary(extraData) {
+	var sumlen = 0;
+	var restore = false;
+	for (var i in extraData)
+		if (extraData[i].length == 3)
+			sumlen++;
+	if (sumlen != extraData.length) {
+		extraData.push([null, null, 'more information']);
+		restore = true;
+	}
+
+	var summ = '';
+	for (var i in extraData) {
+		if (extraData[i].length == 3) {
+			summ += extraData[i][2];
+			if (i == sumlen - 2)
+				summ += ' and ';
+			else if (i < sumlen - 2)
+				summ += ', ';
+			sumlen--;
+		}
+	}
+
+	if (restore)
+		extraData.splice(extraData.length-1, 1);
+
+	return summ;
+}
+
 function getResults(str, libs, include_builtins, include_core, page) {
 	if (str == null)  str  = old_str;
 	if (libs == null) libs = old_libs;
@@ -92,7 +146,7 @@ function getResults(str, libs, include_builtins, include_core, page) {
 		for (i in d) {
 			if (d[i].length == 1) {
 				html += '<tr><td colspan="2">' + d[i][0] + '</td></tr>';
-			} else if (d[i].length == 2) {
+			} else if (d[i].length >= 2) {
 				html += '<tr><th>' + d[i][0] + ': </th><td class="wide">' +
 					d[i][1] + '</td></tr>';
 			}
@@ -101,30 +155,32 @@ function getResults(str, libs, include_builtins, include_core, page) {
 		return html;
 	}
 
-	var makeInstanceTable = function (id, list, highlightf, highlightstart) {
+	var makeInstanceTable = function (list, highlightf, highlightstart) {
 		if (list.length == 0)
 			return '0';
 
-		var instances = '<a href="javascript:toggle(\'' + id + '\')">show / hide</a>';
-		instances += '<table id="' + id + '" style="display:none;">';
+		var instances = '<table>';
+
 		var makeInstanceUrl = function (loc) {
 			var dclUrl =
 				'src/view.php?lib=' + encodeURIComponent(loc[0]) +
 				'&mod=' + encodeURIComponent(loc[1]) +
 				'&hl';
 			var iclUrl = dclUrl + '&icl';
+
 			if (loc[2].length > 1)
 				dclUrl += '&line=' + loc[2][1] + '#line-' + loc[2][1];
 			if (loc[3].length > 1)
 				iclUrl += '&line=' + loc[3][1] + '#line-' + loc[3][1];
-			return '<a target="_blank" ' +
-				'href="' + dclUrl + '" ' +
-				'title="' + loc[0] + '">' + loc[1] +
-				(loc[2].length > 1 ? ':' + loc[2][1] : '') +
-				'</a> (<a target="_blank" href="' + iclUrl + '">icl' +
-				(loc[3].length > 1 ? ':' + loc[3][1] : '') +
-				'</a>)';
+
+			return loc[1] +
+				' (<a target="_blank" href="' + dclUrl + '">dcl' +
+					(loc[2].length > 1 ? ':' + loc[2][1] : '') + '</a>; ' +
+				'<a target="_blank" href="' + iclUrl + '">icl' +
+					(loc[3].length > 1 ? ':' + loc[3][1] : '') + '</a>) ' +
+				'(' + loc[0] + ')';
 		}
+
 		for (var i in list) {
 			instances += '<tr><th>';
 			if (typeof list[i][0] === 'object') {
@@ -161,151 +217,157 @@ function getResults(str, libs, include_builtins, include_core, page) {
 				}
 				locs += makeInstanceUrl(loc);
 			}
-			instances += '<td>in: ' + locs + '</td></tr>';
+
+			instances += '<td>&nbsp;in ' + locs + '</td></tr>';
 		}
 		instances += '</table>';
+
 		return instances;
 	}
 
-	var makeResultHTML = function (result) {
-		var kind = result[0];
-		var basic = result[1][0];
-		var specific = result[1][1];
-
+	var makeGenericResultHTML = function (basic, extraData, code) {
 		var dclUrl =
 			'src/view.php?lib=' + encodeURIComponent(basic['library']) +
 			'&mod=' + encodeURIComponent(basic['modul']) +
 			'&hl';
 		var iclUrl = dclUrl + '&icl';
+		var dclLine = '';
+		var iclLine = '';
 		if ('dcl_line' in basic) {
 			dclUrl += '&line=' + basic['dcl_line'] + '#line-' + basic['dcl_line'];
+			dclLine = ':' + basic['dcl_line'];
 		}
 		if ('icl_line' in basic) {
 			iclUrl += '&line=' + basic['icl_line'] + '#line-' + basic['icl_line'];
+			iclLine = ':' + basic['icl_line'];
 		}
 
-		var basicData = [
-			['Library',  basic['library']],
-			['Filename', '<a href="' + dclUrl + '" target="_blank">' +
-				basic['filename'] + ('dcl_line' in basic ? ':' + basic['dcl_line'] : '') +
-				'</a> (<a href="' + iclUrl + '" target="_blank">icl' +
-				('icl_line' in basic ? ':' + basic['icl_line'] : '') + '</a>)'],
-			['Module',   basic['modul']],
-			['Distance', basic['distance']]
-		];
+		var basicText = basic['library'] + ': ' +
+				basic['modul'] + ' (' +
+				'<a href="' + dclUrl + '" target="_blank">dcl' + dclLine + '</a>; ' +
+				'<a href="' + iclUrl + '" target="_blank">icl' + iclLine + '</a>)';
 
-		if ('builtin' in basic && basic['builtin']) {
-			basicData.splice(0,3);
-			basicData.push(['Builtin', 'yes (actual implementation may differ)']);
+		if ('builtin' in basic && basic['builtin'])
+			basicText = [['Clean core (actual implementation may differ)']];
+
+		var toggler = '';
+		if (extraData.length > 0) {
+			toggler = '<div class="toggler" title="More details" onclick="toggle(this)">' +
+				'<span class="toggle-icon">&#x229e;</span>' +
+				'&nbsp;' + makeSummary(extraData) +
+				'</div>';
 		}
+
+		return '<div class="result">' +
+				'<div class="result-basic">' + basicText + '</div>' +
+				'<div class="result-extra toggle-container">' +
+					toggler +
+					'<div class="togglee">' + makeTable(extraData) + '</div></div>' +
+				'<pre class="result-code">' + code + '</pre>' +
+			'</div>';
+	}
+
+	var makeResultHTML = function (result) {
+		var kind = result[0];
+		var basic = result[1][0];
+		var extra = result[1][1];
+
+		var extraData = [];
 
 		switch (kind) {
 			case 'FunctionResult':
-				var specificData = [];
-				specificData.push(
-					('cls' in specific ?
-						[ 'Class', '<code>' +
-						  highlightClassDef(specific['cls']['cls_name'] +
-							  ' ' + specific['cls']['cls_vars'].join(' '),
-							  highlightCallback, 'className') + '</code>'] :
-						[]),
-					('unifier' in specific &&
-						(specific['unifier'][0].length > 0 ||
-						 specific['unifier'][1].length > 0) ?
-						['Unifier', makeUnifier(specific['unifier'])] :
-						[])
-				);
-				if ('generic_derivations' in specific) {
-					var derivationsId = 'derivations-' + (derivationsIdCounter++);
+				if ('cls' in extra)
+					extraData.push(
+						[ 'Class',
+							'<code>' +
+							  highlightClassDef(extra['cls']['cls_name'] +
+							  ' ' + extra['cls']['cls_vars'].join(' '),
+							  highlightCallback, 'className') + '</code>']);
+
+				if ('unifier' in extra &&
+					(extra['unifier'][0].length > 0 || extra['unifier'][1].length > 0))
+					extraData.push(['Unifier', makeUnifier(extra['unifier'])]);
+
+				if ('generic_derivations' in extra) {
 					var derivations = makeInstanceTable(
-							derivationsId,
-							specific['generic_derivations'],
+							extra['generic_derivations'],
 							highlightType);
-					specificData.push(['Derivations', derivations]);
+					extraData.push(['Derivations', derivations,
+							pluralise(extra['generic_derivations'].length, 'derivation')]);
 				}
+
 				var hl_entry = 'start';
-				if ('constructor_of' in specific) {
-					specificData.push([
-						'This function is a type constructor of <code>' +
-						highlightFunction(':: ' + specific['constructor_of'],
+				if ('constructor_of' in extra) {
+					extraData.push([
+						'This is a type constructor of <code>' +
+						highlightFunction(':: ' + extra['constructor_of'],
 							highlightCallback) + '</code>.'
 					]);
 					hl_entry = 'startConstructor';
-				} else if ('recordfield_of' in specific) {
-					specificData.push([
+				} else if ('recordfield_of' in extra) {
+					extraData.push([
 						'This is a record field of <code>' +
-						highlightFunction(':: ' + specific['recordfield_of'],
+						highlightFunction(':: ' + extra['recordfield_of'],
 							highlightCallback) + '</code>.'
 					]);
 					hl_entry = 'startRecordField';
 				}
-				return '<hr/>' +
-					makeTable(basicData.concat(specificData)) +
-					'<pre>' +
-					highlightFunction(specific['func'], highlightCallback, hl_entry) +
-					'</pre>';
-				break;
+
+				return makeGenericResultHTML(basic, extraData,
+						highlightFunction(extra['func'], highlightCallback, hl_entry));
+
 			case 'TypeResult':
-				var specificData = [];
-				if (specific['type_instances'].length > 0) {
-					var instancesId = 'instances-' + (instancesIdCounter++);
-					specificData.push(['Instances',
+				if (extra['type_instances'].length > 0) {
+					extraData.push([
+							'Instances',
 							makeInstanceTable(
-								instancesId,
-								specific['type_instances'],
-								highlightClassDef, 'className')]);
+								extra['type_instances'],
+								highlightClassDef, 'className'),
+							pluralise(extra['type_instances'].length, 'instance')]);
 				}
-				if (specific['type_derivations'].length > 0) {
-					var derivationsId = 'derivations-' + (derivationsIdCounter++);
-					specificData.push(['Derivations',
+
+				if (extra['type_derivations'].length > 0) {
+					extraData.push([
+							'Derivations',
 							makeInstanceTable(
-								derivationsId,
-								specific['type_derivations'],
-								highlightFunction, 'generic')]);
+								extra['type_derivations'],
+								highlightFunction, 'generic'),
+							pluralise(extra['type_derivations'].length, 'derivation')]);
 				}
-				return '<hr/>' +
-					makeTable(basicData.concat(specificData)) +
-					'<pre>' +
-					highlightTypeDef(specific['type'], highlightCallback) +
-					'</pre>';
-				break;
+
+				return makeGenericResultHTML(basic, extraData,
+						highlightTypeDef(extra['type'], highlightCallback));
+
 			case 'ClassResult':
-				var instancesId = 'instances-' + (instancesIdCounter++);
-				var instances = makeInstanceTable(
-						instancesId,
-						specific['class_instances'],
-						highlightType);
-				var specificData = [['Instances', instances]];
-				var html = '<hr/>' +
-					makeTable(basicData.concat(specificData)) + '<pre>' +
-					highlightClassDef(
-							'class ' + specific['class_heading'] +
-							(specific['class_funs'].length > 0 ? ' where' : ''),
-							highlightCallback);
-				for (var i in specific['class_funs']) {
+				extraData.push([
+						'Instances',
+						makeInstanceTable(extra['class_instances'], highlightType),
+						pluralise(extra['class_instances'].length, 'instance')]);
+
+				var html = highlightClassDef(
+						'class ' + extra['class_heading'] +
+						(extra['class_funs'].length > 0 ? ' where' : ''),
+						highlightCallback) + '\n';
+				for (var i in extra['class_funs'])
 					html += highlightFunction(
-							'\n\n\t' + specific['class_funs'][i].replace(/\n/g, '\n\t'),
+							'\n    ' + extra['class_funs'][i].replace(/\n/g, '\n    '),
 							highlightCallback, 'macro');
-				}
-				html += '</pre>';
-				return html;
-				break;
+
+				return makeGenericResultHTML(basic, extraData, html);
+
 			case 'MacroResult':
-				return '<hr/>' +
-					makeTable(basicData) +
-					'<pre>' +
-					highlightFunction(specific['macro_representation'], highlightCallback, 'macro') +
-					'</pre>';
-				break;
+				return makeGenericResultHTML(basic, [],
+						highlightFunction(extra['macro_representation'], highlightCallback, 'macro'));
+
 			case 'ModuleResult':
-				specificData = [];
-				if (specific['module_is_core'])
-					specificData.push(['<span class="core-module">' +
+				if (extra['module_is_core'])
+					extraData.push(['<span class="core-module">' +
 							'This is a core module and should usually only be used internally.' +
 							'</span>']);
-				return '<hr/>' + makeTable(basicData.concat(specificData)) +
-					'<pre>' + highlightFunction('import ' + basic['modul']) + '</pre>';
-				break;
+
+				return makeGenericResultHTML(basic, extraData,
+						highlightFunction('import ' + basic['modul']));
+
 			default:
 				return '';
 		}

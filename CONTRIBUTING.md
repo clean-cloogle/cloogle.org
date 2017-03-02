@@ -72,6 +72,9 @@ To add a library you have to add it in to the following three places:
 - `frontend/index.html`
 
 	Add your library to the checkboxes in the miscellaneous column.
+- `frontend/src/view.php`
+
+	Add your library to `$all_libs`.
 
 See [this](https://github.com/dopefishh/cloogle/commit/2b44a070fa802d290ebce13ab3689fc895aa5d9c)
 commit for an example.

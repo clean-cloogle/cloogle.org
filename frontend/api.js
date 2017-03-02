@@ -50,21 +50,21 @@ function highlightCallback(span, cls, str) {
 	}
 }
 
-function makeSummary(extraData) {
+function makeSummary(hidden) {
 	var sumlen = 0;
 	var restore = false;
-	for (var i in extraData)
-		if (extraData[i].length == 3)
+	for (var i in hidden)
+		if (hidden[i].length == 3)
 			sumlen++;
-	if (sumlen != extraData.length) {
-		extraData.push([null, null, 'more information']);
+	if (sumlen != hidden.length) {
+		hidden.push([null, null, 'more information']);
 		restore = true;
 	}
 
 	var summ = '';
-	for (var i in extraData) {
-		if (extraData[i].length == 3) {
-			summ += extraData[i][2];
+	for (var i in hidden) {
+		if (hidden[i].length == 3) {
+			summ += hidden[i][2];
 			if (i == sumlen - 2)
 				summ += ' and ';
 			else if (i < sumlen - 2)
@@ -74,7 +74,7 @@ function makeSummary(extraData) {
 	}
 
 	if (restore)
-		extraData.splice(extraData.length-1, 1);
+		hidden.splice(hidden.length-1, 1);
 
 	return summ;
 }
@@ -192,7 +192,7 @@ function getResults(str, libs, include_builtins, include_core, page) {
 		return instances;
 	}
 
-	var makeGenericResultHTML = function (basic, extraData, code) {
+	var makeGenericResultHTML = function (basic, meta, hidden, code) {
 		var dclUrl =
 			'src/view.php?lib=' + encodeURIComponent(basic['library']) +
 			'#' + encodeURIComponent(basic['modul']);
@@ -217,17 +217,18 @@ function getResults(str, libs, include_builtins, include_core, page) {
 			basicText = [['Clean core (actual implementation may differ)']];
 
 		var toggler = '';
-		if (extraData.length > 0) {
+		if (hidden.length > 0) {
 			toggler = '<div class="toggler" title="More details" onclick="toggle(this)">' +
-				'<span class="toggle-icon">&#x229e;</span>' + makeSummary(extraData) +
+				'<span class="toggle-icon">&#x229e;</span>' + makeSummary(hidden) +
 				'</div>';
 		}
 
 		return '<div class="result">' +
 				'<div class="result-basic">' + basicText + '</div>' +
+				'<div class="result-extra">' + meta.join('<br/>') + '</div>' +
 				'<div class="result-extra toggle-container">' +
 					toggler +
-					'<div class="togglee">' + makeTable(extraData) + '</div></div>' +
+					'<div class="togglee">' + makeTable(hidden) + '</div></div>' +
 				'<pre class="result-code">' + code + '</pre>' +
 			'</div>';
 	}
@@ -237,53 +238,48 @@ function getResults(str, libs, include_builtins, include_core, page) {
 		var basic = result[1][0];
 		var extra = result[1][1];
 
-		var extraData = [];
+		var meta = [];
+		var hidden = [];
 
 		switch (kind) {
 			case 'FunctionResult':
 				if ('cls' in extra)
-					extraData.push(
-						[ 'Class',
-							'<code>' +
-							  highlightClassDef(extra['cls']['cls_name'] +
-							  ' ' + extra['cls']['cls_vars'].join(' '),
-							  highlightCallback, 'className') + '</code>']);
+					meta.push('Class: <code>' +
+							highlightClassDef(extra['cls']['cls_name'] +
+							' ' + extra['cls']['cls_vars'].join(' '),
+							highlightCallback, 'className') + '</code>');
 
 				if ('unifier' in extra &&
 					(extra['unifier'][0].length > 0 || extra['unifier'][1].length > 0))
-					extraData.push(['Unifier', makeUnifier(extra['unifier'])]);
+					meta.push('Unifier: ' + makeUnifier(extra['unifier']));
 
 				if ('generic_derivations' in extra) {
 					var derivations = makeInstanceTable(
 							extra['generic_derivations'],
 							highlightType);
-					extraData.push(['Derivations', derivations,
+					hidden.push(['Derivations', derivations,
 							pluralise(extra['generic_derivations'].length, 'derivation')]);
 				}
 
 				var hl_entry = 'start';
 				if ('constructor_of' in extra) {
-					extraData.push([
-						'This is a type constructor of <code>' +
-						highlightFunction(':: ' + extra['constructor_of'],
-							highlightCallback) + '</code>.'
-					]);
+					meta.push('This is a type constructor of <code>' +
+							highlightFunction(':: ' + extra['constructor_of'],
+							highlightCallback) + '</code>.');
 					hl_entry = 'startConstructor';
 				} else if ('recordfield_of' in extra) {
-					extraData.push([
-						'This is a record field of <code>' +
-						highlightFunction(':: ' + extra['recordfield_of'],
-							highlightCallback) + '</code>.'
-					]);
+					meta.push('This is a record field of <code>' +
+							highlightFunction(':: ' + extra['recordfield_of'],
+							highlightCallback) + '</code>.');
 					hl_entry = 'startRecordField';
 				}
 
-				return makeGenericResultHTML(basic, extraData,
+				return makeGenericResultHTML(basic, meta, hidden,
 						highlightFunction(extra['func'], highlightCallback, hl_entry));
 
 			case 'TypeResult':
 				if (extra['type_instances'].length > 0) {
-					extraData.push([
+					hidden.push([
 							'Instances',
 							makeInstanceTable(
 								extra['type_instances'],
@@ -292,7 +288,7 @@ function getResults(str, libs, include_builtins, include_core, page) {
 				}
 
 				if (extra['type_derivations'].length > 0) {
-					extraData.push([
+					hidden.push([
 							'Derivations',
 							makeInstanceTable(
 								extra['type_derivations'],
@@ -300,11 +296,11 @@ function getResults(str, libs, include_builtins, include_core, page) {
 							pluralise(extra['type_derivations'].length, 'derivation')]);
 				}
 
-				return makeGenericResultHTML(basic, extraData,
+				return makeGenericResultHTML(basic, [], hidden,
 						highlightTypeDef(extra['type'], highlightCallback));
 
 			case 'ClassResult':
-				extraData.push([
+				hidden.push([
 						'Instances',
 						makeInstanceTable(extra['class_instances'], highlightType),
 						pluralise(extra['class_instances'].length, 'instance')]);
@@ -318,19 +314,19 @@ function getResults(str, libs, include_builtins, include_core, page) {
 							'\n    ' + extra['class_funs'][i].replace(/\n/g, '\n    '),
 							highlightCallback, 'macro');
 
-				return makeGenericResultHTML(basic, extraData, html);
+				return makeGenericResultHTML(basic, [], hidden, html);
 
 			case 'MacroResult':
-				return makeGenericResultHTML(basic, [],
+				return makeGenericResultHTML(basic, [], [],
 						highlightFunction(extra['macro_representation'], highlightCallback, 'macro'));
 
 			case 'ModuleResult':
 				if (extra['module_is_core'])
-					extraData.push(['<span class="core-module">' +
+					meta.push(['<span class="core-module">' +
 							'This is a core module and should usually only be used internally.' +
 							'</span>']);
 
-				return makeGenericResultHTML(basic, extraData,
+				return makeGenericResultHTML(basic, [], hidden,
 						highlightFunction('import ' + basic['modul']));
 
 			default:

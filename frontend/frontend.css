@@ -58,13 +58,17 @@ th {
 }
 
 .result-basic {
-	background-color: #f0f0f0;
+	background-color: #e8e8e8;
 	padding: .2em;
 }
 
 .result-extra {
-	background-color: #f8f8f8;
+	background-color: #f4f4f4;
 	font-size: 85%;
+	padding-left: .2em;
+}
+
+.result-extra.toggle-container {
 	padding-left: 1.2em;
 }
 

@@ -77,8 +77,8 @@ instance zero CLI where
 	                   ]
 	       , exclude = [ "StdEnv/_startup"
 	                   , "StdEnv/_system"
-	                   , "SoccerFun/StdReferee/RefereeCoach_"
-	                   , "SoccerFun/StdTeam/Team_"
+	                   , "SoccerFun/RefereeCoach_"
+	                   , "SoccerFun/Team_"
 	                   ]
 	       }
 

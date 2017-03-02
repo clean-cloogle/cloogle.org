@@ -20,7 +20,8 @@ function loadModule(elem) {
 
 	var url = 'src.php';
 	url += '?lib=' + libselect.value;
-	url += '&mod=' + curmod;
+	if (curmod != '')
+		url += '&mod=' + curmod;
 	if (icl.checked)
 		url += '&icl';
 	var hashelems = decodeURIComponent(window.location.hash.substring(1)).split(';');

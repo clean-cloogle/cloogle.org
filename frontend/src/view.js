@@ -97,9 +97,11 @@ window.onload = function () {
 	libselect = document.getElementById('select-lib');
 	icl = document.getElementById('icl');
 
-	var height = window.innerHeight;
-	sidebar.style.height = (height - 20) + 'px';
-	viewer.style.height = height + 'px';
+	if (window.innerWidth > 800) {
+		var height = window.innerHeight;
+		sidebar.style.height = (height - 20) + 'px';
+		viewer.style.height = height + 'px';
+	}
 
 	libselect.onchange = function() {
 		window.location.href = 'view.php?lib=' + this.value;

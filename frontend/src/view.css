@@ -117,3 +117,21 @@ body {
 	background-color: rgba(0, 0, 0, 0.05);
 	padding-left: 1em;
 }
+
+@media (max-width: 800px) {
+	body {
+		overflow: auto;
+	}
+
+	#sidebar {
+		float: none;
+		overflow: initial;
+		width: calc(100% - 2em);
+	}
+
+	#viewer {
+		clear: both;
+		margin-left: 0;
+		overflow: initial;
+	}
+}

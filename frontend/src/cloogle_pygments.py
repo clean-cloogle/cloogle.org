@@ -51,7 +51,7 @@ class CloogleHtmlFormatter(pygments.formatters.HtmlFormatter):
             safe_value = value.translate(escape_table)
             if ttype in [Name.Class, Name, Operator, Literal] \
                     and value not in CLEAN_SYNTAX_TOKENS:
-                value = u'<a href="https://cloogle.org/#%s">%s</a>' % (
+                value = u'<a href="/#%s">%s</a>' % (
                     urllib.parse.quote(value), safe_value)
             else:
                 value = safe_value
@@ -111,12 +111,10 @@ outp = pygments.highlight(
     inp,
     pygments.lexers.get_lexer_by_name('clean'),
     CloogleHtmlFormatter(
-        full=True,
+        full=False,
         linenos=True,
         linespans='line',
         encoding='latin1',
         hl_lines=[] if len(sys.argv) == 1 else [int(a) for a in sys.argv[2:]],
-        cssfile='view.css',
-        noclobber_cssfile=True,
         ))
 print(codecs.decode(outp, 'utf-8', 'ignore'))

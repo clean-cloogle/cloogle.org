@@ -57,14 +57,6 @@ th {
 	color: #26c;
 }
 
-.toggle-container .toggler {
-	cursor: pointer;
-}
-
-.toggle-container .togglee {
-	display: none;
-}
-
 .result-basic {
 	background-color: #f0f0f0;
 	padding: .2em;

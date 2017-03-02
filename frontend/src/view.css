@@ -72,3 +72,48 @@ body .vg { color: #19177C } /* Name.Variable.Global */
 body .vi { color: #19177C } /* Name.Variable.Instance */
 body .vm { color: #19177C } /* Name.Variable.Magic */
 body .il { color: #666666 } /* Literal.Number.Integer.Long */
+
+body {
+	margin: 0;
+	overflow: hidden;
+}
+
+#sidebar {
+	float: left;
+	overflow: auto;
+	padding: 10px 1em;
+	width: 15em;
+}
+
+#sidebar h3 {
+	margin-top: .2em;
+}
+
+#select-lib {
+	margin-bottom: .8em;
+}
+
+#viewer {
+	margin-left: 16em;
+	overflow: auto;
+}
+
+#viewer #loading {
+	font-style: italic;
+	margin-top: 8em;
+	text-align: center;
+}
+
+.browser-item {
+	cursor: pointer;
+	font-weight: normal;
+}
+
+.browser-item.directory {
+	font-weight: bold;
+}
+
+.browser-item.directory .browser {
+	background-color: rgba(0, 0, 0, 0.05);
+	padding-left: 1em;
+}

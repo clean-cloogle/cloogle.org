@@ -66,23 +66,20 @@ instance zero CLI where
 	                   , ("Gast", const False)
 	                   , ("Generics", const False)
 	                   , ("GraphCopy", const False)
-	                   , ("iTasks", const False)
+	                   , ("MersenneTwister", const False)
+	                   , ("ObjectIO", not o startsWith "Std")
 	                   , ("Platform", const False)
 	                   , ("Sapl", const False)
+	                   , ("SoccerFun", const False)
 	                   , ("StdEnv", const False)
 	                   , ("StdLib", const False)
 	                   , ("TCPIP", const False)
-	                   , ("ObjectIO", not o startsWith "Std")
-	                   , ("SoccerFun/Game", const False)
-	                   , ("SoccerFun/Gui", const False)
-	                   , ("SoccerFun/StdLibExt", const False)
-	                   , ("SoccerFun/StdReferee", const False)
-	                   , ("SoccerFun/StdTeam", const False)
+	                   , ("iTasks", const False)
 	                   ]
 	       , exclude = [ "StdEnv/_startup"
 	                   , "StdEnv/_system"
-	                   , "SoccerFun/StdReferee/RefereeCoach_"
-	                   , "SoccerFun/StdTeam/Team_"
+	                   , "SoccerFun/RefereeCoach_"
+	                   , "SoccerFun/Team_"
 	                   ]
 	       }
 

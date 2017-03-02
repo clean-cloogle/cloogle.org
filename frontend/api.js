@@ -12,38 +12,6 @@ var old_libs = null;
 var old_include_builtins = null;
 var old_include_core = null;
 
-function pluralise(n, what) {
-	return n + ' ' + what + (n == 1 ? '' : 's');
-}
-
-function toggleElement(e) {
-	e.style.display = e.style.display == 'block' ? 'none' : 'block';
-}
-
-function toggle(toggler) {
-	var e = toggler;
-	while (!e.classList.contains('toggle-container'))
-		e = e.parentNode;
-	var es = e.getElementsByClassName('togglee');
-
-	for (var i = 0; i < es.length; i++)
-		toggleElement(es[i]);
-
-	var icons = e.getElementsByClassName('toggle-icon');
-	for (var i in icons) {
-		switch (icons[i].innerHTML) {
-			case 'show': icons[i].innerHTML = 'hide'; break;
-			case 'hide': icons[i].innerHTML = 'show'; break;
-			case '\u229e': icons[i].innerHTML = '&#x229f;'; break;
-			case '\u229f': icons[i].innerHTML = '&#x229e;'; break;
-		}
-	}
-}
-
-function toggleById(name) {
-	toggleElement(document.getElementById(name));
-}
-
 function toggleLibSelection(className) {
 	var boxes =
 		document.getElementById(className).getElementsByClassName('search_libs');
@@ -164,14 +132,13 @@ function getResults(str, libs, include_builtins, include_core, page) {
 		var makeInstanceUrl = function (loc) {
 			var dclUrl =
 				'src/view.php?lib=' + encodeURIComponent(loc[0]) +
-				'&mod=' + encodeURIComponent(loc[1]) +
-				'&hl';
-			var iclUrl = dclUrl + '&icl';
+				'#' + encodeURIComponent(loc[1]);
+			var iclUrl = dclUrl + ';icl';
 
 			if (loc[2].length > 1)
-				dclUrl += '&line=' + loc[2][1] + '#line-' + loc[2][1];
+				dclUrl += ';line=' + loc[2][1];
 			if (loc[3].length > 1)
-				iclUrl += '&line=' + loc[3][1] + '#line-' + loc[3][1];
+				iclUrl += ';line=' + loc[3][1];
 
 			return loc[1] +
 				' (<a target="_blank" href="' + dclUrl + '">dcl' +
@@ -228,17 +195,16 @@ function getResults(str, libs, include_builtins, include_core, page) {
 	var makeGenericResultHTML = function (basic, extraData, code) {
 		var dclUrl =
 			'src/view.php?lib=' + encodeURIComponent(basic['library']) +
-			'&mod=' + encodeURIComponent(basic['modul']) +
-			'&hl';
-		var iclUrl = dclUrl + '&icl';
+			'#' + encodeURIComponent(basic['modul']);
+		var iclUrl = dclUrl + ';icl';
 		var dclLine = '';
 		var iclLine = '';
 		if ('dcl_line' in basic) {
-			dclUrl += '&line=' + basic['dcl_line'] + '#line-' + basic['dcl_line'];
+			dclUrl += ';line=' + basic['dcl_line'];
 			dclLine = ':' + basic['dcl_line'];
 		}
 		if ('icl_line' in basic) {
-			iclUrl += '&line=' + basic['icl_line'] + '#line-' + basic['icl_line'];
+			iclUrl += ';line=' + basic['icl_line'];
 			iclLine = ':' + basic['icl_line'];
 		}
 
@@ -253,8 +219,7 @@ function getResults(str, libs, include_builtins, include_core, page) {
 		var toggler = '';
 		if (extraData.length > 0) {
 			toggler = '<div class="toggler" title="More details" onclick="toggle(this)">' +
-				'<span class="toggle-icon">&#x229e;</span>' +
-				'&nbsp;' + makeSummary(extraData) +
+				'<span class="toggle-icon">&#x229e;</span>' + makeSummary(extraData) +
 				'</div>';
 		}
 

@@ -1,9 +1,11 @@
-import urllib
+import urllib.parse
+import os
 import sys
 import codecs
 import pygments
 import pygments.lexers
 import pygments.formatters
+import traceback
 from pygments.token import Literal, Name, Operator
 
 _escape_html_table = {
@@ -14,9 +16,10 @@ _escape_html_table = {
     ord("'"): u'&#39;',
 }
 
-CLEAN_SYNTAX_TOKENS = ['=', '=:', ':==', '|', '->', '(', ')', ':', '::', '::!',
-        '..', '_', '\\', '.', '#', '#!', '!', '\\\\', '<-', '<-:', '<-|', '&',
-        '|*|', '|*->*|', '|*->*->*|']
+CLEAN_SYNTAX_TOKENS = [
+    '=', '=:', ':==', '|', '->', '(', ')', ':', '::', '::!', '..', '_', '\\',
+    '.', '#', '#!', '!', '\\\\', '<-', '<-:', '<-|', '&', '|*|', '|*->*|',
+    '|*->*->*|']
 
 
 # This is blatantly stolen from the HTML formatter
@@ -51,7 +54,7 @@ class CloogleHtmlFormatter(pygments.formatters.HtmlFormatter):
             safe_value = value.translate(escape_table)
             if ttype in [Name.Class, Name, Operator, Literal] \
                     and value not in CLEAN_SYNTAX_TOKENS:
-                value = u'<a href="https://cloogle.org/#%s">%s</a>' % (
+                value = u'<a href="/#%s">%s</a>' % (
                     urllib.parse.quote(value), safe_value)
             else:
                 value = safe_value
@@ -102,21 +105,26 @@ class CloogleHtmlFormatter(pygments.formatters.HtmlFormatter):
             yield 1, ''.join(line)
 
 
-
-with open(sys.argv[1], 'rb') as f:
-    inp = u''
-    for l in f:
-        inp += l.decode('latin1')
-outp = pygments.highlight(
-    inp,
-    pygments.lexers.get_lexer_by_name('clean'),
-    CloogleHtmlFormatter(
-        full=True,
-        linenos=True,
-        linespans='line',
-        encoding='latin1',
-        hl_lines=[] if len(sys.argv) == 1 else [int(a) for a in sys.argv[2:]],
-        cssfile='view.css',
-        noclobber_cssfile=True,
-        ))
-print(codecs.decode(outp, 'utf-8', 'ignore'))
+try:
+    with open(sys.argv[1], 'rb') as f:
+        inp = u''
+        for l in f:
+            inp += l.decode('latin1')
+    outp = pygments.highlight(
+        inp,
+        pygments.lexers.get_lexer_by_name('clean'),
+        CloogleHtmlFormatter(
+            full=False,
+            linenos=True,
+            linespans='line',
+            encoding='latin1',
+            hl_lines=[] if len(sys.argv) == 1 else [
+                int(a) for a in sys.argv[2:]],
+            ))
+    print(codecs.decode(outp, 'utf-8', 'ignore'))
+except Exception:
+    print('<pre>{}</pre>'.format(traceback.format_exc()))
+    print(
+        '<p>Please open an issue <a href="https://github.com/clean-cloogle/clo'
+        'ogle/issues/new">here</a> with the exact way you got here and the tra'
+        'ce of this error.</p>')

@@ -102,19 +102,21 @@ class CloogleHtmlFormatter(pygments.formatters.HtmlFormatter):
             yield 1, ''.join(line)
 
 
-
-with open(sys.argv[1], 'rb') as f:
-    inp = u''
-    for l in f:
-        inp += l.decode('latin1')
-outp = pygments.highlight(
-    inp,
-    pygments.lexers.get_lexer_by_name('clean'),
-    CloogleHtmlFormatter(
-        full=False,
-        linenos=True,
-        linespans='line',
-        encoding='latin1',
-        hl_lines=[] if len(sys.argv) == 1 else [int(a) for a in sys.argv[2:]],
-        ))
-print(codecs.decode(outp, 'utf-8', 'ignore'))
+try:
+    with open(sys.argv[1], 'rb') as f:
+        inp = u''
+        for l in f:
+            inp += l.decode('latin1')
+    outp = pygments.highlight(
+        inp,
+        pygments.lexers.get_lexer_by_name('clean'),
+        CloogleHtmlFormatter(
+            full=False,
+            linenos=True,
+            linespans='line',
+            encoding='latin1',
+            hl_lines=[] if len(sys.argv) == 1 else [int(a) for a in sys.argv[2:]],
+            ))
+    print(codecs.decode(outp, 'utf-8', 'ignore'))
+except:
+    print('<p>Could not highlight file.</p>')

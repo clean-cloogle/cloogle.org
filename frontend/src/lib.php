@@ -1,8 +1,9 @@
 <?php
 define('CLEANHOME', '/opt/clean');
 
-if (!isset($_REQUEST['lib']))
-	die('Add ?lib.');
+if (!isset($_REQUEST['lib'])) :
+	echo 'Choose a library.';
+else :
 
 $lib = preg_replace('/[^\\w\\/\\-]/', '', $_REQUEST['lib']);
 
@@ -59,3 +60,5 @@ function makeBrowser($dir, $basemodule) {
 $dname = CLEANHOME . '/lib/' . $lib;
 
 makeBrowser($dname, '');
+
+endif;

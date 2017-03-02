@@ -39,8 +39,9 @@ function makeBrowser($dir, $basemodule) {
 
 	foreach ($elems['dirs'] as $d) {
 		echo '<div class="browser-item directory toggle-container">' .
-				'<span class="title toggler" onclick="toggle(this)">' .
-					'<span class="toggle-icon">&#x229e</span>' . $d . '</span>';
+				'<span class="toggler" onclick="toggle(this)">' .
+					'<span class="toggle-icon">&#x229e</span>' .
+					'<span class="title">' . $d . '</span></span>';
 		makeBrowser($dir . '/' . $d, $basemodule . $d . '.');
 		echo '</div>';
 	}

@@ -14,6 +14,7 @@ function loadModule(elem) {
 	}
 
 	updateHash();
+	updateLibraryPanel();
 
 	viewer.innerHTML = '<p id="loading">Loading...</p>';
 
@@ -37,6 +38,30 @@ function loadModule(elem) {
 	}
 	xmlHttp.open("GET", url, true);
 	xmlHttp.send(null);
+}
+
+function updateLibraryPanel() {
+	var mods = document.getElementsByClassName('module');
+	for (var i = 0; i < mods.length; i++)
+		mods[i].style.fontStyle = '';
+
+	var e = document.getElementById('sidebar');
+	var modpath = curmod.split('.');
+	for (var m = 0; m < modpath.length - 1; m++) {
+		var dirs = e.getElementsByClassName('directory');
+		for (var d = 0; d < dirs.length; d++) {
+			var t = dirs[d].getElementsByClassName('title')[0];
+			if (t.innerHTML == modpath[m]) {
+				e = dirs[d];
+				toggle(e.getElementsByClassName('toggler')[0], true);
+			}
+		}
+	}
+
+	var modules = e.getElementsByClassName('module');
+	for (var m = 0; m < modules.length; m++)
+		if (modules[m].innerHTML == modpath[modpath.length-1])
+			modules[m].style.fontStyle = 'italic';
 }
 
 function updateHash() {

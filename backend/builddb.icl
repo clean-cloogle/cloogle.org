@@ -242,7 +242,7 @@ getModuleTypes root mod lib iscore cache db w
 # db  = 'DB'.putTypes typedefs db
 # db  = 'DB'.putFunctions (flatten $ map constructor_functions typedefs) db
 # db  = 'DB'.putFunctions (flatten $ map record_functions typedefs) db
-# db  = 'DB'.putFunctions (pd_generics lib mod dcl.mod_defs) db
+# db  = 'DB'.putFunctions (pd_generics lib mod dcl.mod_defs icl) db
 # db  = 'DB'.putDerivationss (pd_derivations lib mod dcl.mod_defs) db
 # db  = 'DB'.putMacros (pd_macros lib mod dcl.mod_defs) db
 # db  = 'DB'.putModule lib mod {zero & is_core=iscore} db
@@ -291,14 +291,21 @@ where
 		   , [('T'.toType gc_type, 'DB'.Location lib mod (toLine gc_pos) Nothing "")]
 		   ) \\ PD_Derive gcdefs <- dcl, {gc_type,gc_pos,gc_gcf=GCF id _} <- gcdefs]
 
-	pd_generics :: String String [ParsedDefinition]
+	pd_generics :: String String [ParsedDefinition] (Maybe ParsedModule)
 		-> [('DB'.Location, 'DB'.ExtendedType)]
-	pd_generics lib mod dcl
-		= [( 'DB'.Location lib mod (toLine gen_pos) Nothing id_name
+	pd_generics lib mod dcl icl
+		= [( 'DB'.Location lib mod (toLine gen_pos) (findIclLine id_name =<< icl) id_name
 		   , 'DB'.ET ('T'.toType gen_type)
 		       {zero & te_generic_vars=Just $ map 'T'.toTypeVar gen_vars
 		             , te_representation=Just $ cpp gen}
 		   ) \\ gen=:(PD_Generic {gen_ident={id_name},gen_pos,gen_type,gen_vars}) <- dcl]
+	where
+		findIclLine :: String ParsedModule -> Maybe Int
+		findIclLine name {mod_defs=pms}
+			= case [g.gen_pos \\ PD_Generic g <- pms | g.gen_ident.id_name == name] of
+				[FunPos _ l _:_] = Just l
+				[LinePos _ l:_] = Just l
+				_ = Nothing
 
 	pd_typespecs :: String String [ParsedDefinition] (Maybe ParsedModule)
 		-> [('DB'.Location, 'DB'.ExtendedType)]

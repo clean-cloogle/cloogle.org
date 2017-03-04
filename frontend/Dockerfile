@@ -25,5 +25,5 @@ RUN svn checkout https://svn.cs.ru.nl/repos/SoccerFun/src /opt/clean/lib/SoccerF
 # Pygments, for highlighting
 RUN apt-get update && apt-get install -y python3.4 python3-pip mercurial
 
-RUN hg clone https://camilstaps@bitbucket.org/camilstaps/pygments-main-3 /opt/pygments &&\
+RUN hg clone https://bitbucket.org/camilstaps/pygments-main-3 /opt/pygments &&\
 	pip3 install -e /opt/pygments

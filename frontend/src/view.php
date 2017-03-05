@@ -30,8 +30,10 @@
 				],
 				'Miscellaneous' => [
 					'CleanSerial',
+					'GraphCopy',
 					'ObjectIO',
 					'Platform',
+					'Sapl',
 					'SoccerFun',
 					'iTasks',
 				]

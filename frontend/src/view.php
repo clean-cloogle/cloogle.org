@@ -22,6 +22,7 @@
 					'ArgEnv',
 					'Directory',
 					'Dynamics',
+					'Gast',
 					'Generics',
 					'MersenneTwister',
 					'StdLib',
@@ -29,7 +30,6 @@
 				],
 				'Miscellaneous' => [
 					'CleanSerial',
-					'Gast',
 					'ObjectIO',
 					'Platform',
 					'SoccerFun',

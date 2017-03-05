@@ -1,7 +1,6 @@
 import urllib.parse
 import os
 import sys
-import codecs
 import pygments
 import pygments.lexers
 import pygments.formatters
@@ -105,29 +104,26 @@ class CloogleHtmlFormatter(pygments.formatters.HtmlFormatter):
             yield 1, ''.join(line)
 
 
-for enc in ['latin1', 'utf8']:
-    try:
-        with open(sys.argv[1], 'rb') as f:
-            inp = u''
-            for l in f:
-                inp += l.decode(enc)
-        outp = pygments.highlight(
+try:
+    with open(sys.argv[1], 'r', encoding='utf-8') as f:
+        inp = ''
+        for l in f:
+            inp += l
+    outp = pygments.highlight(
             inp,
             pygments.lexers.get_lexer_by_name('clean'),
             CloogleHtmlFormatter(
                 full=False,
                 linenos=True,
                 linespans='line',
-                encoding='latin1',
+                encoding='utf-8',
                 hl_lines=[] if len(sys.argv) == 1 else [
                     int(a) for a in sys.argv[2:]],
                 ))
-        print(codecs.decode(outp, 'utf-8', 'ignore'))
-        exit()
-    except Exception:
-        pass
-print('<pre>{}</pre>'.format(traceback.format_exc()))
-print(
-    '<p>Please open an issue <a href="https://github.com/clean-cloogle/clo'
-    'ogle/issues/new">here</a> with the exact way you got here and the tra'
-    'ce of this error.</p>')
+    sys.stdout.buffer.write(outp)
+except:
+    print('<pre>{}</pre>'.format(traceback.format_exc()))
+    print(
+        '<p>Please open an issue <a href="https://github.com/clean-cloogle/clo'
+        'ogle/issues/new">here</a> with the exact way you got here and the tra'
+        'ce of this error.</p>')

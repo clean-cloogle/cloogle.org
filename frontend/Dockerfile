@@ -27,3 +27,6 @@ RUN apt-get update && apt-get install -y python3.4 python3-pip mercurial
 
 RUN hg clone https://bitbucket.org/camilstaps/pygments-main-3 /opt/pygments &&\
 	pip3 install -e /opt/pygments
+
+COPY iconv.sh .
+RUN bash iconv.sh && rm iconv.sh

@@ -19,7 +19,7 @@ import System.Directory, System.CommandLine
 // CleanTypeUnifier
 import qualified Type as T
 from Type import class print(print), instance print [a], instance print String,
-	instance print Type, instance print Priority
+	instance print Type, instance print Priority, instance == Type
 from Type import qualified ::TypeDef{..}, ::Constructor{..}
 import CoclUtils
 
@@ -36,7 +36,7 @@ from general import ::Optional(..)
 from syntax import ::SymbolTable, ::SymbolTableEntry, ::Ident{..}, ::SymbolPtr,
 	::Position(..), ::LineNr, ::FileName, ::FunctName,
 	::Module{mod_ident,mod_defs},
-	::ParsedDefinition(PD_TypeSpec,PD_Instance,PD_Class,PD_Type,PD_Generic,PD_Derive,PD_Function),
+	::ParsedDefinition(PD_TypeSpec,PD_Instance,PD_Instances,PD_Class,PD_Type,PD_Generic,PD_Derive,PD_Function),
 	::FunSpecials, ::Priority, ::ParsedModule, ::SymbolType,
 	::ParsedInstanceAndMembers{..}, ::ParsedInstance{pi_ident,pi_pos,pi_types},
 	::Type, ::ClassDef{class_ident,class_pos,class_args,class_context},
@@ -326,14 +326,20 @@ where
 	pd_instances :: String String [ParsedDefinition] (Maybe ParsedModule)
 		-> [('DB'.Class, ['DB'.Type], 'DB'.Location)]
 	pd_instances lib mod dcl icl
-		= [( id_name
-		   , map 'T'.toType pi_types
-		   , 'DB'.Location lib mod (toLine pi_pos) (findIclLine id_name =<< icl) ""
-		   ) \\ PD_Instance {pim_pi={pi_ident={id_name},pi_types,pi_pos}} <- dcl]
+		= [( id
+		   , types
+		   , 'DB'.Location lib mod (toLine pos) (findIclLine id types =<< icl) ""
+		   ) \\ (id,types,pos) <- instances]
 	where
-		findIclLine :: String ParsedModule -> Maybe Int
-		findIclLine name {mod_defs=pms}
-			= case [pi_pos \\ PD_Instance {pim_pi={pi_pos,pi_ident}} <- pms | pi_ident.id_name == name] of
+		instances = map (appSnd3 (map 'T'.toType)) $
+			[(i.pi_ident.id_name, i.pi_types, i.pi_pos) \\ PD_Instance {pim_pi=i} <- dcl]
+			++ [(i.pi_ident.id_name, i.pi_types, i.pi_pos) \\ PD_Instances pis <- dcl, {pim_pi=i} <- pis]
+
+		findIclLine :: String ['T'.Type] ParsedModule -> Maybe Int
+		findIclLine name types {mod_defs=pms}
+			= case [pi_pos
+					\\ PD_Instance {pim_pi={pi_pos,pi_ident,pi_types}} <- pms
+					| (pi_ident.id_name == name && map 'T'.toType pi_types == types)] of
 				[LinePos _ l:_] = Just l
 				_ = Nothing
 

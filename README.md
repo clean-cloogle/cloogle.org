@@ -17,6 +17,9 @@ Use any of the available frontends:
 	[cloogle-mail](https://github.com/clean-cloogle/cloogle-mail) for the
 	implementation).
 
+For support and/or contact please join us at the `#cloogle` irc channel on
+[freenode](https://freenode.net)
+
 ---
 
 ### Readme contents

@@ -137,7 +137,7 @@ function highlightFunction(func, callback, start) {
 			[/(\s+)/,        ['whitespace']],
 			[/([a-z][\w`]*)/, ['typevar']],
 			[/(A)(\.)/,      ['keyword', 'punctuation'], 'univars'],
-			[/([A-Z]\w*)/,   ['type']],
+			[/([A-Z_]\w*)/,  ['type']],
 			[/(\|)/,         ['punctuation'], 'context'],
 			[/(\W)/,         ['punctuation']]
 		],
@@ -172,7 +172,7 @@ function highlightFunction(func, callback, start) {
 			[/([\(\[])/,     ['punctuation'], 'contextType'],
 			[/([\)\]])/,     ['punctuation'], 'pop'],
 			[/([a-z][\w`]*)/, ['typevar']],
-			[/([A-Z][\w`]*)/, ['type']],
+			[/([A-Z_][\w`]*)/, ['type']],
 			[/([^\s\(\)\[\],]+)/, ['typevar']]
 		],
 		attrenv: [
@@ -242,7 +242,7 @@ function highlightTypeDef(type, callback, start) {
 		name: [
 			[/(\s+)/,        ['whitespace']],
 			[/(\*)/,         ['punctuation']],
-			[/([A-Z][\w`]*)/, ['type'], 'vars'],
+			[/([A-Z_][\w`]*)/, ['type'], 'vars'],
 			[/([~@#\$%\^\?!\+\-\*<>\\\/\|&=:]+)/, ['type'], 'vars']
 		],
 		vars: [
@@ -254,7 +254,7 @@ function highlightTypeDef(type, callback, start) {
 		synonym: [
 			[/(\s+)/,        ['whitespace']],
 			[/([a-z][a-zA-Z]*)/, ['typevar']],
-			[/([A-Z]\w*)/,   ['type']],
+			[/([A-Z_]\w*)/,  ['type']],
 			[/(\W)/,         ['punctuation']]
 		],
 		lhs: [
@@ -269,7 +269,7 @@ function highlightTypeDef(type, callback, start) {
 		],
 		record: [
 			[/(\s+)/,        ['whitespace']],
-			[/([_a-z][\w`]*)(\s+)(::)/,
+			[/([a-z_][\w`]*)(\s+)(::)/,
 			                 ['field', 'whitespace', 'punctuation'],
 			                 'fieldtype'],
 			[/(\})/,         ['punctuation']]
@@ -277,7 +277,7 @@ function highlightTypeDef(type, callback, start) {
 		fieldtype: [
 			[/(\s+)/,        ['whitespace']],
 			[/([a-z]\w*)/,   ['typevar']],
-			[/([A-Z]\w*)/,   ['type']],
+			[/([A-Z_]\w*)/,  ['type']],
 			[/(\()/,         ['punctuation'], 'tuple'],
 			[/([\[\{])/,     ['punctuation'], 'fieldtype'],
 			[/([\]\},])/,    ['punctuation'], 'pop'],
@@ -286,7 +286,7 @@ function highlightTypeDef(type, callback, start) {
 		tuple: [
 			[/(\s+)/,        ['whitespace']],
 			[/([a-z]\w*)/,   ['typevar']],
-			[/([A-Z]\w*)/,   ['type']],
+			[/([A-Z_]\w*)/,  ['type']],
 			[/([\(\[\{])/,   ['punctuation'], 'tuple'],
 			[/([\)\]\}])/,   ['punctuation'], 'pop'],
 			[/(\W)/,         ['punctuation']]
@@ -294,7 +294,7 @@ function highlightTypeDef(type, callback, start) {
 		conses: [
 			[/(\s+)/,        ['whitespace']],
 			[/(E)(\.)/,      ['existential', 'punctuation'], 'consexi'],
-			[/([_A-Z][\w`]*)/, ['constructor'], 'consargs'],
+			[/([A-Z_][\w`]*)/, ['constructor'], 'consargs'],
 			[/([~@#\$%\^\?!\+\-\*<>\\\/\|&=:]+)/, ['constructor'], 'consargs'],
 			[/(\.\.)/,       ['punctuation']]
 		],

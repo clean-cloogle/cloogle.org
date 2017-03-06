@@ -475,7 +475,7 @@ window.onhashchange = function () {
 	if (!refresh_on_hash) {
 		refresh_on_hash = true;
 	} else {
-		var str = decodeURIComponent(document.location.hash);
+		var str = decodeURIComponent(document.location.hash.replace('+', '%20');
 		form_str.value = str.substring(1);
 		formsubmit();
 	}

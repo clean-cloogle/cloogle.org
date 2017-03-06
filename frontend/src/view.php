@@ -29,7 +29,10 @@
 					'TCPIP',
 				],
 				'Miscellaneous' => [
+					'CleanPrettyPrint',
 					'CleanSerial',
+					'CleanTypeUnifier',
+					'Cloogle',
 					'GraphCopy',
 					'ObjectIO',
 					'Platform',

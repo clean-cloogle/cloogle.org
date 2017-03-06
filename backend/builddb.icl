@@ -60,7 +60,10 @@ instance zero CLI where
 	       , help    = False
 	       , root    = "/opt/clean/lib/"
 	       , libs    = [ ("ArgEnv", const False)
+	                   , ("CleanPrettyPrint", const False)
 	                   , ("CleanSerial", const False)
+	                   , ("CleanTypeUnifier", const False)
+	                   , ("Cloogle", const False)
 	                   , ("Directory", const False)
 	                   , ("Dynamics", const False)
 	                   , ("Gast", const False)

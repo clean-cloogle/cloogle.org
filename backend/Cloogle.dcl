@@ -1,6 +1,6 @@
 definition module Cloogle
 
-from StdOverloaded import class zero, class fromString, class <
+from StdOverloaded import class zero, class fromString, class toString, class <
 
 from Data.Maybe import :: Maybe
 from Text.JSON import generic JSONEncode, generic JSONDecode, :: JSONNode

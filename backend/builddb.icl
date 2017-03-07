@@ -81,6 +81,7 @@ instance zero CLI where
 	                   ]
 	       , exclude = [ "StdEnv/_startup"
 	                   , "StdEnv/_system"
+	                   , "Platform/Deprecated"
 	                   , "SoccerFun/RefereeCoach_"
 	                   , "SoccerFun/Team_"
 	                   ]

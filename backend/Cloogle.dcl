@@ -82,8 +82,6 @@ from Text.JSON import generic JSONEncode, generic JSONDecode, :: JSONNode
 
 :: StrUnifier :== ([(String,String)], [(String,String)])
 
-:: ErrorResult = MaybeError Int String
-
 :: ShortClassResult = { cls_name :: String, cls_vars :: [String] }
 
 derive JSONEncode Request, Response, Result, ShortClassResult, BasicResult,

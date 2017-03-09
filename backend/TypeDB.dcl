@@ -98,10 +98,10 @@ findType :: Name TypeDB -> [(Location, TypeDef)]
 findType` :: (Location TypeDef -> Bool) TypeDB -> [(Location, TypeDef)]
 findType`` :: [(Location TypeDef -> Bool)] TypeDB -> [(Location, TypeDef)]
 
-getDerivations :: Name TypeDB -> [(Type, [Location])]
-putDerivation :: Name Type Location TypeDB -> TypeDB
-putDerivations :: Name [(Type, Location)] TypeDB -> TypeDB
-putDerivationss :: [(Name, [(Type, Location)])] TypeDB -> TypeDB
+getDerivations :: Name TypeDB -> [(Type, String, [Location])]
+putDerivation :: Name Type String Location TypeDB -> TypeDB
+putDerivations :: Name [(Type, String, Location)] TypeDB -> TypeDB
+putDerivationss :: [(Name, [(Type, String, Location)])] TypeDB -> TypeDB
 
 getModule :: Library Module TypeDB -> Maybe ModuleInfo
 putModule :: Library Module ModuleInfo TypeDB -> TypeDB

@@ -366,7 +366,7 @@ where
 		    , generic_derivations
 		        = let derivs = getDerivations fname db in
 		          const (sortBy (\(a,_) (b,_) -> a < b)
-				    [(concat $ print False d, map loc ls) \\ (d,ls) <- derivs]) <$>
+				    [(s, map loc ls) \\ (_,s,ls) <- derivs]) <$>
 		          tes.te_generic_vars
 		    }
 		  )

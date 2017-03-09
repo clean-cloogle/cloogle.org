@@ -289,10 +289,10 @@ where
 		findTypeSpec id [_:dcl]     = findTypeSpec id dcl
 
 	pd_derivations :: String String [ParsedDefinition]
-		-> [('DB'.Name, [('DB'.Type, 'DB'.Location)])]
+		-> [('DB'.Name, [('DB'.Type, String, 'DB'.Location)])]
 	pd_derivations lib mod dcl
 		= [( id.id_name
-		   , [('T'.toType gc_type, 'DB'.Location lib mod (toLine gc_pos) Nothing "")]
+		   , [('T'.toType gc_type, cpp gc_type, 'DB'.Location lib mod (toLine gc_pos) Nothing "")]
 		   ) \\ PD_Derive gcdefs <- dcl, {gc_type,gc_pos,gc_gcf=GCF id _} <- gcdefs]
 
 	pd_generics :: String String [ParsedDefinition] (Maybe ParsedModule)

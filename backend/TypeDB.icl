@@ -22,7 +22,7 @@ import Type
 	  , classmap     :: Map Location ([TypeVar],ClassContext,[(Name, ExtendedType)])
 	  , instancemap  :: Map Class [([(Type,String)], [Location])]
 	  , typemap      :: Map Location TypeDef
-	  , derivemap    :: Map Name [(Type, [Location])]
+	  , derivemap    :: Map Name [(Type, String, [Location])]
 	  , modulemap    :: Map (Library, Module) ModuleInfo
 	    // Derived maps
 	  , instancemap` :: Map Name [(Class, [(Type,String)], [Location])]
@@ -134,7 +134,7 @@ filterLocations f db
 	  , classmap    = filterLoc db.classmap
 	  , typemap     = filterLoc db.typemap
 	  , instancemap = filtInstLocs <$> db.instancemap
-	  , derivemap   = filtInstLocs <$> db.derivemap
+	  , derivemap   = filtDervLocs <$> db.derivemap
 	  , modulemap   = filtModules db.modulemap
 	  }
 where
@@ -146,8 +146,14 @@ where
 	filtInstLocs [(t,ls):rest] = case ls` of
 		[] =          filtInstLocs rest
 		_  = [(t,ls`):filtInstLocs rest]
-	where
-		ls` = filter f ls
+	where ls` = filter f ls
+
+	filtDervLocs :: [(a, b, [Location])] -> [(a, b, [Location])]
+	filtDervLocs [] = []
+	filtDervLocs [(t,s,ls):rest] = case ls` of
+		[] =            filtDervLocs rest
+		_  = [(t,s,ls`):filtDervLocs rest]
+	where ls` = filter f ls
 
 	filtModules :: ((Map (Library, Module) a) -> Map (Library, Module) a)
 	filtModules = filterWithKey (\(l,m) _ -> f (Location l m Nothing Nothing undef))
@@ -260,18 +266,18 @@ findType` f {typemap} = toList $ filterWithKey f typemap
 findType`` :: [(Location TypeDef -> Bool)] TypeDB -> [(Location, TypeDef)]
 findType`` fs {typemap} = toList $ foldr filterWithKey typemap fs
 
-getDerivations :: Name TypeDB -> [(Type, [Location])]
+getDerivations :: Name TypeDB -> [(Type, String, [Location])]
 getDerivations gen {derivemap} = if (isNothing ts) [] (fromJust ts)
 where ts = get gen derivemap
 
-putDerivation :: Name Type Location TypeDB -> TypeDB
-putDerivation gen t loc db=:{derivemap} = {db & derivemap=put gen ts derivemap}
-where ts = removeDup [(t, [loc]) : getDerivations gen db]
+putDerivation :: Name Type String Location TypeDB -> TypeDB
+putDerivation gen t s loc db=:{derivemap} = {db & derivemap=put gen ts derivemap}
+where ts = removeDup [(t, s, [loc]) : getDerivations gen db]
 
-putDerivations :: Name [(Type, Location)] TypeDB -> TypeDB
-putDerivations gen ts db = foldr (\(t,l) db -> putDerivation gen t l db) db ts
+putDerivations :: Name [(Type, String, Location)] TypeDB -> TypeDB
+putDerivations gen ts db = foldr (\(t,s,l) db -> putDerivation gen t s l db) db ts
 
-putDerivationss :: [(Name, [(Type, Location)])] TypeDB -> TypeDB
+putDerivationss :: [(Name, [(Type, String, Location)])] TypeDB -> TypeDB
 putDerivationss ds db = foldr (\(g,ts) db -> putDerivations g ts db) db ds
 
 searchExact :: Type TypeDB -> [(Location, ExtendedType)]
@@ -317,7 +323,7 @@ where
 			\\ (c,ts) <- toList instancemap, (ts`,ls) <- ts, (Type t [],_) <- ts`]
 	derivs = fromList $ map (\gs=:[(t,_,_):_] -> (t,[(g,ls) \\ (_,g,ls) <- gs])) $
 		groupBy (\a b -> fst3 a == fst3 b) $ sort
-		[(t,g,ls) \\ (g,ts) <- toList derivemap, (Type t [],ls) <- ts]
+		[(t,g,ls) \\ (g,ts) <- toList derivemap, (Type t [],_,ls) <- ts]
 
 app5 f (a,b,c,d,e) :== f a b c d e
 fst4 (a,_,_,_) :== a

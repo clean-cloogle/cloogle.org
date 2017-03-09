@@ -6,10 +6,10 @@ import Text.JSON
 
 derive JSONEncode Request, Response, Result, ShortClassResult, BasicResult,
 	FunctionResultExtras, TypeResultExtras, ClassResultExtras,
-	MacroResultExtras, ModuleResultExtras
+	MacroResultExtras, ModuleResultExtras, StrUnifier
 derive JSONDecode Request, Response, Result, ShortClassResult, BasicResult,
 	FunctionResultExtras, TypeResultExtras, ClassResultExtras,
-	MacroResultExtras, ModuleResultExtras
+	MacroResultExtras, ModuleResultExtras, StrUnifier
 
 instance zero Request
 where

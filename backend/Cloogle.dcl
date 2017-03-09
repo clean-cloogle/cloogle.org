@@ -80,16 +80,20 @@ from Text.JSON import generic JSONEncode, generic JSONDecode, :: JSONNode
 
 :: LocationResult :== (String, String, Maybe Int, Maybe Int)
 
-:: StrUnifier :== ([(String,String)], [(String,String)])
+:: StrUnifier
+	= { left_to_right :: [(String,String)]
+	  , right_to_left :: [(String,String)]
+	  , used_synonyms :: [(String,String)]
+	  }
 
 :: ShortClassResult = { cls_name :: String, cls_vars :: [String] }
 
 derive JSONEncode Request, Response, Result, ShortClassResult, BasicResult,
 	FunctionResultExtras, TypeResultExtras, ClassResultExtras,
-	MacroResultExtras, ModuleResultExtras
+	MacroResultExtras, ModuleResultExtras, StrUnifier
 derive JSONDecode Request, Response, Result, ShortClassResult, BasicResult,
 	FunctionResultExtras, TypeResultExtras, ClassResultExtras,
-	MacroResultExtras, ModuleResultExtras
+	MacroResultExtras, ModuleResultExtras, StrUnifier
 
 instance zero Request
 instance zero Response

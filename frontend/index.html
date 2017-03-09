@@ -7,56 +7,24 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1"/>
 	<meta name="description" content="Cloogle is the unofficial Clean language search engine"/>
 	<meta name="keywords" content="Clean,Clean language,Concurrent Clean,search,functions,search engine,programming language,clean platform,iTasks,cloogle,hoogle"/>
+	<script src="common.js" type="text/javascript" defer="defer"></script>
 	<script src="api.js" type="text/javascript" defer="defer"></script>
 	<script src="clean.js" type="text/javascript" defer="defer"></script>
+	<link rel="stylesheet" href="common.css" type="text/css"/>
 	<link rel="stylesheet" href="clean.css" type="text/css"/>
-	<style type="text/css">
-		#helptext {
-			margin-bottom: 1em;
-		}
-
-		#helptext code, #helptext .code {
-			background-color: #f9f2f4;
-			font-family: monospace;
-			font-size: 90%;
-			padding: 1px 4px;
-		}
-
-		#helptext td.description {
-			padding-left: 1em;
-		}
-
-		a.hidden {
-			text-decoration: none;
-		}
-
-		#suggestions {
-			margin: 10px 0;
-		}
-
-		td.wide {
-			width: 99%;
-		}
-
-		th {
-			padding-right: 1em;
-			text-align: left;
-			vertical-align: top;
-			white-space: nowrap;
-		}
-	</style>
+	<link rel="stylesheet" href="frontend.css" type="text/css"/>
 </head>
 <body>
 	<p>
-		<a href="https://github.com/dopefishh/cloogle">
+		<a href="https://github.com/clean-cloogle/cloogle">
 			<img src="logo.jpg" alt="follow link for the sourcecode" />
 		</a>
 	</p>
-	<p>Cloogle is the unofficial <a href="http://clean.cs.ru.nl">Clean</a> language search engine.</p>
 	<p>
-		<a href="javascript:toggle('helptext')">How to use</a> | <a href="javascript:toggle('contributetext')">Contribute</a>
+		<a href="javascript:toggleById('helptext')">How to use</a> | <a href="javascript:toggleById('contributetext')">Contribute</a>
 	</p>
 	<div id="helptext" style="display:none;">
+		<p>Cloogle is the unofficial <a href="http://clean.cs.ru.nl">Clean</a> language search engine.</p>
 		<p><b>The following search strings are recognised:</b></p>
 		<table>
 			<tr>
@@ -88,17 +56,19 @@
 		<ul>
 			<li>The <code>!cloogle</code> bang on <a href="https://duckduckgo.com/">DuckDuckGo</a></li>
 			<li><a href="https://telegram.me/CloogleBot">@CloogleBot</a> on Telegram</li>
-			<li><a href="https://github.com/KDercksen/cloogle-cli">cloogle-cli</a>, a command line application</li>
+			<li><a href="https://github.com/clean-cloogle/cloogle-cli">cloogle-cli</a>, a command line application</li>
 			<li>The <code>:Cloogle</code> command in Vim, if you use <a href="https://github.com/camilstaps/vim-clean">vim-clean</a></li>
+			<li>An email to <a href="mailto:query@cloogle.org">query@cloogle.org</a>, with the query in the subject</li>
 		</ul>
+		<p>You can also <a href="src/view.php?lib=StdEnv">browse the standard libraries</a>.</p>
 	</div>
 	<div id="contributetext" style="display:none;">
 		<p>
-			Development takes place on <a href="https://github.com/dopefishh/cloogle">GitHub</a>.
-			Please read the <a href="https://github.com/dopefishh/cloogle/blob/master/CONTRIBUTING.md">contributing guidelines</a> first.
+			Development takes place on <a href="https://github.com/clean-cloogle/cloogle">GitHub</a>.
+			Please read the <a href="https://github.com/clean-cloogle/cloogle/blob/master/CONTRIBUTING.md">contributing guidelines</a> first.
 		</p>
 		<p>
-			For bug reports, open an issue in the <a href="https://github.com/dopefishh/cloogle/issues">issue tracker</a>.
+			For bug reports, open an issue in the <a href="https://github.com/clean-cloogle/cloogle/issues">issue tracker</a>.
 		</p>
 	</div>
 	<form id="search_form" action="#">
@@ -107,41 +77,39 @@
 		&nbsp;
 		<label><input type="checkbox" id="search_advanced"/> advanced</label>
 		<div id="advanced" style="display:none;">
-			<h4 style="margin:1em 0 .2em;">Libraries</h4>
-			<select multiple="multiple" size="10" id="search_libs">
-				<optgroup label="Clean 2.4">
-					<option selected="selected" value="__builtin">Language builtins</option>
-					<option selected="selected" value="StdEnv">StdEnv</option>
-					<option selected="selected" value="StdLib">StdLib</option>
-					<option selected="selected" value="ArgEnv">ArgEnv</option>
-					<option selected="selected" value="Directory">Directory</option>
-					<option selected="selected" value="Dynamics">Dynamics</option>
-					<option selected="selected" value="Gast">Gast</option>
-					<option selected="selected" value="Generics">Generics</option>
-					<option selected="selected" value="MersenneTwister">MersenneTwister</option>
-					<option selected="selected" value="TCPIP">TCPIP</option>
-				</optgroup>
-				<optgroup label="clean-platform">
-					<option selected="selected" value="clean-platform/OS-Independent">clean-platform/OS-Independent</option>
-					<option selected="selected" value="clean-platform/OS-Linux">clean-platform/OS-Linux</option>
-					<option selected="selected" value="clean-platform/OS-Linux-32">clean-platform/OS-Linux-32</option>
-					<option selected="selected" value="clean-platform/OS-Linux-64">clean-platform/OS-Linux-64</option>
-					<option selected="selected" value="clean-platform/OS-Mac">clean-platform/OS-Mac</option>
-					<option selected="selected" value="clean-platform/OS-Posix">clean-platform/OS-Posix</option>
-					<option selected="selected" value="clean-platform/OS-Windows">clean-platform/OS-Windows</option>
-					<option selected="selected" value="clean-platform/OS-Windows-32">clean-platform/OS-Windows-32</option>
-					<option selected="selected" value="clean-platform/OS-Windows-64">clean-platform/OS-Windows-64</option>
-				</optgroup>
-				<optgroup label="iTasks">
-					<option selected="selected" value="iTasks-SDK/Dependencies/graph_copy">iTasks-SDK/Dependencies/graph_copy</option>
-					<option selected="selected" value="iTasks-SDK/Dependencies/clean-sapl/src">iTasks-SDK/Dependencies/clean-sapl/src</option>
-					<option selected="selected" value="iTasks-SDK/Server">iTasks-SDK/Server</option>
-					<option selected="selected" value="iTasks-SDK/Tests">iTasks-SDK/Tests</option>
-				</optgroup>
-				<optgroup label="Miscellaneous">
-					<option value="SoccerFun">SoccerFun</option>
-				</optgroup>
-			</select>
+			<label><input type="checkbox" id="include_builtins" checked="checked"/> Include language builtins</label><br/>
+			<label><input type="checkbox" id="include_core"/> Include library core modules</label><br/>
+			<table id="lib_selection">
+				<tr>
+					<th><a title="Toggle selection" href="javascript:toggleLibSelection('libs-clean-2.4')">Clean 2.4</a></th>
+					<th><a title="Toggle selection" href="javascript:toggleLibSelection('libs-misc')">Miscellaneous</a></th>
+				</tr>
+				<tr>
+					<td id="libs-clean-2.4">
+						<label><input type="checkbox" class="search_libs" checked="checked" value="StdEnv"/> StdEnv</label><br/>
+						<label><input type="checkbox" class="search_libs" checked="checked" value="ArgEnv"/> ArgEnv</label><br/>
+						<label><input type="checkbox" class="search_libs" checked="checked" value="Directory"/> Directory</label><br/>
+						<label><input type="checkbox" class="search_libs" checked="checked" value="Dynamics"/> Dynamics</label><br/>
+						<label><input type="checkbox" class="search_libs" checked="checked" value="Gast"/> Gast</label><br/>
+						<label><input type="checkbox" class="search_libs" checked="checked" value="Generics"/> Generics</label><br/>
+						<label><input type="checkbox" class="search_libs" checked="checked" value="MersenneTwister"/> MersenneTwister</label><br/>
+						<label><input type="checkbox" class="search_libs" checked="checked" value="StdLib"/> StdLib</label><br/>
+						<label><input type="checkbox" class="search_libs" checked="checked" value="TCPIP"/> TCPIP</label><br/>
+					</td>
+					<td id="libs-misc">
+						<label><input type="checkbox" class="search_libs" checked="checked" value="CleanSerial"/> CleanSerial</label><br/>
+						<label><input type="checkbox" class="search_libs" checked="checked" value="CleanTypeUnifier"/> CleanTypeUnifier</label><br/>
+						<label><input type="checkbox" class="search_libs" checked="checked" value="CleanPrettyPrint"/> CleanPrettyPrint</label><br/>
+						<label><input type="checkbox" class="search_libs" checked="checked" value="Cloogle"/> Cloogle</label><br/>
+						<label><input type="checkbox" class="search_libs" checked="checked" value="GraphCopy"/> GraphCopy</label><br/>
+						<label><input type="checkbox" class="search_libs" checked="checked" value="ObjectIO"> ObjectIO</label><br/>
+						<label><input type="checkbox" class="search_libs" checked="checked" value="Platform"/> Platform</label><br/>
+						<label><input type="checkbox" class="search_libs" checked="checked" value="Sapl"/> Sapl</label><br/>
+						<label><input type="checkbox" class="search_libs" checked="checked" value="SoccerFun"> SoccerFun</label><br/>
+						<label><input type="checkbox" class="search_libs" checked="checked" value="iTasks"/> iTasks</label>
+					</td>
+				</tr>
+			</table>
 		</div>
 	</form>
 	<div id="search_results"></div>

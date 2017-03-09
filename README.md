@@ -8,19 +8,25 @@ Use any of the available frontends:
 - Web app at [cloogle.org](https://cloogle.org/).
 - The `!cloogle` bang on DuckDuckGo.
 - [@CloogleBot](https://telegram.me/CloogleBot) on Telegram (see
-	[camilstaps/CloogleBot](https://github.com/camilstaps/CloogleBot)).
-- [KDercksen/cloogle-cli](https://github.com/KDercksen/cloogle-cli), a command
-	line interface to the api.
+	[CloogleBot](https://github.com/clean-cloogle/CloogleBot)).
+- [cloogle-cli](https://github.com/clean-cloogle/cloogle-cli), a command line
+	interface to the api.
 - The `:Cloogle` command in
 	[camilstaps/vim-clean](https://github.com/camilstaps/vim-clean).
+- An email to `query@cloogle.org` with the query in the subject (see
+	[cloogle-mail](https://github.com/clean-cloogle/cloogle-mail) for the
+	implementation).
+
+For support and/or contact please join us at the `#cloogle` irc channel on
+[freenode](https://freenode.net)
 
 ---
 
 ### Readme contents
 
 - [Setup](#setup)
-- [API specification of the PHP wrapper](#api-specification-for-developers)
-- [API specification of the Clean backend](#talking-with-the-clean-backend-directly)
+- [HTTP API Specification](#http-api-specification)
+- [TCP API Specification](#tcp-api-specification)
 - [Statistics](#statistics)
 - [Authors](#authors)
 - [Copyright &amp; License](#copyright--license)
@@ -28,7 +34,6 @@ Use any of the available frontends:
 ---
 
 ## Setup
-
 After installing
 [docker-compose](https://www.docker.com/products/docker-compose) run the
 following command:
@@ -80,6 +85,7 @@ fields:
 	* `151`: invalid request type (should use GET)
 	* `152`: no input (GET variable `str` should be set to the search string)
 	* `153`: the Clean backend timed out
+	* `154`: you have sent too many requests; try again later (DoS protection)
 
 - `msg`
 
@@ -89,8 +95,8 @@ fields:
 
 	An array of search results. A result is an array of three elements. The first
 	determines the kind of result. It may be `FunctionResult`, `TypeResult`,
-	`ClassResult` or `MacroResult`. The second contains general data, in
-	particular the following fields:
+	`ClassResult`, `MacroResult` or `ModuleResult`. The second contains general
+	data, in particular the following fields:
 
 	* `library`
 	* `modul`: the module the result was found in (not a typo)
@@ -100,9 +106,10 @@ fields:
 		better)
 
 	The third element of the array contains data specific to the kind of result.
-	It is easiest to look in `CloogleServer.icl` at the types
-	`FunctionResultExtras`, `TypeResultExtras`, `ClassResultExtras` and
-	`MacroResultExtras` to get an idea of the fields that may be returned.
+	It is easiest to look in `backend/Cloogle.dcl` at the types
+	`FunctionResultExtras`, `TypeResultExtras`, `ClassResultExtras`,
+	`MacroResultExtras` and `ModuleResultExtras` to get an idea of the fields
+	that may be returned.
 
 - `more_available`
 
@@ -124,9 +131,9 @@ JSON request with at least one of the following fields:
 * `name`, the name of the function to search for.
 * `className`, the name of the class to search for.
 * `typeName`, the name of the type to search for.
-* `libraries`, a list of two elements:
-	* A list of names of libraries to search in
-	* A boolean, whether language builtins should be searched or not.
+* `libraries`, a list of names of libraries to search in.
+* `include_builtins`, a boolean, whether language builtins should be searched or not.
+* `include_core`, a boolean, whether library cores should be searched or not.
 * `modules`, a list of names of modules to search in.
 * `page`: 0 for the first *n* results, 1 for the next *n*, etc.
 
@@ -138,8 +145,16 @@ The Clean backend will return a JSON string, similar to the output of the PHP
 script described above. The error codes above 150 are specific to the script
 and cannot be returned by the Clean backend.
 
-## Authors
+## Statistics
+A websocket server on port 31216 provides you with the realtime log.
 
+On [cloogle.org/stats/live.html](https://cloogle.org/stats/live.html), a
+realtime usage chart is shown.
+
+For longterm statistics you can see
+[cloogle.org/stats/longterm.html](https://cloogle.org/stats/longterm.html).
+
+## Authors
 Maintainers:
 
 - [dopefishh](https://github.com/dopefishh)
@@ -150,6 +165,5 @@ Contributors:
 - [KDercksen](https://github.com/KDercksen) (searching on module; help text)
 
 ## Copyright &amp; License
-
 Copyright &copy; Mart Lubbers and Camil Staps.
 Licensed under MIT; See the `LICENSE` file.

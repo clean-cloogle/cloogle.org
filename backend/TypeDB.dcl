@@ -28,8 +28,10 @@ from Type import ::Type, ::TypeVar, ::TVAssignment, ::TypeDef, class print(..),
            , macro_extras :: TypeExtras
            }
 
-:: Location = Location Library Module LineNr Name
-            | Builtin                        Name
+:: Location = Location Library Module LineNr LineNr Name
+            | Builtin                               Name
+
+:: ModuleInfo = { is_core :: Bool }
 
 :: Name         :== String
 :: Library      :== String
@@ -37,14 +39,14 @@ from Type import ::Type, ::TypeVar, ::TVAssignment, ::TypeDef, class print(..),
 :: Class        :== String
 :: LineNr       :== Maybe Int
 
-derive gEq TypeDB
-
 instance zero TypeDB
 instance zero TypeExtras
+instance zero ModuleInfo
 
 instance print (Name, ExtendedType)
 
 getName :: Location -> Name
+isBuiltin :: Location -> Bool
 
 functionCount :: TypeDB -> Int
 macroCount :: TypeDB -> Int
@@ -52,6 +54,7 @@ classCount :: TypeDB -> Int
 instanceCount :: TypeDB -> Int
 typeCount :: TypeDB -> Int
 deriveCount :: TypeDB -> Int
+moduleCount :: TypeDB -> Int
 
 filterLocations :: (Location -> Bool) TypeDB -> TypeDB
 
@@ -70,9 +73,9 @@ putMacros :: [(Location, Macro)] TypeDB -> TypeDB
 findMacro` :: (Location Macro -> Bool) TypeDB -> [(Location, Macro)]
 findMacro`` :: [(Location Macro -> Bool)] TypeDB -> [(Location, Macro)]
 
-getInstances :: Class TypeDB -> [([Type], [Location])]
-putInstance :: Class [Type] Location TypeDB -> TypeDB
-putInstances :: [(Class, [Type], Location)] TypeDB -> TypeDB
+getInstances :: Class TypeDB -> [([(Type,String)], [Location])]
+putInstance :: Class [(Type,String)] Location TypeDB -> TypeDB
+putInstances :: [(Class, [(Type,String)], Location)] TypeDB -> TypeDB
 
 getClass :: Location TypeDB -> Maybe ([TypeVar],ClassContext,[(Name,ExtendedType)])
 putClass :: Location [TypeVar] ClassContext [(Name,ExtendedType)] TypeDB -> TypeDB
@@ -94,19 +97,24 @@ putTypes :: [(Location, TypeDef)] TypeDB -> TypeDB
 findType :: Name TypeDB -> [(Location, TypeDef)]
 findType` :: (Location TypeDef -> Bool) TypeDB -> [(Location, TypeDef)]
 findType`` :: [(Location TypeDef -> Bool)] TypeDB -> [(Location, TypeDef)]
+allTypes :: (TypeDB -> [TypeDef])
 
 resolveTypeSynonyms :: Type TypeDB -> Type
 
-getDerivations :: Name TypeDB -> [(Type, [Location])]
-putDerivation :: Name Type Location TypeDB -> TypeDB
-putDerivations :: Name [(Type, Location)] TypeDB -> TypeDB
-putDerivationss :: [(Name, [(Type, Location)])] TypeDB -> TypeDB
+getDerivations :: Name TypeDB -> [(Type, String, [Location])]
+putDerivation :: Name Type String Location TypeDB -> TypeDB
+putDerivations :: Name [(Type, String, Location)] TypeDB -> TypeDB
+putDerivationss :: [(Name, [(Type, String, Location)])] TypeDB -> TypeDB
+
+getModule :: Library Module TypeDB -> Maybe ModuleInfo
+putModule :: Library Module ModuleInfo TypeDB -> TypeDB
+findModule` :: (Library Module ModuleInfo -> Bool) TypeDB -> [(Library, Module, ModuleInfo)]
 
 searchExact :: Type TypeDB -> [(Location, ExtendedType)]
 
-getTypeInstances :: Name TypeDB -> [(Class, [Type], [Location])]
+getTypeInstances :: Name TypeDB -> [(Class, [(Type,String)], [Location])]
 getTypeDerivations :: Name TypeDB -> [(Name, [Location])]
 
 newDb :: TypeDB
 openDb :: *File -> *(Maybe TypeDB, *File)
-saveDb :: TypeDB *File -> *File
+saveDb :: !TypeDB !*File -> *File

@@ -29,7 +29,7 @@ toCacheFile t = (</>) (cache_dir t) o cacheKey
 readCache :: !a *World -> (Maybe b, !*World) | toString a & JSONDecode{|*|} b
 readCache k w
 # (files,w) = seqList [appFst error2mb o readFile (toCacheFile t k) \\ t <- cache_types] w
-= (join o fmap (fromJSON o fromString) $ foldl (<|>) empty files, w)
+= (join $ fromJSON <$> fromString <$> foldl (<|>) empty files, w)
 
 writeCache :: CacheType !a !b -> *World -> *World | toString a & JSONEncode{|*|} b
 writeCache t k v = snd o writeFile (toCacheFile t k) (toString $ toJSON v)

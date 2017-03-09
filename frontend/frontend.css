@@ -1,0 +1,81 @@
+body {
+	color: #222;
+}
+
+#helptext {
+	margin-bottom: 1em;
+}
+
+#helptext code, #helptext .code {
+	background-color: #f9f2f4;
+	font-family: monospace;
+	font-size: 90%;
+	padding: 1px 4px;
+}
+
+#helptext td.description {
+	padding-left: 1em;
+}
+
+a.hidden {
+	text-decoration: none;
+}
+
+#suggestions {
+	margin: 10px 0;
+}
+
+td.wide {
+	width: 99%;
+}
+
+th {
+	padding-right: 1em;
+	text-align: left;
+	vertical-align: top;
+	white-space: nowrap;
+}
+
+#lib_selection th {
+	text-align: center;
+}
+
+#lib_selection td {
+	font-size: 90%;
+	vertical-align: top;
+}
+
+.core-module {
+	font-style: italic;
+}
+
+#search_results {
+	margin-top: 1.5em;
+}
+
+#search_results a {
+	color: #26c;
+}
+
+.result-basic {
+	background-color: #e8e8e8;
+	padding: .2em;
+}
+
+.result-extra {
+	background-color: #f4f4f4;
+	font-size: 85%;
+	padding-left: .2em;
+}
+
+.result-extra.toggle-container {
+	padding-left: 1.2em;
+}
+
+.result-extra .toggler {
+	margin-left: -1em;
+}
+
+.result-code {
+	margin: 1em 0 1.5em 1em;
+}

@@ -100,11 +100,12 @@
 							{ type: 'day',   count: 1, text: '1d' },
 							{ type: 'day',   count: 7, text: '1w' },
 							{ type: 'month', count: 1, text: '1m' },
+							{ type: 'month', count: 3, text: '3m' },
 							{ type: 'year',  count: 1, text: '1y' },
 							{ type: 'all',             text: 'All' }
 						],
 						inputEnabled: false,
-						selected: 3
+						selected: 4
 					},
 					xAxis: {
 						events: { afterSetExtremes: afterSetExtremes },
@@ -195,7 +196,17 @@
 					legend: { enabled: false },
 					title: { text: 'Per operating system' },
 					xAxis: {
-						categories: ['Linux', 'Macintosh', 'Windows', 'CloogleBot', 'vim-clean', 'Other']
+						categories:
+							[ 'Linux'
+							, 'Macintosh'
+							, 'Windows'
+							, 'CloogleBot'
+							, 'vim-clean'
+							, 'cloogle-cli'
+							, 'CloogleMail'
+							, 'cloogle-irc'
+							, 'Other'
+							]
 					},
 					yAxis: {
 						title: { enabled: false },

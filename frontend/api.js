@@ -1,16 +1,27 @@
 var form_str = document.getElementById('search_str');
-var form_libs = document.getElementById('search_libs');
+var form_libs = document.getElementsByClassName('search_libs');
 var sform = document.getElementById('search_form');
 var sresults = document.getElementById('search_results');
 var advanced_checkbox = document.getElementById('search_advanced');
+var include_builtins_checkbox = document.getElementById('include_builtins');
+var include_core_checkbox = document.getElementById('include_core');
 var refresh_on_hash = true;
 
 var old_str = null;
 var old_libs = null;
+var old_include_builtins = null;
+var old_include_core = null;
 
-function toggle(name) {
-	var e = document.getElementById(name);
-	e.style.display = e.style.display == 'block' ? 'none' : 'block';
+function toggleLibSelection(className) {
+	var boxes =
+		document.getElementById(className).getElementsByClassName('search_libs');
+	var checkAll = true;
+	for (var i in boxes)
+		if (boxes[i].checked)
+			checkAll = false;
+
+	for (var i in boxes)
+		boxes[i].checked = checkAll;
 }
 
 function highlightCallback(span, cls, str) {
@@ -39,19 +50,54 @@ function highlightCallback(span, cls, str) {
 	}
 }
 
-var instancesIdCounter = 0;
-var derivationsIdCounter = 0;
-function getResults(str, libs, page) {
+function makeSummary(hidden) {
+	var sumlen = 0;
+	var restore = false;
+	for (var i in hidden)
+		if (hidden[i].length == 3)
+			sumlen++;
+	if (sumlen != hidden.length) {
+		hidden.push([null, null, 'more information']);
+		restore = true;
+	}
+
+	var summ = '';
+	for (var i in hidden) {
+		if (hidden[i].length == 3) {
+			summ += hidden[i][2];
+			if (i == sumlen - 2)
+				summ += ' and ';
+			else if (i < sumlen - 2)
+				summ += ', ';
+			sumlen--;
+		}
+	}
+
+	if (restore)
+		hidden.splice(hidden.length-1, 1);
+
+	return summ;
+}
+
+function getResults(str, libs, include_builtins, include_core, page) {
 	if (str == null)  str  = old_str;
 	if (libs == null) libs = old_libs;
+	if (include_builtins == null) include_builtins = old_include_builtins;
+	if (include_core == null) include_core = old_include_core;
 
 	old_str  = str;
 	old_libs = libs;
+	old_include_builtins = include_builtins;
+	old_include_core = include_core;
 
 	var url = 'api.php' +
 		'?str='  + encodeURIComponent(str) +
-		(libs.length > 0 ? ('&lib=' + encodeURIComponent(libs[0])) : '') +
-		(libs.length > 0 ? ('&libs_builtin=' + encodeURIComponent(libs[1])) : '') +
+		(libs != -1
+			? ('&lib=' + encodeURIComponent(libs)) : '') +
+		(include_builtins != -1
+			? '&include_builtins=' + encodeURIComponent(include_builtins) : '') +
+		(include_core != -1
+			? '&include_core=' + encodeURIComponent(include_core) : '') +
 		'&page=' + page;
 	var xmlHttp = new XMLHttpRequest();
 
@@ -68,7 +114,7 @@ function getResults(str, libs, page) {
 		for (i in d) {
 			if (d[i].length == 1) {
 				html += '<tr><td colspan="2">' + d[i][0] + '</td></tr>';
-			} else if (d[i].length == 2) {
+			} else if (d[i].length >= 2) {
 				html += '<tr><th>' + d[i][0] + ': </th><td class="wide">' +
 					d[i][1] + '</td></tr>';
 			}
@@ -77,25 +123,32 @@ function getResults(str, libs, page) {
 		return html;
 	}
 
-	var makeInstanceTable = function (id, list, highlightf, highlightstart) {
-		var instances = '<a href="javascript:toggle(\'' + id + '\')">show / hide</a>';
-		instances += '<table id="' + id + '" style="display:none;">';
+	var makeInstanceTable = function (list, highlightf, highlightstart) {
+		if (list.length == 0)
+			return '0';
+
+		var instances = '<table>';
+
 		var makeInstanceUrl = function (loc) {
 			var dclUrl =
 				'src/view.php?lib=' + encodeURIComponent(loc[0]) +
-				'&mod=' + encodeURIComponent(loc[1]) +
-				'&hl';
-			var iclUrl = dclUrl + '&icl';
-			if (loc[2].length > 1) {
-				dclUrl += '&line=' + loc[2][1] + '#line-' + loc[2][1];
-			}
-			return '<a target="_blank" ' +
-				'href="' + dclUrl + '" ' +
-				'title="' + loc[0] + '">' + loc[1] + '</a> (' +
-				'<a target="_blank" href="' + iclUrl + '">icl</a>)';
+				'#' + encodeURIComponent(loc[1]);
+			var iclUrl = dclUrl + ';icl';
+
+			if (loc[2].length > 1)
+				dclUrl += ';line=' + loc[2][1];
+			if (loc[3].length > 1)
+				iclUrl += ';line=' + loc[3][1];
+
+			return loc[1] +
+				' (<a target="_blank" href="' + dclUrl + '">dcl' +
+					(loc[2].length > 1 ? ':' + loc[2][1] : '') + '</a>; ' +
+				'<a target="_blank" href="' + iclUrl + '">icl' +
+					(loc[3].length > 1 ? ':' + loc[3][1] : '') + '</a>) ' +
+				'(' + loc[0] + ')';
 		}
+
 		for (var i in list) {
-			console.log(list[i][0]);
 			instances += '<tr><th>';
 			if (typeof list[i][0] === 'object') {
 				for (var k in list[i][0]) {
@@ -131,139 +184,151 @@ function getResults(str, libs, page) {
 				}
 				locs += makeInstanceUrl(loc);
 			}
-			instances += '<td>in: ' + locs + '</td></tr>';
+
+			instances += '<td>&nbsp;in ' + locs + '</td></tr>';
 		}
 		instances += '</table>';
+
 		return instances;
+	}
+
+	var makeGenericResultHTML = function (basic, meta, hidden, code) {
+		var dclUrl =
+			'src/view.php?lib=' + encodeURIComponent(basic['library']) +
+			'#' + encodeURIComponent(basic['modul']);
+		var iclUrl = dclUrl + ';icl';
+		var dclLine = '';
+		var iclLine = '';
+		if ('dcl_line' in basic) {
+			dclUrl += ';line=' + basic['dcl_line'];
+			dclLine = ':' + basic['dcl_line'];
+		}
+		if ('icl_line' in basic) {
+			iclUrl += ';line=' + basic['icl_line'];
+			iclLine = ':' + basic['icl_line'];
+		}
+
+		var basicText = basic['library'] + ': ' +
+				basic['modul'] + ' (' +
+				'<a href="' + dclUrl + '" target="_blank">dcl' + dclLine + '</a>; ' +
+				'<a href="' + iclUrl + '" target="_blank">icl' + iclLine + '</a>)';
+
+		if ('builtin' in basic && basic['builtin'])
+			basicText = [['Clean core (actual implementation may differ)']];
+
+		var toggler = '';
+		if (hidden.length > 0) {
+			toggler = '<div class="toggler" title="More details" onclick="toggle(this)">' +
+				'<span class="toggle-icon">&#x229e;</span>' + makeSummary(hidden) +
+				'</div>';
+		}
+
+		return '<div class="result">' +
+				'<div class="result-basic">' + basicText + '</div>' +
+				'<div class="result-extra">' + meta.join('<br/>') + '</div>' +
+				'<div class="result-extra toggle-container">' +
+					toggler +
+					'<div class="togglee">' + makeTable(hidden) + '</div></div>' +
+				'<pre class="result-code">' + code + '</pre>' +
+			'</div>';
 	}
 
 	var makeResultHTML = function (result) {
 		var kind = result[0];
 		var basic = result[1][0];
-		var specific = result[1][1];
+		var extra = result[1][1];
 
-		var dclUrl =
-			'src/view.php?lib=' + encodeURIComponent(basic['library']) +
-			'&mod=' + encodeURIComponent(basic['modul']) +
-			'&hl';
-		var iclUrl = dclUrl + '&icl';
-		if ('dcl_line' in basic) {
-			dclUrl += '&line=' + basic['dcl_line'] + '#line-' + basic['dcl_line'];
-		}
-
-		var basicData = [
-			['Library',  basic['library']],
-			['Filename', '<a href="' + dclUrl + '" target="_blank">' +
-				basic['filename'] + ('dcl_line' in basic ? ':' + basic['dcl_line'] : '') +
-				'</a> (<a href="' + iclUrl + '" target="_blank">icl</a>)'],
-			['Module',   basic['modul']],
-			['Distance', basic['distance']]
-		];
-
-		if ('builtin' in basic && basic['builtin']) {
-			basicData.splice(0,3);
-			basicData.push(['Builtin', 'yes (actual implementation may differ)']);
-		}
+		var meta = [];
+		var hidden = [];
 
 		switch (kind) {
 			case 'FunctionResult':
-				var specificData = [];
-				specificData.push(
-					('cls' in specific ?
-						[ 'Class', '<code>' +
-						  highlightClassDef(specific['cls']['cls_name'] +
-							  ' ' + specific['cls']['cls_vars'].join(' '),
-							  highlightCallback, 'className') + '</code>'] :
-						[]),
-					('unifier' in specific &&
-						(specific['unifier'][0].length > 0 ||
-						 specific['unifier'][1].length > 0) ?
-						['Unifier', makeUnifier(specific['unifier'])] :
-						[])
-				);
-				if ('generic_derivations' in specific) {
-					var derivationsId = 'derivations-' + (derivationsIdCounter++);
+				if ('cls' in extra)
+					meta.push('Class: <code>' +
+							highlightClassDef(extra['cls']['cls_name'] +
+							' ' + extra['cls']['cls_vars'].join(' '),
+							highlightCallback, 'className') + '</code>');
+
+				if ('unifier' in extra &&
+					(extra['unifier'][0].length > 0 || extra['unifier'][1].length > 0))
+					meta.push('Unifier: ' + makeUnifier(extra['unifier']));
+
+				if ('generic_derivations' in extra) {
 					var derivations = makeInstanceTable(
-							derivationsId,
-							specific['generic_derivations'],
+							extra['generic_derivations'],
 							highlightType);
-					specificData.push(['Derivations', derivations]);
+					hidden.push(['Derivations', derivations,
+							pluralise(extra['generic_derivations'].length, 'derivation')]);
 				}
+
 				var hl_entry = 'start';
-				if ('constructor_of' in specific) {
-					specificData.push([
-						'This function is a type constructor of <code>' +
-						highlightFunction(':: ' + specific['constructor_of'],
-							highlightCallback) + '</code>.'
-					]);
+				if ('constructor_of' in extra) {
+					meta.push('This is a type constructor of <code>' +
+							highlightFunction(':: ' + extra['constructor_of'],
+							highlightCallback) + '</code>.');
 					hl_entry = 'startConstructor';
-				} else if ('recordfield_of' in specific) {
-					specificData.push([
-						'This is a record field of <code>' +
-						highlightFunction(':: ' + specific['recordfield_of'],
-							highlightCallback) + '</code>.'
-					]);
+				} else if ('recordfield_of' in extra) {
+					meta.push('This is a record field of <code>' +
+							highlightFunction(':: ' + extra['recordfield_of'],
+							highlightCallback) + '</code>.');
 					hl_entry = 'startRecordField';
 				}
-				return '<hr/>' +
-					makeTable(basicData.concat(specificData)) +
-					'<code>' +
-					highlightFunction(specific['func'], highlightCallback, hl_entry) +
-					'</code>';
-				break;
+
+				return makeGenericResultHTML(basic, meta, hidden,
+						highlightFunction(extra['func'], highlightCallback, hl_entry));
+
 			case 'TypeResult':
-				var specificData = [];
-				if (specific['type_instances'].length > 0) {
-					var instancesId = 'instances-' + (instancesIdCounter++);
-					specificData.push(['Instances',
+				if (extra['type_instances'].length > 0) {
+					hidden.push([
+							'Instances',
 							makeInstanceTable(
-								instancesId,
-								specific['type_instances'],
-								highlightClassDef, 'className')]);
+								extra['type_instances'],
+								highlightClassDef, 'className'),
+							pluralise(extra['type_instances'].length, 'instance')]);
 				}
-				if (specific['type_derivations'].length > 0) {
-					var derivationsId = 'derivations-' + (derivationsIdCounter++);
-					specificData.push(['Derivations',
+
+				if (extra['type_derivations'].length > 0) {
+					hidden.push([
+							'Derivations',
 							makeInstanceTable(
-								derivationsId,
-								specific['type_derivations'],
-								highlightFunction, 'generic')]);
+								extra['type_derivations'],
+								highlightFunction, 'generic'),
+							pluralise(extra['type_derivations'].length, 'derivation')]);
 				}
-				return '<hr/>' +
-					makeTable(basicData.concat(specificData)) +
-					'<pre>' +
-					highlightTypeDef(specific['type'], highlightCallback) +
-					'</pre>';
-				break;
+
+				return makeGenericResultHTML(basic, [], hidden,
+						highlightTypeDef(extra['type'], highlightCallback));
+
 			case 'ClassResult':
-				var instancesId = 'instances-' + (instancesIdCounter++);
-				var instances = makeInstanceTable(
-						instancesId,
-						specific['class_instances'],
-						highlightType);
-				var specificData = [['Instances', instances]];
-				var html = '<hr/>' +
-					makeTable(basicData.concat(specificData)) + '<pre>' +
-					highlightClassDef(
-							'class ' + specific['class_heading'] +
-							(specific['class_funs'].length > 0 ? ' where' : ''),
-							highlightCallback) +
-					'<br/>';
-				for (var i in specific['class_funs']) {
-					html += '<br/>    ' +
-						highlightFunction(specific['class_funs'][i],
-								highlightCallback);
-				}
-				html += '</pre>';
-				return html;
-				break;
+				hidden.push([
+						'Instances',
+						makeInstanceTable(extra['class_instances'], highlightType),
+						pluralise(extra['class_instances'].length, 'instance')]);
+
+				var html = highlightClassDef(
+						'class ' + extra['class_heading'] +
+						(extra['class_funs'].length > 0 ? ' where' : ''),
+						highlightCallback) + '\n';
+				for (var i in extra['class_funs'])
+					html += highlightFunction(
+							'\n    ' + extra['class_funs'][i].replace(/\n/g, '\n    '),
+							highlightCallback, 'macro');
+
+				return makeGenericResultHTML(basic, [], hidden, html);
+
 			case 'MacroResult':
-				return '<hr/>' +
-					makeTable(basicData) +
-					'<pre>' +
-					highlightMacro(specific['macro_representation'], highlightCallback) +
-					'</pre>';
-				break;
+				return makeGenericResultHTML(basic, [], [],
+						highlightFunction(extra['macro_representation'], highlightCallback, 'macro'));
+
+			case 'ModuleResult':
+				if (extra['module_is_core'])
+					meta.push(['<span class="core-module">' +
+							'This is a core module and should usually only be used internally.' +
+							'</span>']);
+
+				return makeGenericResultHTML(basic, [], hidden,
+						highlightFunction('import ' + basic['modul']));
+
 			default:
 				return '';
 		}
@@ -302,7 +367,7 @@ function getResults(str, libs, page) {
 				var par = elem.parentNode
 				if (responsedata['more_available'] != 0) {
 					par.innerHTML += '<div id="page-' + (page+1) + '">' +
-						'<p id="more"><a href="javascript:getResults(null,null,' + (page+1) +
+						'<p id="more"><a href="javascript:getResults(null,null,null,null,' + (page+1) +
 						')">' + responsedata['more_available'] + ' more...</a></p>' +
 						'</div>';
 				}
@@ -343,20 +408,17 @@ function makeUnifier(ufr) {
 
 function getLibs() {
 	if (!advanced_checkbox.checked)
-		return [];
+		return -1;
 
-	var builtin = false;
 	var libs = [];
 	for (var i = 0; i < form_libs.length; i++) {
-		if (form_libs[i].selected) {
-			if (form_libs[i].value == '__builtin')
-				builtin = true;
-			else
+		if (form_libs[i].checked) {
+			if (form_libs[i].value != '__builtin')
 				libs.push(form_libs[i].value);
 		}
 	}
 
-	return [libs, builtin];
+	return libs;
 }
 
 function formsubmit() {
@@ -376,22 +438,34 @@ function formsubmit() {
 		}
 
 		var libs = getLibs();
+		var include_builtins = -1;
+		var include_core = -1;
+		if (advanced_checkbox.checked) {
+			var include_builtins = include_builtins_checkbox.checked;
+			var include_core = include_core_checkbox.checked;
+		}
+
 		sresults.innerHTML += '<div id="page-0"></div>';
-		getResults(q, libs, 0);
+		getResults(q, libs, include_builtins, include_core, 0);
 	}
 	return false;
 };
 
 advanced_checkbox.onchange = function () {
-	toggle('advanced');
+	var el = document.getElementById('advanced');
+	el.style.display = this.checked ? 'block' : 'none';
+}
+
+function urldecode(s){
+	return decodeURIComponent(s.replace('+', '%20'));
 }
 
 window.onload = function () {
 	sform.onsubmit = formsubmit;
-	var str = decodeURIComponent(document.location.hash);
+	var str = urldecode(document.location.hash);
 	if(str !== ''){
 		str = str.substring(1);
-		form_str.value = decodeURIComponent(str);
+		form_str.value = urldecode(str);
 		formsubmit();
 	}
 
@@ -405,7 +479,7 @@ window.onhashchange = function () {
 	if (!refresh_on_hash) {
 		refresh_on_hash = true;
 	} else {
-		var str = decodeURIComponent(document.location.hash);
+		var str = urldecode(document.location.hash);
 		form_str.value = str.substring(1);
 		formsubmit();
 	}

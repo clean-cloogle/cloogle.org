@@ -1,31 +1,65 @@
-<?php
-define('CLEANHOME', '/opt/clean');
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Library browser</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+	<meta name="viewport" content="width=device-width, initial-scale=1"/>
+	<meta name="description" content="Cloogle is the unofficial Clean language search engine"/>
+	<meta name="keywords" content="Clean,Clean language,Concurrent Clean,search,functions,search engine,programming language,clean platform,iTasks,cloogle,hoogle"/>
+	<script src="../common.js" type="text/javascript" defer="defer"></script>
+	<script src="view.js" type="text/javascript" defer="defer"></script>
+	<link rel="stylesheet" href="../common.css" type="text/css"/>
+	<link rel="stylesheet" href="view.css" type="text/css"/>
+</head>
+<body>
+	<div id="sidebar">
+		<h3>Library browser</h3>
+		<select id="select-lib">
+			<?php
+			$alllibs = [
+				'Clean 2.4' => [
+					'StdEnv',
+					'ArgEnv',
+					'Directory',
+					'Dynamics',
+					'Gast',
+					'Generics',
+					'MersenneTwister',
+					'StdLib',
+					'TCPIP',
+				],
+				'Miscellaneous' => [
+					'CleanPrettyPrint',
+					'CleanSerial',
+					'CleanTypeUnifier',
+					'Cloogle',
+					'GraphCopy',
+					'ObjectIO',
+					'Platform',
+					'Sapl',
+					'SoccerFun',
+					'iTasks',
+				]
+			];
 
-if (!isset($_REQUEST['lib']) || !isset($_REQUEST['mod'])) {
-	die('Add ?lib and ?mod.');
-}
-
-$iclordcl = isset($_REQUEST['icl']) ? 'icl' : 'dcl';
-$highlight = isset($_REQUEST['hl']) ? true : false;
-$hl_lines = isset($_REQUEST['line']) ? 'hl_lines=' . $_REQUEST['line'] : '';
-
-$lib = preg_replace('/[^\\w\\/\\-]/', '', $_REQUEST['lib']);
-$mod = str_replace('.', '/', $_REQUEST['mod']);
-$mod = preg_replace('/[^\\w\\/]/', '', $mod);
-
-$fname = CLEANHOME . '/lib/' . $lib . '/' . $mod . '.' . $iclordcl;
-$efname = escapeshellarg($fname);
-
-if ($highlight) {
-	$out = [];
-	$code = -1;
-	$cmd = 'pygmentize -v -l clean -f html -O full,linenos,linespans=line,' . $hl_lines . ',encoding=iso8859';
-	exec("$cmd $efname", $out, $code);
-	$out = array_filter($out, function($str) { return $str != '<h2></h2>'; });
-	echo implode("\n", $out);
-} else {
-	header('Content-Type: text/plain');
-	echo file_get_contents($fname);
-}
+			foreach ($alllibs as $col => $libs) {
+				echo '<optgroup label="' . $col . '">';
+				foreach ($libs as $lib) {
+					$selected = '';
+					if ($lib == $_GET['lib'])
+						$selected = ' selected="selected"';
+					echo '<option value="' . $lib . '"' . $selected . '>' . $lib . '</option>';
+				}
+				echo '</optgroup>';
+			}
+			?>
+		</select>
+		<br/>
+		<label for="icl"><input id="icl" type="checkbox"/> Show implementation</label>
+		<hr/>
+		<?php include_once('lib.php'); ?>
+	</div><div id="viewer">
+		<?php include_once('src.php'); ?>
+	</div>
+</body>
+</html>

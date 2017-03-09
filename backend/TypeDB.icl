@@ -2,7 +2,7 @@ implementation module TypeDB
 
 // Standard libraries
 from StdFunc import o, const
-import StdBool, StdFile, StdList, StdOrdList, StdOverloaded, StdTuple
+import StdBool, StdFile, StdList, StdMisc, StdOrdList, StdOverloaded, StdTuple
 
 import Control.Applicative
 import Control.Monad
@@ -24,11 +24,12 @@ import Type
 	    functionmap  :: Map Location ExtendedType
 	  , macromap     :: Map Location Macro
 	  , classmap     :: Map Location ([TypeVar],ClassContext,[(Name, ExtendedType)])
-	  , instancemap  :: Map Class [([Type], [Location])]
+	  , instancemap  :: Map Class [([(Type,String)], [Location])]
 	  , typemap      :: Map Location TypeDef
-	  , derivemap    :: Map Name [(Type, [Location])]
+	  , derivemap    :: Map Name [(Type, String, [Location])]
+	  , modulemap    :: Map (Library, Module) ModuleInfo
 	    // Derived maps
-	  , instancemap` :: Map Name [(Class, [Type], [Location])]
+	  , instancemap` :: Map Name [(Class, [(Type,String)], [Location])]
 	  , derivemap`   :: Map Name [(Name, [Location])]
 	  }
 
@@ -38,14 +39,14 @@ printersperse ia a bs = intercalate (print False a) (map (print ia) bs)
 (--) infixr 5 :: a b -> [String] | print a & print b
 (--) a b = print False a ++ print False b
 
-derive gEq ClassOrGeneric, Location, Type, TypeDB, TypeExtras, Priority,
+derive gEq ClassOrGeneric, Location, Type, TypeExtras, Priority,
 	ExtendedType, TypeDef, TypeDefRhs, RecordField, Constructor, Kind, Macro
 derive JSONEncode ClassOrGeneric, Location, Type, TypeDB, TypeExtras,
 	Priority, ExtendedType, TypeDef, TypeDefRhs, RecordField, Constructor,
-	Kind, Macro
+	Kind, Macro, ModuleInfo
 derive JSONDecode ClassOrGeneric, Location, Type, TypeDB, TypeExtras,
 	Priority, ExtendedType, TypeDef, TypeDefRhs, RecordField, Constructor,
-	Kind, Macro
+	Kind, Macro, ModuleInfo
 
 instance zero TypeDB
 where
@@ -55,28 +56,17 @@ where
 	       , instancemap  = newMap
 	       , typemap      = newMap
 	       , derivemap    = newMap
+	       , modulemap    = newMap
 	       , instancemap` = newMap
 	       , derivemap`   = newMap
 	       }
 
-instance < (Maybe a) | < a
-where
-	(<) (Just a) (Just b) = a < b
-	(<) (Just _) Nothing  = True
-	(<) Nothing  _        = False
-
-instance < Location
-where
-	(<) (Location a b c d) (Location e f g h) = ((a,b),(c,d)) < ((e,f),(g,h))
-	(<) (Location _ _ _ _) (Builtin _)        = True
-	(<) (Builtin _)        (Location _ _ _ _) = False
-	(<) (Builtin a)        (Builtin b)        = a < b
-
-derive gLexOrd Maybe, ClassOrGeneric, Kind, Type
+derive gLexOrd Location, Maybe, ClassOrGeneric, Kind, Type
+instance < Location where (<) a b = (a =?= b) === LT
+instance < (Maybe a) | gLexOrd{|*|} a where (<) a b = (a =?= b) === LT
 instance < Type where (<) a b = (a =?= b) === LT
-
-instance < (a,b,c,d) | Ord a & Ord b & Ord c & Ord d
-where (<) (a,b,c,d) (e,f,g,h) = ((a,b),(c,d)) < ((e,f),(g,h))
+instance < (a,b,c,d) | gLexOrd{|*|} a & gLexOrd{|*|} b & gLexOrd{|*|} c & gLexOrd{|*|} d
+	where (<) a b = (a =?= b) === LT
 
 instance == Location
 where
@@ -90,6 +80,8 @@ where
 	       , te_generic_vars   = Nothing
 	       , te_representation = Nothing
 	       }
+
+instance zero ModuleInfo where zero = {is_core = False}
 
 instance print TypeExtras
 where
@@ -109,8 +101,12 @@ where
 		| otherwise            = f
 
 getName :: Location -> Name
-getName (Location _ _ _ name) = name
-getName (Builtin name)        = name
+getName (Location _ _ _ _ name) = name
+getName (Builtin name)          = name
+
+isBuiltin :: Location -> Bool
+isBuiltin (Builtin _) = True
+isBuiltin _           = False
 
 functionCount :: TypeDB -> Int
 functionCount {functionmap} = mapSize functionmap
@@ -130,6 +126,9 @@ typeCount {typemap} = mapSize typemap
 deriveCount :: TypeDB -> Int
 deriveCount {derivemap} = sum $ map length $ elems derivemap
 
+moduleCount :: TypeDB -> Int
+moduleCount {modulemap} = mapSize modulemap
+
 
 filterLocations :: (Location -> Bool) TypeDB -> TypeDB
 filterLocations f db
@@ -139,7 +138,8 @@ filterLocations f db
 	  , classmap    = filterLoc db.classmap
 	  , typemap     = filterLoc db.typemap
 	  , instancemap = filtInstLocs <$> db.instancemap
-	  , derivemap   = filtInstLocs <$> db.derivemap
+	  , derivemap   = filtDervLocs <$> db.derivemap
+	  , modulemap   = filtModules db.modulemap
 	  }
 where
 	filterLoc :: ((Map Location a) -> Map Location a)
@@ -150,8 +150,17 @@ where
 	filtInstLocs [(t,ls):rest] = case ls` of
 		[] =          filtInstLocs rest
 		_  = [(t,ls`):filtInstLocs rest]
-	where
-		ls` = filter f ls
+	where ls` = filter f ls
+
+	filtDervLocs :: [(a, b, [Location])] -> [(a, b, [Location])]
+	filtDervLocs [] = []
+	filtDervLocs [(t,s,ls):rest] = case ls` of
+		[] =            filtDervLocs rest
+		_  = [(t,s,ls`):filtDervLocs rest]
+	where ls` = filter f ls
+
+	filtModules :: ((Map (Library, Module) a) -> Map (Library, Module) a)
+	filtModules = filterWithKey (\(l,m) _ -> f (Location l m Nothing Nothing undef))
 
 getFunction :: Location TypeDB -> Maybe ExtendedType
 getFunction loc {functionmap} = get loc functionmap
@@ -189,21 +198,21 @@ findMacro` f {macromap} = toList $ filterWithKey f macromap
 findMacro`` :: [(Location Macro -> Bool)] TypeDB -> [(Location, Macro)]
 findMacro`` fs {macromap} = toList $ foldr filterWithKey macromap fs
 
-getInstances :: Class TypeDB -> [([Type], [Location])]
+getInstances :: Class TypeDB -> [([(Type,String)], [Location])]
 getInstances c {instancemap} = if (isNothing ts) [] (fromJust ts)
 where ts = get c instancemap
 
-putInstance :: Class [Type] Location TypeDB -> TypeDB
+putInstance :: Class [(Type,String)] Location TypeDB -> TypeDB
 putInstance c t l db=:{instancemap}
 	= {db & instancemap=put c (update (getInstances c db)) instancemap}
 where
-	update :: [([Type], [Location])] -> [([Type], [Location])]
+	update :: [([(Type,String)], [Location])] -> [([(Type,String)], [Location])]
 	update []   = [(t,[l])]
 	update [(t`,ls):rest]
 	| t` == t   = [(t`, removeDup [l:ls]):rest]
 	| otherwise = [(t`,ls):update rest]
 
-putInstances :: [(Class, [Type], Location)] TypeDB -> TypeDB
+putInstances :: [(Class, [(Type,String)], Location)] TypeDB -> TypeDB
 putInstances is db = foldr (\(c,ts,l) db -> putInstance c ts l db) db is
 
 getClass :: Location TypeDB -> Maybe ([TypeVar],ClassContext,[(Name,ExtendedType)])
@@ -261,6 +270,9 @@ findType` f {typemap} = toList $ filterWithKey f typemap
 findType`` :: [(Location TypeDef -> Bool)] TypeDB -> [(Location, TypeDef)]
 findType`` fs {typemap} = toList $ foldr filterWithKey typemap fs
 
+allTypes :: (TypeDB -> [TypeDef])
+allTypes = map snd o findType` (\_ _ -> True)
+
 resolveTypeSynonyms :: Type TypeDB -> Type
 resolveTypeSynonyms t db = resolve synonyms t
 where
@@ -295,28 +307,38 @@ where
 		appendArgs (Cons tv args) args`  = Cons tv $ args ++ args`
 		appendArgs t _                   = t
 
-getDerivations :: Name TypeDB -> [(Type, [Location])]
+getDerivations :: Name TypeDB -> [(Type, String, [Location])]
 getDerivations gen {derivemap} = if (isNothing ts) [] (fromJust ts)
 where ts = get gen derivemap
 
-putDerivation :: Name Type Location TypeDB -> TypeDB
-putDerivation gen t loc db=:{derivemap} = {db & derivemap=put gen ts derivemap}
-where ts = removeDup [(t, [loc]) : getDerivations gen db]
+putDerivation :: Name Type String Location TypeDB -> TypeDB
+putDerivation gen t s loc db=:{derivemap} = {db & derivemap=put gen ts derivemap}
+where ts = removeDup [(t, s, [loc]) : getDerivations gen db]
 
-putDerivations :: Name [(Type, Location)] TypeDB -> TypeDB
-putDerivations gen ts db = foldr (\(t,l) db -> putDerivation gen t l db) db ts
+putDerivations :: Name [(Type, String, Location)] TypeDB -> TypeDB
+putDerivations gen ts db = foldr (\(t,s,l) db -> putDerivation gen t s l db) db ts
 
-putDerivationss :: [(Name, [(Type, Location)])] TypeDB -> TypeDB
+putDerivationss :: [(Name, [(Type, String, Location)])] TypeDB -> TypeDB
 putDerivationss ds db = foldr (\(g,ts) db -> putDerivations g ts db) db ds
 
 searchExact :: Type TypeDB -> [(Location, ExtendedType)]
 searchExact t db = filter ((\(ET t` _)->t==t`) o snd) $ toList db.functionmap
 
-getTypeInstances :: Name TypeDB -> [(Class, [Type], [Location])]
+getTypeInstances :: Name TypeDB -> [(Class, [(Type,String)], [Location])]
 getTypeInstances n db = case get n db.instancemap` of (Just cs) = cs; _ = []
 
 getTypeDerivations :: Name TypeDB -> [(Name, [Location])]
 getTypeDerivations n db = case get n db.derivemap` of (Just gs) = gs; _ = []
+
+getModule :: Library Module TypeDB -> Maybe ModuleInfo
+getModule lib mod {modulemap} = get (lib,mod) modulemap
+
+putModule :: Library Module ModuleInfo TypeDB -> TypeDB
+putModule lib mod info db = {db & modulemap = put (lib,mod) info db.modulemap}
+
+findModule` :: (Library Module ModuleInfo -> Bool) TypeDB -> [(Library, Module, ModuleInfo)]
+findModule` f {modulemap} = map (\((l,m),i) -> (l,m,i)) $ toList $
+	filterWithKey (uncurry f) modulemap
 
 newDb :: TypeDB
 newDb = zero
@@ -326,8 +348,8 @@ openDb f
 # (data, f) = freadline f
 = (fromJSON $ fromString data, f)
 
-saveDb :: TypeDB *File -> *File
-saveDb db f = fwrites (toString $ toJSON $ syncDb db) f
+saveDb :: !TypeDB !*File -> *File
+saveDb db f = f <<< (toJSON $ syncDb db)
 
 syncDb :: TypeDB -> TypeDB
 syncDb db=:{instancemap,derivemap}
@@ -339,10 +361,10 @@ where
 	insts = fromList $ map (\cs=:[(t,_,_,_):_] -> (t,[(c,ts,ls) \\ (_,c,ls,ts) <- cs])) $
 		groupBy (\a b -> fst4 a == fst4 b) $ sort
 		[(t,c,ls,ts`)
-			\\ (c,ts) <- toList instancemap, (ts`,ls) <- ts, Type t [] <- ts`]
+			\\ (c,ts) <- toList instancemap, (ts`,ls) <- ts, (Type t [],_) <- ts`]
 	derivs = fromList $ map (\gs=:[(t,_,_):_] -> (t,[(g,ls) \\ (_,g,ls) <- gs])) $
 		groupBy (\a b -> fst3 a == fst3 b) $ sort
-		[(t,g,ls) \\ (g,ts) <- toList derivemap, (Type t [],ls) <- ts]
+		[(t,g,ls) \\ (g,ts) <- toList derivemap, (Type t [],_,ls) <- ts]
 
 app5 f (a,b,c,d,e) :== f a b c d e
 fst4 (a,_,_,_) :== a

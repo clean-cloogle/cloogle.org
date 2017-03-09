@@ -12,6 +12,7 @@ $sql =
 	FROM `log`
 	INNER JOIN `useragent` ON `log`.`useragent_id` = `useragent`.`id`
 	WHERE
+		`responsecode` <> " . E_DOSPROTECT . " AND
 		`date` BETWEEN timestamp('$startTime') AND timestamp('$endTime')
 		AND ";
 
@@ -21,11 +22,17 @@ $oss = [
 	"`useragent` LIKE '%Windows%'",
 	"`useragent` LIKE 'CloogleBot'",
 	"`useragent` LIKE 'vim-clean'",
+	"`useragent` LIKE 'cloogle-cli'",
+	"`useragent` LIKE 'CloogleMail'",
+	"`useragent` LIKE 'cloogle-irc'",
 	"`useragent` NOT LIKE '%Linux%' " .
-		"AND `useragent` NOT LIKE '%Macintosh' " .
-		"AND `useragent` NOT LIKE '%Windows%'" .
-		"AND `useragent` NOT LIKE 'CloogleBot'" .
-		"AND `useragent` NOT LIKE 'vim-clean'"
+		"AND `useragent` NOT LIKE '%Macintosh%' " .
+		"AND `useragent` NOT LIKE '%Windows%' " .
+		"AND `useragent` NOT LIKE 'CloogleBot' " .
+		"AND `useragent` NOT LIKE 'vim-clean' " .
+		"AND `useragent` NOT LIKE 'cloogle-cli' " .
+		"AND `useragent` NOT LIKE 'CloogleMail'" .
+		"AND `useragent` NOT LIKE 'cloogle-irc'"
 ];
 
 $results = [

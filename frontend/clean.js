@@ -12,9 +12,9 @@ function highlight(lex, istr, start) {
 
 	var state_stack = [];
 	var state = 'start';
-	if (typeof start != 'undefined') {
+	if (typeof start != 'undefined')
 		state = start;
-	}
+
 	while (true) {
 		var found = false;
 		for (var i in lex[state]) {
@@ -31,12 +31,21 @@ function highlight(lex, istr, start) {
 
 				found = true;
 				if (lex[state][i].length > 2) {
-					var new_state = lex[state][i][2];
-					if (new_state == 'pop') {
-						state = state_stack.pop();
-					} else {
-						state_stack.push(state);
-						state = new_state;
+					var new_states = lex[state][i][2];
+					new_states = new_states.split(';');
+					for (var i in new_states) {
+						var new_state = new_states[i];
+						if (new_state == 'pop') {
+							state = state_stack.pop();
+						} else if (new_state.substring(0,4) == 'pop:') {
+							for (var p = 0; p < parseInt(new_state.substring(4)); p++)
+								state = state_stack.pop();
+						} else if (new_state.substring(0,5) == 'jump:') {
+							state = new_state.substring(5);
+						} else {
+							state_stack.push(state);
+							state = new_state;
+						}
 					}
 				}
 
@@ -66,11 +75,31 @@ function highlightToHTML(lex, istr, callback, start) {
 }
 
 function highlightFunction(func, callback, start) {
+	var macroargs = [];
+
+	var myCallback = function(span, cls, str) {
+		if (cls == '__type__')
+			return highlightFunction(str, callback);
+
+		if (cls == 'macroargument')
+			macroargs.push(str);
+		else if (macroargs.indexOf(str) >= 0)
+			return callback(
+					span.replace('class="' + cls + '"', 'class="macroargumentinrhs"'),
+					'macroargumentinrhs', str);
+
+		if (typeof callback != 'undefined')
+			return callback(span, cls, str);
+		else
+			return span;
+	}
+
 	return highlightToHTML({
 		start: [
 			[/(\s+)/,        ['whitespace']],
 			[/(generic)(\s)/,
 			                 ['keyword', 'whitespace'], 'generic'],
+			[/(import)(\s)/, ['keyword', 'whitespace']],
 			[/(\S+)(\s+)(::)/,
 			                 ['funcname', 'whitespace', 'punctuation'], 'type'],
 			[/(\()(\S+)(\))(\s+)(infix[rl]?)(\s*)(\d*)(\s*)(::)/,
@@ -108,7 +137,7 @@ function highlightFunction(func, callback, start) {
 			[/(\s+)/,        ['whitespace']],
 			[/([a-z][\w`]*)/, ['typevar']],
 			[/(A)(\.)/,      ['keyword', 'punctuation'], 'univars'],
-			[/([A-Z]\w*)/,   ['type']],
+			[/([A-Z_]\w*)/,  ['type']],
 			[/(\|)/,         ['punctuation'], 'context'],
 			[/(\W)/,         ['punctuation']]
 		],
@@ -132,9 +161,10 @@ function highlightFunction(func, callback, start) {
 		],
 		genericContext: [
 			[/([*>-]+\|\},)/, ['punctuation'], 'pop'],
-			[/([*>-]+\|\})/, ['punctuation'], 'contextType']
+			[/([*>-]+\|\})/, ['punctuation'], 'jump:contextType']
 		],
 		contextType: [
+			[/(\n)/,         ['whitespace'], 'pop:2;macro'],
 			[/(\s+)/,        ['whitespace']],
 			[/(,)/,          ['punctuation']],
 			[/(&)/,          ['punctuation'], 'pop'],
@@ -142,7 +172,7 @@ function highlightFunction(func, callback, start) {
 			[/([\(\[])/,     ['punctuation'], 'contextType'],
 			[/([\)\]])/,     ['punctuation'], 'pop'],
 			[/([a-z][\w`]*)/, ['typevar']],
-			[/([A-Z][\w`]*)/, ['type']],
+			[/([A-Z_][\w`]*)/, ['type']],
 			[/([^\s\(\)\[\],]+)/, ['typevar']]
 		],
 		attrenv: [
@@ -151,8 +181,57 @@ function highlightFunction(func, callback, start) {
 			[/(<=)/,         ['punctuation']],
 			[/(,)/,          ['punctuation']],
 			[/(\])/,         ['punctuation'], 'pop']
+		],
+		macro: [
+			[/(\s+)/,        ['whitespace']],
+			[/(\(.+\)\s+infix.*)/,
+			                 ['__type__']],
+			[/([\w`]+\s*::.*)/,
+			                 ['__type__']],
+			[/\b(where)\b/,  ['keyword'], 'pop;macro'],
+			[/(\()(\S+)(\))/, ['punctuation', 'funcname', 'punctuation'], 'macroargs'],
+			[/(\S+)/,        ['funcname'], 'macroargs']
+		],
+		macroargs: [
+			[/(\s+)/,        ['whitespace']],
+			[/((?::=)?=)/,   ['punctuation'], 'pop;macrorhs'],
+			[/([:\[\](),]+)/, ['punctuation']],
+			[/([^:\[\](),\s]+)/, ['macroargument']]
+		],
+		macrorhs: [
+			[/(\n)/,         ['whitespace'], 'pop'],
+			[/(\s+)/,        ['whitespace']],
+			[/\b(if|let|in|with|case|of|otherwise)\b/,
+			                 ['keyword']],
+			[/('[\w`]+'\.)/, ['qualifiedname']],
+			[/('(?:[^'\\]|\\(?:x[0-9a-fA-F]+|\d+|.))')/,
+			                 ['literal literal-char']],
+			[/\b([+~-]?0[0-7]+)\b/,
+			                 ['literal literal-int literal-int-oct']],
+			[/\b([+~-]?\d+)\b/,
+			                 ['literal literal-int literal-int-dec']],
+			[/\b([+~-]?0x[\da-fA-F]+)\b/,
+			                 ['literal literal-int literal-int-hex']],
+			[/\b([+~-]?\d+\.\d+(E[+-]?\d+)?)\b/,
+			                 ['literal literal-real']],
+			[/\b(True|False)\b/,
+			                 ['literal literal-bool']],
+			[/(")/,          ['literal literal-string'], 'string'],
+			[/(\(.+\)\s+infix.*)/,
+			                 ['__type__']],
+			[/([\w`]+\s*::.*)/,
+			                 ['__type__']],
+			[/([A-Z][\w`]*)/,['constructor']],
+			[/\b(_)\b/,      ['argument argument-wildcard']],
+			[/([\w`]+)/,     ['funcname funcname-onlyused']],
+			[/(.)/,          ['punctuation']]
+		],
+		string: [
+			[/(")/,          ['literal literal-string'], 'pop'],
+			[/(\\.)/,        ['literal literal-string']],
+			[/([^\\"]+)/,    ['literal literal-string']]
 		]
-	}, func, callback, start);
+	}, func, myCallback, start);
 }
 
 function highlightTypeDef(type, callback, start) {
@@ -163,7 +242,7 @@ function highlightTypeDef(type, callback, start) {
 		name: [
 			[/(\s+)/,        ['whitespace']],
 			[/(\*)/,         ['punctuation']],
-			[/([A-Z][\w`]*)/, ['type'], 'vars'],
+			[/([A-Z_][\w`]*)/, ['type'], 'vars'],
 			[/([~@#\$%\^\?!\+\-\*<>\\\/\|&=:]+)/, ['type'], 'vars']
 		],
 		vars: [
@@ -175,7 +254,7 @@ function highlightTypeDef(type, callback, start) {
 		synonym: [
 			[/(\s+)/,        ['whitespace']],
 			[/([a-z][a-zA-Z]*)/, ['typevar']],
-			[/([A-Z]\w*)/,   ['type']],
+			[/([A-Z_]\w*)/,  ['type']],
 			[/(\W)/,         ['punctuation']]
 		],
 		lhs: [
@@ -190,15 +269,15 @@ function highlightTypeDef(type, callback, start) {
 		],
 		record: [
 			[/(\s+)/,        ['whitespace']],
-			[/([_a-z][\w`]*)(\s+)(::)/,
+			[/([a-z_][\w`]*)(\s+)(::)/,
 			                 ['field', 'whitespace', 'punctuation'],
 			                 'fieldtype'],
 			[/(\})/,         ['punctuation']]
 		],
 		fieldtype: [
 			[/(\s+)/,        ['whitespace']],
-			[/([a-z][a-zA-Z]*)/, ['typevar']],
-			[/([A-Z]\w*)/,   ['type']],
+			[/([a-z]\w*)/,   ['typevar']],
+			[/([A-Z_]\w*)/,  ['type']],
 			[/(\()/,         ['punctuation'], 'tuple'],
 			[/([\[\{])/,     ['punctuation'], 'fieldtype'],
 			[/([\]\},])/,    ['punctuation'], 'pop'],
@@ -206,8 +285,8 @@ function highlightTypeDef(type, callback, start) {
 		],
 		tuple: [
 			[/(\s+)/,        ['whitespace']],
-			[/([a-z][a-zA-Z]*)/, ['typevar']],
-			[/([A-Z]\w*)/,   ['type']],
+			[/([a-z]\w*)/,   ['typevar']],
+			[/([A-Z_]\w*)/,  ['type']],
 			[/([\(\[\{])/,   ['punctuation'], 'tuple'],
 			[/([\)\]\}])/,   ['punctuation'], 'pop'],
 			[/(\W)/,         ['punctuation']]
@@ -215,14 +294,14 @@ function highlightTypeDef(type, callback, start) {
 		conses: [
 			[/(\s+)/,        ['whitespace']],
 			[/(E)(\.)/,      ['existential', 'punctuation'], 'consexi'],
-			[/([_A-Z][\w`]*)/, ['constructor'], 'consargs'],
+			[/([A-Z_][\w`]*)/, ['constructor'], 'consargs'],
 			[/([~@#\$%\^\?!\+\-\*<>\\\/\|&=:]+)/, ['constructor'], 'consargs'],
 			[/(\.\.)/,       ['punctuation']]
 		],
 		consexi: [
 			[/(\s+)/,        ['whitespace']],
 			[/([a-z][\w`]*)/, ['typevar']],
-			[/(:)/,          ['punctuation'], 'conses']
+			[/(:)/,          ['punctuation'], 'pop']
 		],
 		consargs: [
 			[/(\s+)/,        ['whitespace']],
@@ -230,8 +309,26 @@ function highlightTypeDef(type, callback, start) {
 			                 ['keyword', 'whitespace', 'keyword', 'whitespace']],
 			[/([a-z][\w`]*)/, ['typevar']],
 			[/([A-Z]\w*)/,   ['type']],
-			[/(\|)/,         ['punctuation'], 'conses'],
+			[/(\|)/,         ['punctuation'], 'pop'],
+			[/(&)/,          ['punctuation'], 'context'],
 			[/(\W)/,         ['punctuation']]
+		],
+		context: [
+			[/(\s+)/,        ['whitespace']],
+			[/(,)/,          ['punctuation']],
+			[/(\S+)(\{\|)/,  ['generic', 'punctuation'], 'generic'],
+			[/([^\s{]+)(,)/, ['classname', 'punctuation']],
+			[/([^\s{]+)/,    ['classname'], 'contextType']
+		],
+		generic: [
+			[/([*>-]+\|\},)/, ['punctuation'], 'pop'],
+			[/([*>-]+\|\})/, ['punctuation'], 'pop;contextType']
+		],
+		contextType: [
+			[/(\s+)/,        ['whitespace']],
+			[/(&)/,          ['punctuation'], 'pop'],
+			[/(\|)/,         ['punctuation'], 'pop:3'],
+			[/([^\s,]+)/,    ['typevar']]
 		]
 	}, type, callback, start);
 }
@@ -268,62 +365,6 @@ function highlightClassDef(cls, callback, start) {
 			[/([^\s,]+)/,    ['typevar']]
 		]
 	}, cls, callback, start);
-}
-
-function highlightMacro(macro, callback, start) {
-	var myCallback = function(span, cls, str) {
-		if (cls == '__type__') {
-			return highlightFunction(str, callback);
-		}
-		return callback(span, cls, str);
-	}
-
-	return highlightToHTML({
-		start: [
-			[/(\s+)/,        ['whitespace']],
-			[/(\(.+\)\s+infix.*)/,
-			                 ['__type__']],
-			[/(\()(\S+)(\))/, ['punctuation', 'funcname', 'punctuation'], 'args'],
-			[/(\S+)/,        ['funcname'], 'args']
-		],
-		args: [
-			[/(\s+)/,        ['whitespace']],
-			[/(:==)/,        ['punctuation'], 'rhs'],
-			[/(\S+)/,        ['macroargument']]
-		],
-		rhs: [
-			[/(\s+)/,        ['whitespace']],
-			[/\b(if|let|in|with|where|case|of|otherwise)\b/,
-			                 ['keyword']],
-			[/('[\w`]+'\.)/, ['qualifiedname']],
-			[/('([^'\\]|\\(x[0-9a-fA-F]+|\d+|.))')/,
-			                 ['literal literal-char']],
-			[/\b([+~-]?0[0-7]+)\b/,
-			                 ['literal literal-int literal-int-oct']],
-			[/\b([+~-]?\d+)\b/,
-			                 ['literal literal-int literal-int-dec']],
-			[/\b([+~-]?0x[\da-fA-F]+)\b/,
-			                 ['literal literal-int literal-int-hex']],
-			[/\b([+~-]?\d+\.\d+(E[+-]?\d+)?)\b/,
-			                 ['literal literal-real']],
-			[/\b(True|False)\b/,
-			                 ['literal literal-bool']],
-			[/(")/,          ['literal literal-string'], 'string'],
-			[/(\(.+\)\s+infix.*)/,
-			                 ['__type__']],
-			[/([\w`]+\s*::.*)/,
-			                 ['__type__']],
-			[/([A-Z][\w`]*)/,['constructor']],
-			[/\b(_)\b/,      ['argument argument-wildcard']],
-			[/([\w`]+)/,     ['funcname funcname-onlyused']],
-			[/(.)/,          ['punctuation']]
-		],
-		string: [
-			[/(")/,          ['literal literal-string'], 'pop'],
-			[/(\\.)/,        ['literal literal-string']],
-			[/([^\\"]+)/,    ['literal literal-string']]
-		]
-	}, macro, myCallback, start);
 }
 
 function highlightType(type, callback) {

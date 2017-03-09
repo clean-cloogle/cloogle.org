@@ -328,14 +328,14 @@ where
 				_ = Nothing
 
 	pd_instances :: String String [ParsedDefinition] (Maybe ParsedModule)
-		-> [('DB'.Class, ['DB'.Type], 'DB'.Location)]
+		-> [('DB'.Class, [('DB'.Type, String)], 'DB'.Location)]
 	pd_instances lib mod dcl icl
 		= [( id
 		   , types
-		   , 'DB'.Location lib mod (toLine pos) (findIclLine id types =<< icl) ""
+		   , 'DB'.Location lib mod (toLine pos) (findIclLine id (map fst types) =<< icl) ""
 		   ) \\ (id,types,pos) <- instances]
 	where
-		instances = map (appSnd3 (map 'T'.toType)) $
+		instances = map (appSnd3 (map (\t -> ('T'.toType t, cpp t)))) $
 			[(i.pi_ident.id_name, i.pi_types, i.pi_pos) \\ PD_Instance {pim_pi=i} <- dcl]
 			++ [(i.pi_ident.id_name, i.pi_types, i.pi_pos) \\ PD_Instances pis <- dcl, {pim_pi=i} <- pis]
 

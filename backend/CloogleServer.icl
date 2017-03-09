@@ -275,8 +275,7 @@ where
 		  , class_funs = [print_fun fun \\ fun <- funs]
 		  , class_instances
 		      = sortBy (\(a,_) (b,_) -> a < b)
-		          [([concat (print False t) \\ t <- ts], map loc ls)
-		          \\ (ts,ls) <- getInstances cls db]
+		          [(map snd ts, map loc ls) \\ (ts,ls) <- getInstances cls db]
 		  }
 	where
 		cls = case l of
@@ -300,7 +299,7 @@ where
 		    , builtin  = Nothing
 		    }
 		  , { type             = concat $ print False td
-		    , type_instances   = map (appSnd3 (map (concat o (print False)))) $
+		    , type_instances   = map (appSnd3 (map snd)) $
 		        map (appThd3 (map loc)) $ getTypeInstances t db
 		    , type_derivations = map (appSnd (map loc)) $ getTypeDerivations t db
 		    }
@@ -317,7 +316,7 @@ where
 		    , builtin  = Just True
 		    }
 		  , { type             = concat $ print False td
-		    , type_instances   = map (appSnd3 (map (concat o (print False)))) $
+		    , type_instances   = map (appSnd3 (map snd)) $
 		        map (appThd3 (map loc)) $ getTypeInstances t db
 		    , type_derivations = map (appSnd (map loc)) $ getTypeDerivations t db
 		    }

@@ -478,7 +478,7 @@ log msg mem w
 # (mem,w) = updateMemory msg mem w
 | not needslog = (Just mem, w)
 # (io,w)  = stdio w
-# io      = io <<< msgToString msg mem <<< "\n"
+# io      = io <<< toString (toJSON $ makeLogEntry msg mem) <<< "\n"
 = (Just mem, snd (fclose io w))
 where
 	needslog = case msg of (Sent _ _) = True; _ = False
@@ -493,14 +493,13 @@ where
 	= ({s & mem_time_end=t}, w)
 	updateMemory _                   s w = (s,w)
 
-	msgToString :: LogMessage` LogMemory -> String
-	msgToString (Sent response ck) mem
-		= toString $ toJSON
-			{ ip            = toString mem.mem_ip
-			, time_start    = (toString mem.mem_time_start, toInt $ mkTime mem.mem_time_start)
-			, time_end      = (toString mem.mem_time_end, toInt $ mkTime mem.mem_time_end)
-			, request       = mem.mem_request
-			, cachekey      = ck
-			, response_code = response.return
-			, results       = length response.data
-			}
+	makeLogEntry :: LogMessage` LogMemory -> LogEntry
+	makeLogEntry (Sent response ck) mem =
+		{ ip            = toString mem.mem_ip
+		, time_start    = (toString mem.mem_time_start, toInt $ mkTime mem.mem_time_start)
+		, time_end      = (toString mem.mem_time_end, toInt $ mkTime mem.mem_time_end)
+		, request       = mem.mem_request
+		, cachekey      = ck
+		, response_code = response.return
+		, results       = length response.data
+		}

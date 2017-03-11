@@ -43,15 +43,20 @@ function updateSearches() {
 
 function updateChart() {
 	var data = { title: 'Activity'
-			   , yLabel: 'Requests'
+	           , yLabel: 'Requests'
 	           , dataPoints: activity
-			   , minMaxY: 5
-			   , yLines: 5
+	           , minMaxY: 5
+	           , yLines: 5
 	           };
 	var canvas = document.getElementById('activity');
 	var context = canvas.getContext('2d');
 	context.clearRect(0, 0, canvas.width, canvas.height);
 	Chart.render('activity', data);
+}
+
+function increaseCounter() {
+	activity[activity.length - 1].y++;
+	updateChart();
 }
 
 var open_timer;
@@ -83,6 +88,7 @@ function addConnectionCallbacks(connection) {
 	};
 
 	connection.onmessage = function(msg) {
+		console.log(msg);
 		var req = JSON.parse(msg.data);
 		var query = (req.name ? req.name : '') +
 			(req.unify ? ' :: ' + req.unify : '');
@@ -100,16 +106,15 @@ function addConnectionCallbacks(connection) {
 
 		if (!is_open_message) {
 			var time = new Date().timeNow(false);
-			if (activity.length == 0 || activity[activity.length - 1].x != time) {
-				activity.push({ x: time, y: 0 });
-			}
-			activity[activity.length - 1].y++;
+			if (activity.length == 0 || activity[activity.length - 1].x != time)
+				window.setTimeout(increaseCounter, 1200);
+			else
+				increaseCounter();
 		} else {
 			is_open_message = false;
 		}
 
 		updateSearches();
-		updateChart();
 	};
 }
 var connection = {};
@@ -124,9 +129,8 @@ window.setInterval(function(){
 			(searches.length == 0 ||
 			searches[searches.length - 1].x != date.timeNow(false))) {
 		activity.push({ x: date.timeNow(false), y: 0 });
-		if (activity.length > 10) {
+		if (activity.length > 10)
 			activity.splice(0, activity.length - 10);
-		}
 	}
 	updateChart();
 }, 1000);

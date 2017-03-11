@@ -38,7 +38,11 @@ ws.on('request', function(req){
 	});
 	
 	tail.stdout.on('data', function(data){
-		data = JSON.parse(data);
-		con.sendUTF(JSON.stringify(data['request']));
+		try {
+			data = JSON.parse(data);
+			con.sendUTF(JSON.stringify(data['request']));
+		} catch (e) {
+			console.error(e);
+		}
 	});
 });

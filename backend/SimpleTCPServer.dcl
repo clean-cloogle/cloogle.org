@@ -9,7 +9,7 @@ from TCPIP import ::IPAddress, ::Port
                     | Sent b t
                     | Disconnected
 
-:: Logger a b s t :== (LogMessage a b t) s *World -> *(s, *World)
+:: Logger a b s t :== (LogMessage a b t) (Maybe s) *World -> *(Maybe s, *World)
 
 serve :: (a *World -> *(b,t,*World)) (Maybe (Logger a b s t)) Port *World
 	-> *World | fromString a & toString b

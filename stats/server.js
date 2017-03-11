@@ -1,11 +1,10 @@
-var util = require('util');
 var fs = require('fs');
 var spawn = require('child_process').spawn;
 var WebSocketServer = require('websocket').server;
 
 var filename = process.argv[2];
 if (!filename)
-	return util.puts("Usage: node server.js <LOG> [<SSL_CERT> <SSL_KEY>]");
+	return console.log("Usage: node server.js <LOG> [<SSL_CERT> <SSL_KEY>]");
 
 if (process.argv.length >= 5) {
 	https = require('https');
@@ -32,17 +31,14 @@ var ws = new WebSocketServer({
 
 ws.on('request', function(req){
 	var con = req.accept('cloogle-stats', req.origin);
-	var tail = spawn("tail", ["-n", "2", "-f", filename]);
+	var tail = spawn("tail", ["-n", "1", "-f", filename]);
 
 	con.on('close', function(reason, desc){
 		tail.kill();
 	});
 	
 	tail.stdout.on('data', function(data){
-		var match = /<-- (\{.*\})/.exec(data);
-		if (match != null && !match[1].match(/u[0-9a-f]{4}/)) {
-			console.log(match[1]);
-			con.sendUTF(match[1]);
-		}
+		data = JSON.parse(data);
+		con.sendUTF(JSON.stringify(data['request']));
 	});
 });

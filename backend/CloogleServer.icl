@@ -9,7 +9,7 @@ import StdOverloaded
 import StdString
 import StdTuple
 from StdFunc import const, flip, id, o, seq
-from StdMisc import abort
+from StdMisc import abort, undef
 
 from TCPIP import :: IPAddress, :: Port, instance toString IPAddress
 
@@ -442,28 +442,65 @@ where
 	loc :: Location -> LocationResult
 	loc (Location lib mod ln iln _) = (lib, mod, ln, iln)
 
-	log :: (LogMessage (Maybe Request) Response CacheKey) IPAddress *World
-		-> *(IPAddress, *World)
-	log msg s w
-	| not needslog = (newS msg s, w)
-	# (tm,w) = localTime w
-	# (io,w) = stdio w
-	# io = io <<< trim (toString tm) <<< " " <<< msgToString msg s
-	= (newS msg s, snd (fclose io w))
-	where
-		needslog = case msg of (Received _) = True; (Sent _ _) = True; _ = False
+:: LogMemory =
+	{ mem_ip         :: IPAddress
+	, mem_time_start :: Tm
+	, mem_time_end   :: Tm
+	, mem_request    :: Request
+	}
 
-	newS :: (LogMessage (Maybe Request) Response CacheKey) IPAddress -> IPAddress
-	newS m s = case m of (Connected ip) = ip; _ = s
+instance zero LogMemory
+where
+	zero =
+		{ mem_ip         = undef
+		, mem_time_start = undef
+		, mem_time_end   = undef
+		, mem_request    = undef
+		}
 
-	msgToString :: (LogMessage (Maybe Request) Response CacheKey) IPAddress -> String
-	msgToString (Received Nothing) ip
-		= toString ip + " <-- Nothing\n"
-	msgToString (Received (Just a)) ip
-		= toString ip + " <-- " + toString a + "\n"
-	msgToString (Sent {return,data,msg,more_available} ck) ip
-		= toString ip + " --> " + toString (length data)
-			+ " results (" + toString return + "; " + msg
-			+ if (isJust more_available) ("; " + toString (fromJust more_available) + " more") ""
-			+ "; cache: " + ck + ")\n"
-	msgToString _ _ = ""
+:: LogMessage` :== LogMessage (Maybe Request) Response CacheKey
+
+:: LogEntry =
+	{ ip            :: String
+	, time_start    :: (String, Int)
+	, time_end      :: (String, Int)
+	, request       :: Request
+	, cachekey      :: String
+	, response_code :: Int
+	, results       :: Int
+	}
+
+derive JSONEncode LogEntry
+
+log :: LogMessage` (Maybe LogMemory) *World -> *(Maybe LogMemory, *World)
+log msg mem w
+# mem     = fromJust (mem <|> pure zero)
+# (mem,w) = updateMemory msg mem w
+| not needslog = (Just mem, w)
+# (io,w)  = stdio w
+# io      = io <<< msgToString msg mem <<< "\n"
+= (Just mem, snd (fclose io w))
+where
+	needslog = case msg of (Sent _ _) = True; _ = False
+
+	updateMemory :: LogMessage` LogMemory *World -> *(LogMemory, *World)
+	updateMemory (Connected ip)      s w = ({s & mem_ip=ip}, w)
+	updateMemory (Received (Just r)) s w
+	# (t,w) = localTime w
+	= ({s & mem_time_start=t, mem_request=r}, w)
+	updateMemory (Sent _ _)          s w
+	# (t,w) = localTime w
+	= ({s & mem_time_end=t}, w)
+	updateMemory _                   s w = (s,w)
+
+	msgToString :: LogMessage` LogMemory -> String
+	msgToString (Sent response ck) mem
+		= toString $ toJSON
+			{ ip            = toString mem.mem_ip
+			, time_start    = (toString mem.mem_time_start, toInt $ mkTime mem.mem_time_start)
+			, time_end      = (toString mem.mem_time_end, toInt $ mkTime mem.mem_time_end)
+			, request       = mem.mem_request
+			, cachekey      = ck
+			, response_code = response.return
+			, results       = length response.data
+			}

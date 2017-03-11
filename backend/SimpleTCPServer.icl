@@ -24,7 +24,7 @@ where
 		-> (TCP_Listener, *World) | fromString a & toString b
 	loop f log li w
 	#! ((ip,dupChan),li,w) = receive li w
-	#! (st,w)              = log (Connected ip) undef w
+	#! (st,w)              = log (Connected ip) Nothing w
 	#  (pid,w)             = fork w
 	| pid < 0
 		= abort "fork failed\n"
@@ -34,7 +34,7 @@ where
 		// Child: handle current request
 		= handle f log st dupChan w
 
-	handle :: (a *World-> (b,t,*World)) (Logger a b s t) !s !TCP_DuplexChannel
+	handle :: (a *World-> (b,t,*World)) (Logger a b s t) !(Maybe !s) !TCP_DuplexChannel
 		!*World -> (TCP_Listener, *World) | fromString a & toString b
 	handle f log st dupChannel=:{rChannel,sChannel} w
 	# (tRep,msg,rChannel,w) = receive_MT TIMEOUT rChannel w

@@ -13,14 +13,16 @@ from StdMisc import abort, undef
 
 from TCPIP import :: IPAddress, :: Port, instance toString IPAddress
 
-from Data.Func import $
-import Data.List
-import Data.Tuple
-import Data.Maybe
-import System.CommandLine
-import Data.Functor
 import Control.Applicative
 import Control.Monad
+import qualified Data.Foldable as Foldable
+from Data.Foldable import class Foldable, instance Foldable Maybe
+from Data.Func import $
+import Data.Functor
+import Data.List
+import Data.Maybe
+import Data.Tuple
+import System.CommandLine
 from Text import class Text(concat,trim,indexOf,toLowerCase,split),
 	instance Text String, instance + String
 import Text.JSON
@@ -160,9 +162,10 @@ where
 	suggs _ _ _ = Nothing
 
 	search :: !Request !TypeDB -> [Result]
-	search {unify,name,className,typeName,modules,libraries,page,include_builtins,include_core} db
+	search {unify,name,className,typeName,modules,libraries,page,include_builtins,include_core} db_org
 		# include_builtins = fromJust (include_builtins <|> Just DEFAULT_INCLUDE_BUILTINS)
 		# include_core = fromJust (include_core <|> Just DEFAULT_INCLUDE_CORE)
+		# db = db_org
 		# db = case libraries of
 			(Just ls) = filterLocations (isLibMatch ls) db
 			Nothing   = db
@@ -185,24 +188,27 @@ where
 			# typeName = fromJust typeName
 			# types = findType typeName db
 			= [makeTypeResult (Just typeName) l td db \\ (l,td) <- types]
-		# mbType = prepare_unification True <$> (unify >>= parseType o fromString)
+		# mbPreppedType = prepare_unification True (allTypes db_org)
+			<$> (unify >>= parseType o fromString)
+		# usedSynonyms = 'Foldable'.concat (fst <$> mbPreppedType)
+		# mbType = snd <$> mbPreppedType
 		// Search normal functions
-		# filts = catMaybes [ (\t _ -> isUnifiable t) <$> mbType
+		# filts = catMaybes [ (\t _ -> isUnifiable t db_org) <$> mbType
 		                    , (\n loc _ -> isNameMatch (size n*2/3) n $ getName loc) <$> name
 		                    ]
-		# funs = map (\f -> makeFunctionResult name mbType Nothing f db) $ findFunction`` filts db
+		# funs = map (\f -> makeFunctionResult name mbType usedSynonyms Nothing f db_org) $ findFunction`` filts db
 		// Search macros
 		# macros = case (isNothing mbType,name) of
 			(True,Just n) = findMacro` (\loc _ -> isNameMatch (size n*2/3) n $ getName loc) db
 			_             = []
 		# macros = map (\(lhs,rhs) -> makeMacroResult name lhs rhs) macros
 		// Search class members
-		# filts = catMaybes [ (\t _ _ _ _->isUnifiable t) <$> mbType
+		# filts = catMaybes [ (\t _ _ _ _ -> isUnifiable t db_org) <$> mbType
 		                    , (\n (Location lib mod _ _ _) _ _ f _ -> isNameMatch
 		                      (size n*2/3) n f) <$> name
 		                    ]
 		# members = findClassMembers`` filts db
-		# members = map (\(Location lib mod line iclline cls,vs,_,f,et) -> makeFunctionResult name mbType
+		# members = map (\(Location lib mod line iclline cls,vs,_,f,et) -> makeFunctionResult name mbType usedSynonyms
 			(Just {cls_name=cls,cls_vars=vs}) (Location lib mod line iclline f,et) db) members
 		// Search types
 		# lcName = if (isJust mbType && isType (fromJust mbType))
@@ -339,10 +345,10 @@ where
 		    }
 		  )
 
-	makeFunctionResult :: (Maybe String) (Maybe Type) (Maybe ShortClassResult)
+	makeFunctionResult :: (Maybe String) (Maybe Type) [TypeDef] (Maybe ShortClassResult)
 		(Location, ExtendedType) TypeDB -> Result
 	makeFunctionResult
-		orgsearch orgsearchtype mbCls (fl, et=:(ET type tes)) db
+		orgsearch orgsearchtype usedsynonyms mbCls (fl, et=:(ET type tes)) db
 		= FunctionResult
 		  ( { library  = lib
 		    , filename = modToFilename mod
@@ -354,8 +360,8 @@ where
 		    }
 		  , { func     = fromJust (tes.te_representation <|>
 		                           (pure $ concat $ print False (fname,et)))
-		    , unifier  = toStrUnifier <$> finish_unification <$>
-		        (orgsearchtype >>= unify [] (prepare_unification False type))
+		    , unifier  = toStrUnifier <$> finish_unification (unisyns ++ usedsynonyms) <$>
+		        (orgsearchtype >>= unify [] unitype)
 		    , cls      = mbCls
 		    , constructor_of = if tes.te_isconstructor
 		        (let (Func _ r _) = type in Just $ concat $ print False r)
@@ -375,9 +381,20 @@ where
 			(Location l m ln iln f) = (l,  m,  f, ln,      iln,     Nothing)
 			(Builtin f)             = ("", "", f, Nothing, Nothing, Just True)
 
+		(unisyns, unitype) = prepare_unification` False db type
+
 		toStrUnifier :: Unifier -> StrUnifier
-		toStrUnifier (tvas1, tvas2) = (map toStr tvas1, map toStr tvas2)
-		where toStr (var, type) = (var, concat $ print False type)
+		toStrUnifier unif =
+			{ StrUnifier
+			| left_to_right = map toStr unif.Unifier.left_to_right
+			, right_to_left = map toStr unif.Unifier.right_to_left
+			, used_synonyms = [
+				( concat $ [td.td_name," ":intersperse " " $ print False td.td_args]
+				, concat $ print False s)
+				\\ td=:{td_rhs=TDRSynonym s} <- unif.Unifier.used_synonyms]
+			}
+		where
+			toStr (var, type) = (var, concat $ print False type)
 
 		toStrPriority :: (Maybe Priority) -> String
 		toStrPriority p = case print False p of [] = ""; ss = concat [" ":ss]
@@ -386,9 +403,9 @@ where
 			| isNothing orgsearch || fromJust orgsearch == ""
 				| isNothing orgsearchtype = 0
 				# orgsearchtype = fromJust orgsearchtype
-				# (Just (ass1, ass2)) = finish_unification <$>
-					unify [] orgsearchtype (prepare_unification False type)
-				= penalty + toInt (sum [typeComplexity t \\ (_,t)<-ass1 ++ ass2 | not (isVar t)])
+				# (syns, t) = prepare_unification` False db type
+				# (Just unif) = finish_unification syns <$> unify [] orgsearchtype t
+				= penalty + toInt (sum [typeComplexity t \\ (_,t) <- allTvas unif | not (isVar t)])
 			# orgsearch = fromJust orgsearch
 			= penalty + levenshtein` orgsearch fname
 		where
@@ -397,12 +414,18 @@ where
 			| tes.te_isconstructor = 1
 			| otherwise            = 0
 
+			allTvas :: Unifier -> [TVAssignment]
+			allTvas unif = unif.Unifier.left_to_right ++ unif.Unifier.right_to_left
+
 			typeComplexity :: Type -> Real
 			typeComplexity (Type _ ts) = 1.2 * foldr ((+) o typeComplexity) 1.0 ts
 			typeComplexity (Func is r _) = 2.0 * foldr ((+) o typeComplexity) 1.0 [r:is]
 			typeComplexity (Var _) = 1.0
 			typeComplexity (Cons _ ts) = 1.2 * foldr ((+) o typeComplexity) 1.0 ts
 			typeComplexity (Uniq t) = 3.0 + typeComplexity t
+
+	prepare_unification` :: !Bool !TypeDB -> Type -> ([TypeDef], Type)
+	prepare_unification` b db = prepare_unification b (allTypes db)
 
 	levenshtein` :: String String -> Int
 	levenshtein` a b = if (indexOf a b == -1) 0 -100 +
@@ -419,8 +442,10 @@ where
 	modToFilename mod = (toString $ reverse $ takeWhile ((<>)'.')
 	                              $ reverse $ fromString mod) + ".dcl"
 
-	isUnifiable :: Type ExtendedType -> Bool
-	isUnifiable t1 (ET t2 _) = isJust (unify [] t1 (prepare_unification False t2))
+	isUnifiable :: !Type !TypeDB !ExtendedType -> Bool
+	isUnifiable t1 db (ET t2 _) = isJust $ unify [] t1 t2`
+	where
+		(_, t2`) = (prepare_unification` False db t2)
 
 	isNameMatch :: !Int !String !String -> Bool
 	isNameMatch maxdist n1 name

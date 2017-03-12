@@ -1,7 +1,11 @@
 implementation module TypeDB
 
 // Standard libraries
-import StdEnv
+from StdFunc import o, const
+import StdBool, StdFile, StdList, StdMisc, StdOrdList, StdOverloaded, StdTuple
+
+import Control.Applicative
+import Control.Monad
 from Data.Func import $
 import Data.Functor
 from Data.List import intercalate, groupBy
@@ -265,6 +269,9 @@ findType` f {typemap} = toList $ filterWithKey f typemap
 
 findType`` :: [(Location TypeDef -> Bool)] TypeDB -> [(Location, TypeDef)]
 findType`` fs {typemap} = toList $ foldr filterWithKey typemap fs
+
+allTypes :: (TypeDB -> [TypeDef])
+allTypes = map snd o findType` (\_ _ -> True)
 
 getDerivations :: Name TypeDB -> [(Type, String, [Location])]
 getDerivations gen {derivemap} = if (isNothing ts) [] (fromJust ts)

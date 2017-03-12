@@ -250,8 +250,18 @@ function getResults(str, libs, include_builtins, include_core, page) {
 							highlightCallback, 'className') + '</code>');
 
 				if ('unifier' in extra &&
-					(extra['unifier'][0].length > 0 || extra['unifier'][1].length > 0))
+						(extra['unifier'].left_to_right.length > 0
+						 || extra['unifier'].right_to_left.length > 0))
 					meta.push('Unifier: ' + makeUnifier(extra['unifier']));
+				if ('unifier' in extra) {
+					var synonyms = extra['unifier'].used_synonyms;
+					for (var i in synonyms) {
+						console.log(synonyms[i]);
+						meta.push('Used the type synonym <code>' + highlightTypeDef(
+									':: ' + synonyms[i][0] + ' :== ' + synonyms[i][1],
+									highlightCallback) + '</code>.');
+					}
+				}
 
 				if ('generic_derivations' in extra) {
 					var derivations = makeInstanceTable(
@@ -394,15 +404,15 @@ function getResults(str, libs, include_builtins, include_core, page) {
 }
 
 function makeUnifier(ufr) {
-	var from_left = ufr[0];
-	var from_right = ufr[1];
+	var from_left = ufr.left_to_right;
+	var from_right = ufr.right_to_left;
 	var s = '';
-	for (i in from_right) {
+
+	for (i in from_right)
 		s += '<tt>' + from_right[i][0] + '</tt> &rarr; <tt>' + from_right[i][1] + '</tt>; ';
-	}
-	for (i in from_left) {
+	for (i in from_left)
 		s += '<tt>' + from_left[i][1] + '</tt> &larr; <tt>' + from_left[i][0] + '</tt>; ';
-	}
+
 	return s.substring(0, s.length - 2);
 }
 

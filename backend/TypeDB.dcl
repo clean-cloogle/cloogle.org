@@ -97,6 +97,7 @@ putTypes :: [(Location, TypeDef)] TypeDB -> TypeDB
 findType :: Name TypeDB -> [(Location, TypeDef)]
 findType` :: (Location TypeDef -> Bool) TypeDB -> [(Location, TypeDef)]
 findType`` :: [(Location TypeDef -> Bool)] TypeDB -> [(Location, TypeDef)]
+allTypes :: (TypeDB -> [TypeDef])
 
 getDerivations :: Name TypeDB -> [(Type, String, [Location])]
 putDerivation :: Name Type String Location TypeDB -> TypeDB

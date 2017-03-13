@@ -40,7 +40,10 @@ ws.on('request', function(req){
 	tail.stdout.on('data', function(data){
 		try {
 			data = JSON.parse(data);
-			con.sendUTF(JSON.stringify(data['request']));
+			con.sendUTF(JSON.stringify({
+				'time': data['time_end'],
+				'request': data['request']
+			}));
 		} catch (e) {
 			console.error(e);
 		}

@@ -1,14 +1,19 @@
 var searches = [];
 var activity = [];
 
-Date.prototype.timeNow = function (seconds) {
-	return ((this.getHours() < 10)?"0":"") + this.getHours() +":"+
-	  ((this.getMinutes() < 10)?"0":"") + this.getMinutes() +
-		(seconds ? (":"+((this.getSeconds() < 10)?"0":"") + this.getSeconds()) : '');
+function timeToString(seconds) {
+	if (typeof seconds != 'undefined')
+		var date = new Date(seconds * 1000);
+	else
+		var date = new Date();
+
+	return ((date.getHours() < 10)?"0":"") + date.getHours() +":"+
+	  ((date.getMinutes() < 10)?"0":"") + date.getMinutes();
 }
 
 function updateSearches() {
-	query = searches[0];
+	var query = searches[0][0];
+	var time = searches[0][1];
 	var last = document.getElementById('last-search');
 
 	var highlighter = highlightFunction;
@@ -22,7 +27,7 @@ function updateSearches() {
 	}
 
 	last.innerHTML = '<pre>' + highlighter(query) + '</pre>';
-	last.innerHTML += '<div class="time">' + new Date().timeNow(true) + '</div>';
+	last.innerHTML += '<div class="time">' + time + '</div>';
 
 	var previous = document.getElementById('previous-searches');
 	previous.innerHTML = '';
@@ -31,7 +36,7 @@ function updateSearches() {
 		var color = 100 + i * 20;
 		var color = 'rgb(' + color + ',' + color + ',' + color + ')';
 		previous.innerHTML += '<tt style="color:' + color + ';">' +
-				escapeHTML(searches[i]) + '</tt><br/>';
+				escapeHTML(searches[i][0]) + '</tt><br/>';
 	}
 
 	var last = document.getElementById('last-search');
@@ -54,7 +59,33 @@ function updateChart() {
 	Chart.render('activity', data);
 }
 
-function increaseCounter() {
+function addRecord(data) {
+	var req = data['request'];
+	var time = timeToString(data['time'][1]);
+	var query = (req.name ? req.name : '') +
+		(req.unify ? ' :: ' + req.unify : '');
+	if ('className' in req)
+		query = 'class ' + req.className;
+	else if ('typeName' in req)
+		query = 'type ' + req.typeName;
+
+	searches.splice(0, 0, [query, time]);
+
+	if (is_open_message) {
+		is_open_message = false;
+		updateSearches();
+		return;
+	}
+
+	if (activity.length == 0 || activity[activity.length - 1].x != time) {
+		window.setTimeout(function(){ addRecord(data); }, 1200);
+		return;
+	}
+
+	if (searches.length > 10)
+		searches.splice(searches.length - 1, searches.length);
+	updateSearches();
+
 	activity[activity.length - 1].y++;
 	updateChart();
 }
@@ -88,47 +119,21 @@ function addConnectionCallbacks(connection) {
 	};
 
 	connection.onmessage = function(msg) {
-		console.log(msg);
-		var req = JSON.parse(msg.data);
-		var query = (req.name ? req.name : '') +
-			(req.unify ? ' :: ' + req.unify : '');
-		if ('className' in req) {
-			query = 'class ' + req.className;
-		} else if ('typeName' in req) {
-			query = 'type ' + req.typeName;
-		}
-
-		if (searches.length == 0 || !is_open_message) {
-			searches.splice(0, 0, query);
-			if (searches.length > 10)
-				searches.splice(searches.length - 1, searches.length);
-		}
-
-		if (!is_open_message) {
-			var time = new Date().timeNow(false);
-			if (activity.length == 0 || activity[activity.length - 1].x != time)
-				window.setTimeout(increaseCounter, 1200);
-			else
-				increaseCounter();
-		} else {
-			is_open_message = false;
-		}
-
-		updateSearches();
+		addRecord(JSON.parse(msg.data));
 	};
 }
 var connection = {};
 addConnectionCallbacks(connection);
 connection.onclose();
 
-activity[0] = { x: new Date().timeNow(false), y: 0 };
+activity[0] = { x: timeToString(), y: 0 };
 
 window.setInterval(function(){
 	var date = new Date();
 	if (date.getSeconds() === 0 &&
 			(searches.length == 0 ||
-			searches[searches.length - 1].x != date.timeNow(false))) {
-		activity.push({ x: date.timeNow(false), y: 0 });
+			searches[searches.length - 1].x != timeToString())) {
+		activity.push({ x: timeToString(), y: 0 });
 		if (activity.length > 10)
 			activity.splice(0, activity.length - 10);
 	}

@@ -69,10 +69,9 @@ function addRecord(data) {
 	else if ('typeName' in req)
 		query = 'type ' + req.typeName;
 
-	searches.splice(0, 0, [query, time]);
-
 	if (is_open_message) {
 		is_open_message = false;
+		searches.splice(0, 0, [query, time]);
 		updateSearches();
 		return;
 	}
@@ -82,6 +81,7 @@ function addRecord(data) {
 		return;
 	}
 
+	searches.splice(0, 0, [query, time]);
 	if (searches.length > 10)
 		searches.splice(searches.length - 1, searches.length);
 	updateSearches();

@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="432.90457"
+   height="200"
+   viewBox="0 0 114.53933 52.916668"
+   version="1.1"
+   id="svg4267"
+   inkscape:version="0.92.1 r"
+   sodipodi:docname="logo.svg">
+  <title
+     id="title4497">Cloogle logo</title>
+  <defs
+     id="defs4261" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="0.98994949"
+     inkscape:cx="119.09113"
+     inkscape:cy="-7.4911774"
+     inkscape:document-units="mm"
+     inkscape:current-layer="svg4267"
+     showgrid="false"
+     inkscape:window-width="1920"
+     inkscape:window-height="1080"
+     inkscape:window-x="1920"
+     inkscape:window-y="0"
+     inkscape:window-maximized="0"
+     units="px"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0" />
+  <metadata
+     id="metadata4264">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title>Cloogle logo</dc:title>
+        <dc:date>2017-03-21</dc:date>
+        <dc:creator>
+          <cc:Agent>
+            <dc:title>Erin van der Veen</dc:title>
+          </cc:Agent>
+        </dc:creator>
+        <dc:rights>
+          <cc:Agent>
+            <dc:title></dc:title>
+          </cc:Agent>
+        </dc:rights>
+        <cc:license
+           rdf:resource="http://creativecommons.org/licenses/by/4.0/" />
+      </cc:Work>
+      <cc:License
+         rdf:about="http://creativecommons.org/licenses/by/4.0/">
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#Reproduction" />
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#Distribution" />
+        <cc:requires
+           rdf:resource="http://creativecommons.org/ns#Notice" />
+        <cc:requires
+           rdf:resource="http://creativecommons.org/ns#Attribution" />
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#DerivativeWorks" />
+      </cc:License>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-0.33331298,-244.08435)">
+    <path
+       style="fill:#87aade;stroke-width:1.14050341"
+       d="M 101.25977,0.00390625 A 99.999999,99.999999 0 0 0 1.2597656,100.00391 a 99.999999,99.999999 0 0 0 100.0000044,100 V 168.36133 A 68.356594,68.356594 0 0 1 32.904297,100.00391 68.356594,68.356594 0 0 1 101.25977,31.648438 Z"
+       transform="matrix(0.26458333,0,0,0.26458333,0,244.08332)"
+       id="path4288"
+       inkscape:connector-curvature="0" />
+    <path
+       style="fill:#d7e3f4;stroke-width:0.93607926"
+       d="m 101.25977,38.714844 a 60.775314,60.775314 0 0 0 -60.775395,60.77539 60.775314,60.775314 0 0 0 60.775395,60.775386 v -29.1875 A 31.589168,31.589168 0 0 1 69.669922,99.490234 31.589168,31.589168 0 0 1 101.25977,67.900391 Z"
+       transform="matrix(0.26458333,0,0,0.26458333,0,244.08332)"
+       id="path5102"
+       inkscape:connector-curvature="0" />
+    <path
+       style="fill:none;stroke:none;stroke-width:0.26458332px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="M 26.791647,286.48693 H 105.7051"
+       id="path5118"
+       inkscape:connector-curvature="0" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
+       x="28.279488"
+       y="286.37601"
+       id="text5130"><tspan
+         sodipodi:role="line"
+         id="tspan5128"
+         x="28.279488"
+         y="286.37601"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:25.39999962px;font-family:'DejaVu Sans';-inkscape-font-specification:'DejaVu Sans, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke-width:0.26458332"><tspan
+           style="fill:#373e48"
+           id="tspan5132">l</tspan><tspan
+           style="fill:#535d6c"
+           id="tspan5134">o</tspan><tspan
+           style="fill:#6f7c91"
+           id="tspan5136">o</tspan><tspan
+           style="fill:#939dac"
+           id="tspan5138">g</tspan><tspan
+           style="fill:#b7bec8"
+           id="tspan5142">l</tspan><tspan
+           id="tspan5146"
+           style="fill:#dbdee3">e</tspan></tspan></text>
+  </g>
+</svg>

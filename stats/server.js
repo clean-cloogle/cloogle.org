@@ -54,17 +54,15 @@ var ws = new WebSocketServer({
 ws.on('request', function(req){
 	var con = req.accept('cloogle-stats', req.origin);
 
-	con.connId = connCounter
-	console.log('Opened connection ' + connCounter +
-			' from ' + con.remoteAddress);
+	con.cId = connCounter++;
 	connections.push(con);
-	connCounter++;
+	console.log('Opened connection ' + conn.cId + ' from ' + con.remoteAddress);
 
 	con.on('close', function(reason, desc){
 		var i = connections.indexOf(con);
-		console.log('Closed connection ' + connections[i].connId);
-		if (i != -1) {
+		if (i != -1)
 			connections.splice(i, 1);
-		}
+
+		console.log('Closed connection ' + connections[i].cId);
 	});
 });

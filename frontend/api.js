@@ -12,6 +12,10 @@ var old_libs = null;
 var old_include_builtins = null;
 var old_include_core = null;
 
+var general_help =
+	'For general information about Clean, <a href="https://clean.cs.ru.nl/index.php?title=Special%3ASearch" target="_blank">search on the Clean wiki</a>.<br/>' +
+	'For explanations about Clean concepts and syntax, see the <a href="http://clean.cs.ru.nl/download/doc/CleanLangRep.2.2.pdf" target="_blank">Clean language report</a>.';
+
 function toggleLibSelection(className) {
 	var boxes =
 		document.getElementById(className).getElementsByClassName('search_libs');
@@ -104,10 +108,9 @@ function getResults(str, libs, include_builtins, include_core, page) {
 	var elem = document.getElementById('page-' + page);
 
 	elem.innerHTML += '<p id="loading">Processing...</p>';
-	var more = document.getElementById('more');
-	if (more !== null) {
-		more.remove();
-	}
+	var remove = document.getElementsByClassName('remove-at-request');
+	for (var i = remove.length - 1; i >= 0; i--)
+		remove[i].remove();
 
 	var makeTable = function (d) {
 		var html = '<table>';
@@ -348,7 +351,7 @@ function getResults(str, libs, include_builtins, include_core, page) {
 		var str = '<hr/><div id="suggestions"><b>Did you mean...</b><table>';
 		for (i in suggs) {
 			var sug = suggs[i][0];
-			var sugstr = []
+			var sugstr = [];
 			if ('name' in sug) {
 				sugstr.push(sug.name);
 			}
@@ -374,13 +377,16 @@ function getResults(str, libs, include_builtins, include_core, page) {
 					elem.innerHTML += makeResultHTML(c);
 				}
 
-				var par = elem.parentNode
+				var par = elem.parentNode;
 				if (responsedata['more_available'] != 0) {
 					par.innerHTML += '<div id="page-' + (page+1) + '">' +
-						'<p id="more"><a href="javascript:getResults(null,null,null,null,' + (page+1) +
+						'<p id="more" class="remove-at-request">' +
+						'<a href="javascript:getResults(null,null,null,null,' + (page+1) +
 						')">' + responsedata['more_available'] + ' more...</a></p>' +
 						'</div>';
 				}
+
+				par.innerHTML += '<div class="remove-at-request">' + general_help + '</span>';
 
 				if ('suggestions' in responsedata &&
 						responsedata['suggestions'].length > 0) {

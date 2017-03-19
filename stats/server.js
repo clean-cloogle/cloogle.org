@@ -59,7 +59,7 @@ ws.on('request', function(req){
 
 	con.cId = connCounter++;
 	connections.push(con);
-	console.log('Opened connection ' + conn.cId + ' from ' + con.remoteAddress);
+	console.log('Opened connection ' + con.cId + ' from ' + con.remoteAddress);
 
 	con.on('close', function(reason, desc){
 		var i = connections.indexOf(con);

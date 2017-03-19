@@ -6,6 +6,28 @@ var filename = process.argv[2];
 if (!filename)
 	return console.log("Usage: node server.js <LOG> [<SSL_CERT> <SSL_KEY>]");
 
+var connections = [];
+var connCounter = 0;
+var tail = spawn("tail", ["-n", "0", "-f", filename]);
+tail.stdout.on('data', function(data){
+	try {
+		data = JSON.parse(data);
+		var logline = JSON.stringify({'request': data['request']});
+
+		console.log('Outgoing: ' + logline);
+
+		for (var i in connections) {
+			try {
+				connections[i].sendUTF(logline);
+			} catch (e) {
+				console.error(e);
+			}
+		}
+	} catch (e) {
+		console.error(e);
+	}
+});
+
 if (process.argv.length >= 5) {
 	https = require('https');
 	var server = https.createServer({
@@ -31,21 +53,18 @@ var ws = new WebSocketServer({
 
 ws.on('request', function(req){
 	var con = req.accept('cloogle-stats', req.origin);
-	var tail = spawn("tail", ["-n", "1", "-f", filename]);
+
+	con.connId = connCounter
+	console.log('Opened connection ' + connCounter +
+			' from ' + con.remoteAddress);
+	connections.push(con);
+	connCounter++;
 
 	con.on('close', function(reason, desc){
-		tail.kill();
-	});
-	
-	tail.stdout.on('data', function(data){
-		try {
-			data = JSON.parse(data);
-			con.sendUTF(JSON.stringify({
-				'time': data['time_end'],
-				'request': data['request']
-			}));
-		} catch (e) {
-			console.error(e);
+		var i = connections.indexOf(con);
+		console.log('Closed connection ' + connections[i].connId);
+		if (i != -1) {
+			connections.splice(i, 1);
 		}
 	});
 });

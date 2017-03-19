@@ -61,7 +61,7 @@ function updateChart() {
 
 function addRecord(data) {
 	var req = data['request'];
-	var time = timeToString(data['time'][1]);
+	var time = timeToString();
 	var query = (req.name ? req.name : '') +
 		(req.unify ? ' :: ' + req.unify : '');
 	if ('className' in req)
@@ -73,11 +73,6 @@ function addRecord(data) {
 		is_open_message = false;
 		searches.splice(0, 0, [query, time]);
 		updateSearches();
-		return;
-	}
-
-	if (activity.length == 0 || activity[activity.length - 1].x != time) {
-		window.setTimeout(function(){ addRecord(data); }, 1200);
 		return;
 	}
 
@@ -130,9 +125,8 @@ activity[0] = { x: timeToString(), y: 0 };
 
 window.setInterval(function(){
 	var date = new Date();
-	if (date.getSeconds() === 0 &&
-			(searches.length == 0 ||
-			searches[searches.length - 1].x != timeToString())) {
+	if ((activity.length == 0 ||
+			activity[activity.length - 1].x != timeToString())) {
 		activity.push({ x: timeToString(), y: 0 });
 		if (activity.length > 10)
 			activity.splice(0, activity.length - 10);

@@ -131,7 +131,7 @@ function getResults(str, libs, include_builtins, include_core, page) {
 
 		var makeInstanceUrl = function (loc) {
 			var dclUrl =
-				'src/view.php?lib=' + encodeURIComponent(loc[0]) +
+				'src?lib=' + encodeURIComponent(loc[0]) +
 				'#' + encodeURIComponent(loc[1]);
 			var iclUrl = dclUrl + ';icl';
 
@@ -194,7 +194,7 @@ function getResults(str, libs, include_builtins, include_core, page) {
 
 	var makeGenericResultHTML = function (basic, meta, hidden, code) {
 		var dclUrl =
-			'src/view.php?lib=' + encodeURIComponent(basic['library']) +
+			'src?lib=' + encodeURIComponent(basic['library']) +
 			'#' + encodeURIComponent(basic['modul']);
 		var iclUrl = dclUrl + ';icl';
 		var dclLine = '';

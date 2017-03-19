@@ -7,7 +7,7 @@ RUN docker-php-source extract \
 	&& docker-php-ext-install sockets mysqli \
 	&& docker-php-source delete
 
-# Clean libraries, for /srv/view.php
+# Clean libraries, for /src
 RUN apt-get update && apt-get install -y subversion ca-certificates git
 
 RUN mkdir -p /opt/clean && cd /opt/clean && \

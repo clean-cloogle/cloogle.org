@@ -134,7 +134,7 @@ window.onload = function () {
 	}
 
 	libselect.onchange = function() {
-		window.location.href = 'view.php?lib=' + this.value;
+		window.location.href = '?lib=' + this.value;
 	}
 
 	icl.onchange = function() {

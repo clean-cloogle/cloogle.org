@@ -10,6 +10,9 @@ var connections = [];
 var connCounter = 0;
 var tail = spawn("tail", ["-n", "0", "-f", filename]);
 tail.stdout.on('data', function(data){
+	if (connections.length == 0)
+		return;
+
 	try {
 		data = JSON.parse(data);
 		var logline = JSON.stringify({'request': data['request']});

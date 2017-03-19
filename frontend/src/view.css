@@ -134,3 +134,7 @@ body {
 		overflow: initial;
 	}
 }
+
+.special {
+	cursor: pointer;
+}

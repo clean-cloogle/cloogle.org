@@ -115,6 +115,7 @@ try:
             CloogleHtmlFormatter(
                 full=False,
                 linenos=True,
+                linenospecial=1,
                 linespans='line',
                 encoding='utf-8',
                 hl_lines=[] if len(sys.argv) == 1 else [

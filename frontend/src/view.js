@@ -33,8 +33,16 @@ function loadModule(elem) {
 	xmlHttp.onreadystatechange = function() { 
 		if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
 			viewer.innerHTML = xmlHttp.response;
+
 			if (line != null)
 				document.getElementById('line-' + line).scrollIntoView(true);
+
+			var linenos = document.getElementsByClassName('special');
+			for (var i = 0; i < linenos.length; i++) {
+				linenos[i].onclick = function() {
+					selectLine(this);
+				}
+			}
 		}
 	}
 	xmlHttp.open("GET", url, true);
@@ -76,6 +84,27 @@ function updateHash() {
 		refresh_on_hash = false;
 		window.location.hash = '#' + newhash;
 	}
+}
+
+function selectLine(elem) {
+	if (typeof elem != 'number') {
+		elem = parseInt(elem.innerText);
+	}
+
+	if (isNaN(elem)) {
+		line = null;
+		return;
+	}
+
+	line = elem;
+	updateHash();
+
+	var hll = document.getElementsByClassName('hll');
+	for (var i = 0; i < hll.length; i++)
+		hll[i].parentNode.innerHTML = hll[i].innerHTML;
+
+	var linespan = document.getElementById('line-' + line);
+	linespan.innerHTML = '<span class="hll">' + linespan.innerHTML + '</span>';
 }
 
 window.onhashchange = function() {

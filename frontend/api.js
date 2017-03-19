@@ -12,9 +12,15 @@ var old_libs = null;
 var old_include_builtins = null;
 var old_include_core = null;
 
-var general_help =
-	'For general information about Clean, <a href="https://clean.cs.ru.nl/index.php?title=Special%3ASearch" target="_blank">search on the Clean wiki</a>.<br/>' +
-	'For explanations about Clean concepts and syntax, see the <a href="http://clean.cs.ru.nl/download/doc/CleanLangRep.2.2.pdf" target="_blank">Clean language report</a>.';
+function makeGeneralHelp(query) {
+	console.log(query);
+	return 'For general information about Clean, ' +
+		'<a href="https://clean.cs.ru.nl/index.php?title=Special:Search&fulltext=Search&search=' + encodeURIComponent(query) + '" target="_blank">' +
+		'search on the Clean wiki</a>.<br/>' +
+		'For explanations about Clean concepts and syntax, see the ' +
+		'<a href="http://clean.cs.ru.nl/download/doc/CleanLangRep.2.2.pdf" target="_blank">' +
+		'Clean language report</a>.';
+}
 
 function toggleLibSelection(className) {
 	var boxes =
@@ -84,12 +90,12 @@ function makeSummary(hidden) {
 }
 
 function getResults(str, libs, include_builtins, include_core, page) {
-	if (str == null)  str  = old_str;
+	if (str == null) str = old_str;
 	if (libs == null) libs = old_libs;
 	if (include_builtins == null) include_builtins = old_include_builtins;
 	if (include_core == null) include_core = old_include_core;
 
-	old_str  = str;
+	old_str = str;
 	old_libs = libs;
 	old_include_builtins = include_builtins;
 	old_include_core = include_core;
@@ -386,7 +392,7 @@ function getResults(str, libs, include_builtins, include_core, page) {
 						'</div>';
 				}
 
-				par.innerHTML += '<div class="remove-at-request">' + general_help + '</span>';
+				par.innerHTML += '<div class="remove-at-request">' + makeGeneralHelp(str) + '</span>';
 
 				if ('suggestions' in responsedata &&
 						responsedata['suggestions'].length > 0) {
@@ -401,6 +407,7 @@ function getResults(str, libs, include_builtins, include_core, page) {
 			}
 		}
 	};
+
 	xmlHttp.open('GET', url, true); // true for asynchronous
 	xmlHttp.send(null);
 	if (document.location.hash.substring(1) != encodeURIComponent(str)) {

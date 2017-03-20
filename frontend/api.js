@@ -15,7 +15,7 @@ var old_include_core = null;
 function makeGeneralHelp(query) {
 	console.log(query);
 	return 'For general information about Clean, ' +
-		'<a href="https://clean.cs.ru.nl/index.php?title=Special:Search&fulltext=Search&search=' + encodeURIComponent(query) + '" target="_blank">' +
+		'<a href="http://clean.cs.ru.nl/index.php?title=Special:Search&fulltext=Search&search=' + encodeURIComponent(query) + '" target="_blank">' +
 		'search on the Clean wiki</a>.<br/>' +
 		'For explanations about Clean concepts and syntax, see the ' +
 		'<a href="http://clean.cs.ru.nl/download/doc/CleanLangRep.2.2.pdf" target="_blank">' +

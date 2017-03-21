@@ -3,6 +3,10 @@ body {
 	font-family: sans-serif;
 }
 
+a {
+	color: #26c;
+}
+
 a.hidden {
 	text-decoration: none;
 }
@@ -89,10 +93,6 @@ th {
 
 #search_results {
 	margin-top: 1.5em;
-}
-
-#search_results a {
-	color: #26c;
 }
 
 .result-basic {

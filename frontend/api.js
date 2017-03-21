@@ -479,16 +479,12 @@ advanced_checkbox.onchange = function () {
 	el.style.display = this.checked ? 'block' : 'none';
 }
 
-function urldecode(s){
-	return decodeURIComponent(s.replace('+', '%20'));
-}
-
 window.onload = function () {
 	sform.onsubmit = formsubmit;
-	var str = urldecode(document.location.hash);
+	var str = decodeURIComponent(document.location.hash);
 	if(str !== ''){
 		str = str.substring(1);
-		form_str.value = urldecode(str);
+		form_str.value = decodeURIComponent(str);
 		formsubmit();
 	}
 
@@ -502,7 +498,7 @@ window.onhashchange = function () {
 	if (!refresh_on_hash) {
 		refresh_on_hash = true;
 	} else {
-		var str = urldecode(document.location.hash);
+		var str = decodeURIComponent(document.location.hash);
 		form_str.value = str.substring(1);
 		formsubmit();
 	}

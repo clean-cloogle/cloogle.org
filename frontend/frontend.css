@@ -21,8 +21,9 @@ a.hidden {
 }
 
 #searchlinks {
+	font-size: 90%;
 	list-style-type: none;
-	margin: .2em;
+	margin: .4em .2em .2em;
 	padding: 0;
 }
 

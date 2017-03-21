@@ -1,5 +1,47 @@
 body {
 	color: #222;
+	font-family: sans-serif;
+}
+
+a.hidden {
+	text-decoration: none;
+}
+
+#header td {
+	vertical-align: top;
+}
+
+#header td#search {
+	padding-left: 2em;
+	padding-top: 47px;
+}
+
+#searchlinks {
+	list-style-type: none;
+	margin: .2em;
+	padding: 0;
+}
+
+#searchlinks li {
+	cursor: pointer;
+	color: #6f7c91;
+	float: left;
+	text-decoration: underline;
+}
+
+#searchlinks li.active {
+	color: #373e48;
+}
+
+#searchlinks li.separator {
+	cursor: default;
+	color: #939dac;
+	padding: 0 .5em;
+	text-decoration: none;
+}
+
+#advanced {
+	margin-top: 1em;
 }
 
 #helptext {
@@ -15,10 +57,6 @@ body {
 
 #helptext td.description {
 	padding-left: 1em;
-}
-
-a.hidden {
-	text-decoration: none;
 }
 
 #suggestions {

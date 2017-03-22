@@ -84,6 +84,8 @@ div.visible {
 	font-family: monospace;
 	font-size: 90%;
 	padding: 1px 4px;
+	border: 1px solid #e9e2e4;
+	border-radius: 2px;
 }
 
 .core-module {

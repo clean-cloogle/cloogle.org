@@ -64,7 +64,7 @@ a.hidden {
 
 .tooltip {
 	display: block;
-	background: #fdfdfd;
+	background: #fafafa;
 	max-height: 0px;
 	transition: max-height 0.15s ease-out;
 	overflow: hidden;
@@ -80,11 +80,11 @@ div.visible {
 }
 
 #helptext code, #helptext .code {
-	background-color: #f9f2f4;
+	background-color: #eeeeee;
 	font-family: monospace;
 	font-size: 90%;
 	padding: 1px 4px;
-	border: 1px solid #e9e2e4;
+	border: 1px solid #d0d0d0;
 	border-radius: 2px;
 }
 

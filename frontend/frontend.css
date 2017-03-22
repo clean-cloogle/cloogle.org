@@ -20,6 +20,7 @@ a {
 
 #header.result-view #search {
 	display: inline-block;
+	text-align: left;
 }
 
 #logo {

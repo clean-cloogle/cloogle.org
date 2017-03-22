@@ -3,7 +3,7 @@ function pluralise(n, what) {
 }
 
 function toggleElement(e) {
-	e.style.display = e.style.display == 'block' ? 'none' : 'block';
+	e.classList.toggle('visible');
 }
 
 function toggle(toggler, open) {

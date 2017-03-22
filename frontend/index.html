@@ -15,112 +15,115 @@
 	<link rel="stylesheet" href="frontend.css" type="text/css"/>
 </head>
 <body>
-	<table id="header">
-		<tr>
-			<td>
-				<a href="https://github.com/clean-cloogle/cloogle">
-					<img src="logo.png" alt="follow link for the sourcecode" />
-				</a>
-			</td>
-			<td id="search">
-				<form id="search_form" action="#">
-					<input type="text" id="search_str" placeholder="fix :: (a -> a) -> a" />
-					<input type="submit" value="Search" /><br/>
-					<ul id="searchlinks">
-						<li onclick="toggleAdvanced();this.classList.toggle('active');">Advanced</li>
-						<li class="separator">|</li>
-						<li onclick="toggleById('helptext');this.classList.toggle('active');">How to use</li>
-						<li class="separator">|</li>
-						<li onclick="toggleById('contributetext');this.classList.toggle('active');">Contribute</li>
-					</ul>
-					<br/>
-					<div id="advanced" style="display:none;">
-						<label><input type="checkbox" id="include_builtins" checked="checked"/> Include language builtins</label><br/>
-						<label><input type="checkbox" id="include_core"/> Include library core modules</label><br/>
-						<table id="lib_selection">
-							<tr>
-								<th><a title="Toggle selection" href="javascript:toggleLibSelection('libs-clean-2.4')">Clean 2.4</a></th>
-								<th><a title="Toggle selection" href="javascript:toggleLibSelection('libs-misc')">Miscellaneous</a></th>
-							</tr>
-							<tr>
-								<td id="libs-clean-2.4">
-									<label><input type="checkbox" class="search_libs" checked="checked" value="StdEnv"/> StdEnv</label><br/>
-									<label><input type="checkbox" class="search_libs" checked="checked" value="ArgEnv"/> ArgEnv</label><br/>
-									<label><input type="checkbox" class="search_libs" checked="checked" value="Directory"/> Directory</label><br/>
-									<label><input type="checkbox" class="search_libs" checked="checked" value="Dynamics"/> Dynamics</label><br/>
-									<label><input type="checkbox" class="search_libs" checked="checked" value="Gast"/> Gast</label><br/>
-									<label><input type="checkbox" class="search_libs" checked="checked" value="Generics"/> Generics</label><br/>
-									<label><input type="checkbox" class="search_libs" checked="checked" value="MersenneTwister"/> MersenneTwister</label><br/>
-									<label><input type="checkbox" class="search_libs" checked="checked" value="StdLib"/> StdLib</label><br/>
-									<label><input type="checkbox" class="search_libs" checked="checked" value="TCPIP"/> TCPIP</label><br/>
-								</td>
-								<td id="libs-misc">
-									<label><input type="checkbox" class="search_libs" checked="checked" value="CleanSerial"/> CleanSerial</label><br/>
-									<label><input type="checkbox" class="search_libs" checked="checked" value="CleanTypeUnifier"/> CleanTypeUnifier</label><br/>
-									<label><input type="checkbox" class="search_libs" checked="checked" value="CleanPrettyPrint"/> CleanPrettyPrint</label><br/>
-									<label><input type="checkbox" class="search_libs" checked="checked" value="Cloogle"/> Cloogle</label><br/>
-									<label><input type="checkbox" class="search_libs" checked="checked" value="GraphCopy"/> GraphCopy</label><br/>
-									<label><input type="checkbox" class="search_libs" checked="checked" value="ObjectIO"> ObjectIO</label><br/>
-									<label><input type="checkbox" class="search_libs" checked="checked" value="Platform"/> Platform</label><br/>
-									<label><input type="checkbox" class="search_libs" checked="checked" value="Sapl"/> Sapl</label><br/>
-									<label><input type="checkbox" class="search_libs" checked="checked" value="SoccerFun"> SoccerFun</label><br/>
-									<label><input type="checkbox" class="search_libs" checked="checked" value="iTasks"/> iTasks</label>
-								</td>
-							</tr>
-						</table>
-					</div>
-					<div id="helptext" style="display:none;">
-						<p>Cloogle is the unofficial <a href="http://clean.cs.ru.nl">Clean</a> language search engine.</p>
-						<p><b>The following search strings are recognised:</b></p>
-						<table>
-							<tr>
-								<td class='code'>hd</td>
-								<td class='description'>Functions with a name like <code>hd</code></td>
-							</tr>
-							<tr>
-								<td class='code'>:: a [a] -&gt; a</td>
-								<td class='description'>Functions with a type unifiable with <code>a [a] -&gt; a</code></td>
-							</tr>
-							<tr>
-								<td class='code'>hd :: [a] -&gt; a</td>
-								<td class='description'>A combination of the above</td>
-							</tr>
-							<tr>
-								<td class='code'>:: A.a: [a] -&gt; a</td>
-								<td class='description'>Type search, where <code>a</code> cannot be unified.</td>
-							</tr>
-							<tr>
-								<td class='code'>type Maybe</td>
-								<td class='description'>The type definition of <code>Maybe x</code></td>
-							</tr>
-							<tr>
-								<td class='code'>class Text</td>
-								<td class='description'>The class definition of <code>Text</code></td>
-							</tr>
-						</table>
-						<p><b>Besides this web app, there are other frontends available:</b></p>
-						<ul>
-							<li>The <code>!cloogle</code> bang on <a href="https://duckduckgo.com/">DuckDuckGo</a></li>
-							<li><a href="https://telegram.me/CloogleBot">@CloogleBot</a> on Telegram</li>
-							<li><a href="https://github.com/clean-cloogle/cloogle-cli">cloogle-cli</a>, a command line application</li>
-							<li>The <code>:Cloogle</code> command in Vim, if you use <a href="https://github.com/camilstaps/vim-clean">vim-clean</a></li>
-							<li>An email to <a href="mailto:query@cloogle.org">query@cloogle.org</a>, with the query in the subject</li>
-						</ul>
-						<p>You can also <a href="src?lib=StdEnv">browse the standard libraries</a>.</p>
-					</div>
-					<div id="contributetext" style="display:none;">
-						<p>
-							Development takes place on <a href="https://github.com/clean-cloogle/cloogle">GitHub</a>.
-							Please read the <a href="https://github.com/clean-cloogle/cloogle/blob/master/CONTRIBUTING.md">contributing guidelines</a> first.
-						</p>
-						<p>
-							For bug reports, open an issue in the <a href="https://github.com/clean-cloogle/cloogle/issues">issue tracker</a>.
-						</p>
-					</div>
-				</form>
-			</td>
-		</tr>
-	</table>
+	<div id="header">
+		<div id="logo">
+			<a href="https://github.com/clean-cloogle/cloogle">
+				<img src="logo.png" alt="follow link for the sourcecode" />
+			</a>
+		</div>
+		<div id="search">
+			<form id="search_form" action="#">
+				<input type="text" id="search_str" placeholder="fix :: (a -> a) -> a" />
+				<input type="submit" value="Search" /><br/>
+				<ul id="searchlinks">
+					<li onclick="toggleAdvanced();this.classList.toggle('active');">Advanced</li>
+					<li class="separator">|</li>
+					<li onclick="toggleById('helptext');this.classList.toggle('active');">How to use</li>
+					<li class="separator">|</li>
+					<li onclick="toggleById('contributetext');this.classList.toggle('active');">Contribute</li>
+				</ul>
+			</form>
+		</div>
+		<div id="advanced" class="tooltip">
+			<div>
+				<label><input type="checkbox" id="include_builtins" checked="checked"/> Include language builtins</label><br/>
+				<label><input type="checkbox" id="include_core"/> Include library core modules</label><br/>
+				<table id="lib_selection">
+					<tr>
+						<th><a title="Toggle selection" href="javascript:toggleLibSelection('libs-clean-2.4')">Clean 2.4</a></th>
+						<th><a title="Toggle selection" href="javascript:toggleLibSelection('libs-misc')">Miscellaneous</a></th>
+					</tr>
+					<tr>
+						<td id="libs-clean-2.4">
+							<label><input type="checkbox" class="search_libs" checked="checked" value="StdEnv"/> StdEnv</label><br/>
+							<label><input type="checkbox" class="search_libs" checked="checked" value="ArgEnv"/> ArgEnv</label><br/>
+							<label><input type="checkbox" class="search_libs" checked="checked" value="Directory"/> Directory</label><br/>
+							<label><input type="checkbox" class="search_libs" checked="checked" value="Dynamics"/> Dynamics</label><br/>
+							<label><input type="checkbox" class="search_libs" checked="checked" value="Gast"/> Gast</label><br/>
+							<label><input type="checkbox" class="search_libs" checked="checked" value="Generics"/> Generics</label><br/>
+							<label><input type="checkbox" class="search_libs" checked="checked" value="MersenneTwister"/> MersenneTwister</label><br/>
+							<label><input type="checkbox" class="search_libs" checked="checked" value="StdLib"/> StdLib</label><br/>
+							<label><input type="checkbox" class="search_libs" checked="checked" value="TCPIP"/> TCPIP</label><br/>
+						</td>
+						<td id="libs-misc">
+							<label><input type="checkbox" class="search_libs" checked="checked" value="CleanSerial"/> CleanSerial</label><br/>
+							<label><input type="checkbox" class="search_libs" checked="checked" value="CleanTypeUnifier"/> CleanTypeUnifier</label><br/>
+							<label><input type="checkbox" class="search_libs" checked="checked" value="CleanPrettyPrint"/> CleanPrettyPrint</label><br/>
+							<label><input type="checkbox" class="search_libs" checked="checked" value="Cloogle"/> Cloogle</label><br/>
+							<label><input type="checkbox" class="search_libs" checked="checked" value="GraphCopy"/> GraphCopy</label><br/>
+							<label><input type="checkbox" class="search_libs" checked="checked" value="ObjectIO"> ObjectIO</label><br/>
+							<label><input type="checkbox" class="search_libs" checked="checked" value="Platform"/> Platform</label><br/>
+							<label><input type="checkbox" class="search_libs" checked="checked" value="Sapl"/> Sapl</label><br/>
+							<label><input type="checkbox" class="search_libs" checked="checked" value="SoccerFun"> SoccerFun</label><br/>
+							<label><input type="checkbox" class="search_libs" checked="checked" value="iTasks"/> iTasks</label>
+						</td>
+					</tr>
+				</table>
+			</div>
+		</div>
+		<div id="helptext" class="tooltip">
+			<div>
+				<p>Cloogle is the unofficial <a href="http://clean.cs.ru.nl">Clean</a> language search engine.</p>
+				<p><b>The following search strings are recognised:</b></p>
+				<table>
+					<tr>
+						<td class='code'>hd</td>
+						<td class='description'>Functions with a name like <code>hd</code></td>
+					</tr>
+					<tr>
+						<td class='code'>:: a [a] -&gt; a</td>
+						<td class='description'>Functions with a type unifiable with <code>a [a] -&gt; a</code></td>
+					</tr>
+					<tr>
+						<td class='code'>hd :: [a] -&gt; a</td>
+						<td class='description'>A combination of the above</td>
+					</tr>
+					<tr>
+						<td class='code'>:: A.a: [a] -&gt; a</td>
+						<td class='description'>Type search, where <code>a</code> cannot be unified.</td>
+					</tr>
+					<tr>
+						<td class='code'>type Maybe</td>
+						<td class='description'>The type definition of <code>Maybe x</code></td>
+					</tr>
+					<tr>
+						<td class='code'>class Text</td>
+						<td class='description'>The class definition of <code>Text</code></td>
+					</tr>
+				</table>
+				<p><b>Besides this web app, there are other frontends available:</b></p>
+				<ul>
+					<li>The <code>!cloogle</code> bang on <a href="https://duckduckgo.com/">DuckDuckGo</a></li>
+					<li><a href="https://telegram.me/CloogleBot">@CloogleBot</a> on Telegram</li>
+					<li><a href="https://github.com/clean-cloogle/cloogle-cli">cloogle-cli</a>, a command line application</li>
+					<li>The <code>:Cloogle</code> command in Vim, if you use <a href="https://github.com/camilstaps/vim-clean">vim-clean</a></li>
+					<li>An email to <a href="mailto:query@cloogle.org">query@cloogle.org</a>, with the query in the subject</li>
+				</ul>
+				<p>You can also <a href="src?lib=StdEnv">browse the standard libraries</a>.</p>
+			</div>
+		</div>
+		<div id="contributetext" class="tooltip">
+			<div>
+				<p>
+					Development takes place on <a href="https://github.com/clean-cloogle/cloogle">GitHub</a>.
+					Please read the <a href="https://github.com/clean-cloogle/cloogle/blob/master/CONTRIBUTING.md">contributing guidelines</a> first.
+				</p>
+				<p>
+					For bug reports, open an issue in the <a href="https://github.com/clean-cloogle/cloogle/issues">issue tracker</a>.
+				</p>
+			</div>
+		</div>
+	</div>
 	<div id="search_results"></div>
 </body>
 </html>

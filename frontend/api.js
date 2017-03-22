@@ -450,6 +450,8 @@ function getLibs() {
 }
 
 function formsubmit() {
+	document.getElementById("header").classList.add('result-view');
+
 	var q = form_str.value;
 	if (q === '') {
 		sresults.innerHTML = 'Can\'t search for the empty string';

@@ -13,7 +13,6 @@ var old_include_builtins = null;
 var old_include_core = null;
 
 function makeGeneralHelp(query) {
-	console.log(query);
 	return 'For general information about Clean, ' +
 		'<a href="http://clean.cs.ru.nl/index.php?title=Special:Search&fulltext=Search&search=' + encodeURIComponent(query) + '" target="_blank">' +
 		'search on the Clean wiki</a>.<br/>' +
@@ -270,7 +269,6 @@ function getResults(str, libs, include_builtins, include_core, page) {
 				if ('unifier' in extra) {
 					var synonyms = extra['unifier'].used_synonyms;
 					for (var i in synonyms) {
-						console.log(synonyms[i]);
 						meta.push('Used the type synonym <code>' + highlightTypeDef(
 									':: ' + synonyms[i][0] + ' :== ' + synonyms[i][1],
 									highlightCallback) + '</code>.');
@@ -417,9 +415,15 @@ function getResults(str, libs, include_builtins, include_core, page) {
 
 	xmlHttp.open('GET', url, true); // true for asynchronous
 	xmlHttp.send(null);
-	if (document.location.hash.substring(1) != encodeURIComponent(str)) {
+	if (true || document.location.hash.substring(1) != encodeURIComponent(str)) {
 		refresh_on_hash = false;
-		document.location.hash = "#" + encodeURIComponent(str);
+		document.location.hash = "#" + encodeURIComponent(str) +
+			(libs != -1
+				? ('%0Alib=' + encodeURIComponent(libs)) : '') +
+			(include_builtins != -1
+				? '%0Ainclude_builtins=' + encodeURIComponent(include_builtins) : '') +
+			(include_core != -1
+				? '%0Ainclude_core=' + encodeURIComponent(include_core) : '');
 	}
 }
 
@@ -485,22 +489,57 @@ function formsubmit() {
 
 window.onload = function () {
 	sform.onsubmit = formsubmit;
-	var str = decodeURIComponent(document.location.hash);
-	if(str !== ''){
-		str = str.substring(1);
-		form_str.value = decodeURIComponent(str);
-		formsubmit();
+	hashQuery();
+	document.getElementById('search_str').focus();
+}
+
+function hashQuery(){
+	if(document.location.hash == '' || document.location.hash == '#'){
+		return;
 	}
 
-	document.getElementById('search_str').focus();
+	var args = document.location.hash.substring(1).split('%0A');
+	form_str.value = decodeURIComponent(args[0]);
+	page = 0;
+	if(args.length > 1){
+		if(!advanced){
+			toggleAdvanced();
+		}
+		for(var i = 1; i<args.length; i++){
+			var equal = args[i].indexOf('=');
+			var value = args[i].substring(equal + 1);
+			switch(args[i].substring(0, equal)){
+				case "lib":
+					var libs = value.split('%2C');
+					for (var j = 0; j < form_libs.length; j++){
+						form_libs[j].checked = false;
+						for (var s = 0; s < libs.length; s++){
+							if(libs[s] == form_libs[j].value){
+								form_libs[j].checked = true;
+								break;
+							}
+						}
+					}
+					break;
+				case "include_builtins":
+					include_builtins_checkbox.checked = value == 'true';
+					break;
+				case "include_core":
+					include_core_checkbox.checked = value == 'true';
+					break;
+				case "page":
+					page = value;
+					break;
+			}
+		}
+	}
+	formsubmit();
 }
 
 window.onhashchange = function () {
 	if (!refresh_on_hash) {
 		refresh_on_hash = true;
 	} else {
-		var str = decodeURIComponent(document.location.hash);
-		form_str.value = str.substring(1);
-		formsubmit();
+		hashQuery();
 	}
 }

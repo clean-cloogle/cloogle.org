@@ -397,7 +397,7 @@ function getResults(str, libs, include_builtins, include_core, page) {
 						'</div>';
 				}
 
-				par.innerHTML += '<div class="remove-at-request">' + makeGeneralHelp(str) + '</span>';
+				par.innerHTML += '<div class="remove-at-request general-help">' + makeGeneralHelp(str) + '</span>';
 
 				if ('suggestions' in responsedata &&
 						responsedata['suggestions'].length > 0) {

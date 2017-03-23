@@ -272,7 +272,8 @@ function getResults(str, libs, include_builtins, include_core, page) {
 					}
 				}
 
-				if ('generic_derivations' in extra) {
+				if ('generic_derivations' in extra &&
+						extra['generic_derivations'].length > 0) {
 					var derivations = makeInstanceTable(
 							extra['generic_derivations'],
 							highlightType);
@@ -319,10 +320,11 @@ function getResults(str, libs, include_builtins, include_core, page) {
 						highlightTypeDef(extra['type'], highlightCallback));
 
 			case 'ClassResult':
-				hidden.push([
-						'Instances',
-						makeInstanceTable(extra['class_instances'], highlightType),
-						pluralise(extra['class_instances'].length, 'instance')]);
+				if (extra['class_instances'].length > 0)
+					hidden.push([
+							'Instances',
+							makeInstanceTable(extra['class_instances'], highlightType),
+							pluralise(extra['class_instances'].length, 'instance')]);
 
 				var html = highlightClassDef(
 						'class ' + extra['class_heading'] +

@@ -26,6 +26,7 @@ RUN PACKAGES="make subversion ca-certificates gcc git curl" \
 	&& git clone https://gitlab.science.ru.nl/mlubbers/CleanSerial /opt/clean/lib/CleanSerial \
 	&& git clone https://github.com/clean-cloogle/cloogle /tmp/cloogle \
 	&& mv /tmp/cloogle/backend /opt/clean/lib/Cloogle && rm -rf /tmp/cloogle \
+	&& git clone https://github.com/camilstaps/CleanInotify /opt/clean/lib/CleanInotify \
 	&& git clone https://github.com/clean-cloogle/CleanTypeUnifier /opt/clean/lib/CleanTypeUnifier \
 	&& git clone https://github.com/clean-cloogle/CleanPrettyPrint /opt/clean/lib/CleanPrettyPrint \
 	&& make distclean \

@@ -30,6 +30,7 @@
 					'TCPIP',
 				],
 				'Miscellaneous' => [
+					'CleanInotify',
 					'CleanPrettyPrint',
 					'CleanSerial',
 					'CleanTypeUnifier',

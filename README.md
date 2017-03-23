@@ -162,7 +162,7 @@ Maintainers:
 
 Contributors:
 
-- [ErinvanderVeen](https://github.com/ErinvanderVeen) (logo)
+- [ErinvanderVeen](https://github.com/ErinvanderVeen) (logo and UI design)
 - [KDercksen](https://github.com/KDercksen) (searching on module; help text)
 
 ## Copyright &amp; License

@@ -88,6 +88,11 @@ body {
 	margin-top: .2em;
 }
 
+#logo {
+	margin-bottom: 1em;
+	max-width: 100%;
+}
+
 #select-lib {
 	margin-bottom: .8em;
 }

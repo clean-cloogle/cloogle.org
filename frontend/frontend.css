@@ -34,6 +34,7 @@ a {
 #logo {
 	display: inline-block;
 	margin: 20px;
+	width: 200px;
 }
 
 #search {
@@ -172,11 +173,10 @@ div.visible {
 	}
 
 	#search {
-		margin-bottom: 1em;
-		margin-top: 0 !important;
+		margin: 0 0 1em 1em !important;
 	}
 
 	.tooltip {
-		padding-left: 0;
+		padding-left: 1em !important;
 	}
 }

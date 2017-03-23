@@ -55,7 +55,7 @@ We will take immediate action.
 If the library is not well known it is advised to first open an issue to see
 whether it is suitable to be indexed by cloogle.
 
-To add a library you have to add it in to the following three places:
+To add a library you have to add it in to the following places:
 
 - `backend/builddb.icl`
 
@@ -75,6 +75,3 @@ To add a library you have to add it in to the following three places:
 - `frontend/src/index.php`
 
 	Add your library to `$all_libs`.
-
-See [this](https://github.com/dopefishh/cloogle/commit/2b44a070fa802d290ebce13ab3689fc895aa5d9c)
-commit for an example.

@@ -127,6 +127,10 @@ div.visible {
 	padding-left: .3em;
 }
 
+#search_results p {
+	padding-left: 1em;
+}
+
 .core-module {
 	font-style: italic;
 }

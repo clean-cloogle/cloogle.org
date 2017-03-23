@@ -415,15 +415,16 @@ function getResults(str, libs, include_builtins, include_core, page) {
 
 	xmlHttp.open('GET', url, true); // true for asynchronous
 	xmlHttp.send(null);
-	if (true || document.location.hash.substring(1) != encodeURIComponent(str)) {
-		refresh_on_hash = false;
-		document.location.hash = "#" + encodeURIComponent(str) +
+	var newhash = "#" + encodeURIComponent(str) +
 			(libs != -1
 				? ('%0Alib=' + encodeURIComponent(libs)) : '') +
 			(include_builtins != -1
 				? '%0Ainclude_builtins=' + encodeURIComponent(include_builtins) : '') +
 			(include_core != -1
 				? '%0Ainclude_core=' + encodeURIComponent(include_core) : '');
+	if (newhash != document.location.hash.substring(1)){
+		refresh_on_hash = false;
+		document.location.hash = newhash;
 	}
 }
 

@@ -36,10 +36,3 @@ RUN hg clone https://bitbucket.org/camilstaps/pygments-main-3 /opt/pygments \
 
 COPY iconv.sh .
 RUN bash iconv.sh && rm iconv.sh
-
-COPY logo.svg /var/www/logo.svg
-RUN cd /var/www \
-	&& apt-get install -qq imagemagick \
-	&& convert -resize 200x logo.svg logo.png \
-	&& apt-get remove -qq imagemagick \
-	&& apt-get autoremove -qq

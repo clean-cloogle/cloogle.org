@@ -38,7 +38,7 @@ RUN bash iconv.sh && rm iconv.sh
 
 COPY logo.svg /var/www/logo.svg
 RUN cd /var/www \
-	&& apt-get install -qq inkscape \
-	&& inkscape logo.svg -w 200 --export-png=logo.png \
-	&& apt-get remove -qq inkscape \
+	&& apt-get install -qq imagemagick \
+	&& convert -resize 200x logo.svg logo.png \
+	&& apt-get remove -qq imagemagick \
 	&& apt-get autoremove -qq

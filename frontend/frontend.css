@@ -1,7 +1,7 @@
 body {
 	color: #222;
 	font-family: sans-serif;
-	margin: 0;
+	margin: 0 0 1em;
 }
 
 td, th {
@@ -156,6 +156,10 @@ div.visible {
 
 .general-help {
 	padding: 0 1em;
+}
+
+#more {
+	padding-left: 1em;
 }
 
 @media (max-width: 600px) {

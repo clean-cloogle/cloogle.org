@@ -16,3 +16,7 @@ pre {
 .toggle-container .togglee {
 	display: none;
 }
+
+.toggle-container .toggle-visible {
+	display: block;
+}

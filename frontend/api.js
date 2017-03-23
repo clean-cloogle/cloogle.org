@@ -2,11 +2,11 @@ var form_str = document.getElementById('search_str');
 var form_libs = document.getElementsByClassName('search_libs');
 var sform = document.getElementById('search_form');
 var sresults = document.getElementById('search_results');
-var advanced_checkbox = document.getElementById('search_advanced');
 var include_builtins_checkbox = document.getElementById('include_builtins');
 var include_core_checkbox = document.getElementById('include_core');
 var refresh_on_hash = true;
 
+var advanced = false;
 var old_str = null;
 var old_libs = null;
 var old_include_builtins = null;
@@ -32,6 +32,11 @@ function toggleLibSelection(className) {
 
 	for (var i in boxes)
 		boxes[i].checked = checkAll;
+}
+
+function toggleAdvanced() {
+	advanced = !advanced;
+	toggleById('advanced');
 }
 
 function highlightCallback(span, cls, str) {
@@ -394,7 +399,7 @@ function getResults(str, libs, include_builtins, include_core, page) {
 						'</div>';
 				}
 
-				par.innerHTML += '<div class="remove-at-request">' + makeGeneralHelp(str) + '</span>';
+				par.innerHTML += '<div class="remove-at-request general-help">' + makeGeneralHelp(str) + '</span>';
 
 				if ('suggestions' in responsedata &&
 						responsedata['suggestions'].length > 0) {
@@ -432,7 +437,7 @@ function makeUnifier(ufr) {
 }
 
 function getLibs() {
-	if (!advanced_checkbox.checked)
+	if (!advanced)
 		return -1;
 
 	var libs = [];
@@ -447,6 +452,8 @@ function getLibs() {
 }
 
 function formsubmit() {
+	document.getElementById("header").classList.add('result-view');
+
 	var q = form_str.value;
 	if (q === '') {
 		sresults.innerHTML = 'Can\'t search for the empty string';
@@ -465,7 +472,7 @@ function formsubmit() {
 		var libs = getLibs();
 		var include_builtins = -1;
 		var include_core = -1;
-		if (advanced_checkbox.checked) {
+		if (advanced) {
 			var include_builtins = include_builtins_checkbox.checked;
 			var include_core = include_core_checkbox.checked;
 		}
@@ -476,11 +483,6 @@ function formsubmit() {
 	return false;
 };
 
-advanced_checkbox.onchange = function () {
-	var el = document.getElementById('advanced');
-	el.style.display = this.checked ? 'block' : 'none';
-}
-
 window.onload = function () {
 	sform.onsubmit = formsubmit;
 	var str = decodeURIComponent(document.location.hash);
@@ -489,9 +491,6 @@ window.onload = function () {
 		form_str.value = decodeURIComponent(str);
 		formsubmit();
 	}
-
-	if (advanced_checkbox.checked)
-		advanced_checkbox.onchange();
 
 	document.getElementById('search_str').focus();
 }

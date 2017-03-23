@@ -13,6 +13,7 @@
 </head>
 <body>
 	<div id="sidebar">
+		<a href="/"><img id="logo" src="../logo.png" alt="Cloogle logo"/></a>
 		<h3>Library browser</h3>
 		<select id="select-lib">
 			<?php

@@ -2,8 +2,8 @@ function pluralise(n, what) {
 	return n + ' ' + what + (n == 1 ? '' : 's');
 }
 
-function toggleElement(e) {
-	e.style.display = e.style.display == 'block' ? 'none' : 'block';
+function toggleElement(e, className) {
+	e.classList.toggle(typeof className == 'undefined' ? 'visible' : className);
 }
 
 function toggle(toggler, open) {
@@ -20,7 +20,7 @@ function toggle(toggler, open) {
 			continue;
 
 		if (typeof open == 'undefined')
-			toggleElement(es[i]);
+			toggleElement(es[i], 'toggle-visible');
 		else
 			es[i].style.display = open ? 'block' : 'none';
 	}

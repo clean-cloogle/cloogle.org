@@ -1,75 +1,149 @@
 body {
 	color: #222;
+	font-family: sans-serif;
+	margin: 0;
 }
 
-#helptext {
-	margin-bottom: 1em;
+td, th {
+	vertical-align: top;
 }
 
-#helptext code, #helptext .code {
-	background-color: #f9f2f4;
-	font-family: monospace;
-	font-size: 90%;
-	padding: 1px 4px;
+th {
+	text-align: left;
 }
 
-#helptext td.description {
-	padding-left: 1em;
+a {
+	color: #26c;
+}
+
+#header {
+	margin-top: 10%;
+	text-align: center;
+	width: 100%;
+}
+
+#header.result-view {
+	margin-top: 0%;
+	text-align: left;
+}
+
+#header.result-view > * {
+	vertical-align: top;
+}
+
+#logo {
+	display: inline-block;
+	margin: 20px;
+}
+
+#search {
+	display: block;
+	text-align: center;
+}
+
+#header.result-view #search {
+	display: inline-block;
+	margin-top: 65px;
+	text-align: left;
 }
 
 a.hidden {
 	text-decoration: none;
 }
 
-#suggestions {
-	margin: 10px 0;
-}
-
-td.wide {
-	width: 99%;
-}
-
-th {
-	padding-right: 1em;
-	text-align: left;
-	vertical-align: top;
-	white-space: nowrap;
-}
-
-#lib_selection th {
-	text-align: center;
-}
-
-#lib_selection td {
+#searchlinks {
+	display: inline-block;
 	font-size: 90%;
-	vertical-align: top;
+	list-style-type: none;
+	padding: 0;
+}
+
+#header.result-view #searchlinks {
+	margin: .3em 0 0;
+}
+
+#searchlinks li {
+	cursor: pointer;
+	color: #6f7c91;
+	float: left;
+	text-decoration: underline;
+}
+
+#searchlinks li.active {
+	color: #373e48;
+}
+
+#searchlinks li.separator {
+	cursor: default;
+	color: #939dac;
+	padding: 0 .5em;
+	text-decoration: none;
+}
+
+.tooltip {
+	background: #f8f8f8;
+	display: block;
+	max-height: 0px;
+	overflow: hidden;
+	transition: max-height 0.15s ease-out;
+}
+
+#header.result-view .tooltip {
+	padding-left: 245px;
+}
+
+.tooltip.visible {
+	border-width: 1px 0;
+	border-color: #ccc;
+	border-style: solid;
+	margin-bottom: 1em;
+}
+
+.tooltip div {
+	text-align: left;
+	display: inline-block;
+}
+
+#advanced.visible {
+	padding-bottom: .6em;
+	padding-top: .6em;
+}
+
+div.visible {
+	max-height: 500px !important;
+}
+
+#helptext code, #helptext .code {
+	background-color: #eeeeee;
+	font-family: monospace;
+	font-size: 90%;
+	margin-right: .2em;
+	padding: 1px 4px;
+	border: 1px solid #d0d0d0;
+	border-radius: 2px;
+}
+
+#helptext .description {
+	padding-left: .3em;
 }
 
 .core-module {
 	font-style: italic;
 }
 
-#search_results {
-	margin-top: 1.5em;
-}
-
-#search_results a {
-	color: #26c;
-}
-
 .result-basic {
 	background-color: #e8e8e8;
-	padding: .2em;
+	padding: .2em .2em .2em 1em;
 }
 
 .result-extra {
 	background-color: #f4f4f4;
 	font-size: 85%;
-	padding-left: .2em;
+	padding-left: 1em;
 }
 
 .result-extra.toggle-container {
-	padding-left: 1.2em;
+	padding-left: 2.2em;
 }
 
 .result-extra .toggler {
@@ -78,4 +152,23 @@ th {
 
 .result-code {
 	margin: 1em 0 1.5em 1em;
+}
+
+.general-help {
+	padding: 0 1em;
+}
+
+@media (max-width: 600px) {
+	#header.result-view > * {
+		display: block;
+	}
+
+	#search {
+		margin-bottom: 1em;
+		margin-top: 0 !important;
+	}
+
+	.tooltip {
+		padding-left: 0;
+	}
 }

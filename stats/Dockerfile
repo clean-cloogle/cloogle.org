@@ -1,27 +1,12 @@
-# Installation:
-# docker build -t cloogle-stats .
-#
-# Usage:
-# docker run \
-#   -d \
-#   --net=host \
-#   --name cloogle-stats \
-#   -v /path/to/cloogle/cloogle.log:/var/log/cloogle.log \
-#   -v /path/to/cert.pem:/srv/ssl/cert.pem \
-#   -v /path/to/key.pem:/srv/ssl/key.pem \
-#   cloogle-stats
+FROM debian:jessie
 
-FROM node:argon
-
-RUN mkdir -p /usr/src/cloogle-stats
-WORKDIR /usr/src/cloogle-stats
-
-COPY package.json /usr/src/cloogle-stats
-RUN npm install
-
-COPY server.js /usr/src/cloogle-stats
-COPY entrypoint.sh /usr/src/cloogle-stats
+RUN apt-get update && apt-get install -qq wget
+RUN wget -q -O/tmp/t.deb https://github.com/joewalnes/websocketd/releases/download/v0.2.12/websocketd-0.2.12_amd64.deb && \
+	dpkg -i /tmp/t.deb
 
 EXPOSE 31216
 
-ENTRYPOINT ["./entrypoint.sh"]
+COPY entrypoint.sh .
+COPY stats.sh .
+ENTRYPOINT ./entrypoint.sh
+

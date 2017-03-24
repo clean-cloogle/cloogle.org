@@ -570,7 +570,7 @@ function shareButtonClick (){
 		} else {
 			xmlHttp.open('POST', 'https://cloo.gl', true); // true for asynchronous
 			xmlHttp.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
-			xmlHttp.send('type=cloogle&url=' + encodeURIComponent(document.location.hash.substring(1)));
+			xmlHttp.send('type=cloogle&url=' + encodeURIComponent(document.location.hash));
 		}
 	}
 }

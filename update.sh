@@ -8,8 +8,8 @@ git submodule update
 
 echo "Updating containers..."
 
-docker-compose build
-docker-compose up -d
+sudo docker-compose build
+sudo docker-compose up -d
 
 echo "All done."
 

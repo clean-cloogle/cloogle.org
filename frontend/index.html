@@ -22,8 +22,8 @@
 			</a>
 		</div>
 		<div id="search">
-			<form id="search_form" action="#">
-				<input type="text" id="search_str" placeholder="fix :: (a -> a) -> a" />
+			<form id="search-form" action="#">
+				<input type="text" id="search-str" placeholder="fix :: (a -> a) -> a" />
 				<input type="submit" value="Search" /><br/>
 				<ul id="searchlinks">
 					<li onclick="toggleAdvanced();this.classList.toggle('active');">Advanced</li>
@@ -38,37 +38,37 @@
 		</div>
 		<div id="advanced" class="tooltip">
 			<div>
-				<label><input type="checkbox" id="include_builtins" checked="checked"/> Include language builtins</label><br/>
-				<label><input type="checkbox" id="include_core"/> Include library core modules</label><br/>
-				<table id="lib_selection">
+				<label><input type="checkbox" id="include-builtins" checked="checked"/> Include language builtins</label><br/>
+				<label><input type="checkbox" id="include-core"/> Include library core modules</label><br/>
+				<table>
 					<tr>
 						<th><a title="Toggle selection" href="javascript:toggleLibSelection('libs-clean-2.4')">Clean 2.4</a></th>
 						<th><a title="Toggle selection" href="javascript:toggleLibSelection('libs-misc')">Miscellaneous</a></th>
 					</tr>
 					<tr>
 						<td id="libs-clean-2.4">
-							<label><input type="checkbox" class="search_libs" checked="checked" value="StdEnv"/> StdEnv</label><br/>
-							<label><input type="checkbox" class="search_libs" checked="checked" value="ArgEnv"/> ArgEnv</label><br/>
-							<label><input type="checkbox" class="search_libs" checked="checked" value="Directory"/> Directory</label><br/>
-							<label><input type="checkbox" class="search_libs" checked="checked" value="Dynamics"/> Dynamics</label><br/>
-							<label><input type="checkbox" class="search_libs" checked="checked" value="Gast"/> Gast</label><br/>
-							<label><input type="checkbox" class="search_libs" checked="checked" value="Generics"/> Generics</label><br/>
-							<label><input type="checkbox" class="search_libs" checked="checked" value="MersenneTwister"/> MersenneTwister</label><br/>
-							<label><input type="checkbox" class="search_libs" checked="checked" value="StdLib"/> StdLib</label><br/>
-							<label><input type="checkbox" class="search_libs" checked="checked" value="TCPIP"/> TCPIP</label><br/>
+							<label><input type="checkbox" class="search-libs" checked="checked" value="StdEnv"/> StdEnv</label><br/>
+							<label><input type="checkbox" class="search-libs" checked="checked" value="ArgEnv"/> ArgEnv</label><br/>
+							<label><input type="checkbox" class="search-libs" checked="checked" value="Directory"/> Directory</label><br/>
+							<label><input type="checkbox" class="search-libs" checked="checked" value="Dynamics"/> Dynamics</label><br/>
+							<label><input type="checkbox" class="search-libs" checked="checked" value="Gast"/> Gast</label><br/>
+							<label><input type="checkbox" class="search-libs" checked="checked" value="Generics"/> Generics</label><br/>
+							<label><input type="checkbox" class="search-libs" checked="checked" value="MersenneTwister"/> MersenneTwister</label><br/>
+							<label><input type="checkbox" class="search-libs" checked="checked" value="StdLib"/> StdLib</label><br/>
+							<label><input type="checkbox" class="search-libs" checked="checked" value="TCPIP"/> TCPIP</label><br/>
 						</td>
 						<td id="libs-misc">
-							<label><input type="checkbox" class="search_libs" checked="checked" value="CleanInotify"/> CleanInotify</label><br/>
-							<label><input type="checkbox" class="search_libs" checked="checked" value="CleanSerial"/> CleanSerial</label><br/>
-							<label><input type="checkbox" class="search_libs" checked="checked" value="CleanTypeUnifier"/> CleanTypeUnifier</label><br/>
-							<label><input type="checkbox" class="search_libs" checked="checked" value="CleanPrettyPrint"/> CleanPrettyPrint</label><br/>
-							<label><input type="checkbox" class="search_libs" checked="checked" value="Cloogle"/> Cloogle</label><br/>
-							<label><input type="checkbox" class="search_libs" checked="checked" value="GraphCopy"/> GraphCopy</label><br/>
-							<label><input type="checkbox" class="search_libs" checked="checked" value="ObjectIO"> ObjectIO</label><br/>
-							<label><input type="checkbox" class="search_libs" checked="checked" value="Platform"/> Platform</label><br/>
-							<label><input type="checkbox" class="search_libs" checked="checked" value="Sapl"/> Sapl</label><br/>
-							<label><input type="checkbox" class="search_libs" checked="checked" value="SoccerFun"> SoccerFun</label><br/>
-							<label><input type="checkbox" class="search_libs" checked="checked" value="iTasks"/> iTasks</label>
+							<label><input type="checkbox" class="search-libs" checked="checked" value="CleanInotify"/> CleanInotify</label><br/>
+							<label><input type="checkbox" class="search-libs" checked="checked" value="CleanSerial"/> CleanSerial</label><br/>
+							<label><input type="checkbox" class="search-libs" checked="checked" value="CleanTypeUnifier"/> CleanTypeUnifier</label><br/>
+							<label><input type="checkbox" class="search-libs" checked="checked" value="CleanPrettyPrint"/> CleanPrettyPrint</label><br/>
+							<label><input type="checkbox" class="search-libs" checked="checked" value="Cloogle"/> Cloogle</label><br/>
+							<label><input type="checkbox" class="search-libs" checked="checked" value="GraphCopy"/> GraphCopy</label><br/>
+							<label><input type="checkbox" class="search-libs" checked="checked" value="ObjectIO"> ObjectIO</label><br/>
+							<label><input type="checkbox" class="search-libs" checked="checked" value="Platform"/> Platform</label><br/>
+							<label><input type="checkbox" class="search-libs" checked="checked" value="Sapl"/> Sapl</label><br/>
+							<label><input type="checkbox" class="search-libs" checked="checked" value="SoccerFun"> SoccerFun</label><br/>
+							<label><input type="checkbox" class="search-libs" checked="checked" value="iTasks"/> iTasks</label>
 						</td>
 					</tr>
 				</table>
@@ -127,6 +127,6 @@
 			</div>
 		</div>
 	</div>
-	<div id="search_results"></div>
+	<div id="search-results"></div>
 </body>
 </html>

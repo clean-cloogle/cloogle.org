@@ -32,7 +32,7 @@
 					<li class="separator">|</li>
 					<li onclick="toggleById('contributetext');this.classList.toggle('active');">Contribute</li>
 					<li class="separator">|</li>
-					<li onclick="toggleById('sharetext');this.classList.toggle('active');">Share</li>
+					<li onclick="shareButtonClick()" id="sharebutton">Share</li>
 				</ul>
 			</form>
 		</div>
@@ -124,11 +124,6 @@
 				<p>
 					For bug reports, open an issue in the <a href="https://github.com/clean-cloogle/cloogle/issues">issue tracker</a>.
 				</p>
-			</div>
-		</div>
-		<div id="sharetext" class="tooltip">
-			<div>
-				<input id="sharebuttonfield" type="button" onclick="sharebuttonClick();" value="Share this query">
 			</div>
 		</div>
 	</div>

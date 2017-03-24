@@ -4,7 +4,7 @@ var sform = document.getElementById('search_form');
 var sresults = document.getElementById('search_results');
 var include_builtins_checkbox = document.getElementById('include_builtins');
 var include_core_checkbox = document.getElementById('include_core');
-var sharebuttonfield = document.getElementById('sharebuttonfield');
+var sharebutton = document.getElementById('sharebutton');
 var refresh_on_hash = true;
 
 var advanced = false;
@@ -426,8 +426,7 @@ function getResults(str, libs, include_builtins, include_core, page) {
 	if (newhash != document.location.hash.substring(1)){
 		refresh_on_hash = false;
 		document.location.hash = newhash;
-		sharebuttonfield.type = "button";
-		sharebuttonfield.value = "Share";
+		sharebutton.innerHTML = "Share";
 	}
 }
 
@@ -548,25 +547,30 @@ window.onhashchange = function () {
 	}
 }
 
-function sharebuttonClick (){
-	if(sharebuttonfield.type == "button"){
-		sharebuttonfield.value = "Contacting cloo.gl server";
+function shareButtonClick (){
+	if(sharebutton.innerHTML == "Share"){
+		sharebutton.innerHTML = "Contacting cloo.gl server";
 
 		var xmlHttp = new XMLHttpRequest();
 		xmlHttp.onreadystatechange = function () {
 			if(xmlHttp.readyState == 4){
 				if(xmlHttp.status == 200){
-					sharebuttonfield.value = xmlHttp.responseText;
-					sharebuttonfield.type = "text";
+					sharebutton.innerHTML =
+						'<a href="' + xmlHttp.responseText + '">' +
+						xmlHttp.responseText.substring(8) + '</a>';
 				} else {
 					console.log(xmlHttp.responseText);
-					sharebuttonfield.value = "Failed, check console";
+					sharebutton.innerHTML = "Failed, check console";
 				}
 			}
 		};
 
-		xmlHttp.open('POST', 'https://cloo.gl', true); // true for asynchronous
-		xmlHttp.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
-		xmlHttp.send('type=cloogle&url=' + encodeURIComponent(document.location.hash.substring(1)));
+		if(document.location.hash == '#' || document.location.hash == ''){
+			sharebutton.innerHTML = '<a href="https://cloo.gl">cloo.gl</a>';
+		} else {
+			xmlHttp.open('POST', 'https://cloo.gl', true); // true for asynchronous
+			xmlHttp.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+			xmlHttp.send('type=cloogle&url=' + encodeURIComponent(document.location.hash.substring(1)));
+		}
 	}
 }

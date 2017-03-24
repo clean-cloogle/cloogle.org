@@ -1,9 +1,9 @@
-var form_str = document.getElementById('search_str');
-var form_libs = document.getElementsByClassName('search_libs');
-var sform = document.getElementById('search_form');
-var sresults = document.getElementById('search_results');
-var include_builtins_checkbox = document.getElementById('include_builtins');
-var include_core_checkbox = document.getElementById('include_core');
+var form_str = document.getElementById('search-str');
+var form_libs = document.getElementsByClassName('search-libs');
+var sform = document.getElementById('search-form');
+var sresults = document.getElementById('search-results');
+var include_builtins_checkbox = document.getElementById('include-builtins');
+var include_core_checkbox = document.getElementById('include-core');
 var sharebutton = document.getElementById('sharebutton');
 var refresh_on_hash = true;
 
@@ -24,7 +24,7 @@ function makeGeneralHelp(query) {
 
 function toggleLibSelection(className) {
 	var boxes =
-		document.getElementById(className).getElementsByClassName('search_libs');
+		document.getElementById(className).getElementsByClassName('search-libs');
 	var checkAll = true;
 	for (var i in boxes)
 		if (boxes[i].checked)
@@ -380,11 +380,11 @@ function getResults(str, libs, include_builtins, include_core, page) {
 	}
 
 	xmlHttp.onreadystatechange = function () {
-		if(xmlHttp.readyState == 4 && xmlHttp.status == 200){
+		if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
 			document.getElementById('loading').remove();
 			var responsedata = JSON.parse(xmlHttp.responseText);
-			if(responsedata['return'] >= 0 && responsedata['return'] <= 64){
-				for(var i = 0; i<responsedata['data'].length; i++){
+			if (responsedata['return'] >= 0 && responsedata['return'] <= 64) {
+				for (var i = 0; i<responsedata['data'].length; i++) {
 					var c = responsedata['data'][i];
 					elem.innerHTML += makeResultHTML(c);
 				}
@@ -423,7 +423,7 @@ function getResults(str, libs, include_builtins, include_core, page) {
 				? '%0Ainclude_builtins=' + encodeURIComponent(include_builtins) : '') +
 			(include_core != -1
 				? '%0Ainclude_core=' + encodeURIComponent(include_core) : '');
-	if (newhash != document.location.hash.substring(1)){
+	if (newhash != document.location.hash.substring(1)) {
 		refresh_on_hash = false;
 		document.location.hash = newhash;
 		sharebutton.innerHTML = "Share";
@@ -493,31 +493,32 @@ function formsubmit() {
 window.onload = function () {
 	sform.onsubmit = formsubmit;
 	hashQuery();
-	document.getElementById('search_str').focus();
+	document.getElementById('search-str').focus();
 }
 
-function hashQuery(){
-	if(document.location.hash == '' || document.location.hash == '#'){
+function hashQuery() {
+	if (document.location.hash == '' || document.location.hash == '#')
 		return;
-	}
 
 	var args = document.location.hash.substring(1).split('%0A');
 	form_str.value = decodeURIComponent(args[0]);
 	page = 0;
-	if(args.length > 1){
-		if(!advanced){
+
+	if (args.length > 1) {
+		if (!advanced)
 			toggleAdvanced();
-		}
-		for(var i = 1; i<args.length; i++){
+
+		for (var i = 1; i<args.length; i++) {
 			var equal = args[i].indexOf('=');
+
 			var value = args[i].substring(equal + 1);
-			switch(args[i].substring(0, equal)){
+			switch (args[i].substring(0, equal)) {
 				case "lib":
 					var libs = value.split('%2C');
-					for (var j = 0; j < form_libs.length; j++){
+					for (var j = 0; j < form_libs.length; j++) {
 						form_libs[j].checked = false;
-						for (var s = 0; s < libs.length; s++){
-							if(libs[s] == form_libs[j].value){
+						for (var s = 0; s < libs.length; s++) {
+							if (libs[s] == form_libs[j].value) {
 								form_libs[j].checked = true;
 								break;
 							}
@@ -536,25 +537,25 @@ function hashQuery(){
 			}
 		}
 	}
+
 	formsubmit();
 }
 
 window.onhashchange = function () {
-	if (!refresh_on_hash) {
+	if (!refresh_on_hash)
 		refresh_on_hash = true;
-	} else {
+	else
 		hashQuery();
-	}
 }
 
-function shareButtonClick (){
-	if(sharebutton.innerHTML == "Share"){
+function shareButtonClick () {
+	if (sharebutton.innerHTML == "Share") {
 		sharebutton.innerHTML = "Contacting cloo.gl server";
 
 		var xmlHttp = new XMLHttpRequest();
 		xmlHttp.onreadystatechange = function () {
-			if(xmlHttp.readyState == 4){
-				if(xmlHttp.status == 200){
+			if (xmlHttp.readyState == 4) {
+				if (xmlHttp.status == 200) {
 					sharebutton.innerHTML =
 						'<a href="' + xmlHttp.responseText + '">' +
 						xmlHttp.responseText.substring(8) + '</a>';
@@ -565,10 +566,10 @@ function shareButtonClick (){
 			}
 		};
 
-		if(document.location.hash == '#' || document.location.hash == ''){
+		if (document.location.hash == '#' || document.location.hash == '') {
 			sharebutton.innerHTML = '<a href="https://cloo.gl">cloo.gl</a>';
 		} else {
-			xmlHttp.open('POST', 'https://cloo.gl', true); // true for asynchronous
+			xmlHttp.open('POST', 'https://cloo.gl', true);
 			xmlHttp.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
 			xmlHttp.send('type=cloogle&url=' + encodeURIComponent(document.location.hash));
 		}

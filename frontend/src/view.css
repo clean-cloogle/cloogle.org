@@ -143,3 +143,8 @@ body {
 .special {
 	cursor: pointer;
 }
+
+#sharebutton {
+	cursor: pointer;
+	text-decoration: underline;
+}

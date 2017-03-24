@@ -28,7 +28,6 @@ function loadModule(elem) {
 	for (var i in hashelems)
 		if (hashelems[i].substring(0,5) == 'line=')
 			url += '&line=' + hashelems[i].substring(5);
-
 	var xmlHttp = new XMLHttpRequest();
 	xmlHttp.onreadystatechange = function() { 
 		if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
@@ -83,6 +82,8 @@ function updateHash() {
 	if (window.location.hash.substring(1) != encodeURIComponent(newhash)) {
 		refresh_on_hash = false;
 		window.location.hash = '#' + newhash;
+		sharebutton.removeAttribute('href');
+		sharebutton.innerHTML='Share';
 	}
 }
 
@@ -143,4 +144,27 @@ window.onload = function () {
 	}
 
 	window.onhashchange();
+}
+
+function shareButtonClick(){
+	if(sharebutton.innerHTML == "Share"){
+		sharebutton.innerHTML = "Contacting cloo.gl server";
+
+		var xmlHttp = new XMLHttpRequest();
+		xmlHttp.onreadystatechange = function () {
+			if(xmlHttp.readyState == 4){
+				if(xmlHttp.status == 200){
+					sharebutton.href = xmlHttp.responseText;
+					sharebutton.innerHTML = xmlHttp.responseText.substring(8);
+					sharebutton.onclick = null;
+				} else {
+					sharebutton.innerHTML = "Failed, check console";
+				}
+			}
+		};
+
+		xmlHttp.open('POST', 'https://cloo.gl', true); // true for asynchronous
+		xmlHttp.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+		xmlHttp.send('type=cloogle&url=' + encodeURIComponent(document.location.pathname.substring(1) + document.location.search + document.location.hash))
+	}
 }

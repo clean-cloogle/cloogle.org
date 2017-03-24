@@ -46,8 +46,8 @@ Your Cloogle server now runs at port `31215` on your local machine.
 The web frontend is available at port `80`, live statistics at port `31216`.
 
 If you intend to run this on a server that has port 80 occupied already, you
-can use nginx as a proxy. Change `80:80` to `31280:80` in `docker-compose.yml`
-and use the following nginx config:
+can use nginx or apache2 as a proxy. Change `80:80` to `31280:80` in
+`docker-compose.yml` and use the following nginx config:
 
 ```nginx
 server {
@@ -60,6 +60,23 @@ server {
 		proxy_set_header X-Forwarded-For $remote_addr;
 	}
 }
+```
+
+or the following apache2 virtualhost (be sure to enable `mod_proxy`).
+
+```ApacheConf
+<VirtualHost *:80>
+	ServerName cloogle.org
+
+	ServerAdmin webmaster@cloogle.org
+
+	ErrorLog ${APACHE_LOG_DIR}/error.log
+	CustomLog ${APACHE_LOG_DIR}/cloogle.org.log combined
+
+	ProxyRequests off
+	ProxyPass / http://localhost:31280/
+	ProxyPassReverse / http://localhost:31280/
+</VirtualHost>
 ```
 
 ## HTTP API specification

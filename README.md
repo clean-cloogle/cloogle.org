@@ -24,60 +24,15 @@ For support and/or contact please join us at the `#cloogle` irc channel on
 
 ### Readme contents
 
-- [Setup](#setup)
 - [HTTP API Specification](#http-api-specification)
 - [TCP API Specification](#tcp-api-specification)
+- [Library browser](#library-browser)
 - [Statistics](#statistics)
+- [Setup](#setup)
 - [Authors](#authors)
 - [Copyright &amp; License](#copyright--license)
 
 ---
-
-## Setup
-After installing
-[docker-compose](https://www.docker.com/products/docker-compose) run the
-following command:
-
-```bash
-docker-compose up
-```
-
-Your Cloogle server now runs at port `31215` on your local machine.
-The web frontend is available at port `80`, live statistics at port `31216`.
-
-If you intend to run this on a server that has port 80 occupied already, you
-can use nginx or apache2 as a proxy. Change `80:80` to `31280:80` in
-`docker-compose.yml` and use the following nginx config:
-
-```nginx
-server {
-	listen [::]:80;
-	server_name cloogle.org;
-
-	location / {
-		proxy_pass http://127.0.0.1:31280;
-		proxy_set_header Host $host;
-		proxy_set_header X-Forwarded-For $remote_addr;
-	}
-}
-```
-
-or the following apache2 virtualhost (be sure to enable `mod_proxy`).
-
-```ApacheConf
-<VirtualHost *:80>
-	ServerName cloogle.org
-
-	ServerAdmin webmaster@cloogle.org
-
-	ErrorLog ${APACHE_LOG_DIR}/error.log
-	CustomLog ${APACHE_LOG_DIR}/cloogle.org.log combined
-
-	ProxyRequests off
-	ProxyPass / http://localhost:31280/
-	ProxyPassReverse / http://localhost:31280/
-</VirtualHost>
-```
 
 ## HTTP API specification
 `api.php` should be called with a `GET` request where the `str` variable
@@ -162,6 +117,11 @@ The Clean backend will return a JSON string, similar to the output of the PHP
 script described above. The error codes above 150 are specific to the script
 and cannot be returned by the Clean backend.
 
+## Library browser
+The frontend includes a library browser to browse through all known Clean
+libraries. The browser can be accessed through
+[cloogle.org/src](https://cloogle.org/src).
+
 ## Statistics
 A websocket server on port 31216 provides you with the realtime log.
 
@@ -170,6 +130,52 @@ realtime usage chart is shown.
 
 For longterm statistics you can see
 [cloogle.org/stats/longterm.html](https://cloogle.org/stats/longterm.html).
+
+## Setup
+After installing
+[docker-compose](https://www.docker.com/products/docker-compose) run the
+following command:
+
+```bash
+docker-compose up
+```
+
+Your Cloogle server now runs at port `31215` on your local machine.
+The web frontend is available at port `80`, live statistics at port `31216`.
+
+If you intend to run this on a server that has port 80 occupied already, you
+can use nginx or apache2 as a proxy. Change `80:80` to `31280:80` in
+`docker-compose.yml` and use the following nginx config:
+
+```nginx
+server {
+	listen [::]:80;
+	server_name cloogle.org;
+
+	location / {
+		proxy_pass http://127.0.0.1:31280;
+		proxy_set_header Host $host;
+		proxy_set_header X-Forwarded-For $remote_addr;
+	}
+}
+```
+
+Or the following apache2 virtualhost (be sure to enable `mod_proxy`).
+
+```ApacheConf
+<VirtualHost *:80>
+	ServerName cloogle.org
+
+	ServerAdmin webmaster@cloogle.org
+
+	ErrorLog ${APACHE_LOG_DIR}/error.log
+	CustomLog ${APACHE_LOG_DIR}/cloogle.org.log combined
+
+	ProxyRequests off
+	ProxyPass / http://localhost:31280/
+	ProxyPassReverse / http://localhost:31280/
+</VirtualHost>
+```
 
 ## Authors
 Maintainers:

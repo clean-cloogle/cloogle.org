@@ -1,6 +1,3 @@
-#!/bin/bash
-if [[ -f "/srv/ssl/cert.pem" ]] && [[ -f "/srv/ssl/key.pem" ]]; then
-	node server.js /var/log/cloogle.log /srv/ssl/cert.pem /srv/ssl/key.pem
-else
-	node server.js /var/log/cloogle.log
-fi
+#!/bin/sh
+[ -f "/srv/ssl/cert.pem" ] && [ -f "/srv/ssl/key.pem" ] && SSL="--ssl --sslcert=/srv/ssl/cert.pem --sslkey=/srv/ssl/key.pem"
+/usr/bin/websocketd --port=31216 $SSL ./stats.sh

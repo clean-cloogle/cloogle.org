@@ -4,7 +4,8 @@ var sform = document.getElementById('search-form');
 var sresults = document.getElementById('search-results');
 var include_builtins_checkbox = document.getElementById('include-builtins');
 var include_core_checkbox = document.getElementById('include-core');
-var sharebutton = document.getElementById('sharebutton');
+var share_button = document.getElementById('share-button');
+var share_link = document.getElementById('share-link');
 var refresh_on_hash = true;
 
 var advanced = false;
@@ -416,6 +417,7 @@ function getResults(str, libs, include_builtins, include_core, page) {
 
 	xmlHttp.open('GET', url, true); // true for asynchronous
 	xmlHttp.send(null);
+
 	var newhash = encodeURIComponent(str) +
 			(libs != -1
 				? ('%0Alib=' + encodeURIComponent(libs)) : '') +
@@ -426,7 +428,7 @@ function getResults(str, libs, include_builtins, include_core, page) {
 	if (newhash != document.location.hash.substring(1)) {
 		refresh_on_hash = false;
 		document.location.hash = '#' + newhash;
-		sharebutton.innerHTML = "Share";
+		restoreShareUI();
 	}
 }
 
@@ -542,36 +544,45 @@ function hashQuery() {
 }
 
 window.onhashchange = function () {
-	if (!refresh_on_hash)
+	if (!refresh_on_hash) {
 		refresh_on_hash = true;
-	else
+	} else {
 		hashQuery();
+		restoreShareUI();
+	}
+}
+
+function restoreShareUI() {
+		share_button.innerHTML = "Share";
+		share_button.classList.remove('disabled');
+		share_button.classList.remove('visible');
 }
 
 function shareButtonClick () {
-	if (sharebutton.innerHTML == "Share") {
-		sharebutton.innerHTML = "Contacting cloo.gl server";
+	if (share_button.innerHTML != "Share")
+		return;
 
-		var xmlHttp = new XMLHttpRequest();
-		xmlHttp.onreadystatechange = function () {
-			if (xmlHttp.readyState == 4) {
-				if (xmlHttp.status == 200) {
-					sharebutton.innerHTML =
-						'<a href="' + xmlHttp.responseText + '">' +
-						xmlHttp.responseText.substring(8) + '</a>';
-				} else {
-					console.log(xmlHttp.responseText);
-					sharebutton.innerHTML = "Failed, check console";
-				}
-			}
-		};
-
-		if (document.location.hash == '#' || document.location.hash == '') {
-			sharebutton.innerHTML = '<a href="https://cloo.gl">cloo.gl</a>';
-		} else {
-			xmlHttp.open('POST', 'https://cloo.gl', true);
-			xmlHttp.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
-			xmlHttp.send('type=cloogle&url=' + encodeURIComponent(document.location.hash));
+	var onUpdate = function (type, msg) {
+		share_button.classList.add('disabled');
+		switch (type) {
+			case 'update':
+				share_button.innerHTML = msg;
+				break;
+			case 'success':
+				share_link.value = msg;
+				share_link.classList.add('visible');
+				share_link.select();
+				share_button.innerHTML = 'Done, see URL below';
+				break;
+			case 'error':
+				console.log(msg);
+				share_button.innerHTML = "Failed, check console";
+				break;
 		}
-	}
+	};
+
+	if (document.location.hash == '#' || document.location.hash == '')
+		onUpdate('success', 'https://cloo.gl');
+	else
+		shortenURL('cloogle', document.location.hash, onUpdate);
 }

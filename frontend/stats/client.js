@@ -59,8 +59,7 @@ function updateChart() {
 	Chart.render('activity', data);
 }
 
-function addRecord(data) {
-	var req = data['request'];
+function addRecord(req) {
 	var time = timeToString();
 	var query = (req.name ? req.name : '') +
 		(req.unify ? ' :: ' + req.unify : '');

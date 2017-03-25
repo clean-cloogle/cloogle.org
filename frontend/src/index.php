@@ -44,11 +44,13 @@
 				]
 			];
 
+			$selected_lib = isset($_GET['lib']) ? $_GET['lib'] : 'StdEnv';
+
 			foreach ($alllibs as $col => $libs) {
 				echo '<optgroup label="' . $col . '">';
 				foreach ($libs as $lib) {
 					$selected = '';
-					if ($lib == $_GET['lib'])
+					if ($lib == $selected_lib)
 						$selected = ' selected="selected"';
 					echo '<option value="' . $lib . '"' . $selected . '>' . $lib . '</option>';
 				}

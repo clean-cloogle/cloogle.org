@@ -1,11 +1,8 @@
 <?php
 define('CLEANHOME', '/opt/clean');
 
-if (!isset($_REQUEST['lib'])) :
-	echo 'Choose a library.';
-else :
-
-$lib = preg_replace('/[^\\w\\/\\-]/', '', $_REQUEST['lib']);
+$lib = isset($_GET['lib']) ? $_GET['lib'] : 'StdEnv';
+$lib = preg_replace('/[^\\w\\/\\-]/', '', $lib);
 
 $ignored_files = [
 	'_startup',
@@ -84,5 +81,3 @@ function makeBrowser($dir, $basemodule) {
 $dname = CLEANHOME . '/lib/' . $lib;
 
 makeBrowser($dname, '');
-
-endif;

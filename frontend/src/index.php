@@ -60,6 +60,7 @@
 		</select>
 		<br/>
 		<label for="icl"><input id="icl" type="checkbox"/> Show implementation</label>
+		<label><a id="sharebutton" onclick="shareButtonClick();">Share</a></label>
 		<hr/>
 		<?php include_once('lib.php'); ?>
 	</div><div id="viewer">

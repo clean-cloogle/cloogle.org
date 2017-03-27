@@ -214,9 +214,9 @@ where
 		# lcName = if (isJust mbType && isType (fromJust mbType))
 			(let (Type name _) = fromJust mbType in Just $ toLowerCase name)
 			(toLowerCase <$> name)
-		# types = case (isNothing mbType,lcName) of
-			(True,Just n) = findType` (\loc _ -> toLowerCase (getName loc) == n) db
-			_             = []
+		# types = case (mbType,lcName) of
+			(Nothing, Just n)   = findType` (\loc _ -> toLowerCase (getName loc) == n) db
+			(Just (Type n _),_) = findType n db
 		# types = map (\(tl,td) -> makeTypeResult name tl td db) types
 		// Search classes
 		# classes = case (isNothing mbType, toLowerCase <$> name) of

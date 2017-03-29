@@ -6,6 +6,7 @@ var include_builtins_checkbox = document.getElementById('include-builtins');
 var include_core_checkbox = document.getElementById('include-core');
 var share_button = document.getElementById('share-button');
 var share_link = document.getElementById('share-link');
+
 var refresh_on_hash = true;
 
 var advanced = false;
@@ -553,9 +554,11 @@ window.onhashchange = function () {
 }
 
 function restoreShareUI() {
-		share_button.innerHTML = "Share";
-		share_button.classList.remove('disabled');
-		share_button.classList.remove('visible');
+	share_button.innerHTML = "Share";
+	share_button.classList.remove('disabled');
+	share_button.classList.remove('visible');
+	share_button.style.fontWeight = 'normal';
+	share_link.classList.remove('visible');
 }
 
 function shareButtonClick () {
@@ -572,7 +575,8 @@ function shareButtonClick () {
 				share_link.value = msg;
 				share_link.classList.add('visible');
 				share_link.select();
-				share_button.innerHTML = 'See URL below';
+				share_button.innerHTML = '&#8601;';
+				share_button.style.fontWeight = 'bold';
 				break;
 			case 'error':
 				console.log(msg);

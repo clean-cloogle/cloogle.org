@@ -134,10 +134,11 @@ For longterm statistics you can see
 ## Setup
 After installing
 [docker-compose](https://www.docker.com/products/docker-compose) run the
-following command:
+following commands:
 
 ```bash
-docker-compose up
+touch cloogle.log
+sudo docker-compose up
 ```
 
 Your Cloogle server now runs at port `31215` on your local machine.

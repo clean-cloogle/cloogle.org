@@ -572,7 +572,7 @@ function shareButtonClick () {
 				share_link.value = msg;
 				share_link.classList.add('visible');
 				share_link.select();
-				share_button.innerHTML = 'Done, see URL below';
+				share_button.innerHTML = 'See URL below';
 				break;
 			case 'error':
 				console.log(msg);

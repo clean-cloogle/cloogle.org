@@ -113,11 +113,11 @@ function selectLine(elem) {
 function restoreShareUI() {
 	share_button.disabled = false;
 	share_button.type = 'button';
-	share_button.value = 'Share this code';
+	share_button.value = 'Share';
 }
 
 function shareButtonClick() {
-	if (share_button.value != 'Share this code')
+	if (share_button.value != 'Share')
 		return;
 
 	share_button.disabled = true;

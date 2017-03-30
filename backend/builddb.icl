@@ -235,7 +235,6 @@ where
 getModuleTypes :: String 'DB'.Module 'DB'.Library Bool
 	*DclCache 'DB'.TypeDB *World -> *('DB'.TypeDB, *DclCache, *World)
 getModuleTypes root mod lib iscore cache db w
-#! w = snd (fclose (stderr <<< lib <<< ":" <<< mod <<< "\n") w)
 # (Right dcl,cache,w) = readModule False cache w
 # (icl,cache,w) = readModule True cache w
 # icl = case icl of (Left _) = Nothing; (Right x) = Just x

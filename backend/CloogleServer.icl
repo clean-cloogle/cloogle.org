@@ -217,6 +217,7 @@ where
 		# types = case (mbType,lcName) of
 			(Nothing, Just n)   = findType` (\loc _ -> toLowerCase (getName loc) == n) db
 			(Just (Type n _),_) = findType n db
+			(Just _, _)         = []
 		# types = map (\(tl,td) -> makeTypeResult name tl td db) types
 		// Search classes
 		# classes = case (isNothing mbType, toLowerCase <$> name) of

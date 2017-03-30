@@ -59,7 +59,8 @@
 			?>
 		</select>
 		<br/>
-		<label for="icl"><input id="icl" type="checkbox"/> Show implementation</label>
+		<label for="icl"><input id="icl" type="checkbox"/> Show implementation</label><br/>
+		<input id="share-button" type="button" value="Share" onclick="shareButtonClick()"/>
 		<hr/>
 		<?php include_once('lib.php'); ?>
 	</div><div id="viewer">

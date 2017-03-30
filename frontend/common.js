@@ -43,3 +43,19 @@ function toggle(toggler, open) {
 function toggleById(name) {
 	toggleElement(document.getElementById(name));
 }
+
+function shortenURL(type, url, onUpdate) {
+	share_button.innerHTML = "Contacting cloo.gl server";
+	onUpdate('update', 'Contacting cloo.gl server');
+
+	var xmlHttp = new XMLHttpRequest();
+	xmlHttp.onreadystatechange = function () {
+		if (xmlHttp.readyState == 4) {
+			var type = xmlHttp.status == 200 ? 'success' : 'error';
+			onUpdate(type, xmlHttp.responseText);
+		}
+	};
+	xmlHttp.open('POST', 'https://cloo.gl', true);
+	xmlHttp.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+	xmlHttp.send('type=' + type + '&url=' + encodeURIComponent(url));
+}

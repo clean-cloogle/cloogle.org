@@ -97,6 +97,10 @@ body {
 	margin-bottom: .8em;
 }
 
+#share-button {
+	margin-top: .8em;
+}
+
 #viewer {
 	margin-left: 16em;
 	overflow: auto;

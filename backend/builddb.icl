@@ -128,8 +128,8 @@ where
 		*DclCache *World -> *('DB'.TypeDB, *World)
 	loop _ [] db _ w = (db,w)
 	loop root [(lib,mod,iscore):list] db cache w
-	# (db, cache, w) = getModuleTypes root mod lib iscore cache db w
 	# w = snd (fclose (stderr <<< lib <<< ": " <<< mod <<< "\n") w)
+	# (db, cache, w) = getModuleTypes root mod lib iscore cache db w
 	= loop root list db cache w
 
 	parseCLI :: [String] -> Either String CLI
@@ -211,61 +211,51 @@ where
 findModules :: ![String] !String !'DB'.Library ('DB'.Module -> Bool) !String !*World
 	-> *(![('DB'.Library, 'DB'.Module, Bool)], !*World)
 findModules ex root lib iscore base w
-| any (\e -> indexOf e path <> -1) ex = ([], w)
+| any ((<>) -1 o flip indexOf path) ex = ([], w)
 #! (fps, w)   = readDirectory path w
 | isError fps = ([], w)
-#! fps        = fromOk fps
+#! (Ok fps)   = fps
 #! mods       = map (\s -> let mod = basedot +++ s % (0, size s - 5) in
 	(lib, mod, iscore mod)) $ filter included $ filter isDclModule fps
-#! (moremodss,w) = mapSt (\d -> findModules ex root lib iscore (basedot +++ d)) (filter isDirectory fps) w
+#! (moremodss,w) = mapSt (findModules ex root lib iscore o ((+++) basedot)) (filter isDirectory fps) w
 = (removeDup (mods ++ flatten moremodss), w)
 where
 	path = root +++ "/" +++ lib +++ if (base == "") "" "/" +++ replaceSubString "." "/" base
 	basedot = if (base == "") "" (base +++ ".")
 
 	included :: String -> Bool
-	included s = not (any (\e -> indexOf e (path +++ "/" +++ s) <> -1) ex)
+	included s = not (any ((<>) -1 o flip indexOf (path +++ "/" +++ s)) ex)
 
 	isDclModule :: String -> Bool
 	isDclModule s = s % (size s - 4, size s - 1) == ".dcl"
 
-	isDirectory :: String -> Bool
-	isDirectory s = not $ isMember '.' $ fromString s
+	isDirectory :: (String -> Bool)
+	isDirectory = not o isMember '.' o fromString
 
 getModuleTypes :: String 'DB'.Module 'DB'.Library Bool
 	*DclCache 'DB'.TypeDB *World -> *('DB'.TypeDB, *DclCache, *World)
 getModuleTypes root mod lib iscore cache db w
+#! w = snd (fclose (stderr <<< lib <<< ":" <<< mod <<< "\n") w)
 # (Right dcl,cache,w) = readModule False cache w
 # (icl,cache,w) = readModule True cache w
 # icl = case icl of (Left _) = Nothing; (Right x) = Just x
-# mod = dcl.mod_ident.id_name
-# lib = cleanlib mod lib
-# db  = 'DB'.putFunctions (pd_typespecs lib mod dcl.mod_defs icl) db
-# db  = 'DB'.putInstances (pd_instances lib mod dcl.mod_defs icl) db
-# db  = 'DB'.putClasses (pd_classes lib mod dcl.mod_defs icl) db
-# typedefs = pd_types lib mod dcl.mod_defs icl
+# modname = dcl.mod_ident.id_name
+# lib = lib % (0, size lib - size modname + size mod - 1)
+# db  = 'DB'.putFunctions (pd_typespecs lib modname dcl.mod_defs icl) db
+# db  = 'DB'.putInstances (pd_instances lib modname dcl.mod_defs icl) db
+# db  = 'DB'.putClasses (pd_classes lib modname dcl.mod_defs icl) db
+# typedefs = pd_types lib modname dcl.mod_defs icl
 # db  = 'DB'.putTypes typedefs db
 # db  = 'DB'.putFunctions (flatten $ map constructor_functions typedefs) db
 # db  = 'DB'.putFunctions (flatten $ map record_functions typedefs) db
-# db  = 'DB'.putFunctions (pd_generics lib mod dcl.mod_defs icl) db
-# db  = 'DB'.putDerivationss (pd_derivations lib mod dcl.mod_defs) db
-# db  = 'DB'.putMacros (pd_macros lib mod dcl.mod_defs) db
-# db  = 'DB'.putModule lib mod {zero & is_core=iscore} db
+# db  = 'DB'.putFunctions (pd_generics lib modname dcl.mod_defs icl) db
+# db  = 'DB'.putDerivationss (pd_derivations lib modname dcl.mod_defs) db
+# db  = 'DB'.putMacros (pd_macros lib modname dcl.mod_defs) db
+# db  = 'DB'.putModule lib modname {zero & is_core=iscore} db
 = (db,cache,w)
 where
 	mkdir :: String -> String
 	mkdir s = { if (c == '.') '/' c \\ c <-: s }
-
-	cleanlib :: !String !String -> String // Remove module dirs from lib
-	cleanlib mod lib = toString $ cl` (fromString $ mkdir mod) (fromString lib)
-	where
-		cl` :: ![Char] ![Char] -> [Char]
-		cl` mod lib
-			| not (isMember '/' mod) = lib
-			# mod = reverse $ tl $ dropWhile ((<>)'/') $ reverse mod
-			| drop (length lib - length mod) lib == mod
-				= take (length lib - length mod - 1) lib
-			= lib
 
 	pd_macros :: String String [ParsedDefinition] -> [('DB'.Location, 'DB'.Macro)]
 	pd_macros lib mod dcl

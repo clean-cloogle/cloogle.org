@@ -20,3 +20,7 @@ pre {
 .toggle-container .toggle-visible {
 	display: block;
 }
+
+#share-link {
+	display: none;
+}

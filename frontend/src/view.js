@@ -1,3 +1,5 @@
+var share_button = document.getElementById('share-button');
+
 var sidebar = null;
 var viewer = null;
 var libselect = null;
@@ -83,6 +85,7 @@ function updateHash() {
 	if (window.location.hash.substring(1) != encodeURIComponent(newhash)) {
 		refresh_on_hash = false;
 		window.location.hash = '#' + newhash;
+		restoreShareUI();
 	}
 }
 
@@ -105,6 +108,28 @@ function selectLine(elem) {
 
 	var linespan = document.getElementById('line-' + line);
 	linespan.innerHTML = '<span class="hll">' + linespan.innerHTML + '</span>';
+}
+
+function restoreShareUI() {
+	share_button.disabled = false;
+	share_button.type = 'button';
+	share_button.value = 'Share';
+}
+
+function shareButtonClick() {
+	if (share_button.value != 'Share')
+		return;
+
+	share_button.disabled = true;
+	var url = window.location.pathname.substring(1) + window.location.search + window.location.hash;
+	shortenURL('cloogle', url, function (type, msg) {
+		share_button.value = msg;
+		if (type == 'success') {
+			share_button.type = 'text';
+			share_button.disabled = false;
+			share_button.select();
+		}
+	});
 }
 
 window.onhashchange = function() {
@@ -141,6 +166,8 @@ window.onload = function () {
 		line = null;
 		loadModule();
 	}
+
+	restoreShareUI();
 
 	window.onhashchange();
 }

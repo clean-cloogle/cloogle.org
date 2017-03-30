@@ -37,6 +37,10 @@ a {
 	width: 200px;
 }
 
+#header.result-view #logo {
+	margin: 20px 20px 0;
+}
+
 #search {
 	display: block;
 	text-align: center;
@@ -74,11 +78,25 @@ a.hidden {
 	color: #373e48;
 }
 
+#searchlinks li.disabled {
+	cursor: default;
+	text-decoration: none;
+}
+
 #searchlinks li.separator {
 	cursor: default;
 	color: #939dac;
 	padding: 0 .5em;
 	text-decoration: none;
+}
+
+#share-link.visible {
+	display: inline-block;
+}
+
+#header.result-view #share-link.visible {
+	display: block;
+	margin: 1em 0 0 245px;
 }
 
 .tooltip {
@@ -97,7 +115,7 @@ a.hidden {
 	border-width: 1px 0;
 	border-color: #ccc;
 	border-style: solid;
-	margin-bottom: 1em;
+	margin-top: 1em;
 }
 
 .tooltip div {
@@ -126,6 +144,10 @@ div.visible {
 
 #helptext .description {
 	padding-left: .3em;
+}
+
+#search-results {
+	margin-top: 1em;
 }
 
 #search-results p {

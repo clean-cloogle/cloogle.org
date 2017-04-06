@@ -38,7 +38,7 @@ a {
 }
 
 #header.result-view #logo {
-	margin: 20px 20px 0;
+	margin-bottom: 0;
 }
 
 #search {
@@ -194,11 +194,24 @@ div.visible {
 		display: block;
 	}
 
+	#header.result-view #logo {
+		margin-bottom: 20px;
+	}
+
 	#search {
 		margin: 0 0 1em 1em !important;
 	}
 
 	.tooltip {
 		padding-left: 1em !important;
+	}
+
+	#header.result-view #share-link {
+		display: none;
+	}
+
+	#header.result-view #share-link.visible {
+		display: block;
+		margin-left: 1em !important;
 	}
 }

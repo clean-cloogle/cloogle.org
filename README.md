@@ -78,7 +78,9 @@ fields:
 		better)
 
 	The third element of the array contains data specific to the kind of result.
-	It is easiest to look in `backend/Cloogle.dcl` at the types
+	It is easiest to look in
+	[`Cloogle.dcl`](https://github.com/clean-cloogle/libcloogle/blob/master/Cloogle.dcl)
+	at the types
 	`FunctionResultExtras`, `TypeResultExtras`, `ClassResultExtras`,
 	`MacroResultExtras` and `ModuleResultExtras` to get an idea of the fields
 	that may be returned.

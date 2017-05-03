@@ -13,6 +13,8 @@ from TCPIP import :: IPAddress, :: Port, instance toString IPAddress
 
 import Control.Applicative
 import Control.Monad
+import qualified Data.Foldable as Foldable
+from Data.Foldable import class Foldable, instance Foldable Maybe
 from Data.Func import $
 import Data.Functor
 import Data.List
@@ -103,9 +105,7 @@ where
 		# suggestions = mbType >>= flip (suggs name) db
 		# w = seq [cachePages
 				(toRequestCacheKey req) CACHE_PREFETCH 0 zero suggs
-				\\ (req,suggs) <- mb2list suggestions] w
-			with
-				mb2list Nothing = []; mb2list (Just xs) = xs
+				\\ (req,suggs) <- 'Foldable'.concat suggestions] w
 		# suggestions
 			= sortBy (\a b -> snd a > snd b) <$>
 			  filter ((<) (length results) o snd) <$>

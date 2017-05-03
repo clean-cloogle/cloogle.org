@@ -8,6 +8,7 @@ CLMFLAGS:=-dynamics -h 200M -nr -nt\
 	-I $$CLEAN_HOME/lib/Generics\
 	-I $$CLEAN_HOME/lib/TCPIP\
 	-I Cloogle\
+	-I Cloogle/libcloogle\
 	-I Cloogle/clean-platform/src/libraries/OS-Independent\
 	-I Cloogle/clean-platform/src/libraries/OS-Independent/Deprecated/StdLib\
 	-I Cloogle/clean-platform/src/libraries/OS-Linux-64\

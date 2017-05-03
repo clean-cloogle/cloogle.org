@@ -89,7 +89,7 @@ where
 	= snd $ fclose io w
 
 	handle :: !TypeDB !(Maybe Request) !*World -> *(!Response, CacheKey, !*World)
-	handle _ Nothing w = (err CLOOGLE_E_INVALIDINPUT "Couldn't parse input", "", w)
+	handle _ Nothing w = (err InvalidInput "Couldn't parse input", "", w)
 	handle db (Just request=:{unify,name,page}) w
 		//Check cache
 		# (mbResponse, w) = readCache key w
@@ -97,11 +97,11 @@ where
 			# r = fromJust mbResponse
 			= ({r & return = if (r.return == 0) 1 r.return}, cacheKey key, w)
 		| isJust name && size (fromJust name) > 40
-			= respond (err CLOOGLE_E_INVALIDNAME "Function name too long") w
+			= respond (err InvalidName "Function name too long") w
 		| isJust name && any isSpace (fromString $ fromJust name)
-			= respond (err CLOOGLE_E_INVALIDNAME "Name cannot contain spaces") w
+			= respond (err InvalidName "Name cannot contain spaces") w
 		| isJust unify && isNothing (parseType $ fromString $ fromJust unify)
-			= respond (err CLOOGLE_E_INVALIDTYPE "Couldn't parse type") w
+			= respond (err InvalidType "Couldn't parse type") w
 		// Results
 		# drop_n = fromJust (page <|> pure 0) * MAX_RESULTS
 		# results = drop drop_n $ sort $ search request db
@@ -121,7 +121,7 @@ where
 		# (results,nextpages) = splitAt MAX_RESULTS results
 		// Response
 		# response = if (isEmpty results)
-			(err CLOOGLE_E_NORESULTS "No results")
+			(err NoResults "No results")
 			{ zero
 		    & data           = results
 		    , more_available = Just more
@@ -529,3 +529,11 @@ where
 		, response_code = response.return
 		, results       = length response.data
 		}
+
+err :: CloogleError String -> Response
+err c m = { return         = toInt c
+          , data           = []
+          , msg            = m
+          , more_available = Nothing
+          , suggestions    = Nothing
+          }

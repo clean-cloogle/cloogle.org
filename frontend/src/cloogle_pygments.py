@@ -126,5 +126,5 @@ except:
     print('<pre>{}</pre>'.format(traceback.format_exc()))
     print(
         '<p>Please open an issue <a href="https://github.com/clean-cloogle/clo'
-        'ogle/issues/new">here</a> with the exact way you got here and the tra'
-        'ce of this error.</p>')
+        'ogle.org/issues/new">here</a> with the exact way you got here and the'
+        'trace of this error.</p>')

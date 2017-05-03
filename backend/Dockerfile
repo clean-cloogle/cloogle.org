@@ -14,9 +14,10 @@ RUN PACKAGES="make subversion ca-certificates gcc git curl" \
 	&& svn checkout https://svn.cs.ru.nl/repos/gast/trunk/ /opt/clean/lib/Gast \
 	&& git clone https://gitlab.science.ru.nl/mlubbers/CleanSerial /opt/clean/lib/CleanSerial \
 	&& git clone https://github.com/clean-cloogle/Cloogle /opt/clean/lib/Cloogle \
-	&& git clone https://github.com/camilstaps/CleanInotify /opt/clean/lib/CleanInotify \
+	&& git clone https://github.com/clean-cloogle/libcloogle /opt/clean/lib/libcloogle \
 	&& git clone https://github.com/clean-cloogle/CleanTypeUnifier /opt/clean/lib/CleanTypeUnifier \
 	&& git clone https://github.com/clean-cloogle/CleanPrettyPrint /opt/clean/lib/CleanPrettyPrint \
+	&& git clone https://github.com/camilstaps/CleanInotify /opt/clean/lib/CleanInotify \
 	&& make distclean \
 	&& make CloogleServer builddb\
 	&& curl -sSL ftp://ftp.cs.ru.nl/pub/Clean/builds/linux-x64/clean-bundle-complete-linux-x64-latest.tgz |\

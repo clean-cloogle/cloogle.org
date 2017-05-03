@@ -52,6 +52,7 @@ instance zero CLI where
 	                   , ("StdLib", const False)
 	                   , ("TCPIP", const False)
 	                   , ("iTasks", const False)
+	                   , ("libcloogle", const False)
 	                   ]
 	       , exclude = [ "StdEnv/_startup"
 	                   , "StdEnv/_system"

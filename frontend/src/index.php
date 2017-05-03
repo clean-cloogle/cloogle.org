@@ -41,6 +41,7 @@
 					'Sapl',
 					'SoccerFun',
 					'iTasks',
+					'libcloogle',
 				]
 			];
 

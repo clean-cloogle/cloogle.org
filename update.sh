@@ -7,7 +7,7 @@ git submodule update --init --recursive
 
 echo "Updating containers..."
 
-sudo docker-compose build
+sudo docker-compose build --force-rm --pull
 sudo docker-compose up -d
 
 echo "All done."

@@ -3,8 +3,7 @@ echo "Pulling new commits..."
 
 git checkout frontend/index.html
 git pull origin master
-git submodule init
-git submodule update
+git submodule update --init --recursive
 
 echo "Updating containers..."
 

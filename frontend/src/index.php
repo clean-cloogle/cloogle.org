@@ -29,18 +29,20 @@
 					'StdLib',
 					'TCPIP',
 				],
+				'Official' => [
+					'GraphCopy',
+					'ObjectIO',
+					'Platform',
+					'Sapl',
+					'iTasks',
+				],
 				'Miscellaneous' => [
 					'CleanInotify',
 					'CleanPrettyPrint',
 					'CleanSerial',
 					'CleanTypeUnifier',
 					'Cloogle',
-					'GraphCopy',
-					'ObjectIO',
-					'Platform',
-					'Sapl',
 					'SoccerFun',
-					'iTasks',
 					'libcloogle',
 				]
 			];

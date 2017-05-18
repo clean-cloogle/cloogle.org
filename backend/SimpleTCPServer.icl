@@ -24,15 +24,11 @@ where
 		-> (TCP_Listener, *World) | fromString a & toString b
 	loop f log li w
 	#! ((ip,dupChan),li,w) = receive li w
-	#! (st,w)              = log (Connected ip) Nothing w
 	#  (pid,w)             = fork w
-	| pid < 0
-		= abort "fork failed\n"
-	| pid > 0
-		// Parent: handle new requests
-		= loop f log li w
-		// Child: handle current request
-		= handle f log st dupChan w
+	| pid < 0 = abort "fork failed\n"
+	| pid > 0 = loop f log li w // Parent: handle new requests
+	#! (st,w) = log (Connected ip) Nothing w
+	= handle f log st dupChan w // Child: handle current request
 
 	handle :: (a *World-> (b,t,*World)) (Logger a b s t) !(Maybe !s) !TCP_DuplexChannel
 		!*World -> (TCP_Listener, *World) | fromString a & toString b

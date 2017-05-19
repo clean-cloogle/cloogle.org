@@ -12,8 +12,11 @@
 <body>
 	<table style="width:100%">
 		<tr>
-			<td colspan="3">
+			<td colspan="2">
 				<div id="over-time" style="height:400px;min-width:310px;"></div>
+			</td>
+			<td>
+				<div id="oss" style="height:400px;"></div>
 			</td>
 		</tr>
 		<tr>
@@ -24,7 +27,7 @@
 				<div id="types" style="height:400px;"></div>
 			</td>
 			<td style="width:30%;">
-				<div id="oss" style="height:400px;"></div>
+				<div id="per-oss" style="height:400px;"></div>
 			</td>
 		</tr>
 	</table>
@@ -50,6 +53,15 @@
 				}
 			);
 
+			var oss = $('#oss').highcharts();
+			oss.showLoading('Loading data...');
+			$.getJSON('ajax/oss.php' + query,
+				function(data) {
+					oss.series[0].setData(data);
+					oss.hideLoading();
+				}
+			);
+
 			var by_hour = $('#by-hour').highcharts();
 			by_hour.showLoading('Loading data...');
 			$.getJSON('ajax/by-hour.php' + query,
@@ -68,13 +80,13 @@
 				}
 			);
 
-			var oss = $('#oss').highcharts();
-			oss.showLoading('Loading data...');
-			$.getJSON('ajax/oss.php' + query,
+			var per_oss = $('#per-oss').highcharts();
+			per_oss.showLoading('Loading data...');
+			$.getJSON('ajax/per_oss.php' + query,
 				function(data) {
 					for (var i in data)
-						oss.series[i].setData(data[i].data);
-					oss.hideLoading();
+						per_oss.series[i].setData(data[i].data);
+					per_oss.hideLoading();
 				}
 			);
 		}
@@ -141,6 +153,25 @@
 				});
 			});
 
+			$.getJSON('ajax/oss.php?callback=?', function(data) {
+				$('#oss').highcharts({
+					chart: { type: 'pie' },
+					credits: { enabled: false },
+					title: { text: 'Operating systems' },
+					plotOptions: {
+						pie: {
+							dataLabels: { enabled: false },
+							showInLegend: true
+						}
+					},
+					series: [{
+						colorByPoint: true,
+						tooltip: { pointFormat: '<b>{point.percentage:.1f}%</b> ({point.y})' },
+						data: data
+					}]
+				});
+			});
+
 			$.getJSON('ajax/by-hour.php?callback=?', function(data) {
 				var days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 				$('#by-hour').highcharts({
@@ -188,8 +219,8 @@
 				});
 			});
 
-			$.getJSON('ajax/oss.php?callback=?', function(data) {
-				$('#oss').highcharts({
+			$.getJSON('ajax/per_oss.php?callback=?', function(data) {
+				$('#per-oss').highcharts({
 					colors: ['#00aa00', '#dd0000', '#dddd00', '#f7a35c', '#7cb5ec', '#434348', '#90ed7d'],
 					chart: { type: 'column' },
 					credits: { enabled: false },

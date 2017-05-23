@@ -257,6 +257,9 @@ function getResults(str, libs, include_builtins, include_core, page) {
 		var meta = [];
 		var hidden = [];
 
+		if ('documentation' in basic)
+			meta.push(basic['documentation']);
+
 		switch (kind) {
 			case 'FunctionResult':
 				if ('cls' in extra)
@@ -341,10 +344,10 @@ function getResults(str, libs, include_builtins, include_core, page) {
 							'\n    ' + extra['class_funs'][i].replace(/\n/g, '\n    '),
 							highlightCallback, 'macro');
 
-				return makeGenericResultHTML(basic, [], hidden, html);
+				return makeGenericResultHTML(basic, meta, hidden, html);
 
 			case 'MacroResult':
-				return makeGenericResultHTML(basic, [], [],
+				return makeGenericResultHTML(basic, meta, [],
 						highlightFunction(extra['macro_representation'], highlightCallback, 'macro'));
 
 			case 'ModuleResult':
@@ -353,7 +356,7 @@ function getResults(str, libs, include_builtins, include_core, page) {
 							'This is a core module and should usually only be used internally.' +
 							'</span>']);
 
-				return makeGenericResultHTML(basic, [], hidden,
+				return makeGenericResultHTML(basic, meta, hidden,
 						highlightFunction('import ' + basic['modul']));
 
 			default:

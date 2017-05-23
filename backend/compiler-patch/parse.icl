@@ -387,7 +387,19 @@ moduleCouldNotBeImportedError iclmodule file_id=:{id_name} import_file_position 
 
 wantDefinitions :: !ParseContext !ParseState -> (![ParsedDefinition], !ParseState)
 wantDefinitions parseContext pState
-	= parseList (tryDefinition parseContext) pState
+	= mergeDocumentation (parseList (tryDefinition parseContext) pState)
+where
+	mergeDocumentation :: ([ParsedDefinition], ParseState) -> ([ParsedDefinition], ParseState)
+	mergeDocumentation ([PD_Documentation doc:f=:PD_Function pos id=:{id_info} is_infix args rhs kind:rest], pState=:{ps_hash_table})
+		# (entry,symbol_heap) = readPtr id_info ps_hash_table.hte_symbol_heap
+		# ps_hash_table = {ps_hash_table & hte_symbol_heap=writePtr id_info {entry & ste_doc=Yes doc} symbol_heap}
+		# pState = {pState & ps_hash_table=ps_hash_table}
+		= mergeDocumentation ([f:rest], pState)
+	mergeDocumentation ([pd:rest], pState)
+		# (rest,pState) = mergeDocumentation (rest, pState)
+		= ([pd:rest], pState)
+	mergeDocumentation ([], pState)
+		= ([], pState)
 
 cHasPriority 	:== True
 cHasNoPriority	:== False
@@ -5274,6 +5286,11 @@ isDefinesFieldToken EqualToken    = True
 isDefinesFieldToken CurlyCloseToken = True
 isDefinesFieldToken CommaToken      = True
 isDefinesFieldToken token           = False
+
+tryDocBlock :: !ParseState -> (!OptionalDoc, !ParseState)
+tryDocBlock pState = case nextToken GeneralContext pState of
+	(DocToken doc,pState)	-> (Yes doc,pState)
+	(_,pState)				-> (No,tokenBack pState)
 
   //---------------//
  //--- Tracing ---//

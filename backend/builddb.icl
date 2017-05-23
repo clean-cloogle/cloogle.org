@@ -18,7 +18,7 @@ from Text import class Text(concat,startsWith), instance Text String
 
 import TypeDB
 import Type
-from TypeDBFactory import :: DclCache, setupCache, findModules, getModuleTypes,
+from TypeDBFactory import :: DclCache, findModules, getModuleTypes,
 	constructor_functions, record_functions
 
 :: CLI = { help    :: Bool
@@ -81,8 +81,7 @@ Start w
 	| cli.version = fclose (f <<< VERSION) w
 	# (modss, w)  = mapSt (flip (uncurry $ findModules cli.exclude cli.root) "") cli.libs w
 	# mods        = flatten modss
-	# (cache, w)  = setupCache w
-	# (db, w)     = loop cli.root mods newDb cache w
+	# (db, w)     = loop cli.root mods newDb w
 	# db          = putFunctions predefFunctions db
 	# db          = putClasses predefClasses db
 	# db          = putTypes predefTypes db
@@ -97,13 +96,12 @@ Start w
 | not ok = abort "Couldn't close stdio"
 = w
 where
-	loop :: String [(String,String,Bool)] TypeDB
-		*DclCache *World -> *(TypeDB, *World)
-	loop _ [] db _ w = (db,w)
-	loop root [(lib,mod,iscore):list] db cache w
+	loop :: String [(String,String,Bool)] TypeDB *World -> *(TypeDB, *World)
+	loop _ [] db w = (db,w)
+	loop root [(lib,mod,iscore):list] db w
 	# w = snd (fclose (stderr <<< lib <<< ": " <<< mod <<< "\n") w)
-	# (db, cache, w) = getModuleTypes root mod lib iscore cache db w
-	= loop root list db cache w
+	# (db, w) = getModuleTypes root mod lib iscore db w
+	= loop root list db w
 
 	parseCLI :: [String] -> Either String CLI
 	parseCLI [] = Right zero

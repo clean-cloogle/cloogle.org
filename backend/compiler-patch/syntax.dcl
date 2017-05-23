@@ -272,6 +272,7 @@ cIsNotAFunction :== False
 	|	PD_Generic GenericDef
 	| 	PD_GenericCase GenericCaseDef Ident
 	|	PD_Derive [GenericCaseDef]
+	|	PD_Documentation String
 	|	PD_Erroneous
 
 ::	FunKind = FK_Function !Bool | FK_Macro | FK_Caf | FK_NodeDefOrFunction | FK_Unknown

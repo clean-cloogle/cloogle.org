@@ -7,6 +7,8 @@ import IndexType
 from containers import ::NumberSet
 from convertcases import :: LetVarInfo, :: LetExpressionInfo, :: RefCountsInCase, :: SplitsInCase
 
+::	OptionalDoc :== Optional String
+
 ::	Ident =
 	{ 	id_name		:: !String
 	,	id_info 	:: !SymbolPtr
@@ -26,6 +28,7 @@ instance toString Ident
 	,	ste_index		:: !Index
 	,	ste_def_level	:: !Level
 	,	ste_previous	:: SymbolTableEntry
+	,	ste_doc			:: !OptionalDoc
 	}
 
 :: FunctionOrMacroIndex = FunctionOrIclMacroIndex !Int | DclMacroIndex /*module_n*/ !Int /*macro_n_in_module*/ !Int;

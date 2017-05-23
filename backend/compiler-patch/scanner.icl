@@ -499,7 +499,13 @@ TryScanComment c1=:'/' input
 	| c2 <> '*'				= (No, c1, charBack input)
 	# (eof,c3,input)		= ReadChar input
 	| eof					= (No, c1, input)
-	| c3 == '*'				= (No, c1, charBack (charBack input))
+	| c3 == '*' // Docblock?
+		# (eof,c4,input)	= ReadNormalChar input
+		| eof				= (No, c1, charBack (charBack input)) // Docblock, starts with /**<space>
+		| c4 == '/'			= SkipWhites input // Skip over /**/
+		= case ScanComment input of // Normal comment, starts with /**<no-space>
+			(No,input)	-> SkipWhites input
+			(er,input)	-> (er, c4, input)
 	= case ScanComment input of
 		(No,input)	-> SkipWhites input
 		(er,input)	-> (er, c1, input)

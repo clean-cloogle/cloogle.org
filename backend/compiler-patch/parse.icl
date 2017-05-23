@@ -399,6 +399,10 @@ tryDefinition parseContext pState
 	= try_definition parseContext token (LinePos fname linenr) pState
 where
 	try_definition :: !ParseContext !Token !Position !ParseState -> (!Bool, ParsedDefinition, !ParseState)
+	try_definition parseContext (DocToken doc) pos pState
+		| not (isGlobalContext parseContext)
+			= (True,PD_Documentation doc,parseWarning "definition" "docblocks only allowed at global level" pState)
+			= (True,PD_Documentation doc,wantEndOfDefinition "docblock" pState)
 	try_definition parseContext DoubleColonToken pos pState
 		| ~(isGlobalContext parseContext)
 			= (False,abort "no def(3)",parseError "definition" No "type definitions only at the global level" (tokenBack pState))

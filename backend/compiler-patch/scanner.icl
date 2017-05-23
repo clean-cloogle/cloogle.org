@@ -203,6 +203,8 @@ ScanOptionNoNewOffsideForSeqLetBit:==4;
 	|	ExistsToken				//		E.
 	|	ForAllToken				//		A.
 
+	|	DocToken String			//		/** ... */
+
 ::	ScanContext
 	=	GeneralContext
 	|	TypeContext
@@ -493,12 +495,14 @@ TryScanComment :: !Char !Input -> (!Optional String, !Char, !Input)
 TryScanComment c1=:'/' input
 	# (eof,c2, input)		= ReadNormalChar input
 	| eof					= (No, c1, input)
-	= case c2 of
-		'/' -> SkipWhites (SkipToEndOfLine input)
-		'*' -> case ScanComment input of
-				(No,input)	-> SkipWhites input
-				(er,input)	-> (er, c1, input)
-		_   -> (No, c1, charBack input)
+	| c2 == '/'				= SkipWhites (SkipToEndOfLine input)
+	| c2 <> '*'				= (No, c1, charBack input)
+	# (eof,c3,input)		= ReadChar input
+	| eof					= (No, c1, input)
+	| c3 == '*'				= (No, c1, charBack (charBack input))
+	= case ScanComment input of
+		(No,input)	-> SkipWhites input
+		(er,input)	-> (er, c1, input)
 TryScanComment c input
 	= (No, c, input)
 
@@ -746,6 +750,16 @@ Scan 'A' input TypeContext
 	| eof					= (IdentToken "A", input)
 	| c1 == '.'				= (ForAllToken, input)
 							= ScanIdentFast 1 (charBack input) TypeContext
+
+Scan c0=:'/' input co
+	# (eof, c1, input)		= ReadNormalChar input
+	| eof					= (IdentToken "/", input)
+	| c1 == '*'
+		# (eof, c2, input)	= ReadNormalChar input
+		| eof				= (ErrorToken "/* before EOF in Scan", input)
+		| c2 <> '*'			= (ErrorToken "/* in Scan", input)
+							= ScanDocBlock -1 input [] co
+
 Scan c    input co
 	| IsDigit c				= ScanNumeral 0 input [c]
 	| IsIdentChar c	co	
@@ -801,6 +815,18 @@ ScanOperator n input token co
 	| eof					= CheckReservedOperator (revCharListToString n token) input
 	| isSpecialChar c		= ScanOperator (n + 1) input [c:token] co
 							= CheckReservedOperator (revCharListToString n token) (charBack input)
+
+ScanDocBlock :: !Int !Input ![Char] !ScanContext -> (!Token, !Input)
+ScanDocBlock n input doc co
+	# (eof, c1, input)		= ReadChar input
+	| eof					= (ErrorToken "EOF in docblock", input)
+	| c1 <> '*'				= ScanDocBlock (n + 1) input [c1:doc] co
+	# (eof, c2, input)		= ReadChar input
+	| eof					= (ErrorToken "EOF in docblock", input)
+	= case c2 of
+		'/' -> (DocToken (revCharListToString n doc), input)
+		'*'	-> ScanDocBlock (n + 1) (charBack input) [c1:doc] co
+		_	-> ScanDocBlock (n + 2) input [c2:c1:doc] co
 
 CheckReservedIdent :: !ScanContext !String !Input -> (!Token, !Input)
 CheckReservedIdent GeneralContext   s i = CheckGeneralContext s i
@@ -1565,6 +1591,8 @@ where
 
 	toString ExistsToken				= "E."
 	toString ForAllToken				= "A."
+
+	toString (DocToken doc)				= "<<<Documentation>>>"
 
 	toString token						= "toString (Token) does not know this token"
 

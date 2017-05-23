@@ -115,6 +115,8 @@ instance <<< FilePosition
 	|	ExistsToken				//		E.
 	|	ForAllToken				//		A.
 
+	|	DocToken String 		//	/** ... */
+
 :: ScanContext
 	=	GeneralContext
 	|	TypeContext

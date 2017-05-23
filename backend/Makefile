@@ -16,7 +16,7 @@ CLMFLAGS:=-dynamics -h 200M -nr -nt\
 	-I Cloogle/clean-platform/src/libraries/OS-Posix\
 	-I Cloogle/CleanTypeUnifier\
 	-I Cloogle/CleanPrettyPrint\
-	-I compiler-patch\
+	-I Cloogle/compiler-patch\
 	-I clean-compiler/frontend\
 	-I clean-compiler/backend\
 	-I clean-compiler/main\

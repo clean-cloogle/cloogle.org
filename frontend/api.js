@@ -262,6 +262,13 @@ function getResults(str, libs, include_builtins, include_core, page) {
 
 		switch (kind) {
 			case 'FunctionResult':
+				if ('param_doc' in extra && extra['param_doc'].length != 0)
+					meta.push('Parameters: ' + extra['param_doc'].join('; ') + '.');
+				if ('generic_var_doc' in extra && extra['generic_var_doc'].length != 0)
+					meta.push('Generic type variables: ' + extra['generic_var_doc'].join('; ') + '.');
+				if ('result_doc' in extra)
+					meta.push('Result: ' + extra['result_doc']);
+
 				if ('cls' in extra)
 					meta.push('Class: <code>' +
 							highlightClassDef(extra['cls']['cls_name'] +
@@ -347,6 +354,11 @@ function getResults(str, libs, include_builtins, include_core, page) {
 				return makeGenericResultHTML(basic, meta, hidden, html);
 
 			case 'MacroResult':
+				if ('macro_param_doc' in extra && extra['macro_param_doc'].length != 0)
+					meta.push('Parameters: ' + extra['macro_param_doc'].join('; ') + '.');
+				if ('macro_result_doc' in extra)
+					meta.push('Result: ' + extra['macro_result_doc']);
+
 				return makeGenericResultHTML(basic, meta, [],
 						highlightFunction(extra['macro_representation'], highlightCallback, 'macro'));
 

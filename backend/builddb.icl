@@ -153,26 +153,27 @@ predefClasses
 	= [ ( Builtin "TC", ["v"], [], [])
 	  ]
 
-predefTypes :: [(Location, TypeDef)]
+predefTypes :: [(Location, ExtendedTypeDef)]
 predefTypes
 	= [ ( Builtin "Bool"
 	    , { deft
-	      & td_name = "Bool"
-	      , td_rhs  = TDRCons False
+	      & etd_typedef.td_name = "Bool"
+	      , etd_typedef.td_rhs  = TDRCons False
 	        [ { defc & cons_name="False" }
 	        , { defc & cons_name="True" }
 	        ]
 	      }
 	    )
-	  , ( Builtin "Int",     { deft & td_name = "Int"     } )
-	  , ( Builtin "Real",    { deft & td_name = "Real"    } )
-	  , ( Builtin "Char",    { deft & td_name = "Char"    } )
-	  , ( Builtin "String",  { deft & td_name = "String",
-	      td_rhs = TDRSynonym (Type "_#Array" [Type "Char" []]) } )
-	  , ( Builtin "Dynamic", { deft & td_name = "Dynamic" } )
-	  , ( Builtin "File",    { deft & td_name = "File"    } )
-	  , ( Builtin "World",   { deft & td_name = "World", td_uniq = True } )
+	  , ( Builtin "Int",     { deft & etd_typedef.td_name = "Int"     } )
+	  , ( Builtin "Real",    { deft & etd_typedef.td_name = "Real"    } )
+	  , ( Builtin "Char",    { deft & etd_typedef.td_name = "Char"    } )
+	  , ( Builtin "String",  { deft & etd_typedef.td_name = "String",
+	      etd_typedef.td_rhs = TDRSynonym (Type "_#Array" [Type "Char" []]) } )
+	  , ( Builtin "Dynamic", { deft & etd_typedef.td_name = "Dynamic" } )
+	  , ( Builtin "File",    { deft & etd_typedef.td_name = "File"    } )
+	  , ( Builtin "World",   { deft & etd_typedef.td_name = "World",
+	      etd_typedef.td_uniq = True } )
 	  ]
 where
-	deft = {td_name="", td_uniq=False, td_args=[], td_rhs=TDRAbstract}
+	deft = {etd_typedef={td_name="", td_uniq=False, td_args=[], td_rhs=TDRAbstract}, etd_doc=Nothing}
 	defc = {cons_name="", cons_args=[], cons_exi_vars=[], cons_context=[], cons_priority=Nothing}

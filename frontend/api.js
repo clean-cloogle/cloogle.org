@@ -96,6 +96,19 @@ function makeSummary(hidden) {
 	return summ;
 }
 
+function mergeComments(code, comments) {
+	var maxLength = 0;
+	for (var i in code)
+		if (code[i].length > maxLength)
+			maxLength = code[i].length;
+
+	for (var i in code)
+		if (i < comments.length - 1)
+			code[i] = (code[i] + Array(maxLength + 1).join(' ')).substring(0, maxLength+1) + comments[i];
+
+	return code;
+}
+
 function getResults(str, libs, include_builtins, include_core, page) {
 	if (str == null) str = old_str;
 	if (libs == null) libs = old_libs;
@@ -249,6 +262,13 @@ function getResults(str, libs, include_builtins, include_core, page) {
 			'</div>';
 	}
 
+	var makeParametersHTML = function (name, params) {
+		if (params.length == 1)
+			return name + ': ' + params[0];
+		else
+			return name + 's:<ul><li>' + params.join('</li><li>') + '</li></ul>';
+	}
+
 	var makeResultHTML = function (result) {
 		var kind = result[0];
 		var basic = result[1][0];
@@ -262,10 +282,10 @@ function getResults(str, libs, include_builtins, include_core, page) {
 
 		switch (kind) {
 			case 'FunctionResult':
-				if ('param_doc' in extra && extra['param_doc'].length != 0)
-					meta.push('Parameters: ' + extra['param_doc'].join('; ') + '.');
-				if ('generic_var_doc' in extra && extra['generic_var_doc'].length != 0)
-					meta.push('Generic type variables: ' + extra['generic_var_doc'].join('; ') + '.');
+				if ('param_doc' in extra && extra['param_doc'].length > 0)
+					meta.push(makeParametersHTML('Parameter', extra['param_doc']));
+				if ('generic_var_doc' in extra && extra['generic_var_doc'].length > 0)
+					meta.push(makeParametersHTML('Generic type variable', extra['generic_var_doc']));
 				if ('result_doc' in extra)
 					meta.push('Result: ' + extra['result_doc']);
 
@@ -332,8 +352,26 @@ function getResults(str, libs, include_builtins, include_core, page) {
 							pluralise(extra['type_derivations'].length, 'derivation')]);
 				}
 
+				var code = extra['type'].split('\n');
+				if ('type_field_doc' in extra) {
+					var comments = [];
+					for (var i in extra['type_field_doc'])
+						comments.push(extra['type_field_doc'][i].length > 1
+								? '//* ' + extra['type_field_doc'][i][1]
+								: '');
+					code = mergeComments(code, comments)
+				}
+				if ('type_constructor_doc' in extra) {
+					var comments = [];
+					for (var i in extra['type_constructor_doc'])
+						comments.push(extra['type_constructor_doc'][i].length > 1
+								? '//* ' + extra['type_constructor_doc'][i][1]
+								: '');
+					code = mergeComments(code, comments)
+				}
+
 				return makeGenericResultHTML(basic, [], hidden,
-						highlightTypeDef(extra['type'], highlightCallback));
+						highlightTypeDef(code.join('\n'), highlightCallback));
 
 			case 'ClassResult':
 				if (extra['class_instances'].length > 0)
@@ -354,8 +392,8 @@ function getResults(str, libs, include_builtins, include_core, page) {
 				return makeGenericResultHTML(basic, meta, hidden, html);
 
 			case 'MacroResult':
-				if ('macro_param_doc' in extra && extra['macro_param_doc'].length != 0)
-					meta.push('Parameters: ' + extra['macro_param_doc'].join('; ') + '.');
+				if ('macro_param_doc' in extra && extra['macro_param_doc'].length > 0)
+					meta.push(makeParametersHTML('Parameter', extra['macro_param_doc']));
 				if ('macro_result_doc' in extra)
 					meta.push('Result: ' + extra['macro_result_doc']);
 

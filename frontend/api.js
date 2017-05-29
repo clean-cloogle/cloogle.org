@@ -283,11 +283,11 @@ function getResults(str, libs, include_builtins, include_core, page) {
 		switch (kind) {
 			case 'FunctionResult':
 				if ('param_doc' in extra && extra['param_doc'].length > 0)
-					meta.push(makeParametersHTML('Parameter', extra['param_doc']));
+					hidden.push([makeParametersHTML('Parameter', extra['param_doc'])]);
 				if ('generic_var_doc' in extra && extra['generic_var_doc'].length > 0)
-					meta.push(makeParametersHTML('Generic type variable', extra['generic_var_doc']));
+					hidden.push([makeParametersHTML('Generic type variable', extra['generic_var_doc'])]);
 				if ('result_doc' in extra)
-					meta.push('Result: ' + extra['result_doc']);
+					hidden.push(['Result: ' + extra['result_doc']]);
 
 				if ('cls' in extra)
 					meta.push('Class: <code>' +
@@ -298,13 +298,13 @@ function getResults(str, libs, include_builtins, include_core, page) {
 				if ('unifier' in extra &&
 						(extra['unifier'].left_to_right.length > 0
 						 || extra['unifier'].right_to_left.length > 0))
-					meta.push('Unifier: ' + makeUnifier(extra['unifier']));
+					hidden.push(['Unifier', makeUnifier(extra['unifier'])]);
 				if ('unifier' in extra) {
 					var synonyms = extra['unifier'].used_synonyms;
 					for (var i in synonyms) {
-						meta.push('Used the type synonym <code>' + highlightTypeDef(
+						hidden.push(['Used the type synonym <code>' + highlightTypeDef(
 									':: ' + synonyms[i][0] + ' :== ' + synonyms[i][1],
-									highlightCallback) + '</code>.');
+									highlightCallback) + '</code>.']);
 					}
 				}
 

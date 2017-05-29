@@ -169,6 +169,11 @@ div.visible {
 	padding-left: 1em;
 }
 
+.result-extra .togglee ul {
+	margin: 0;
+	padding-left: 2em;
+}
+
 .result-extra.toggle-container {
 	padding-left: 2.2em;
 }

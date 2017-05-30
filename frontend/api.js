@@ -103,8 +103,9 @@ function mergeComments(code, comments) {
 			maxLength = code[i].length;
 
 	for (var i in code)
-		if (i < comments.length - 1)
-			code[i] = (code[i] + Array(maxLength + 1).join(' ')).substring(0, maxLength+1) + comments[i];
+		if (i < comments.length)
+			code[i] = (code[i] + Array(maxLength + 1).join(' '))
+								.substring(0, maxLength+1) + comments[i];
 
 	return code;
 }

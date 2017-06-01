@@ -110,6 +110,20 @@ function mergeComments(code, comments) {
 	return code;
 }
 
+String.prototype.makeParagraphs = function() {
+	return this
+		.split('\n-').join('<br/>-')
+		.split('\n*').join('<br/>*')
+		.split('\n\n').join('<br/>');
+}
+
+function makeParametersHTML(name, params) {
+	if (params.length == 1)
+		return name + ': ' + params[0].makeParagraphs();
+	else
+		return name + 's:<ul><li>' + params.join('</li><li>').makeParagraphs() + '</li></ul>';
+}
+
 function getResults(str, libs, include_builtins, include_core, page) {
 	if (str == null) str = old_str;
 	if (libs == null) libs = old_libs;
@@ -261,13 +275,6 @@ function getResults(str, libs, include_builtins, include_core, page) {
 					'<div class="togglee">' + makeTable(hidden) + '</div></div>' +
 				'<pre class="result-code">' + code + '</pre>' +
 			'</div>';
-	}
-
-	var makeParametersHTML = function (name, params) {
-		if (params.length == 1)
-			return name + ': ' + params[0];
-		else
-			return name + 's:<ul><li>' + params.join('</li><li>') + '</li></ul>';
 	}
 
 	var makeResultHTML = function (result) {

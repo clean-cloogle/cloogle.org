@@ -149,9 +149,15 @@ predefFunctions
 	    )
 	  ]
 
-predefClasses :: [(Location, [TypeVar], ClassContext, [(Name, ExtendedType)])]
+predefClasses :: [(Location, Class)]
 predefClasses
-	= [ ( Builtin "TC", ["v"], [], [])
+	= [ ( Builtin "TC"
+	    , { class_vars=["v"]
+	      , class_context=[]
+	      , class_documentation=Nothing
+	      , class_members=[]
+	      }
+	    )
 	  ]
 
 predefTypes :: [(Location, ExtendedTypeDef)]

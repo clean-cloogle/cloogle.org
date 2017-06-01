@@ -60,6 +60,7 @@ instance zero CLI where
 	                   , "Platform/Data/Graph/Inductive/Query"
 	                   , "SoccerFun/RefereeCoach_"
 	                   , "SoccerFun/Team_"
+	                   , "Cloogle/compiler-patch"
 	                   ]
 	       }
 

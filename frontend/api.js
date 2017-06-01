@@ -258,7 +258,7 @@ function getResults(str, libs, include_builtins, include_core, page) {
 				'<a href="' + iclUrl + '" target="_blank">icl' + iclLine + '</a>)';
 
 		if ('builtin' in basic && basic['builtin'])
-			basicText = [['Clean core (actual implementation may differ)']];
+			basicText = [['Clean core. The actual implementation may differ. For documentation, see the Clean language report.']];
 
 		var toggler = '';
 		if (hidden.length > 0) {

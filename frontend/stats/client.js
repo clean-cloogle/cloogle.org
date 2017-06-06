@@ -68,13 +68,6 @@ function addRecord(req) {
 	else if ('typeName' in req)
 		query = 'type ' + req.typeName;
 
-	if (is_open_message) {
-		is_open_message = false;
-		searches.splice(0, 0, [query, time]);
-		updateSearches();
-		return;
-	}
-
 	searches.splice(0, 0, [query, time]);
 	if (searches.length > 10)
 		searches.splice(searches.length - 1, searches.length);
@@ -85,18 +78,15 @@ function addRecord(req) {
 }
 
 var open_timer;
-var is_open_message = false;
 function addConnectionCallbacks(connection) {
 	connection.onopen = function() {
-		is_open_message = true;
 		console.log('Connection open');
 		window.clearInterval(open_timer);
 	};
 
-	function tryConnect() {
-		if (typeof connection.close != 'undefined') {
+	var tryConnect = function() {
+		if (typeof connection.close != 'undefined')
 			connection.close();
-		}
 		console.log('Attempting connection...');
 		connection = new WebSocket(
 				(window.location.protocol == 'https:' ? 'wss' : 'ws') + '://' +

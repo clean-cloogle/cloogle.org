@@ -378,7 +378,7 @@ function getResults(str, libs, include_builtins, include_core, page) {
 					code = mergeComments(code, comments)
 				}
 
-				return makeGenericResultHTML(basic, [], hidden,
+				return makeGenericResultHTML(basic, meta, hidden,
 						highlightTypeDef(code.join('\n'), highlightCallback));
 
 			case 'ClassResult':

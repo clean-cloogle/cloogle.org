@@ -5,7 +5,7 @@ WORKDIR /usr/src/cloogle
 
 RUN PACKAGES="make subversion ca-certificates gcc git curl" \
 	&& apt-get update \
-	&& apt-get install -qq $PACKAGES \
+	&& apt-get install -qq $PACKAGES --no-install-recommends \
 	&& svn checkout https://svn.cs.ru.nl/repos/SoccerFun/src /opt/clean/lib/SoccerFun \
 	&& mv /opt/clean/lib/SoccerFun/*/*.[id]cl /opt/clean/lib/SoccerFun \
 	&& bash -c 'rm -r /opt/clean/lib/SoccerFun/{Game,Gui,StdLibExt,StdReferee,StdTeam,afbeeldingen,sound}' \
@@ -34,8 +34,8 @@ RUN PACKAGES="make subversion ca-certificates gcc git curl" \
 		Dockerfile \
 		Makefile \
 	&& rm -rf /opt/clean \
-	&& ADDED_PACKAGES=`apt-mark showauto` \
-	&& apt-get remove --purge -qq $PACKAGES $ADDED_PACKAGES \
+	&& apt-get remove --purge -qq $PACKAGES \
+	&& apt-get autoremove -qq \
 	&& rm -rf /var/lib/apt/lists
 
 EXPOSE 31215

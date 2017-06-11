@@ -18,8 +18,8 @@ from Text import class Text(concat,startsWith), instance Text String
 
 import TypeDB
 import Type
-from TypeDBFactory import :: DclCache, findModules, getModuleTypes,
-	constructor_functions, record_functions
+from TypeDBFactory import findModules, getModuleTypes, constructor_functions,
+	record_functions
 
 :: CLI = { help    :: Bool
          , version :: Bool

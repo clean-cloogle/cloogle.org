@@ -401,11 +401,11 @@ function getResults(str, libs, include_builtins, include_core, page) {
 
 			case 'MacroResult':
 				if ('macro_param_doc' in extra && extra['macro_param_doc'].length > 0)
-					meta.push(makeParametersHTML('Parameter', extra['macro_param_doc']));
+					hidden.push([makeParametersHTML('Parameter', extra['macro_param_doc'])]);
 				if ('macro_result_doc' in extra)
-					meta.push('Result: ' + extra['macro_result_doc']);
+					hidden.push(['Result: ' + extra['macro_result_doc']]);
 
-				return makeGenericResultHTML(basic, meta, [],
+				return makeGenericResultHTML(basic, meta, hidden,
 						highlightFunction(extra['macro_representation'], highlightCallback, 'macro'));
 
 			case 'ModuleResult':

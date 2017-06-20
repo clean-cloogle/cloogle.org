@@ -82,9 +82,9 @@ function makeSummary(hidden) {
 	for (var i in hidden) {
 		if (hidden[i].length == 3) {
 			summ += hidden[i][2];
-			if (i == sumlen - 2)
+			if (sumlen == 1)
 				summ += ' and ';
-			else if (i < sumlen - 2)
+			else if (sumlen > 1)
 				summ += ', ';
 			sumlen--;
 		}

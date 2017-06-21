@@ -30,7 +30,7 @@ where
 	#! (st,w) = log (Connected ip) Nothing w
 	= handle f log st dupChan w // Child: handle current request
 
-	handle :: (a *World-> (b,t,*World)) (Logger a b s t) !(Maybe !s) !TCP_DuplexChannel
+	handle :: (a *World-> (b,t,*World)) (Logger a b s t) !(Maybe s) !TCP_DuplexChannel
 		!*World -> (TCP_Listener, *World) | fromString a & toString b
 	handle f log st dupChannel=:{rChannel,sChannel} w
 	# (tRep,msg,rChannel,w) = receive_MT TIMEOUT rChannel w

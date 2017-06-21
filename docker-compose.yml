@@ -8,6 +8,8 @@ services:
       - "./cloogle.log:/usr/src/cloogle/cloogle.log"
       - "./cache:/usr/src/cloogle/cache"
     restart: always
+    cap_add:
+      - IPC_LOCK
 
   frontend:
     build: frontend

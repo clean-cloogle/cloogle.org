@@ -73,6 +73,7 @@ USAGE :== concat [
 	"\t-r PATH    Change the library root to PATH\n",
 	"\t-l PATH    Add PATH to the librarypaths relative to the root\n"]
 
+Start :: *World -> *World
 Start w
 # (args, w) = getCommandLine w
 # (f, w) = stdio w
@@ -83,12 +84,12 @@ Start w
 	| cli.version = fclose (f <<< VERSION) w
 	# (modss, w)  = mapSt (flip (uncurry $ findModules cli.exclude cli.root) "") cli.libs w
 	# mods        = flatten modss
-	# (db, w)     = loop cli.root mods newDb w
-	# db          = putFunctions predefFunctions db
-	# db          = putClasses predefClasses db
-	# db          = putTypes predefTypes db
-	# db          = putFunctions (flatten $ map constructor_functions predefTypes) db
-	# db          = putFunctions (flatten $ map record_functions predefTypes) db
+	#! (db, w)    = loop cli.root mods newDb w
+	#! db         = putFunctions predefFunctions db
+	#! db         = putClasses predefClasses db
+	#! db         = putTypes predefTypes db
+	#! db         = putFunctions (flatten $ map constructor_functions predefTypes) db
+	#! db         = putFunctions (flatten $ map record_functions predefTypes) db
 	# io          = stderr
 	# io          = printStats db io
 	# (ok1,w)     = fclose io w
@@ -98,11 +99,11 @@ Start w
 | not ok = abort "Couldn't close stdio"
 = w
 where
-	loop :: String [(String,String,Bool)] TypeDB *World -> *(TypeDB, *World)
+	loop :: String [(String,String,Bool)] !TypeDB !*World -> *(!TypeDB, !*World)
 	loop _ [] db w = (db,w)
 	loop root [(lib,mod,iscore):list] db w
-	# w = snd (fclose (stderr <<< lib <<< ": " <<< mod <<< "\n") w)
-	# (db, w) = getModuleTypes root mod lib iscore db w
+	#! w = snd (fclose (stderr <<< lib <<< ": " <<< mod <<< "\n") w)
+	#! (db, w) = getModuleTypes root mod lib iscore db w
 	= loop root list db w
 
 	parseCLI :: [String] -> Either String CLI

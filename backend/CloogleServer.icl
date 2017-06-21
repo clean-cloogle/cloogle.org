@@ -19,19 +19,21 @@ from Data.Func import $
 import Data.Functor
 import Data.List
 import Data.Tuple
+import System._Posix
 import System.CommandLine
+import System.Time
 from Text import class Text(concat), instance Text String
 import Text.JSON
 
-import System.Time
-
-from SimpleTCPServer import :: LogMessage{..}, serve, :: Logger
-import qualified SimpleTCPServer
-import Cache
 import Cloogle
 import Type
 import TypeDB
 import Search
+
+from SimpleTCPServer import :: LogMessage{..}, serve, :: Logger
+import qualified SimpleTCPServer
+import Cache
+import Memory
 
 MAX_RESULTS    :== 15
 CACHE_PREFETCH :== 5
@@ -66,27 +68,37 @@ toRequestCacheKey r =
 	}
 
 Start w
-# (io, w) = stdio w
 # (cmdline, w) = getCommandLine w
-| length cmdline <> 2 = help io w
+| length cmdline <> 2
+	= help w
 # [_,port:_] = cmdline
-# port = toInt port
-# (db, io) = openDb io
-# (_, w) = fclose io w
-| isNothing db = abort "stdin does not have a TypeDB\n"
-#! db = fromJust db
-= serve (handle db) (Just log) port w
+# w = disableSwap w
+#! (_,f,w) = fopen "types.json" FReadText w
+#! (db,f) = openDb f
+#! db = evalDb db
+#! (_,w) = fclose f w
+= serve (handle db) (Just log) (toInt port) w
 where
-	help :: *File *World -> *World
-	help io w
+	help :: *World -> *World
+	help w
+	# (io, w) = stdio w
 	# io = io <<< "Usage: ./CloogleServer <port>\n"
 	= snd $ fclose io w
 
+	disableSwap :: *World -> *World
+	disableSwap w
+	# (ok,w) = mlockall (MCL_CURRENT bitor MCL_FUTURE) w
+	| ok = w
+	# (err,w) = errno w
+	# (io,w) = stdio w
+	# io = io <<< "Could not lock memory (" <<< err <<< "); process may get swapped out\n"
+	= snd $ fclose io w
+
 	handle :: !TypeDB !(Maybe Request) !*World -> *(!Response, CacheKey, !*World)
-	handle _ Nothing w = (err InvalidInput "Couldn't parse input", "", w)
+	handle db Nothing w = (err InvalidInput "Couldn't parse input", "", w)
 	handle db (Just request=:{unify,name,page}) w
 		//Check cache
-		# (mbResponse, w) = readCache key w
+		#! (mbResponse, w) = readCache key w
 		| isJust mbResponse
 			# r = fromJust mbResponse
 			= ({r & return = if (r.return == 0) 1 r.return}, cacheKey key, w)
@@ -97,22 +109,22 @@ where
 		| isJust unify && isNothing (parseType $ fromString $ fromJust unify)
 			= respond (err InvalidType "Couldn't parse type") w
 		// Results
-		# drop_n = fromJust (page <|> pure 0) * MAX_RESULTS
-		# results = drop drop_n $ sort $ search request db
-		# more = max 0 (length results - MAX_RESULTS)
+		#! drop_n = fromJust (page <|> pure 0) * MAX_RESULTS
+		#! results = drop drop_n $ sort $ search request db
+		#! more = max 0 (length results - MAX_RESULTS)
 		// Suggestions
-		# mbType = unify >>= parseType o fromString
-		# suggestions = mbType >>= flip (suggs name) db
-		# w = seq [cachePages
+		#! mbType = unify >>= parseType o fromString
+		#! suggestions = mbType >>= flip (suggs name) db
+		#! w = seq [cachePages
 				(toRequestCacheKey req) CACHE_PREFETCH 0 zero suggs
 				\\ (req,suggs) <- 'Foldable'.concat suggestions] w
-		# suggestions
+		#! suggestions
 			= sortBy (\a b -> snd a > snd b) <$>
 			  filter ((<) (length results) o snd) <$>
 			  map (appSnd length) <$> suggestions
-		# (results,nextpages) = splitAt MAX_RESULTS results
+		#! (results,nextpages) = splitAt MAX_RESULTS results
 		// Response
-		# response = if (isEmpty results)
+		#! response = if (isEmpty results)
 			(err NoResults "No results")
 			{ zero
 		    & data           = results
@@ -120,7 +132,7 @@ where
 		    , suggestions    = suggestions
 		    }
 		// Save page prefetches
-		# w = cachePages key CACHE_PREFETCH 1 response nextpages w
+		#! w = cachePages key CACHE_PREFETCH 1 response nextpages w
 		// Save cache file
 		= respond response w
 	where

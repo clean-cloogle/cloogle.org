@@ -36,6 +36,7 @@ instance zero CLI where
 	                   , ("CleanInotify", const False)
 	                   , ("CleanPrettyPrint", const False)
 	                   , ("CleanSerial", const False)
+	                   , ("CleanSnappy", const False)
 	                   , ("CleanTypeUnifier", const False)
 	                   , ("Cloogle", const False)
 	                   , ("Directory", const False)

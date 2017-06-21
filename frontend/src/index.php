@@ -40,6 +40,7 @@
 					'CleanInotify',
 					'CleanPrettyPrint',
 					'CleanSerial',
+					'CleanSnappy',
 					'CleanTypeUnifier',
 					'Cloogle',
 					'SoccerFun',

@@ -26,7 +26,8 @@ RUN svn checkout https://svn.cs.ru.nl/repos/SoccerFun/src /opt/clean/lib/SoccerF
 	&& git clone https://github.com/clean-cloogle/libcloogle /opt/clean/lib/libcloogle \
 	&& git clone https://github.com/clean-cloogle/CleanTypeUnifier /opt/clean/lib/CleanTypeUnifier \
 	&& git clone https://github.com/clean-cloogle/CleanPrettyPrint /opt/clean/lib/CleanPrettyPrint \
-	&& git clone https://github.com/camilstaps/CleanInotify /opt/clean/lib/CleanInotify
+	&& git clone https://github.com/camilstaps/CleanInotify /opt/clean/lib/CleanInotify \
+	&& git clone https://github.com/camilstaps/CleanSnappy /opt/clean/lib/CleanSnappy
 
 # Pygments, for highlighting
 RUN apt-get update && apt-get install -y python3.4 python3-pip mercurial

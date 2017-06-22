@@ -11,5 +11,5 @@ from TCPIP import ::IPAddress, ::Port
 
 :: Logger a b s t :== (LogMessage a b t) (Maybe s) *World -> *(Maybe s, *World)
 
-serve :: (a *World -> *(b,t,*World)) (Maybe (Logger a b s t)) Port *World
+serve :: !(a *World -> *(b,t,*World)) !(Maybe (Logger a b s t)) !Port !*World
 	-> *World | fromString a & toString b

@@ -75,7 +75,6 @@ Start w
 # w = disableSwap w
 #! (_,f,w) = fopen "types.json" FReadText w
 #! (db,f) = openDb f
-#! db = evalDb db
 #! (_,w) = fclose f w
 = serve (handle db) (Just log) (toInt port) w
 where
@@ -113,8 +112,7 @@ where
 		#! results = drop drop_n $ sort $ search request db
 		#! more = max 0 (length results - MAX_RESULTS)
 		// Suggestions
-		#! mbType = unify >>= parseType o fromString
-		#! suggestions = mbType >>= flip (suggs name) db
+		#! suggestions = unify >>= parseType o fromString >>= flip (suggs name) db
 		#! w = seq [cachePages
 				(toRequestCacheKey req) CACHE_PREFETCH 0 zero suggs
 				\\ (req,suggs) <- 'Foldable'.concat suggestions] w
@@ -138,10 +136,10 @@ where
 	where
 		key = toRequestCacheKey request
 
-		respond :: Response *World -> *(Response, CacheKey, *World)
+		respond :: !Response !*World -> *(!Response, !CacheKey, !*World)
 		respond r w = (r, cacheKey key, writeCache LongTerm key r w)
 
-		cachePages :: RequestCacheKey Int Int Response [Result] *World -> *World
+		cachePages :: !RequestCacheKey !Int !Int !Response ![Result] !*World -> *World
 		cachePages key _ _  _ [] w = w
 		cachePages key 0 _  _ _  w = w
 		cachePages key npages i response results w

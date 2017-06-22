@@ -9,7 +9,7 @@ TIMEOUT :== Just 5000
 
 instance zero (Logger a b s t) where zero = \_ _ w -> (undef, w)
 
-serve :: (a *World -> *(b,t,*World)) (Maybe (Logger a b s t)) Port *World
+serve :: !(a *World -> *(b,t,*World)) !(Maybe (Logger a b s t)) !Port !*World
 	-> *World | fromString a & toString b
 serve f log port w
 # (ok, mbListener, w) = openTCP_Listener port w
@@ -30,8 +30,8 @@ where
 	#! (st,w) = log (Connected ip) Nothing w
 	= handle f log st dupChan w // Child: handle current request
 
-	handle :: (a *World-> (b,t,*World)) (Logger a b s t) !(Maybe s) !TCP_DuplexChannel
-		!*World -> (TCP_Listener, *World) | fromString a & toString b
+	handle :: !(a *World-> (b,t,*World)) !(Logger a b s t) !(Maybe s) !TCP_DuplexChannel
+		!*World -> *(!TCP_Listener, !*World) | fromString a & toString b
 	handle f log st dupChannel=:{rChannel,sChannel} w
 	# (tRep,msg,rChannel,w) = receive_MT TIMEOUT rChannel w
 	| tRep <> TR_Success

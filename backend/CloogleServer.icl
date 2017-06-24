@@ -27,7 +27,7 @@ import Text.JSON
 
 import Cloogle
 import Type
-import TypeDB
+import CloogleDB
 import Search
 
 from SimpleTCPServer import :: LogMessage{..}, serve, :: Logger
@@ -93,7 +93,7 @@ where
 	# io = io <<< "Could not lock memory (" <<< err <<< "); process may get swapped out\n"
 	= snd $ fclose io w
 
-	handle :: !TypeDB !(Maybe Request) !*World -> *(!Response, CacheKey, !*World)
+	handle :: !CloogleDB !(Maybe Request) !*World -> *(!Response, CacheKey, !*World)
 	handle db Nothing w = (err InvalidInput "Couldn't parse input", "", w)
 	handle db (Just request=:{unify,name,page}) w
 		//Check cache
@@ -154,7 +154,7 @@ where
 				}
 			(give,keep) = splitAt MAX_RESULTS results
 
-	suggs :: !(Maybe String) !Type !TypeDB -> Maybe [(Request, [Result])]
+	suggs :: !(Maybe String) !Type !CloogleDB -> Maybe [(Request, [Result])]
 	suggs n (Func is r cc) db
 		| length is < 3
 			= Just [let t` = concat $ print False $ Func is` r cc in

@@ -16,9 +16,9 @@ import Data.Maybe
 import System.CommandLine
 from Text import class Text(concat,startsWith), instance Text String
 
-import TypeDB
+import CloogleDB
 import Type
-from TypeDBFactory import findModules, getModuleTypes, constructor_functions,
+from CloogleDBFactory import findModules, getModuleTypes, constructor_functions,
 	record_functions
 
 :: CLI = { help    :: Bool
@@ -91,16 +91,14 @@ Start w
 	#! db         = putTypes predefTypes db
 	#! db         = putFunctions (flatten $ map constructor_functions predefTypes) db
 	#! db         = putFunctions (flatten $ map record_functions predefTypes) db
-	# io          = stderr
-	# io          = printStats db io
-	# (ok1,w)     = fclose io w
-	# f           = saveDb db f
-	# (ok2,w)     = fclose f w
+	#! (ok1,w)    = fclose (printStats db stderr) w
+	#! f          = saveDb db f
+	#! (ok2,w)    = fclose f w
 	= (ok1 && ok2,w)
 | not ok = abort "Couldn't close stdio"
 = w
 where
-	loop :: String [(String,String,Bool)] !TypeDB !*World -> *(!TypeDB, !*World)
+	loop :: String [(String,String,Bool)] !CloogleDB !*World -> *(!CloogleDB, !*World)
 	loop _ [] db w = (db,w)
 	loop root [(lib,mod,iscore):list] db w
 	#! w = snd (fclose (stderr <<< lib <<< ": " <<< mod <<< "\n") w)
@@ -118,23 +116,21 @@ where
 		("-l", [x:xs]) = (\c->{c & libs=[(x,const False):c.libs]}) <$> parseCLI xs
 		(x, _) = Left $ "Unknown option '" +++ x +++ "'"
 
-	printStats :: !TypeDB !*File -> *File
+	printStats :: !CloogleDB !*File -> *File
 	printStats db f = f
-		<<< "+-------------+------+\n"
+		<<< "+-------------+-------+\n"
 		<<< "| Modules     | " <<< modules <<< " |\n"
 		<<< "| Functions   | " <<< funs    <<< " |\n"
 		<<< "| Types       | " <<< types   <<< " |\n"
-		<<< "| Macros      | " <<< macros  <<< " |\n"
 		<<< "| Classes     | " <<< classes <<< " |\n"
 		<<< "| Instances   | " <<< insts   <<< " |\n"
 		<<< "| Derivations | " <<< derives <<< " |\n"
-		<<< "+-------------+------+\n"
+		<<< "+-------------+-------+\n"
 	where
-		[modules,funs,macros,types,classes,insts,derives:_]
-			= map (pad 4)
+		[modules,funs,types,classes,insts,derives:_]
+			= map (pad 5)
 				[ moduleCount db
 				, functionCount db
-				, macroCount db
 				, typeCount db
 				, classCount db
 				, instanceCount db
@@ -142,48 +138,48 @@ where
 				]
 		pad n i = {' ' \\ _ <- [0..n-size (toString i)-1]} +++ toString i
 
-predefFunctions :: [(Location, ExtendedType)]
+predefFunctions :: [(Location, FunctionEntry)]
 predefFunctions
 	= [ ( Builtin "if"
-	    , ET (Func [Type "Bool" [], Var "a", Var "a"] (Var "a") []) zero
+	    , {zero & fe_type=Just $ Func [Type "Bool" [], Var "a", Var "a"] (Var "a") []}
 	    )
 	  , ( Builtin "dynamic"
-	    , ET (Func [Var "a"] (Type "Dynamic" []) []) zero
+	    , {zero & fe_type=Just $ Func [Var "a"] (Type "Dynamic" []) []}
 	    )
 	  ]
 
-predefClasses :: [(Location, Class)]
+predefClasses :: [(Location, ClassEntry)]
 predefClasses
 	= [ ( Builtin "TC"
-	    , { class_vars=["v"]
-	      , class_context=[]
-	      , class_documentation=Nothing
-	      , class_members=[]
+	    , { ce_vars=["v"]
+	      , ce_context=[]
+	      , ce_documentation=Nothing
+	      , ce_members=[]
 	      }
 	    )
 	  ]
 
-predefTypes :: [(Location, ExtendedTypeDef)]
+predefTypes :: [(Location, TypeDefEntry)]
 predefTypes
 	= [ ( Builtin "Bool"
 	    , { deft
-	      & etd_typedef.td_name = "Bool"
-	      , etd_typedef.td_rhs  = TDRCons False
+	      & tde_typedef.td_name = "Bool"
+	      , tde_typedef.td_rhs  = TDRCons False
 	        [ { defc & cons_name="False" }
 	        , { defc & cons_name="True" }
 	        ]
 	      }
 	    )
-	  , ( Builtin "Int",     { deft & etd_typedef.td_name = "Int"     } )
-	  , ( Builtin "Real",    { deft & etd_typedef.td_name = "Real"    } )
-	  , ( Builtin "Char",    { deft & etd_typedef.td_name = "Char"    } )
-	  , ( Builtin "String",  { deft & etd_typedef.td_name = "String",
-	      etd_typedef.td_rhs = TDRSynonym (Type "_#Array" [Type "Char" []]) } )
-	  , ( Builtin "Dynamic", { deft & etd_typedef.td_name = "Dynamic" } )
-	  , ( Builtin "File",    { deft & etd_typedef.td_name = "File"    } )
-	  , ( Builtin "World",   { deft & etd_typedef.td_name = "World",
-	      etd_typedef.td_uniq = True } )
+	  , ( Builtin "Int",     { deft & tde_typedef.td_name = "Int"     } )
+	  , ( Builtin "Real",    { deft & tde_typedef.td_name = "Real"    } )
+	  , ( Builtin "Char",    { deft & tde_typedef.td_name = "Char"    } )
+	  , ( Builtin "String",  { deft & tde_typedef.td_name = "String",
+	      tde_typedef.td_rhs = TDRSynonym (Type "_#Array" [Type "Char" []]) } )
+	  , ( Builtin "Dynamic", { deft & tde_typedef.td_name = "Dynamic" } )
+	  , ( Builtin "File",    { deft & tde_typedef.td_name = "File"    } )
+	  , ( Builtin "World",   { deft & tde_typedef.td_name = "World",
+	      tde_typedef.td_uniq = True } )
 	  ]
 where
-	deft = {etd_typedef={td_name="", td_uniq=False, td_args=[], td_rhs=TDRAbstract}, etd_doc=Nothing}
+	deft = {tde_typedef={td_name="", td_uniq=False, td_args=[], td_rhs=TDRAbstract}, tde_doc=Nothing}
 	defc = {cons_name="", cons_args=[], cons_exi_vars=[], cons_context=[], cons_priority=Nothing}

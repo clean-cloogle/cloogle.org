@@ -326,16 +326,22 @@ function getResults(str, libs, include_builtins, include_core, page) {
 				}
 
 				var hl_entry = 'start';
-				if ('constructor_of' in extra) {
-					meta.push('This is a type constructor of <code>' +
-							highlightFunction(':: ' + extra['constructor_of'],
-							highlightCallback) + '</code>.');
-					hl_entry = 'startConstructor';
-				} else if ('recordfield_of' in extra) {
-					meta.push('This is a record field of <code>' +
-							highlightFunction(':: ' + extra['recordfield_of'],
-							highlightCallback) + '</code>.');
-					hl_entry = 'startRecordField';
+				switch (extra['kind'][0]) {
+					case 'Constructor':
+						meta.push('This is a type constructor of <code>' +
+								highlightFunction(':: ' + extra['constructor_of'],
+								highlightCallback) + '</code>.');
+						hl_entry = 'startConstructor';
+						break;
+					case 'RecordField':
+						meta.push('This is a record field of <code>' +
+								highlightFunction(':: ' + extra['recordfield_of'],
+								highlightCallback) + '</code>.');
+						hl_entry = 'startRecordField';
+						break;
+					case 'Macro':
+						hl_entry = 'macro';
+						break;
 				}
 
 				return makeGenericResultHTML(basic, meta, hidden,
@@ -398,15 +404,6 @@ function getResults(str, libs, include_builtins, include_core, page) {
 							highlightCallback, 'macro');
 
 				return makeGenericResultHTML(basic, meta, hidden, html);
-
-			case 'MacroResult':
-				if ('macro_param_doc' in extra && extra['macro_param_doc'].length > 0)
-					hidden.push([makeParametersHTML('Parameter', extra['macro_param_doc'])]);
-				if ('macro_result_doc' in extra)
-					hidden.push(['Result: ' + extra['macro_result_doc']]);
-
-				return makeGenericResultHTML(basic, meta, hidden,
-						highlightFunction(extra['macro_representation'], highlightCallback, 'macro'));
 
 			case 'ModuleResult':
 				if (extra['module_is_core'])

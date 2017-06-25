@@ -67,8 +67,8 @@ fields:
 
 	An array of search results. A result is an array of three elements. The first
 	determines the kind of result. It may be `FunctionResult`, `TypeResult`,
-	`ClassResult`, `MacroResult` or `ModuleResult`. The second contains general
-	data, in particular the following fields:
+	`ClassResult`, or `ModuleResult`. The second contains general data, in
+	particular the following fields:
 
 	* `library`
 	* `modul`: the module the result was found in (not a typo)
@@ -82,8 +82,7 @@ fields:
 	[`Cloogle.dcl`](https://github.com/clean-cloogle/libcloogle/blob/master/Cloogle.dcl)
 	at the types
 	`FunctionResultExtras`, `TypeResultExtras`, `ClassResultExtras`,
-	`MacroResultExtras` and `ModuleResultExtras` to get an idea of the fields
-	that may be returned.
+	and `ModuleResultExtras` to get an idea of the fields that may be returned.
 
 - `more_available`
 

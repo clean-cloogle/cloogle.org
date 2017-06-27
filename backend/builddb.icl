@@ -18,8 +18,8 @@ from Text import class Text(concat,startsWith), instance Text String
 
 import CloogleDB
 import Type
-from CloogleDBFactory import findModules, getModuleTypes, constructor_functions,
-	record_functions
+from CloogleDBFactory import :: TemporaryDB, newTemporaryDb, finaliseDb,
+	findModules, indexModule, constructor_functions, record_functions
 
 :: CLI = { help    :: Bool
          , version :: Bool
@@ -85,7 +85,8 @@ Start w
 	| cli.version = fclose (f <<< VERSION) w
 	# (modss, w)  = mapSt (flip (uncurry $ findModules cli.exclude cli.root) "") cli.libs w
 	# mods        = flatten modss
-	#! (db, w)    = loop cli.root mods newDb w
+	#! (db, w)    = loop cli.root mods newTemporaryDb w
+	#! db         = finaliseDb db newDb
 	#! db         = putFunctions predefFunctions db
 	#! db         = putClasses predefClasses db
 	#! db         = putTypes predefTypes db
@@ -98,12 +99,21 @@ Start w
 | not ok = abort "Couldn't close stdio"
 = w
 where
-	loop :: String [(String,String,Bool)] !CloogleDB !*World -> *(!CloogleDB, !*World)
+	loop :: String [(String,String,Bool)] !TemporaryDB !*World -> *(!TemporaryDB, !*World)
 	loop _ [] db w = (db,w)
 	loop root [(lib,mod,iscore):list] db w
 	#! w = snd (fclose (stderr <<< lib <<< ": " <<< mod <<< "\n") w)
-	#! (db, w) = getModuleTypes root mod lib iscore db w
+	#! (db, w) = indexModule root mod lib iscore db w
+	#! db = eval_all_nodes db
 	= loop root list db w
+
+	eval_all_nodes :: !.a -> .a // From GraphCopy
+	eval_all_nodes g = code {
+		push_a 0
+		.d 1 0
+		jsr	_eval_to_nf
+		.o 0 0
+	}
 
 	parseCLI :: [String] -> Either String CLI
 	parseCLI [] = Right zero
@@ -123,17 +133,15 @@ where
 		<<< "| Functions   | " <<< funs    <<< " |\n"
 		<<< "| Types       | " <<< types   <<< " |\n"
 		<<< "| Classes     | " <<< classes <<< " |\n"
-		<<< "| Instances   | " <<< insts   <<< " |\n"
 		<<< "| Derivations | " <<< derives <<< " |\n"
 		<<< "+-------------+-------+\n"
 	where
-		[modules,funs,types,classes,insts,derives:_]
+		[modules,funs,types,classes,derives:_]
 			= map (pad 5)
 				[ moduleCount db
 				, functionCount db
 				, typeCount db
 				, classCount db
-				, instanceCount db
 				, deriveCount db
 				]
 		pad n i = {' ' \\ _ <- [0..n-size (toString i)-1]} +++ toString i
@@ -155,6 +163,7 @@ predefClasses
 	      , ce_context=[]
 	      , ce_documentation=Nothing
 	      , ce_members=[]
+	      , ce_instances=[]
 	      }
 	    )
 	  ]

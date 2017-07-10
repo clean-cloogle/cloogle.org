@@ -30,8 +30,7 @@ import Type
 import CloogleDB
 import Search
 
-from SimpleTCPServer import :: LogMessage{..}, serve, :: Logger
-import qualified SimpleTCPServer
+import SimpleTCPServer
 import Cache
 import Memory
 
@@ -77,7 +76,12 @@ Start w
 #! (db,f) = openDb f
 #! db = eval_all_nodes db
 #! (_,w) = fclose f w
-= serve (handle db) (Just log) (toInt port) w
+= serve
+	{ handler           = handle db
+	, logger            = Just log
+	, port              = toInt port
+	, keepalive_timeout = Just 5000
+	} w
 where
 	help :: *World -> *World
 	help w

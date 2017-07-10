@@ -16,6 +16,7 @@ from TCPIP import ::IPAddress, ::Port
 	= { handler           :: !a *World -> *(!b, !t, !*World)
 	  , logger            :: !Maybe (Logger a b s t)
 	  , port              :: !Int
+	  , connect_timeout   :: !Maybe Int
 	  , keepalive_timeout :: !Maybe Int
 	  }
 

@@ -80,7 +80,8 @@ Start w
 	{ handler           = handle db
 	, logger            = Just log
 	, port              = toInt port
-	, keepalive_timeout = Just 5000
+	, connect_timeout   = Just 3600000 // 1h
+	, keepalive_timeout = Just 5000    // 5s
 	} w
 where
 	help :: *World -> *World

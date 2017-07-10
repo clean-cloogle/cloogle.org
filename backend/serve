@@ -2,8 +2,7 @@
 mkdir -p ./cache/lt ./cache/brief
 while :
 do
-	< types.json \
-		stdbuf -i0 -o0 -e0 \
-		./CloogleServer 31215 \
+	stdbuf -i0 -o0 -e0 \
+	./CloogleServer 31215 \
 		| tee -a cloogle.log
 done

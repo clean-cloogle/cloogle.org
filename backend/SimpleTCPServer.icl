@@ -1,9 +1,9 @@
 implementation module SimpleTCPServer
 
-import TCPIP
 import StdEnv
 import StdMaybe
 import System._Posix
+import TCPIP
 
 instance zero (Logger a b s t) where zero = \_ _ w -> (undef, w)
 

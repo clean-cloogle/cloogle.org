@@ -181,7 +181,7 @@ where
 	{ mem_ip         :: IPAddress
 	, mem_time_start :: Tm
 	, mem_time_end   :: Tm
-	, mem_request    :: Request
+	, mem_request    :: Maybe Request
 	}
 
 instance zero LogMemory
@@ -199,7 +199,7 @@ where
 	{ ip            :: String
 	, time_start    :: (String, Int)
 	, time_end      :: (String, Int)
-	, request       :: Request
+	, request       :: Maybe Request
 	, cachekey      :: String
 	, response_code :: Int
 	, results       :: Int
@@ -219,11 +219,11 @@ where
 	needslog = case msg of (Sent _ _) = True; _ = False
 
 	updateMemory :: LogMessage` LogMemory *World -> *(LogMemory, *World)
-	updateMemory (Connected ip)      s w = ({s & mem_ip=ip}, w)
-	updateMemory (Received (Just r)) s w
+	updateMemory (Connected ip) s w = ({s & mem_ip=ip}, w)
+	updateMemory (Received r)   s w
 	# (t,w) = localTime w
 	= ({s & mem_time_start=t, mem_request=r}, w)
-	updateMemory (Sent _ _)          s w
+	updateMemory (Sent _ _)     s w
 	# (t,w) = localTime w
 	= ({s & mem_time_end=t}, w)
 	updateMemory _                   s w = (s,w)

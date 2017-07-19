@@ -21,7 +21,6 @@ CLMFLAGS:=-h 250M -nr -nt\
 	-I clean-compiler/main\
 	-I clean-compiler/main/Unix
 
-.SECONDARY: $(PRJ)
 .PHONY: all clean distclean
 
 all: $(BIN) $(DB)

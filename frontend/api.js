@@ -420,7 +420,7 @@ function getResults(str, libs, include_builtins, include_core, page) {
 	}
 
 	var makeSuggestions = function (suggs) {
-		var str = '<hr/><div id="suggestions"><b>Did you mean...</b><table>';
+		var str = '<div id="suggestions"><b>Did you mean...</b><table>';
 		for (i in suggs) {
 			var sug = suggs[i][0];
 			var sugstr = [];
@@ -432,8 +432,8 @@ function getResults(str, libs, include_builtins, include_core, page) {
 			}
 			sugstr = sugstr.join(' ');
 			str += '<tr><td><a class="hidden" href="#' + encodeURIComponent(sugstr) + '"><code>' +
-				highlightFunction(sugstr) + '</code></a></td><td>' +
-				suggs[i][1] + ' results</td></tr>';
+				highlightFunction(sugstr) + '</code></a></td><td>(' +
+				suggs[i][1] + ' results)</td></tr>';
 		}
 		str += '</table></div>';
 		return str;

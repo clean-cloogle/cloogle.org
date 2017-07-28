@@ -150,6 +150,10 @@ div.visible {
 	margin-top: 1em;
 }
 
+#suggestions {
+	padding: 1em;
+}
+
 #search-results p {
 	padding-left: 1em;
 }

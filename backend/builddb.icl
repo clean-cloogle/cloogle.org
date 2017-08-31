@@ -164,6 +164,7 @@ predefClasses
 	      , ce_documentation=Nothing
 	      , ce_members=[]
 	      , ce_instances=[]
+	      , ce_derivations=[]
 	      }
 	    )
 	  ]

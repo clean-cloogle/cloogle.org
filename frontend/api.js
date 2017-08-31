@@ -46,7 +46,7 @@ function highlightCallback(span, cls, str) {
 		return '<a class="hidden" title="Search type ' + str + '" href="#' +
 			encodeURIComponent('type ' + str) + '">' +
 			span + '</a>';
-	} else if (cls == 'classname') {
+	} else if (cls == 'classname' || cls == 'classname classname-generic') {
 		return '<a class="hidden" title="Search class ' + str + '" href="#' +
 			encodeURIComponent('class ' + str) + '">' +
 			span + '</a>';
@@ -393,6 +393,11 @@ function getResults(str, libs, include_builtins, include_core, page) {
 							'Instances',
 							makeInstanceTable(extra['class_instances'], highlightType),
 							pluralise(extra['class_instances'].length, 'instance')]);
+				if (extra['class_derivations'].length > 0)
+					hidden.push([
+							'Derivations',
+							makeInstanceTable(extra['class_derivations'], highlightType),
+							pluralise(extra['class_derivations'].length, 'derivation')]);
 
 				var html = highlightClassDef(
 						'class ' + extra['class_heading'] +

@@ -20,24 +20,33 @@ function loadModule(elem) {
 
 	viewer.innerHTML = '<p id="loading">Loading...</p>';
 
-	var url = 'src.php';
-	url += '?lib=' + libselect.value;
+	var url = 'src.php?';
+	if (libselect != null)
+		url += 'lib=' + libselect.value + '&';
 	if (curmod != '')
-		url += '&mod=' + curmod;
-	if (icl.checked)
-		url += '&icl';
+		url += 'mod=' + curmod + '&';
+	if (icl != null && icl.checked)
+		url += 'icl';
 	var hashelems = decodeURIComponent(window.location.hash.substring(1)).split(';');
-	for (var i in hashelems)
+
+	var jump = line != null ? 'line-' + line : null;
+	for (var i in hashelems) {
 		if (hashelems[i].substring(0,5) == 'line=')
 			url += '&line=' + hashelems[i].substring(5);
+		if (hashelems[i].substring(0,5) == 'jump=')
+			jump = hashelems[i].substring(5);
+	}
 
 	var xmlHttp = new XMLHttpRequest();
 	xmlHttp.onreadystatechange = function() { 
 		if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
 			viewer.innerHTML = xmlHttp.response;
 
-			if (line != null)
-				document.getElementById('line-' + line).scrollIntoView(true);
+			console.log(jump);
+			if (jump != null) {
+				var elem = document.getElementById(jump) || document.getElementsByName(jump)[0];
+				elem.scrollIntoView(true);
+			}
 
 			var linenos = document.getElementsByClassName('special');
 			for (var i = 0; i < linenos.length; i++) {
@@ -77,7 +86,7 @@ function updateLibraryPanel() {
 
 function updateHash() {
 	var newhash = curmod;
-	if (icl.checked)
+	if (icl != null && icl.checked)
 		newhash += ';icl';
 	if (line != null)
 		newhash += ';line=' + line;
@@ -111,9 +120,11 @@ function selectLine(elem) {
 }
 
 function restoreShareUI() {
-	share_button.disabled = false;
-	share_button.type = 'button';
-	share_button.value = 'Share';
+	if (share_button != null) {
+		share_button.disabled = false;
+		share_button.type = 'button';
+		share_button.value = 'Share';
+	}
 }
 
 function shareButtonClick() {
@@ -138,7 +149,7 @@ window.onhashchange = function() {
 	} else {
 		var elems = decodeURIComponent(window.location.hash.substring(1)).split(';');
 		curmod = elems[0];
-		icl.checked = elems.indexOf('icl') != -1;
+		if (icl != null) icl.checked = elems.indexOf('icl') != -1;
 		for (var i in elems)
 			if (elems[i].substring(0,5) == 'line=')
 				line = elems[i].substring(5);
@@ -158,11 +169,11 @@ window.onload = function () {
 		viewer.style.height = height + 'px';
 	}
 
-	libselect.onchange = function() {
+	if (libselect != null) libselect.onchange = function() {
 		window.location.href = '?lib=' + this.value;
 	}
 
-	icl.onchange = function() {
+	if (icl != null) icl.onchange = function() {
 		line = null;
 		loadModule();
 	}

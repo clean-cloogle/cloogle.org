@@ -92,6 +92,7 @@ Start w
 	#! db         = putTypes predefTypes db
 	#! db         = putFunctions (flatten $ map constructor_functions predefTypes) db
 	#! db         = putFunctions (flatten $ map record_functions predefTypes) db
+	#! db         = syncDb 2 db
 	#! (ok1,w)    = fclose (printStats db stderr) w
 	#! f          = saveDb db f
 	#! (ok2,w)    = fclose f w
@@ -152,7 +153,7 @@ predefFunctions
 	    , {zero & fe_type=Just $ Func [Type "Bool" [], Var "a", Var "a"] (Var "a") []}
 	    )
 	  , ( Builtin "dynamic"
-	    , {zero & fe_type=Just $ Func [Var "a"] (Type "Dynamic" []) []}
+	    , {zero & fe_type=Just $ Func [Var "a"] (Type "Dynamic" []) [(Class "TC", Var "a")]}
 	    )
 	  ]
 

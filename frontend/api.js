@@ -229,7 +229,10 @@ function getResults(str, libs, include_builtins, include_core, page) {
 				locs += makeInstanceUrl(loc);
 			}
 
-			instances += '<td>&nbsp;in ' + locs + '</td></tr>';
+			if (list[i][locsidx].length == 0)
+				instances += '<td></td></tr>'
+			else
+				instances += '<td>&nbsp;in ' + locs + '</td></tr>';
 		}
 		instances += '</table>';
 

@@ -153,7 +153,7 @@ predefFunctions
 	    , {zero & fe_type=Just $ Func [Type "Bool" [], Var "a", Var "a"] (Var "a") []}
 	    )
 	  , ( Builtin "dynamic"
-	    , {zero & fe_type=Just $ Func [Var "a"] (Type "Dynamic" []) [(Class "TC", Var "a")]}
+	    , {zero & fe_type=Just $ Func [Var "a"] (Type "Dynamic" []) [Instance "TC" [Var "a"]]}
 	    )
 	  ]
 

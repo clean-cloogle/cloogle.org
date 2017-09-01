@@ -49,7 +49,7 @@ CACHE_PREFETCH :== 5
 	  , c_page             :: Int
 	  }
 
-derive JSONEncode Kind, ClassOrGeneric, Type, RequestCacheKey
+derive JSONEncode Kind, Type, RequestCacheKey, TypeRestriction
 instance toString RequestCacheKey
 where toString rck = toString $ toJSON rck
 

@@ -75,6 +75,7 @@ function makeSummary(hidden) {
 			sumlen++;
 	if (sumlen != hidden.length) {
 		hidden.push([null, null, 'more information']);
+		sumlen++;
 		restore = true;
 	}
 
@@ -122,6 +123,63 @@ function makeParametersHTML(name, params) {
 		return name + ': ' + params[0].makeParagraphs();
 	else
 		return name + 's:<ul><li>' + params.join('</li><li>').makeParagraphs() + '</li></ul>';
+}
+
+function makeLocationUrl(loc) {
+	var dclUrl =
+		'src?lib=' + encodeURIComponent(loc[0]) +
+		'#' + encodeURIComponent(loc[1]);
+	var iclUrl = dclUrl + ';icl';
+
+	if (loc[2].length > 1)
+		dclUrl += ';line=' + loc[2][1];
+	if (loc[3].length > 1)
+		iclUrl += ';line=' + loc[3][1];
+
+	return loc[1] +
+		' (<a target="_blank" href="' + dclUrl + '">dcl' +
+			(loc[2].length > 1 ? ':' + loc[2][1] : '') + '</a>; ' +
+		'<a target="_blank" href="' + iclUrl + '">icl' +
+			(loc[3].length > 1 ? ':' + loc[3][1] : '') + '</a>) ' +
+		'(' + loc[0] + ')';
+}
+
+function makeLocationUrls(locs) {
+	var html = '';
+	for (var j in locs) {
+		if (html != '')
+			html += ', ';
+		html += makeLocationUrl(locs[j]);
+	}
+	return html;
+}
+
+function makeUnifier(ufr) {
+	var from_left = ufr.left_to_right;
+	var from_right = ufr.right_to_left;
+	var s = '';
+
+	for (i in from_right)
+		s += '<tt>' + from_right[i][0] + '</tt> &rarr; <tt>' + from_right[i][1] + '</tt>; ';
+	for (i in from_left)
+		s += '<tt>' + from_left[i][1] + '</tt> &larr; <tt>' + from_left[i][0] + '</tt>; ';
+
+	return s.substring(0, s.length - 2);
+}
+
+function makeRequiredContext(context) {
+	var html = '<table>';
+	for (var i in context) {
+		html += '<tr><td>' +
+			'<code>' + highlightFunction(context[i][0], highlightCallback) + '</code>' +
+			'</td><td>' +
+			(context[i][1].length > 0
+				? makeLocationUrls(context[i][1])
+				: 'Not currently known to Cloogle.') +
+			'</td></tr>';
+	}
+	html += '</table>';
+	return html;
 }
 
 function getResults(str, libs, include_builtins, include_core, page) {
@@ -173,25 +231,6 @@ function getResults(str, libs, include_builtins, include_core, page) {
 
 		var instances = '<table>';
 
-		var makeInstanceUrl = function (loc) {
-			var dclUrl =
-				'src?lib=' + encodeURIComponent(loc[0]) +
-				'#' + encodeURIComponent(loc[1]);
-			var iclUrl = dclUrl + ';icl';
-
-			if (loc[2].length > 1)
-				dclUrl += ';line=' + loc[2][1];
-			if (loc[3].length > 1)
-				iclUrl += ';line=' + loc[3][1];
-
-			return loc[1] +
-				' (<a target="_blank" href="' + dclUrl + '">dcl' +
-					(loc[2].length > 1 ? ':' + loc[2][1] : '') + '</a>; ' +
-				'<a target="_blank" href="' + iclUrl + '">icl' +
-					(loc[3].length > 1 ? ':' + loc[3][1] : '') + '</a>) ' +
-				'(' + loc[0] + ')';
-		}
-
 		for (var i in list) {
 			instances += '<tr><th>';
 			if (typeof list[i][0] === 'object') {
@@ -219,20 +258,11 @@ function getResults(str, libs, include_builtins, include_core, page) {
 				instances += '</td>';
 			}
 
-			var locs = '';
 			var locsidx = list[i].length - 1;
-			for (var j in list[i][locsidx]) {
-				var loc = list[i][locsidx][j];
-				if (locs != '') {
-					locs += ', ';
-				}
-				locs += makeInstanceUrl(loc);
-			}
-
 			if (list[i][locsidx].length == 0)
 				instances += '<td></td></tr>'
 			else
-				instances += '<td>&nbsp;in ' + locs + '</td></tr>';
+				instances += '<td>&nbsp;in ' + makeLocationUrls(list[i][locsidx]) + '</td></tr>';
 		}
 		instances += '</table>';
 
@@ -306,6 +336,9 @@ function getResults(str, libs, include_builtins, include_core, page) {
 							' ' + extra['cls']['cls_vars'].join(' '),
 							highlightCallback, 'className') + '</code>');
 
+				if ('required_context' in extra && extra['required_context'].length > 0) {
+					hidden.push(['Required context', makeRequiredContext(extra['required_context'])]);
+				}
 				if ('unifier' in extra &&
 						(extra['unifier'].left_to_right.length > 0
 						 || extra['unifier'].right_to_left.length > 0))
@@ -497,19 +530,6 @@ function getResults(str, libs, include_builtins, include_core, page) {
 		document.location.hash = '#' + newhash;
 		restoreShareUI();
 	}
-}
-
-function makeUnifier(ufr) {
-	var from_left = ufr.left_to_right;
-	var from_right = ufr.right_to_left;
-	var s = '';
-
-	for (i in from_right)
-		s += '<tt>' + from_right[i][0] + '</tt> &rarr; <tt>' + from_right[i][1] + '</tt>; ';
-	for (i in from_left)
-		s += '<tt>' + from_left[i][1] + '</tt> &larr; <tt>' + from_left[i][0] + '</tt>; ';
-
-	return s.substring(0, s.length - 2);
 }
 
 function getLibs() {

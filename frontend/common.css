@@ -4,6 +4,14 @@ pre {
 	tab-size: 4;
 }
 
+table {
+	border-spacing: 0;
+}
+
+td, th {
+	padding-right: 1em;
+}
+
 .toggle-container .toggler {
 	cursor: pointer;
 }

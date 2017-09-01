@@ -1,4 +1,6 @@
 <?php
+error_reporting(0);
+
 define('SERVER_HOSTNAME', 'backend');
 define('SERVER_PORT', 31215);
 define('SERVER_TIMEOUT', 8);

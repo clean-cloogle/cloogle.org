@@ -2,7 +2,7 @@ BIN:=CloogleServer builddb
 DB=types.json
 MAN:=builddb.1 # Others don't have --help/--version # $(addsuffix .1,$(BIN))
 CLM:=clm
-CLMFLAGS:=-h 250M -nr -nt\
+CLMFLAGS:=-h 250M -nr -nt -l -no-pie\
 	-I $$CLEAN_HOME/lib/ArgEnv\
 	-I $$CLEAN_HOME/lib/Generics\
 	-I $$CLEAN_HOME/lib/TCPIP\

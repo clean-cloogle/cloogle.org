@@ -1,4 +1,4 @@
-FROM php:apache
+FROM php:7.2-rc-apache
 
 # PHP dependencies
 RUN docker-php-source extract \

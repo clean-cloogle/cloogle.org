@@ -380,8 +380,14 @@ function getResults(str, libs, include_builtins, include_core, page) {
 						break;
 				}
 
-				return makeGenericResultHTML(basic, meta, hidden,
-						highlightFunction(extra['func'], highlightCallback, hl_entry));
+				var code = highlightFunction(extra['func'], highlightCallback, hl_entry);
+				if ('type_doc' in extra) {
+					var name = extra['func'].split(' ')[0];
+					var type = highlightFunction(name + ' :: ' + extra['type_doc'], highlightCallback);
+					code = type + '\r\n' + code;
+				}
+
+				return makeGenericResultHTML(basic, meta, hidden, code);
 
 			case 'TypeResult':
 				if (extra['type_instances'].length > 0) {

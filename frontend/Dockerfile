@@ -39,7 +39,8 @@ RUN bash iconv.sh && rm iconv.sh
 
 COPY logo.svg /var/www/logo.svg
 RUN cd /var/www \
-	&& apt-get install -qq librsvg2-bin \
-	&& rsvg-convert -h 200 logo.svg > logo.png \
-	&& apt-get remove -qq librsvg2-bin \
+	&& apt-get install -qq imagemagick librsvg2-bin \
+	&& rsvg-convert -w 400 logo.svg > logo.png \
+	&& convert -resize 200x logo.png logo.png \
+	&& apt-get remove -qq imagemagick librsvg2-bin \
 	&& apt-get autoremove -qq

@@ -48,7 +48,7 @@
 			float: left;
 			height: 100%;
 			text-align: center;
-			width: 25%;
+			width: 20%;
 		}
 
 		.chart-container .tabs .tab.active {
@@ -66,6 +66,7 @@
 
 		.chart-container .charts .chart {
 			display: none;
+			font-size: 13px;
 			height: 450px;
 		}
 
@@ -79,12 +80,17 @@
 	<div class="chart-container">
 		<ul class="tabs">
 			<li class="tab active" data-target="by-hour">Punch chart</li>
+			<li class="tab" data-target="extremes">Extremes</li>
 			<li class="tab" data-target="oss">Operating systems</li>
 			<li class="tab" data-target="types">Search types</li>
 			<li class="tab" data-target="per-oss">Search types per OS</li>
 		</ul>
 		<div class="charts">
 			<div class="chart active" id="by-hour"></div>
+			<div class="chart" id="extremes">
+				<p>Maximum number of requests: <span id="maxn"></span> on <span id="maxd"></span>.</p>
+				<p>Average number of requests per day: <span id="avgn"></span>.
+			</div>
 			<div class="chart" id="oss"></div>
 			<div class="chart" id="types"></div>
 			<div class="chart" id="per-oss"></div>
@@ -327,6 +333,12 @@
 					series: data
 				});
 			});
+
+			$.getJSON('ajax/extremes.php?callback=?', function(data) {
+				$('#extremes #maxn').text(data['maxn']);
+				$('#extremes #maxd').text(data['maxd']);
+				$('#extremes #avgn').text(data['avgn']);
+			});
 		});
 
 		$('li.tab').click(function(){
@@ -335,7 +347,11 @@
 
 			var target = $(this).data('target');
 			$('.chart').removeClass('active');
-			$('.chart#' + target).addClass('active').highcharts().reflow();
+			var chart = $('.chart#' + target);
+			chart.addClass('active');
+			var hc = chart.highcharts();
+			if (typeof hc != 'undefined' && typeof hc.reflow === 'function')
+				hc.reflow();
 		});
 	</script>
 </body>

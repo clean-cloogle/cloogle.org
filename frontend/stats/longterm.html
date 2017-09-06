@@ -8,29 +8,88 @@
 	<script src="//code.jquery.com/jquery-2.2.4.min.js" integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
 	<script type="text/javascript" src="//code.highcharts.com/stock/2.1.10/highstock.js" defer="defer"></script>
 	<script type="text/javascript" src="//code.highcharts.com/stock/2.1.10/highcharts-more.js" defer="defer"></script>
+	<style type="text/css">
+		body {
+			font-size: 0;
+			margin: 0;
+		}
+
+		.chart#over-time, .chart-container {
+			display: inline-block;
+			height: 500px;
+			margin: 0;
+			vertical-align: top;
+		}
+
+		.chart#over-time {
+			width: 65%;
+		}
+
+		.chart-container {
+			float: right;
+			width: 34%;
+		}
+
+		.chart-container .tabs {
+			background-color: #ccc;
+			display: block;
+			font-family: sans-serif;
+			font-size: 16px;
+			height: 50px;
+			line-height: 50px;
+			list-style-type: none;
+			margin: 0;
+			padding: 0;
+		}
+
+		.chart-container .tabs .tab {
+			cursor: pointer;
+			display: inline-block;
+			float: left;
+			height: 100%;
+			text-align: center;
+			width: 25%;
+		}
+
+		.chart-container .tabs .tab.active {
+			background-color: #ddd;
+		}
+
+		.chart-container .tabs .tab:hover {
+			background-color: #e5e5e5;
+		}
+
+		.chart-container .charts {
+			height: 450px;
+			width: 100%;
+		}
+
+		.chart-container .charts .chart {
+			display: none;
+			height: 450px;
+		}
+
+		.chart-container .charts .chart.active {
+			display: block;
+		}
+	</style>
 </head>
 <body>
-	<table style="width:100%">
-		<tr>
-			<td colspan="2">
-				<div id="over-time" style="height:400px;min-width:310px;"></div>
-			</td>
-			<td>
-				<div id="oss" style="height:400px;"></div>
-			</td>
-		</tr>
-		<tr>
-			<td style="width:40%;">
-				<div id="by-hour" style="height:400px;"></div>
-			</td>
-			<td style="width:30%;">
-				<div id="types" style="height:400px;"></div>
-			</td>
-			<td style="width:30%;">
-				<div id="per-oss" style="height:400px;"></div>
-			</td>
-		</tr>
-	</table>
+	<div class="chart" id="over-time"></div>
+	<div class="chart-container">
+		<ul class="tabs">
+			<li class="tab active" data-target="by-hour">Punch chart</li>
+			<li class="tab" data-target="oss">Operating systems</li>
+			<li class="tab" data-target="types">Search types</li>
+			<li class="tab" data-target="per-oss">Search types per OS</li>
+		</ul>
+		<div class="charts">
+			<div class="chart active" id="by-hour"></div>
+			<div class="chart" id="oss"></div>
+			<div class="chart" id="types"></div>
+			<div class="chart" id="per-oss"></div>
+		</div>
+	</div>
 
 	<script type="text/javascript">
 		function afterSetExtremes(e) {
@@ -268,6 +327,15 @@
 					series: data
 				});
 			});
+		});
+
+		$('li.tab').click(function(){
+			$('li.tab').removeClass('active');
+			$(this).addClass('active');
+
+			var target = $(this).data('target');
+			$('.chart').removeClass('active');
+			$('.chart#' + target).addClass('active').highcharts().reflow();
 		});
 	</script>
 </body>

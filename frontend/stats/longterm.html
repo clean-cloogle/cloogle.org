@@ -73,6 +73,14 @@
 		.chart-container .charts .chart.active {
 			display: block;
 		}
+
+		#extremes table {
+			margin: 3em auto 0;
+		}
+
+		#extremes td, #extremes th {
+			padding-right: 1em;
+		}
 	</style>
 </head>
 <body>
@@ -88,8 +96,23 @@
 		<div class="charts">
 			<div class="chart active" id="by-hour"></div>
 			<div class="chart" id="extremes">
-				<p>Maximum number of requests: <span id="maxn"></span> on <span id="maxd"></span>.</p>
-				<p>Average number of requests per day (on days with requests): <span id="avgn"></span>.
+				<table>
+					<tr>
+						<td></td>
+						<th>Requests</th>
+						<th>Visitors</th>
+					</tr>
+					<tr>
+						<th>Max</th>
+						<td><strong id="req-maxn"></strong>, on <span id="req-maxd"></span></td>
+						<td><strong id="vis-maxn"></strong>, on <span id="vis-maxd"></span></td>
+					</tr>
+					<tr>
+						<th>Avg</th>
+						<td id="req-avgn"></td>
+						<td id="vis-avgn"></td>
+					</tr>
+				</table>
 			</div>
 			<div class="chart" id="oss"></div>
 			<div class="chart" id="types"></div>
@@ -102,9 +125,12 @@
 			if (typeof query == 'undefined')
 				query = '?callback=?';
 			$.getJSON('ajax/extremes.php' + query, function(data) {
-				$('#extremes #maxn').text(data['maxn']);
-				$('#extremes #maxd').text(data['maxd']);
-				$('#extremes #avgn').text(data['avgn']);
+				$('#extremes #req-maxn').text(data.requests.maxn);
+				$('#extremes #req-maxd').text(data.requests.maxd);
+				$('#extremes #req-avgn').text(data.requests.avgn);
+				$('#extremes #vis-maxn').text(data.visitors.maxn);
+				$('#extremes #vis-maxd').text(data.visitors.maxd);
+				$('#extremes #vis-avgn').text(data.visitors.avgn);
 			});
 		}
 

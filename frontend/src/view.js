@@ -9,6 +9,11 @@ var curmod = null;
 var refresh_on_hash = true;
 var line = null;
 
+Element.prototype.documentOffsetTop = function() {
+	return this.offsetTop +
+		(this.offsetParent ? this.offsetParent.documentOffsetTop() : 0);
+};
+
 function loadModule(elem) {
 	if (typeof elem != 'undefined') {
 		line = null;
@@ -36,8 +41,11 @@ function loadModule(elem) {
 		if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
 			viewer.innerHTML = xmlHttp.response;
 
-			if (line != null)
-				document.getElementById('line-' + line).scrollIntoView(true);
+			if (line != null) {
+				var l = document.getElementById('line-' + line).documentOffsetTop();
+				console.log(l);
+				document.getElementById('viewer').scrollTo(0, l - window.innerHeight/4);
+			}
 
 			var linenos = document.getElementsByClassName('special');
 			for (var i = 0; i < linenos.length; i++) {

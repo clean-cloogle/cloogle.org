@@ -197,7 +197,7 @@
 		$(function(){
 			$.getJSON('ajax/over-time.php?callback=?', function(data) {
 				$('#over-time').highcharts('StockChart', {
-					colors: ['#00aa00', '#dddd00', '#dd0000', '#2222aa'],
+					colors: ['#00aa00', '#dddd00', '#dd0000', '#2222aa', '#884444'],
 					chart: {
 						type: 'area',
 						zoomType: 'x'
@@ -228,7 +228,8 @@
 					},
 					yAxis: [
 						{ floor: 0, title: { text: 'Requests' }, opposite: true },
-						{ floor: 0, title: { text: 'Visitors' }, opposite: false }
+						{ floor: 0, title: { text: 'Visitors' }, opposite: false },
+						{ floor: 0, title: { text: 'ms' }, opposite: true }
 					],
 					plotOptions: {
 						area: { stacking: 'normal' },
@@ -252,6 +253,13 @@
 						data: data[3],
 						dataGrouping: { enabled: false },
 						name: 'Unique visitors'
+					}, {
+						type: 'spline',
+						yAxis: 2,
+						data: data[4],
+						dataGrouping: { enabled: false },
+						name: 'Average response time',
+						tooltip: { valueSuffix: ' ms' }
 					}]
 				});
 			});

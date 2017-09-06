@@ -36,7 +36,8 @@ $sql =
 		count(*),
 		count(case when `responsecode`>=150 then 1 else null end),
 		count(case when `responsecode`>1 and `responsecode`<150 then 1 else null end),
-		count(distinct `ip`,`useragent_id`)
+		count(distinct `ip`,`useragent_id`),
+		avg(responsetime)
 	FROM `log`
 	WHERE
 		`responsecode` <> " . E_DOSPROTECT . " AND
@@ -48,8 +49,8 @@ $stmt = $db->stmt_init();
 if (!$stmt->prepare($sql))
 	var_dump($stmt->error);
 $stmt->execute();
-$stmt->bind_result($timestamp, $count, $servererrcount, $usererrcount, $uniquecount);
-$results = [[], [], [], []];
+$stmt->bind_result($timestamp, $count, $servererrcount, $usererrcount, $uniquecount, $resptime);
+$results = [[], [], [], [], []];
 
 $expected_timestamp = $timemod === 'monthly'
 	? strtotime(date('Y-m-01 00:00:00', $start))
@@ -64,7 +65,7 @@ function update_expected_timestamp() {
 
 while ($stmt->fetch()) {
 	while ($expected_timestamp < $timestamp) {
-		for ($i=0; $i<4; $i++)
+		for ($i=0; $i<count($results); $i++)
 			$results[$i][] = "[" . $expected_timestamp*1000 . ",0]";
 		update_expected_timestamp();
 	}
@@ -72,10 +73,11 @@ while ($stmt->fetch()) {
 	$results[1][] = "[" . $timestamp*1000 . ",$usererrcount]";
 	$results[2][] = "[" . $timestamp*1000 . ",$servererrcount]";
 	$results[3][] = "[" . $timestamp*1000 . ",$uniquecount]";
+	$results[4][] = "[" . $timestamp*1000 . "," . round($resptime) . "]";
 	update_expected_timestamp();
 }
 while ($expected_timestamp <= $end + ($timemod === 'monthly' ? 31 * 86400 : $timemod)) {
-	for ($i=0; $i<4; $i++)
+	for ($i=0; $i<count($results); $i++)
 		$results[$i][] = "[" . $expected_timestamp*1000 . ",0]";
 	update_expected_timestamp();
 }
@@ -85,5 +87,6 @@ echo "$callback([" .
 	"[" . join(",", $results[0]) . "]," .
 	"[" . join(",", $results[1]) . "]," .
 	"[" . join(",", $results[2]) . "]," .
-	"[" . join(",", $results[3]) . "]" .
+	"[" . join(",", $results[3]) . "]," .
+	"[" . join(",", $results[4]) . "]" .
 	"]);";

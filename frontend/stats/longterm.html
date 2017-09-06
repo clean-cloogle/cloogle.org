@@ -89,7 +89,7 @@
 			<div class="chart active" id="by-hour"></div>
 			<div class="chart" id="extremes">
 				<p>Maximum number of requests: <span id="maxn"></span> on <span id="maxd"></span>.</p>
-				<p>Average number of requests per day: <span id="avgn"></span>.
+				<p>Average number of requests per day (on days with requests): <span id="avgn"></span>.
 			</div>
 			<div class="chart" id="oss"></div>
 			<div class="chart" id="types"></div>
@@ -98,6 +98,16 @@
 	</div>
 
 	<script type="text/javascript">
+		function updateExtremes(query) {
+			if (typeof query == 'undefined')
+				query = '?callback=?';
+			$.getJSON('ajax/extremes.php' + query, function(data) {
+				$('#extremes #maxn').text(data['maxn']);
+				$('#extremes #maxd').text(data['maxd']);
+				$('#extremes #avgn').text(data['avgn']);
+			});
+		}
+
 		function afterSetExtremes(e) {
 			var query = '?' +
 				(typeof e.min != 'undefined' && !isNaN(e.min)
@@ -154,6 +164,8 @@
 					per_oss.hideLoading();
 				}
 			);
+
+			updateExtremes(query);
 		}
 
 		$(function(){
@@ -334,11 +346,7 @@
 				});
 			});
 
-			$.getJSON('ajax/extremes.php?callback=?', function(data) {
-				$('#extremes #maxn').text(data['maxn']);
-				$('#extremes #maxd').text(data['maxd']);
-				$('#extremes #avgn').text(data['avgn']);
-			});
+			updateExtremes();
 		});
 
 		$('li.tab').click(function(){

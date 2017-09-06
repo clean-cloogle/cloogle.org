@@ -1,4 +1,4 @@
-FROM php:apache
+FROM php:7.2-rc-apache
 
 # PHP dependencies
 RUN docker-php-source extract \
@@ -39,7 +39,7 @@ RUN bash iconv.sh && rm iconv.sh
 
 COPY logo.svg /var/www/logo.svg
 RUN cd /var/www \
-	&& apt-get install -qq imagemagick \
-	&& convert -resize 200x logo.svg logo.png \
-	&& apt-get remove -qq imagemagick \
+	&& apt-get install -qq librsvg2-bin \
+	&& rsvg-convert -h 200 logo.svg > logo.png \
+	&& apt-get remove -qq librsvg2-bin \
 	&& apt-get autoremove -qq

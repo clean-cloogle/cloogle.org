@@ -46,6 +46,7 @@ CACHE_PREFETCH :== 5
 	  , c_libraries        :: Maybe [String]
 	  , c_include_builtins :: Bool
 	  , c_include_core     :: Bool
+	  , c_include_apps     :: Bool
 	  , c_page             :: Int
 	  }
 
@@ -63,6 +64,7 @@ toRequestCacheKey r =
 	, c_libraries        = sort <$> r.libraries
 	, c_include_builtins = fromJust (r.include_builtins <|> Just DEFAULT_INCLUDE_BUILTINS)
 	, c_include_core     = fromJust (r.include_core <|> Just DEFAULT_INCLUDE_CORE)
+	, c_include_apps     = fromJust (r.include_apps <|> Just DEFAULT_INCLUDE_APPS)
 	, c_page             = fromJust (r.page <|> Just 0)
 	}
 

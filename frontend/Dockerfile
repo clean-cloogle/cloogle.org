@@ -20,6 +20,8 @@ RUN svn checkout https://svn.cs.ru.nl/repos/SoccerFun/src /opt/clean/lib/SoccerF
 	&& bash -c 'rm /opt/clean/lib/SoccerFun/{Team_,RefereeCoach_,Buffer,KeeperChallenger}*' \
 	&& svn checkout https://svn.cs.ru.nl/repos/clean-libraries/trunk/Libraries/MersenneTwister /opt/clean/lib/MersenneTwister \
 	&& svn checkout https://svn.cs.ru.nl/repos/clean-libraries/trunk/Libraries/ObjectIO/ObjectIO /opt/clean/lib/ObjectIO \
+	&& svn checkout https://svn.cs.ru.nl/repos/clean-ide/trunk /opt/clean/lib/clean-ide \
+	&& svn checkout https://svn.cs.ru.nl/repos/clean-compiler/trunk /opt/clean/lib/clean-compiler \
 	&& git clone https://gitlab.science.ru.nl/mlubbers/CleanSerial /opt/clean/lib/CleanSerial \
 	&& git clone https://github.com/clean-cloogle/Cloogle /opt/clean/lib/Cloogle \
 	&& git clone https://github.com/clean-cloogle/libcloogle /opt/clean/lib/libcloogle \

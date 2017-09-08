@@ -3,7 +3,7 @@ module builddb
 import StdArray
 import StdBool
 import StdFile
-from StdFunc import const, o
+from StdFunc import const, id, o
 import StdList
 import StdMisc
 import StdString
@@ -24,7 +24,7 @@ from CloogleDBFactory import :: TemporaryDB, newTemporaryDb, finaliseDb,
 :: CLI = { help    :: Bool
          , version :: Bool
          , root    :: String
-         , libs    :: [(String, String -> Bool)]
+         , libs    :: [(String, String ModuleEntry -> ModuleEntry)]
          , exclude :: [String]
          }
 
@@ -32,28 +32,30 @@ instance zero CLI where
 	zero = { version = False
 	       , help    = False
 	       , root    = "/opt/clean/lib/"
-	       , libs    = [ ("ArgEnv", const False)
-	                   , ("CleanInotify", const False)
-	                   , ("CleanPrettyPrint", const False)
-	                   , ("CleanSerial", const False)
-	                   , ("CleanSnappy", const False)
-	                   , ("CleanTypeUnifier", const False)
-	                   , ("Cloogle", const False)
-	                   , ("Directory", const False)
-	                   , ("Dynamics", const False)
-	                   , ("Gast", const False)
-	                   , ("Generics", const False)
-	                   , ("GraphCopy", const False)
-	                   , ("MersenneTwister", const False)
-	                   , ("ObjectIO", not o startsWith "Std")
-	                   , ("Platform", const False)
-	                   , ("Sapl", const False)
-	                   , ("SoccerFun", const False)
-	                   , ("StdEnv", const False)
-	                   , ("StdLib", const False)
-	                   , ("TCPIP", const False)
-	                   , ("iTasks", const False)
-	                   , ("libcloogle", const False)
+	       , libs    = [ ("ArgEnv",           const id)
+	                   , ("CleanInotify",     const id)
+	                   , ("CleanPrettyPrint", const id)
+	                   , ("CleanSerial",      const id)
+	                   , ("CleanSnappy",      const id)
+	                   , ("CleanTypeUnifier", const id)
+	                   , ("Cloogle",          const id)
+	                   , ("Directory",        const id)
+	                   , ("Dynamics",         const id)
+	                   , ("Gast",             const id)
+	                   , ("Generics",         const id)
+	                   , ("GraphCopy",        const id)
+	                   , ("MersenneTwister",  const id)
+	                   , ("ObjectIO",         \s me -> {me & me_is_core=not (startsWith "Std" s)})
+	                   , ("Platform",         const id)
+	                   , ("Sapl",             const id)
+	                   , ("SoccerFun",        const id)
+	                   , ("StdEnv",           const id)
+	                   , ("StdLib",           const id)
+	                   , ("TCPIP",            const id)
+	                   , ("iTasks",           const id)
+	                   , ("clean-compiler",   const \me -> {me & me_is_app=True})
+	                   , ("clean-ide",        const \me -> {me & me_is_app=True})
+	                   , ("libcloogle",       const id)
 	                   ]
 	       , exclude = [ "StdEnv/_startup"
 	                   , "StdEnv/_system"
@@ -100,11 +102,11 @@ Start w
 | not ok = abort "Couldn't close stdio"
 = w
 where
-	loop :: String [(String,String,Bool)] !TemporaryDB !*World -> *(!TemporaryDB, !*World)
+	loop :: String [(String,String,String ModuleEntry -> ModuleEntry)] !TemporaryDB !*World -> *(!TemporaryDB, !*World)
 	loop _ [] db w = (db,w)
-	loop root [(lib,mod,iscore):list] db w
+	loop root [(lib,mod,modf):list] db w
 	#! w = snd (fclose (stderr <<< lib <<< ": " <<< mod <<< "\n") w)
-	#! (db, w) = indexModule root mod lib iscore db w
+	#! (db, w) = indexModule root mod lib modf db w
 	#! db = eval_all_nodes db
 	= loop root list db w
 
@@ -124,7 +126,7 @@ where
 		("-l", []) = Left "'-l' requires an argument"
 		("-r", []) = Left "'-r' requires an argument"
 		("-r", [x:xs]) = (\c->{c & root=x}) <$> parseCLI xs
-		("-l", [x:xs]) = (\c->{c & libs=[(x,const False):c.libs]}) <$> parseCLI xs
+		("-l", [x:xs]) = (\c->{c & libs=[(x,const id):c.libs]}) <$> parseCLI xs
 		(x, _) = Left $ "Unknown option '" +++ x +++ "'"
 
 	printStats :: !CloogleDB !*File -> *File

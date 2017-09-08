@@ -4,6 +4,7 @@ var sform = document.getElementById('search-form');
 var sresults = document.getElementById('search-results');
 var include_builtins_checkbox = document.getElementById('include-builtins');
 var include_core_checkbox = document.getElementById('include-core');
+var include_apps_checkbox = document.getElementById('include-apps');
 var share_button = document.getElementById('share-button');
 var share_link = document.getElementById('share-link');
 
@@ -14,6 +15,7 @@ var old_str = null;
 var old_libs = null;
 var old_include_builtins = null;
 var old_include_core = null;
+var old_include_apps = null;
 
 function makeGeneralHelp(query) {
 	return 'For general information about Clean, ' +
@@ -182,16 +184,17 @@ function makeRequiredContext(context) {
 	return html;
 }
 
-function getResults(str, libs, include_builtins, include_core, page) {
+function getResults(str, libs, include_builtins, include_core, include_apps, page) {
 	if (str == null) str = old_str;
 	if (libs == null) libs = old_libs;
 	if (include_builtins == null) include_builtins = old_include_builtins;
 	if (include_core == null) include_core = old_include_core;
+	if (include_apps == null) include_apps = old_include_apps;
 
 	old_str = str;
 	old_libs = libs;
 	old_include_builtins = include_builtins;
-	old_include_core = include_core;
+	old_include_apps = include_apps;
 
 	var url = 'api.php' +
 		'?str='  + encodeURIComponent(str) +
@@ -201,6 +204,8 @@ function getResults(str, libs, include_builtins, include_core, page) {
 			? '&include_builtins=' + encodeURIComponent(include_builtins) : '') +
 		(include_core != -1
 			? '&include_core=' + encodeURIComponent(include_core) : '') +
+		(include_apps != -1
+			? '&include_apps=' + encodeURIComponent(include_apps) : '') +
 		'&page=' + page;
 	var xmlHttp = new XMLHttpRequest();
 
@@ -500,7 +505,7 @@ function getResults(str, libs, include_builtins, include_core, page) {
 				if (responsedata['more_available'] != 0) {
 					par.innerHTML += '<div id="page-' + (page+1) + '">' +
 						'<p id="more" class="remove-at-request">' +
-						'<a href="javascript:getResults(null,null,null,null,' + (page+1) +
+						'<a href="javascript:getResults(null,null,null,null,null,' + (page+1) +
 						')">' + responsedata['more_available'] + ' more...</a></p>' +
 						'</div>';
 				}
@@ -530,7 +535,9 @@ function getResults(str, libs, include_builtins, include_core, page) {
 			(include_builtins != -1
 				? '%0Ainclude_builtins=' + encodeURIComponent(include_builtins) : '') +
 			(include_core != -1
-				? '%0Ainclude_core=' + encodeURIComponent(include_core) : '');
+				? '%0Ainclude_core=' + encodeURIComponent(include_core) : '') +
+			(include_apps != -1
+				? '%0Ainclude_apps=' + encodeURIComponent(include_apps) : '');
 	if (newhash != document.location.hash.substring(1)) {
 		refresh_on_hash = false;
 		document.location.hash = '#' + newhash;
@@ -574,13 +581,15 @@ function formsubmit() {
 		var libs = getLibs();
 		var include_builtins = -1;
 		var include_core = -1;
+		var include_apps = -1;
 		if (advanced) {
-			var include_builtins = include_builtins_checkbox.checked;
-			var include_core = include_core_checkbox.checked;
+			include_builtins = include_builtins_checkbox.checked;
+			include_core = include_core_checkbox.checked;
+			include_apps = include_apps_checkbox.checked;
 		}
 
 		sresults.innerHTML += '<div id="page-0"></div>';
-		getResults(q, libs, include_builtins, include_core, 0);
+		getResults(q, libs, include_builtins, include_core, include_apps, 0);
 	}
 	return false;
 };
@@ -625,6 +634,9 @@ function hashQuery() {
 					break;
 				case "include_core":
 					include_core_checkbox.checked = value == 'true';
+					break;
+				case "include_apps":
+					include_apps_checkbox.checked = value == 'true';
 					break;
 				case "page":
 					page = value;

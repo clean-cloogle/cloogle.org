@@ -44,6 +44,8 @@
 					'CleanTypeUnifier',
 					'Cloogle',
 					'SoccerFun',
+					'clean-compiler',
+					'clean-ide',
 					'libcloogle',
 				]
 			];

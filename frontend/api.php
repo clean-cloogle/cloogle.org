@@ -172,6 +172,10 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET'){
 		$command['include_core'] = $_GET['include_core'] == 'true';
 	}
 
+	if (isset($_GET['include_apps'])) {
+		$command['include_apps'] = $_GET['include_apps'] == 'true';
+	}
+
 	if (isset($_GET['mod'])) {
 		$command['modules'] = explode(',', $_GET['mod']);
 	}

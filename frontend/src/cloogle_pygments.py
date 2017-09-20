@@ -4,6 +4,7 @@ import sys
 import pygments
 import pygments.lexers
 import pygments.formatters
+from pygments_clean import CleanLexer
 import traceback
 from pygments.token import Literal, Name, Operator
 
@@ -111,7 +112,7 @@ try:
             inp += l
     outp = pygments.highlight(
             inp,
-            pygments.lexers.get_lexer_by_name('clean'),
+            CleanLexer(),
             CloogleHtmlFormatter(
                 full=False,
                 linenos=True,

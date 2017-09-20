@@ -53,6 +53,7 @@ function loadModule(elem) {
 					selectLine(this);
 				}
 			}
+			document.title = curmod + " (" + libselect.value + ") - Cloogle Library Browser";
 		}
 	}
 	xmlHttp.open("GET", url, true);

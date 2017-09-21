@@ -6,6 +6,9 @@ WORKDIR /usr/src/cloogle
 RUN PACKAGES="make subversion ca-certificates gcc git curl" \
 	&& apt-get update \
 	&& apt-get install -qq $PACKAGES --no-install-recommends \
+	&& make distclean \
+	&& make CloogleServer builddb\
+	&& rm -r /opt/clean/lib/*\
 	&& svn checkout https://svn.cs.ru.nl/repos/SoccerFun/src /opt/clean/lib/SoccerFun \
 	&& mv /opt/clean/lib/SoccerFun/*/*.[id]cl /opt/clean/lib/SoccerFun \
 	&& bash -c 'rm -r /opt/clean/lib/SoccerFun/{Game,Gui,StdLibExt,StdReferee,StdTeam,afbeeldingen,sound}' \
@@ -20,8 +23,6 @@ RUN PACKAGES="make subversion ca-certificates gcc git curl" \
 	&& git clone https://github.com/clean-cloogle/CleanPrettyPrint /opt/clean/lib/CleanPrettyPrint \
 	&& git clone https://github.com/camilstaps/CleanInotify /opt/clean/lib/CleanInotify \
 	&& git clone https://github.com/camilstaps/CleanSnappy /opt/clean/lib/CleanSnappy \
-	&& make distclean \
-	&& make CloogleServer builddb\
 	&& curl -sSL ftp://ftp.cs.ru.nl/pub/Clean/builds/linux-x64/clean-bundle-complete-linux-x64-latest.tgz |\
 	 	tar -xz -C /opt/clean --strip-components=1\
 	&& make types.json\

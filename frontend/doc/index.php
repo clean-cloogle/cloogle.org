@@ -29,6 +29,10 @@
 		.Heading1Chapter img, .Newchapter img {
 			display: none;
 		}
+
+		a:visited {
+			color: blue !important;
+		}
 	</style>
 </head>
 <body>

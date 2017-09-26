@@ -13,12 +13,16 @@ $doc->loadHTMLFile(CLEANHOME . '/doc/CleanLangRep/' . $file);
 
 function transformLink($orgfile, $a) {
 	$href = $a->getAttribute('href');
-	$match = [];
-	if (preg_match('/^(.*)#(.*)$/', $href, $match) == 0)
-		$a->setAttribute('href', '#' . $href);
-	$file = $match[1] != '' ? $match[1] : $orgfile;
-	$hash = $match[2];
-	$a->setAttribute('href', '#' . $file . ';jump=' . $hash);
+	if (substr($href, 0, 4) == 'http') {
+		$a->setAttribute('target', '_blank');
+	} else {
+		$match = [];
+		if (preg_match('/^(.*)#(.*)$/', $href, $match) == 0)
+			$a->setAttribute('href', '#' . $href);
+		$file = $match[1] != '' ? $match[1] : $orgfile;
+		$hash = $match[2];
+		$a->setAttribute('href', '#' . $file . ';jump=' . $hash);
+	}
 }
 
 foreach ($doc->getElementsByTagName('a') as $a) {

@@ -1,7 +1,7 @@
 <?php
 define('CLEANHOME', '/opt/clean');
 
-$loc = isset($_REQUEST['mod']) ? $_REQUEST['mod'] : 'CleanRep.2.2_1.htm;jump=_Toc311797959';
+$loc = $_REQUEST['loc'] ?: 'CleanRep.2.2_1.htm;jump=_Toc311797959';
 $loc = preg_replace('/\.\.+/', '.', $loc);
 $loc = preg_replace('/[^\w\d.;=]+/', '', $loc);
 

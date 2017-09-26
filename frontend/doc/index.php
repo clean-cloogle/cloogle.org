@@ -7,10 +7,15 @@
 	<meta name="description" content="Cloogle is the unofficial Clean language search engine"/>
 	<meta name="keywords" content="Clean,Clean language,Concurrent Clean,search,functions,search engine,programming language,clean platform,iTasks,cloogle,hoogle"/>
 	<script src="../common.js" type="text/javascript" defer="defer"></script>
-	<script src="../src/view.js" type="text/javascript" defer="defer"></script>
+	<script src="../browser.js" type="text/javascript" defer="defer"></script>
+	<script src="doc.js" type="text/javascript" defer="defer"></script>
 	<link rel="stylesheet" href="../common.css" type="text/css"/>
 	<link rel="stylesheet" href="../src/view.css" type="text/css"/>
 	<style type="text/css">
+		#viewer {
+			padding: 1em;
+		}
+
 		.Heading1Chapter img, .Newchapter img {
 			display: none;
 		}

@@ -63,9 +63,9 @@ class Toc {
 		echo '<div class="browser togglee">';
 		foreach ($this->children as $child) {
 			if ($child->isLeaf()) {
-				echo '<div class="browser-item module" onclick="loadModule(this)" ' .
-							'data-module="' . $child->link . '">' . $child->title . '</span>' .
-					'</div>';
+				echo '<div class="browser-item module" id="' . $child->link .
+						'" data-name="' . $child->link . '">' .
+						$child->title . '</span></div>';
 			} else {
 				echo '<div class="browser-item directory toggle-container">' .
 						'<span class="toggler" onclick="toggle(this)">' .

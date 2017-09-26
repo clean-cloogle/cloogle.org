@@ -89,13 +89,12 @@ Element.prototype.browser = function(opts) {
 	return {
 		state: state,
 		triggerChange: triggerChange,
-		setPath: function(path) {
+		openPath: function(path) {
 			var old = root.getElementsByClassName('active');
 			for (var i = 0; i < old.length; i++)
 				old[i].classList.remove('active');
 
 			var e = root;
-			console.log(path);
 			for (var i = 0; i < path.length && 'childNodes' in e; i++) {
 				var children = e.childNodes;
 				for (var k = 0; k < children.length; k++) {
@@ -109,6 +108,15 @@ Element.prototype.browser = function(opts) {
 						break;
 					}
 				}
+			}
+		},
+		openTo: function(elem) {
+			var path = [];
+			elem.classList.add('active');
+			while (elem != root && elem != null) {
+				if (elem.classList.contains('toggle-container'))
+					toggle(elem, true);
+				elem = elem.parentNode;
 			}
 		},
 		open: function() {

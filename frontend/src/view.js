@@ -74,7 +74,7 @@ window.onload = function() {
 					this.state.line = hashelems[i].substring(5);
 			}
 
-			browser.setPath(this.state.mod.split('.'));
+			browser.openPath(this.state.mod.split('.'));
 		},
 		newState: function () {
 			var hash = this.state.mod;

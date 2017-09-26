@@ -72,6 +72,3 @@ To add a library you have to add it in to the following places:
 - `frontend/index.html`
 
 	Add your library to the checkboxes in the miscellaneous column.
-- `frontend/src/index.php`
-
-	Add your library to `$all_libs`.

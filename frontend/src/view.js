@@ -1,123 +1,4 @@
-var share_button = document.getElementById('share-button');
-
-var sidebar = null;
-var viewer = null;
-var libselect = null;
-var icl = null;
-
-var curmod = null;
-var refresh_on_hash = true;
-var line = null;
-
-Element.prototype.documentOffsetTop = function() {
-	return this.offsetTop +
-		(this.offsetParent ? this.offsetParent.documentOffsetTop() : 0);
-};
-
-function loadModule(elem) {
-	if (typeof elem != 'undefined') {
-		line = null;
-		curmod = elem.dataset.module;
-	}
-
-	updateHash();
-	updateLibraryPanel();
-
-	viewer.innerHTML = '<p id="loading">Loading...</p>';
-
-	var url = 'src.php';
-	url += '?lib=' + libselect.value;
-	if (curmod != '')
-		url += '&mod=' + curmod;
-	if (icl.checked)
-		url += '&icl';
-	var hashelems = decodeURIComponent(window.location.hash.substring(1)).split(';');
-	for (var i in hashelems)
-		if (hashelems[i].substring(0,5) == 'line=')
-			url += '&line=' + hashelems[i].substring(5);
-
-	var xmlHttp = new XMLHttpRequest();
-	xmlHttp.onreadystatechange = function() { 
-		if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
-			viewer.innerHTML = xmlHttp.response;
-
-			if (line != null) {
-				var l = document.getElementById('line-' + line).documentOffsetTop();
-				console.log(l);
-				document.getElementById('viewer').scrollTo(0, l - window.innerHeight/4);
-			}
-
-			var linenos = document.getElementsByClassName('special');
-			for (var i = 0; i < linenos.length; i++) {
-				linenos[i].onclick = function() {
-					selectLine(this);
-				}
-			}
-			document.title = curmod + " (" + libselect.value + ") - Cloogle Library Browser";
-		}
-	}
-	xmlHttp.open("GET", url, true);
-	xmlHttp.send(null);
-}
-
-function updateLibraryPanel() {
-	var mods = document.getElementsByClassName('module');
-	for (var i = 0; i < mods.length; i++)
-		mods[i].style.fontStyle = '';
-
-	var e = document.getElementById('sidebar');
-	var modpath = curmod.split('.');
-	for (var m = 0; m < modpath.length - 1; m++) {
-		var dirs = e.getElementsByClassName('directory');
-		for (var d = 0; d < dirs.length; d++) {
-			var t = dirs[d].getElementsByClassName('title')[0];
-			if (t.innerHTML == modpath[m]) {
-				e = dirs[d];
-				toggle(e.getElementsByClassName('toggler')[0], true);
-			}
-		}
-	}
-
-	var modules = e.getElementsByClassName('module');
-	for (var m = 0; m < modules.length; m++)
-		if (modules[m].innerHTML == modpath[modpath.length-1])
-			modules[m].style.fontStyle = 'italic';
-}
-
-function updateHash() {
-	var newhash = curmod;
-	if (icl.checked)
-		newhash += ';icl';
-	if (line != null)
-		newhash += ';line=' + line;
-
-	if (window.location.hash.substring(1) != encodeURIComponent(newhash)) {
-		refresh_on_hash = false;
-		window.location.hash = '#' + newhash;
-		restoreShareUI();
-	}
-}
-
-function selectLine(elem) {
-	if (typeof elem != 'number') {
-		elem = parseInt(elem.innerText);
-	}
-
-	if (isNaN(elem)) {
-		line = null;
-		return;
-	}
-
-	line = elem;
-	updateHash();
-
-	var hll = document.getElementsByClassName('hll');
-	for (var i = 0; i < hll.length; i++)
-		hll[i].parentNode.innerHTML = hll[i].innerHTML;
-
-	var linespan = document.getElementById('line-' + line);
-	linespan.innerHTML = '<span class="hll">' + linespan.innerHTML + '</span>';
-}
+var share_button;
 
 function restoreShareUI() {
 	share_button.disabled = false;
@@ -141,42 +22,105 @@ function shareButtonClick() {
 	});
 }
 
-window.onhashchange = function() {
-	if (!refresh_on_hash) {
-		refresh_on_hash = true;
-	} else {
-		var elems = decodeURIComponent(window.location.hash.substring(1)).split(';');
-		curmod = elems[0];
-		icl.checked = elems.indexOf('icl') != -1;
-		for (var i in elems)
-			if (elems[i].substring(0,5) == 'line=')
-				line = elems[i].substring(5);
-		loadModule();
+window.onload = function() {
+	share_button = document.getElementById('share-button');
+	var viewer = document.getElementById('viewer');
+	var icl = document.getElementById('icl');
+
+	var selectLine = function() {
+		var elem = this;
+
+		if (typeof elem != 'number')
+			elem = parseInt(elem.innerText);
+
+		if (isNaN(elem)) {
+			browser.state.line = null;
+			return;
+		}
+
+		browser.state.line = elem;
+
+		var hll = document.getElementsByClassName('hll');
+		for (var i = 0; i < hll.length; i++)
+			hll[i].parentNode.innerHTML = hll[i].innerHTML;
+
+		var linespan = document.getElementById('line-' + browser.state.line);
+		linespan.innerHTML = '<span class="hll">' + linespan.innerHTML + '</span>';
+
+		browser.triggerChange(false);
 	}
-}
 
-window.onload = function () {
-	sidebar = document.getElementById('sidebar');
-	viewer = document.getElementById('viewer');
-	libselect = document.getElementById('select-lib');
-	icl = document.getElementById('icl');
+	var bindLinenos = function() {
+		var linenos = viewer.getElementsByClassName('special');
+		for (var i = 0; i < linenos.length; i++)
+			linenos[i].onclick = selectLine;
+	}
 
+	var browser = document.getElementsByClassName('browser')[0].browser({
+		newPath: function (path) {
+			this.state.mod = path.join('.');
+			this.state.line = null;
+			this.newState();
+		},
+		newHash: function (hash) {
+			var hashelems = hash.split(';');
+			this.state.mod = hashelems[0];
+			this.state.icl = false;
+			this.state.line = null;
+			for (var i = 1; i < hashelems.length; i++) {
+				if (hashelems[i] == 'icl')
+					icl.checked = this.state.icl = true;
+				else if (hashelems[i].substring(0,5) == 'line=')
+					this.state.line = hashelems[i].substring(5);
+			}
+
+			browser.setPath(this.state.mod.split('.'));
+		},
+		newState: function () {
+			var hash = this.state.mod;
+			if (this.state.icl)
+				hash += ';icl';
+			if (this.state.line != null)
+				hash += ';line=' + this.state.line;
+			document.location.hash = '#' + hash;
+		},
+		getUrl: function () {
+			var url = 'src.php?mod=' + this.state.mod;
+			if (this.state.icl)
+				url += '&icl';
+			if (this.state.line != null)
+				url += '&line=' + this.state.line;
+			return url;
+		},
+		viewer: viewer,
+		onLoad: function(state) {
+			if (state.line != null) {
+				var l = document.getElementById('line-' + state.line).documentOffsetTop();
+				viewer.scrollTo(0, l - window.innerHeight/4);
+			} else {
+				viewer.scrollTo(0, 0);
+			}
+
+			bindLinenos();
+			restoreShareUI();
+		},
+		state: {
+			icl: false
+		}
+	});
+	browser.open();
+
+	icl.onchange = function() {
+		browser.state.icl = this.checked;
+		browser.triggerChange();
+	};
+	icl.onchange();
+
+	var sidebar = document.getElementById('sidebar');
+	var viewer = document.getElementById('viewer');
 	if (window.innerWidth > 800) {
 		var height = window.innerHeight;
 		sidebar.style.height = (height - 20) + 'px';
 		viewer.style.height = height + 'px';
 	}
-
-	libselect.onchange = function() {
-		window.location.href = '?lib=' + this.value;
-	}
-
-	icl.onchange = function() {
-		line = null;
-		loadModule();
-	}
-
-	restoreShareUI();
-
-	window.onhashchange();
 }

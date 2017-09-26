@@ -121,6 +121,10 @@ body {
 	font-weight: bold;
 }
 
+.browser-item.active {
+	font-style: italic;
+}
+
 .browser-item.directory .browser {
 	background-color: rgba(0, 0, 0, 0.05);
 	padding-left: 1em;

@@ -46,8 +46,8 @@ function getDirsAndModules($dir) {
 				$ms[] = $f->getBasename('.dcl');
 		}
 
-		sort($ds);
-		sort($ms);
+		natcasesort($ds);
+		natcasesort($ms);
 	} catch (Exception $e) {
 		echo 'Failed to get directory ' . $dir;
 	}
@@ -60,8 +60,8 @@ function makeBrowser($dir, $basemodule) {
 	$elems = getDirsAndModules($dir);
 
 	foreach ($elems['dirs'] as $d) {
-		echo '<div class="browser-item directory toggle-container">' .
-				'<span class="toggler" onclick="toggle(this)">' .
+		echo '<div class="browser-item directory toggle-container" data-name="' . $d . '">' .
+				'<span class="toggler">' .
 					'<span class="toggle-icon">&#x229e</span>' .
 					'<span class="title">' . $d . '</span></span>';
 		makeBrowser($dir . '/' . $d, $basemodule . $d . '.');
@@ -70,14 +70,13 @@ function makeBrowser($dir, $basemodule) {
 
 	foreach ($elems['modules'] as $m) {
 		$fullm = $basemodule . $m;
-		echo '<div class="browser-item module" onclick="loadModule(this)" ' .
-					'data-module="' . $fullm . '">' . $m . '</span>' .
+		echo '<div class="browser-item module" data-name="' . $m . '">' . $m . '</span>' .
 			'</div>';
 	}
 
 	echo '</div>';
 }
 
-$dname = CLEANHOME . '/lib/' . $lib;
+$dname = CLEANHOME . '/lib';
 
 makeBrowser($dname, '');

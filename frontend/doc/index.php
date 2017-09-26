@@ -16,6 +16,10 @@
 			padding: 1em;
 		}
 
+		#sidebar {
+			min-width: 300px;
+		}
+
 		#sidebar h3 {
 			background: none;
 			font-family: serif;
@@ -32,6 +36,11 @@
 
 		a:visited {
 			color: blue !important;
+		}
+
+		.browser-item {
+			padding-left: 1em;
+			text-indent: -1em;
 		}
 	</style>
 </head>

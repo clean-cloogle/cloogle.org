@@ -34,7 +34,7 @@ window.onload = function() {
 		onLoad: function(state) {
 			if (state.jump != null) {
 				var l = document.getElementsByName(state.jump)[0].documentOffsetTop();
-				viewer.scrollTo(0, l - window.innerHeight/4);
+				viewer.scrollTo(0, l - window.innerHeight/8);
 			}
 		},
 		state: {

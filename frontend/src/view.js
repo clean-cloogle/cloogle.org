@@ -123,4 +123,4 @@ window.onload = function() {
 		sidebar.style.height = (height - 20) + 'px';
 		viewer.style.height = height + 'px';
 	}
-}
+};

@@ -19,7 +19,7 @@ window.onload = function() {
 				if (hashelems[i].substring(0,5) == 'jump=')
 					this.state.jump = hashelems[i].substring(5);
 			this.newState();
-			browser.openTo(document.getElementById(hash));
+			browser.openTo(document.getElementById('doc-' + hash));
 		},
 		newState: function () {
 			var hash = this.state.loc;
@@ -51,4 +51,9 @@ window.onload = function() {
 		sidebar.style.height = (height - 20) + 'px';
 		viewer.style.height = height + 'px';
 	}
-}
+
+	window.onhashchange = function () {
+		browser.open();
+		browser.triggerChange();
+	};
+};

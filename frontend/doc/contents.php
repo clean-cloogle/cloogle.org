@@ -63,11 +63,11 @@ class Toc {
 		echo '<div class="browser togglee">';
 		foreach ($this->children as $child) {
 			if ($child->isLeaf()) {
-				echo '<div class="browser-item module" id="' . $child->link .
+				echo '<div class="browser-item module" id="doc-' . $child->link .
 						'" data-name="' . $child->link . '">' .
 						$child->title . '</span></div>';
 			} else {
-				echo '<div class="browser-item directory toggle-container">' .
+				echo '<div class="browser-item directory toggle-container" id="doc-' . $child->link . '">' .
 						'<span class="toggler" onclick="toggle(this)">' .
 							'<span class="toggle-icon">&#x229e</span>' .
 							'<span class="title">' . $child->title . '</span></span>';

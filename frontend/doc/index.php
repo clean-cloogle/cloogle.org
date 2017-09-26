@@ -16,6 +16,16 @@
 			padding: 1em;
 		}
 
+		#sidebar h3 {
+			background: none;
+			font-family: serif;
+			font-size: 1.17em;
+			font-weight: bold;
+			line-height: 22px;
+			margin-bottom: 17.55px;
+			margin-left: 0;
+		}
+
 		.Heading1Chapter img, .Newchapter img {
 			display: none;
 		}

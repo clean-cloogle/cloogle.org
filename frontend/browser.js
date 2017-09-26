@@ -102,7 +102,7 @@ Element.prototype.browser = function(opts) {
 						if (i < path.length - 1) {
 							toggle(children[k]);
 							e = children[k].childNodes[1];
-						} else {
+						} else if (!children[k].classList.contains('directory')) {
 							children[k].classList.add('active');
 						}
 						break;
@@ -111,8 +111,11 @@ Element.prototype.browser = function(opts) {
 			}
 		},
 		openTo: function(elem) {
+			if (elem == null)
+				return;
 			var path = [];
-			elem.classList.add('active');
+			if (!elem.classList.contains('directory'))
+				elem.classList.add('active');
 			while (elem != root && elem != null) {
 				if (elem.classList.contains('toggle-container'))
 					toggle(elem, true);

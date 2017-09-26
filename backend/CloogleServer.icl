@@ -116,7 +116,7 @@ where
 		#! (mbResponse, w) = readCache key w
 		| isJust mbResponse
 			# r = fromJust mbResponse
-			= ({r & return = if (r.return == 0) 1 r.return}, cacheKey key, w)
+			= respond {r & return = if (r.return == 0) 1 r.return} w
 		| isJust name && size (fromJust name) > 40
 			= respond (err InvalidName "Function name too long") w
 		| isJust name && any isSpace (fromString $ fromJust name)

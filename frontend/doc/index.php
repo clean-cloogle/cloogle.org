@@ -16,6 +16,10 @@
 			padding: 1em;
 		}
 
+		#viewer p {
+			position: relative; /* For images, e.g. in 3.5.2 */
+		}
+
 		#sidebar {
 			min-width: 300px;
 		}

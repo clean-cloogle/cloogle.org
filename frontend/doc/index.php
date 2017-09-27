@@ -13,7 +13,7 @@
 	<link rel="stylesheet" href="../src/view.css" type="text/css"/>
 	<style type="text/css">
 		#viewer {
-			padding: 1em;
+			padding: 10px;
 		}
 
 		#viewer p {

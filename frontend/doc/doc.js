@@ -32,6 +32,7 @@ window.onload = function() {
 		},
 		viewer: viewer,
 		onLoad: function(state) {
+			viewer.innerHTML += '<br/>';
 			if (state.jump != null) {
 				var l = document.getElementsByName(state.jump)[0].documentOffsetTop();
 				viewer.scrollTop = l - window.innerHeight/8;
@@ -47,8 +48,8 @@ window.onload = function() {
 	var sidebar = document.getElementById('sidebar');
 	var viewer = document.getElementById('viewer');
 	if (window.innerWidth > 800) {
-		var height = window.innerHeight;
-		sidebar.style.height = (height - 20) + 'px';
+		var height = window.innerHeight - 20;
+		sidebar.style.height = height + 'px';
 		viewer.style.height = height + 'px';
 	}
 

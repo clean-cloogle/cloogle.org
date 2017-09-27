@@ -128,9 +128,7 @@ function makeParametersHTML(name, params) {
 }
 
 function makeLocationUrl(loc) {
-	var dclUrl =
-		'src?lib=' + encodeURIComponent(loc[0]) +
-		'#' + encodeURIComponent(loc[1]);
+	var dclUrl = 'src#' + encodeURIComponent(loc[0] + '.' + loc[1]);
 	var iclUrl = dclUrl + ';icl';
 
 	if (loc[2].length > 1)
@@ -324,9 +322,7 @@ function getResults(str, libs, include_builtins, include_core, include_apps, pag
 	}
 
 	var makeGenericResultHTML = function (basic, meta, hidden, code) {
-		var dclUrl =
-			'src?lib=' + encodeURIComponent(basic['library']) +
-			'#' + encodeURIComponent(basic['modul']);
+		var dclUrl = 'src#' + encodeURIComponent(basic['library'] + '.' + basic['modul']);
 		var iclUrl = dclUrl + ';icl';
 		var dclLine = '';
 		var iclLine = '';

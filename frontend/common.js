@@ -21,8 +21,10 @@ function toggle(toggler, open) {
 
 		if (typeof open == 'undefined')
 			toggleElement(es[i], 'toggle-visible');
+		else if (open)
+			es[i].classList.add('toggle-visible');
 		else
-			es[i].style.display = open ? 'block' : 'none';
+			es[i].classList.remove('toggle-visible');
 	}
 
 	var icons = e.getElementsByClassName('toggle-icon');

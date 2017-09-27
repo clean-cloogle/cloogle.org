@@ -68,7 +68,7 @@ class Toc {
 						$child->title . '</span></div>';
 			} else {
 				echo '<div class="browser-item directory toggle-container" id="doc-' . $child->link . '">' .
-						'<span class="toggler" onclick="toggle(this)">' .
+						'<span class="toggler">' .
 							'<span class="toggle-icon">&#x229e</span>' .
 							'<span class="title">' . $child->title . '</span></span>';
 				$child->printTree();

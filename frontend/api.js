@@ -184,6 +184,44 @@ function makeRequiredContext(context) {
 	return html;
 }
 
+function highlightExample(example) {
+	if ('cleanjs_start' in example) {
+		return window['highlight' + example.cleanjs_type](
+				example.example, highlightCallback, example.cleanjs_start);
+	} else {
+		return window['highlight' + example.cleanjs_type](
+				example.example, highlightCallback);
+	}
+}
+
+function highlightSyntaxConstruct(elem) {
+	return highlightToHTML({
+		start: [
+			[/(\[)/,     ['punctuation'], 'optional'],
+			[/(\.{3})/,  ['punctuation']],
+			[/(\s+)/,    ['whitespace']],
+			[/(\w+)/,    ['keyword']],
+			[/(\S)/,     ['punctuation']]
+		],
+		optional: [
+			[/(\[)/,     ['punctuation'], 'optional'],
+			[/(\])/,     ['punctuation'], 'pop'],
+			[/(\.{3})/,  ['punctuation']],
+			[/(\s+)/,    ['whitespace']],
+			[/(\w+)/,    ['keyword optional']],
+			[/(\S)/,     ['punctuation']]
+		]
+	}, elem, highlightCallback);
+}
+
+function makeExampleList(examples) {
+	var html = '<ul class="examples">';
+	for (var i in examples)
+		html += '<li><pre class="example">' + highlightExample(examples[i]) + '</pre></li>';
+	html += '</ul>';
+	return html;
+}
+
 function getResults(str, libs, include_builtins, include_core, include_apps, page) {
 	if (str == null) str = old_str;
 	if (libs == null) libs = old_libs;
@@ -465,6 +503,37 @@ function getResults(str, libs, include_builtins, include_core, include_apps, pag
 
 				return makeGenericResultHTML(basic, meta, hidden,
 						highlightFunction('import ' + basic['modul']));
+
+			case 'SyntaxResult':
+				meta.push(extra['syntax_description']);
+				var url = '';
+				if (extra['syntax_doc_location'].length > 0) {
+					var loc = extra['syntax_doc_location'][0][1];
+					url = ' (<a target="_blank" ' +
+						'href="/doc/#' + loc.clr_file + ';jump=' + loc.clr_heading + '">' +
+						'Section ' + loc.clr_section + ' of the Language report v' + loc.clr_version + '</a>)';
+				}
+
+				var toggler = '';
+				if (extra['syntax_examples'].length > 0) {
+					toggler = '<div class="toggler" title="More details" onclick="toggle(this)">' +
+						'<span class="toggle-icon">&#x229e;</span>' + pluralise(extra['syntax_examples'].length, 'example') +
+						'</div>';
+				}
+
+				var code = '';
+				for (var i in extra['syntax_code']) {
+					code += highlightSyntaxConstruct(extra['syntax_code'][i]) + '\n';
+				}
+
+				return '<div class="result">' +
+						'<div class="result-basic">Clean syntax: ' + extra['syntax_title'] + url + '</div>' +
+						'<div class="result-extra">' + meta.join('<br/>') + '</div>' +
+						'<div class="result-extra toggle-container">' +
+							toggler +
+							'<div class="togglee">' + makeExampleList(extra['syntax_examples']) + '</div></div>' +
+						'<pre class="result-code">' + code + '</pre>' +
+					'</div>';
 
 			default:
 				return '';

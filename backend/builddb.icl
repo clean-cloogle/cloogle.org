@@ -21,6 +21,8 @@ import Type
 from CloogleDBFactory import :: TemporaryDB, newTemporaryDb, finaliseDb,
 	findModules, indexModule, constructor_functions, record_functions
 
+import BuiltinSyntax
+
 :: CLI = { help    :: Bool
          , version :: Bool
          , root    :: String
@@ -95,6 +97,7 @@ Start w
 	#! db         = putFunctions (flatten $ map constructor_functions predefTypes) db
 	#! db         = putFunctions (flatten $ map record_functions predefTypes) db
 	#! db         = syncDb 2 db
+	#! db         = putSyntaxElems builtin_syntax db
 	#! (ok1,w)    = fclose (printStats db stderr) w
 	#! f          = saveDb db f
 	#! (ok2,w)    = fclose f w
@@ -131,21 +134,23 @@ where
 
 	printStats :: !CloogleDB !*File -> *File
 	printStats db f = f
-		<<< "+-------------+-------+\n"
-		<<< "| Modules     | " <<< modules <<< " |\n"
-		<<< "| Functions   | " <<< funs    <<< " |\n"
-		<<< "| Types       | " <<< types   <<< " |\n"
-		<<< "| Classes     | " <<< classes <<< " |\n"
-		<<< "| Derivations | " <<< derives <<< " |\n"
-		<<< "+-------------+-------+\n"
+		<<< "+-------------------+-------+\n"
+		<<< "| Modules           | " <<< modules <<< " |\n"
+		<<< "| Functions         | " <<< funs    <<< " |\n"
+		<<< "| Types             | " <<< types   <<< " |\n"
+		<<< "| Classes           | " <<< classes <<< " |\n"
+		<<< "| Derivations       | " <<< derives <<< " |\n"
+		<<< "| Syntax constructs | " <<< syntaxs <<< " |\n"
+		<<< "+-------------------+-------+\n"
 	where
-		[modules,funs,types,classes,derives:_]
+		[modules,funs,types,classes,derives,syntaxs:_]
 			= map (pad 5)
 				[ moduleCount db
 				, functionCount db
 				, typeCount db
 				, classCount db
 				, deriveCount db
+				, syntaxCount db
 				]
 		pad n i = {' ' \\ _ <- [0..n-size (toString i)-1]} +++ toString i
 

@@ -198,6 +198,18 @@ div.visible {
 	padding-left: 1em;
 }
 
+.examples {
+	padding-bottom: .5em;
+}
+
+.example {
+	margin: .5em;
+}
+
+.keyword.optional {
+	color: #777;
+}
+
 @media (max-width: 600px) {
 	#header.result-view > * {
 		display: block;

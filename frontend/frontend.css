@@ -203,6 +203,7 @@ div.visible {
 }
 
 .example {
+	font-size: initial;
 	margin: .5em;
 }
 

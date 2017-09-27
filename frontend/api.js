@@ -197,6 +197,7 @@ function highlightExample(example) {
 function highlightSyntaxConstruct(elem) {
 	return highlightToHTML({
 		start: [
+			[/(\/\/.*)/, ['comment']],
 			[/(\[)/,     ['punctuation'], 'optional'],
 			[/(\.{3})/,  ['punctuation']],
 			[/(\s+)/,    ['whitespace']],
@@ -220,6 +221,16 @@ function makeExampleList(examples) {
 		html += '<li><pre class="example">' + highlightExample(examples[i]) + '</pre></li>';
 	html += '</ul>';
 	return html;
+}
+
+function markupDocumentation(doc) {
+	doc = doc.replace(/{{`([^`}]+)`}}/g, '`{{$1}}`');
+	doc = doc.replace(/`([^`]+)`/g, '<code>$1</code>');
+	doc = doc.replace(/{{([^}]+)}}/g, function (m,c) {
+		return '<a class="hidden" title="Search ' + c +
+			'" href="#' + encodeURIComponent(c) + '">' + c + '</a>';
+	});
+	return doc;
 }
 
 function getResults(str, libs, include_builtins, include_core, include_apps, page) {
@@ -362,7 +373,7 @@ function getResults(str, libs, include_builtins, include_core, include_apps, pag
 		var hidden = [];
 
 		if ('documentation' in basic)
-			meta.push(basic['documentation']);
+			meta.push(markupDocumentation(basic['documentation']));
 
 		switch (kind) {
 			case 'FunctionResult':
@@ -505,13 +516,20 @@ function getResults(str, libs, include_builtins, include_core, include_apps, pag
 						highlightFunction('import ' + basic['modul']));
 
 			case 'SyntaxResult':
-				meta.push(extra['syntax_description']);
-				var url = '';
+				meta.push(markupDocumentation(extra['syntax_description'].replace(/\n/g, '<br/>')));
+
+				var urls = '';
 				if (extra['syntax_doc_location'].length > 0) {
-					var loc = extra['syntax_doc_location'][0][1];
-					url = ' (<a target="_blank" ' +
-						'href="/doc/#' + loc.clr_file + ';jump=' + loc.clr_heading + '">' +
-						'Section ' + loc.clr_section + ' of the Language report v' + loc.clr_version + '</a>)';
+					urls += ' (';
+					for (var i in extra['syntax_doc_location']) {
+						var loc = extra['syntax_doc_location'][i][1];
+						if (i != 0)
+							urls += '; ';
+						urls += '<a target="_blank" ' +
+							'href="/doc/#' + loc.clr_file + ';jump=' + loc.clr_heading + '">' +
+							'Section ' + loc.clr_section + ' of the Language report v' + loc.clr_version + '</a>';
+					}
+					urls += ')';
 				}
 
 				var toggler = '';
@@ -527,7 +545,7 @@ function getResults(str, libs, include_builtins, include_core, include_apps, pag
 				}
 
 				return '<div class="result">' +
-						'<div class="result-basic">Clean syntax: ' + extra['syntax_title'] + url + '</div>' +
+						'<div class="result-basic">Clean syntax: ' + extra['syntax_title'] + urls + '</div>' +
 						'<div class="result-extra">' + meta.join('<br/>') + '</div>' +
 						'<div class="result-extra toggle-container">' +
 							toggler +

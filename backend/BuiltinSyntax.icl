@@ -17,6 +17,8 @@ builtin_syntax :: [([String], SyntaxEntry)]
 builtin_syntax =
 	  bs_arrays ++
 	[ bs_case
+	, bs_class
+	, bs_code
 	, bs_define_constant
 	, bs_define_graph
 	, bs_dotdot
@@ -24,10 +26,12 @@ builtin_syntax =
 	, bs_forall
 	, bs_import
 	, bs_infix
+	, bs_instance
 	, bs_let
 	, bs_let_before
 	] ++ bs_lists ++
-	[ bs_module
+	[ bs_macro
+	, bs_module
 	, bs_otherwise
 	// TODO bs_selection (arrays and records)
 	, bs_strict
@@ -81,6 +85,36 @@ bs_case = (["case", "of", "case of"],
 	, syntax_doc_location = [CLR 5 "3.4.2" "_Toc311798001"]
 	, syntax_examples     =
 		[ EXs "Function" "macro" "isJust m = case m of\n\tJust _ -> True\n\t_      -> False"
+		]
+	})
+
+bs_class = (["class"],
+	{ syntax_title        = "class"
+	, syntax_code         =
+		[ "class ... ... :: ..."
+		, "class ... ... where ..."
+		]
+	, syntax_description  =
+		"Classes are (sets of) overloaded functions. For classes with only one member function, a simplified syntax exists.\n" +
+		"Types can instantiate classes with the {{`instance`}} keyword."
+	, syntax_doc_location = [CLR 8 "6.1" "_Toc311798056"]
+	, syntax_examples     = map (EX "ClassDef")
+		[ "class zero a :: a // one member" // TODO highlighting
+		, "class Text s      // multiple members\nwhere\n\ttextSize :: !s -> Int\n\tconcat :: ![s] -> s\n\t// ..." // TODO highlighting
+		]
+	})
+
+bs_code = (["code", "inline", "code inline"],
+	{ syntax_title        = "ABC code"
+	, syntax_code         = ["... = code [inline] { ... }"]
+	, syntax_description  =
+		"A code block with raw ABC instructions, which can be used for primitive functions like integer addition, for linking with C, bypassing the type system... welcome down the rabbit hole!\n" +
+		"When `inline` is used, the function will be inlined when applied in a strict context."
+	, syntax_doc_location = [CLR 13 "11.2" "_Toc311798115"]
+	, syntax_examples     = map (EX "Function") // TODO highlighting
+		[ "add :: !Int !Int -> Int                   // Primitive function\nadd a b = code inline {\n\taddI\n}"
+		, "sleep :: !Int !*World -> *(!Int, !*World) // Linking with C\nsleep n w = code {\n\tccall sleep \"I:I:A\"\n}"
+		, "cast :: !.a -> .b                         // Bypassing the type system\ncast _ = code {\n\tpop_a 1\n}"
 		]
 	})
 
@@ -170,6 +204,17 @@ bs_infix = (["infix", "infixl", "infixr"],
 		]
 	})
 
+bs_instance = (["instance"],
+	{ syntax_title        = "instance"
+	, syntax_code         = ["instance ... ... where ..."]
+	, syntax_description  = "Defines an instantiation of a {{class}} for a type."
+	, syntax_doc_location = [CLR 8 "6.1" "_Toc311798056"]
+	, syntax_examples     = map (EX "Function")
+		[ "instance zero Int\nwhere\n\tzero = 0"
+		, "instance zero Real\nwhere\n\tzero = 0.0"
+		]
+	})
+
 bs_let = (["let", "in", "let in"],
 	{ syntax_title        = "let expression"
 	, syntax_code         = ["let ... in ..."]
@@ -224,17 +269,31 @@ where
 			"- {{`[!a!]`}}, a head-strict spine-strict list\n" +
 			"- {{`[|a]`}}, an overloaded list (one of the types above)"
 
+bs_macro = ([":==", "macro"],
+	{ syntax_title        = "macro"
+	, syntax_code         = ["... :== ..."]
+	, syntax_description  =
+		"A macro is a compile-time rewrite rule. It can be used for constants, inline subtitutions, renaming functions, conditional compilation, etc.\n" +
+		"Macros can appear in patterns to match on constants."
+	, syntax_doc_location = [CLR 12 "10.3" "_Toc311798111"]
+	, syntax_examples     = map (EXs "Function" "macro")
+		[ "flip f a b :== f b a                    // Useful for currying"
+		, "IF_INT_64_OR_32 int64 int32 :== int64   // Conditional compilation"
+		, "(o) infixr 9                            // Function composition. Doing this at run-time would be slow\n(o) f g :== \\x -> f (g x)"
+		]
+	})
+
 bs_module = (["module", "definition", "implementation", "system", "definition module", "implementation module", "system module"],
 	{ syntax_title        = "module heading"
 	, syntax_code         = ["[definition,implementation,system] module ..."]
 	, syntax_description  = "The heading of a Clean file. Definition modules describe what things are exported (dcl files), implementation modules how they are implemented (icl files)."
 	, syntax_doc_location = [CLR 4 "2.2" "_Toc311797983"]
-	, syntax_examples     =
-		[ EX "Function" "definition module ..."
-		, EX "Function" "definition module StdList     // Exported definitions of list functions"
-		, EX "Function" "implementation module StdList // The implementations of the functions"
-		, EX "Function" "module test                   // An implementation module without corresponding dcl"
-		, EX "Function" "system module StdInt          // The definitions of a module that contains foreign code (see section 2.6 of the language report)"
+	, syntax_examples     = map (EX "Function")
+		[ "definition module ..."
+		, "definition module StdList     // Exported definitions of list functions"
+		, "implementation module StdList // The implementations of the functions"
+		, "module test                   // An implementation module without corresponding dcl"
+		, "system module StdInt          // The definitions of a module that contains foreign code (see section 2.6 of the language report)"
 		]
 	})
 

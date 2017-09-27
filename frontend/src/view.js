@@ -94,11 +94,12 @@ window.onload = function() {
 		},
 		viewer: viewer,
 		onLoad: function(state) {
+			viewer.scrollLeft = 0;
 			if (state.line != null) {
 				var l = document.getElementById('line-' + state.line).documentOffsetTop();
-				viewer.scrollTo(0, l - window.innerHeight/4);
+				viewer.scrollTop = l - window.innerHeight/4;
 			} else {
-				viewer.scrollTo(0, 0);
+				viewer.scrollTop = 0;
 			}
 
 			bindLinenos();

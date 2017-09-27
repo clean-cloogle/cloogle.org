@@ -80,7 +80,7 @@ bs_let = (["let", "in", "let in"],
 	{ syntax_title        = "let expression"
 	, syntax_code         = ["let ... in ..."]
 	, syntax_description  = "An expression that introduces new scope."
-	, syntax_doc_location = [CLR 5 "3.5.1" "_Toc31178003"]
+	, syntax_doc_location = [CLR 5 "3.5.1" "_Toc311798003"]
 	, syntax_examples     =
 		[ EXs "Function" "macro"    "fac n = let fs = [1:1:[(fs!!(i-1)) + (fs!!(i-2)) \\ i <- [2..]]] in fs !! n"
 		, EXs "Function" "macrorhs" "let // Multi-line let expressions\n\tfunction args = body\n\tselector = expr\n\t// ...\nin expression"

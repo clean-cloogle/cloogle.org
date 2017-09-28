@@ -60,7 +60,16 @@ builtin_types
 	  , ( Builtin "Dynamic" [CLR 10 "8"  "_Toc311798077"], {deft & tde_typedef.td_name = "Dynamic"})
 	  , ( Builtin "File"    [CLR 6 "4.7" "_Toc311798037"], {deft & tde_typedef.td_name = "File"})
 	  , ( Builtin "World"   [CLR 6 "4.7" "_Toc311798037"], {deft & tde_typedef.td_name = "World",
-	      tde_typedef.td_uniq = True } )
+	      tde_typedef.td_uniq = True,
+	      tde_doc = Just $ TypeDoc
+	        (Just "An object of this type is automatically created when the program is started, if needed. It makes efficient interfacing with the outside world possible. Its value is always `65536`.")
+	        [] Nothing})
+	  , ( Builtin "->"      [CLR 6 "4.6" "_Toc311798036"], {deft & tde_typedef.td_name = "(->)",
+	      tde_typedef.td_args = [Var "a", Var "b"],
+	      tde_doc = Just $ TypeDoc
+	        (Just "The arrow type is used to denote functions.\n\nOften, function types can be written in an uncurried fashion, e.g. `a b -> c` is the same as `a -> b -> c`.")
+	        ["The argument type", "The result type"]
+	        Nothing})
 	  :  lists
 	  ++ arrays
 	  ++ tuples
@@ -96,7 +105,7 @@ where
 				[]    -> ""
 				['!'] -> " spine strict"
 
-			description = "These types of list are available:\n" +
+			description = "These types of list are available:\n\n" +
 				"- {{`[a]`}}, a normal list\n" +
 				"- {{`[#a]`}}, an unboxed head-strict list (elements are stored directly, without pointers)\n" +
 				"- {{`[!a]`}}, a head-strict list (the first element is in root normal form)\n" +
@@ -120,7 +129,7 @@ where
 		where
 			typec = toString (['{':k]++['}'])
 
-			description = "These types of array are available:\n" +
+			description = "These types of array are available:\n\n" +
 				"- `{a}`, a normal array\n" +
 				"- `{#a}`, an unboxed strict array (elements are stored directly, without pointers)\n" +
 				"- `{!a}`, a strict array (the elements are in root normal form)"
@@ -159,15 +168,23 @@ builtin_syntax =
 	, bs_dotdot
 	, bs_exists
 	, bs_forall
+	, bs_generic
 	, bs_import
 	, bs_infix
 	, bs_instance
+	, bs_lambda
+	, bs_layout_rule
 	, bs_let
 	, bs_let_before
+	, bs_list_expressions
 	, bs_macro
 	, bs_module
 	, bs_otherwise
-	// TODO bs_selection (arrays and records)
+	, bs_pattern_named
+	, bs_selection_array
+	, bs_selection_array_unique
+	, bs_selection_record
+	, bs_selection_record_unique
 	, bs_strict
 	, bs_synonym
 	, bs_synonym_abstract
@@ -177,7 +194,7 @@ builtin_syntax =
 	, bs_where_instance
 	, bs_where_local
 	, bs_with
-	// TODO bs_zf
+	, bs_zf
 	]
 
 CLR :: Int String String -> CleanLangReportLocation
@@ -211,7 +228,7 @@ bs_class = (["class"],
 		, "class ... ... where ..."
 		]
 	, syntax_description   =
-		"Classes are (sets of) overloaded functions. For classes with only one member function, a simplified syntax exists.\n" +
+		"Classes are (sets of) overloaded functions. For classes with only one member function, a simplified syntax exists.\n\n" +
 		"Types can instantiate classes with the {{`instance`}} keyword."
 	, syntax_doc_locations = [CLR 8 "6.1" "_Toc311798056"]
 	, syntax_examples      = map (EX "ClassDef")
@@ -224,7 +241,7 @@ bs_code = (["code", "inline", "code inline"],
 	{ syntax_title         = "ABC code"
 	, syntax_code          = ["... = code [inline] { ... }"]
 	, syntax_description   =
-		"A code block with raw ABC instructions, which can be used for primitive functions like integer addition, for linking with C, bypassing the type system... welcome down the rabbit hole!\n" +
+		"A code block with raw ABC instructions, which can be used for primitive functions like integer addition, for linking with C, bypassing the type system... welcome down the rabbit hole!\n\n" +
 		"When `inline` is used, the function will be inlined when applied in a strict context."
 	, syntax_doc_locations = [CLR 13 "11.2" "_Toc311798115"]
 	, syntax_examples      = map (EX "Function") // TODO highlighting
@@ -238,8 +255,8 @@ bs_define_constant = (["=:"],
 	{ syntax_title         = "graph definition"
 	, syntax_code          = ["... =: ..."]
 	, syntax_description   =
-		"Defining constants with `=:` at the top level makes sure they are shared through out the program; hence, they are evaluated only once.\n" +
-		"This is the default understanding of `=` in local scope.\n" +
+		"Defining constants with `=:` at the top level makes sure they are shared through out the program; hence, they are evaluated only once.\n\n" +
+		"This is the default understanding of `=` in local scope.\n\n" +
 		"The inverse is {{`=>`}}, which defines an identifier to be a constant function."
 	, syntax_doc_locations = [CLR 5 "3.6" "_Toc311798007"]
 	, syntax_examples      = [EXs "Function" "macro" "mylist =: [1..10000]"]
@@ -248,8 +265,8 @@ bs_define_graph = (["=>"],
 	{ syntax_title         = "constant function definition"
 	, syntax_code          = ["... => ..."]
 	, syntax_description   =
-		"Defining constants with `=>` at the top level makes sure they are interpreted as constant functions; hence, they are evaluated every time they are needed.\n" +
-		"This is the default understanding of `=` in global scope.\n" +
+		"Defining constants with `=>` at the top level makes sure they are interpreted as constant functions; hence, they are evaluated every time they are needed.\n\n" +
+		"This is the default understanding of `=` in global scope.\n\n" +
 		"The inverse is {{`=:`}}, which defines an identifier to be a graph."
 	, syntax_doc_locations = [CLR 5 "3.6" "_Toc311798007"]
 	, syntax_examples      = [EXs "Function" "macro" "mylist => [1..10000]"]
@@ -259,7 +276,7 @@ bs_dotdot = (["[\\e..]", "[\\e..\e]", "[\\e,\\e..]", "[[\\e,\\e..\\e]", "dotdot"
 	{ syntax_title         = "dotdot expression"
 	, syntax_code          = ["[i..]", "[i..k]", "[i,j..]", "[i,j..k]"]
 	, syntax_description   =
-		"A shorthand for lists of enumerable types.\n" +
+		"A shorthand for lists of enumerable types.\n\n" +
 		"To use these expressions, you must import {{`StdEnum`}}. The underlying functions are defined in {{`_SystemEnum`}}."
 	, syntax_doc_locations = [CLR 6 "4.2.1" "_Toc311798023"]
 	, syntax_examples      = map (EXs "Function" "macro")
@@ -283,9 +300,24 @@ bs_forall = (["A", "A.*"],
 	, syntax_code          = ["A. ...:"]
 	, syntax_description   = "Explicitly marks polymorphic type variables. Clean does not yet allow universal quantifiers on the topmost level."
 	, syntax_doc_locations = [CLR 5 "3.7.4" "_Toc311798013"]
-	, syntax_examples      = map (EX "Function")
-		[ "hd :: A.a: [a] -> a           // Not yet allowed: A. on the topmost level"
-		, "h :: (A.a: [a] -> Int) -> Int // The quantifier is needed to apply the function to both a [Int] and a [Char]\nh f = f [1..100] + f ['a'..'z']"
+	, syntax_examples      =
+		[ EX "Function" "hd :: A.a: [a] -> a           // Not yet allowed: A. on the topmost level"
+		, EX "Function" "h :: (A.a: [a] -> Int) -> Int // The quantifier is needed to apply the function to both a [Int] and a [Char]\nh f = f [1..100] + f ['a'..'z']"
+		, EX "TypeDef"  ":: T = C (A.a: a -> a)        // In a type"
+		]
+	})
+
+bs_generic = (["generic", "derive", "of", "{|*|}"], // This * matches everything, which is intentional
+	{ syntax_title         = "generic function definition"
+	, syntax_code          = ["generic ... ... :: ...", "derive ... ..."]
+	, syntax_description   = "With generics, a function can be defined once and derived for (almost) all possible types, to avoid very similar code snippets."
+	, syntax_doc_locations = [CLR 9 "7.2" "_Toc311798069"]
+	, syntax_examples      =
+		[ EX  "Function"           "generic gEq a :: !a !a -> Bool        // The type of a generic function"
+		, EXs "Function" "macro" $ "gEq{|Int|} x y = x == y               // Implementation of a generic\n" +
+		  "gEq{|PAIR|} fx fy (PAIR x1 y1) (PAIR x2 y2) = fx x1 x2 && fy y1 y2" // TODO highlighting
+		, EX  "Function"           "derive gEq []                         // Deriving the gEq generic for type []"
+		, EXs "Function" "macro"   "gConsName{|CONS of d|} _ = d.gcd_name // Using type information"
 		]
 	})
 
@@ -293,8 +325,8 @@ bs_import = (["import", "from", "qualified", "as"],
 	{ syntax_title         = "imports"
 	, syntax_code          = ["import [qualified] ... [as ...]", "from ... import ..."]
 	, syntax_description   =
-		"Imports code from other modules.\n" +
-		"With the `from` keyword, one can achieve more granularity.\n" +
+		"Imports code from other modules.\n\n" +
+		"With the `from` keyword, one can achieve more granularity.\n\n" +
 		"In case of name clashes, `qualified` can be used (undocumented)."
 	, syntax_doc_locations = [CLR 4 "2.5" "_Toc311797991"]
 	, syntax_examples      = map (EX "Function")
@@ -309,8 +341,8 @@ bs_infix = (["infix", "infixl", "infixr"],
 	{ syntax_title         = "infix operator"
 	, syntax_code          = ["infix[l,r] [...]"]
 	, syntax_description   =
-		"Defines a function with arity 2 that can be used in infix position.\n" +
-		"The following number, if any, determines the precedence.\n" +
+		"Defines a function with arity 2 that can be used in infix position.\n\n" +
+		"The following number, if any, determines the precedence.\n\n" +
 		"`infixl` and `infixr` indicate associativity."
 	, syntax_doc_locations = [CLR 5 "3.7.2" "_Toc311798011"]
 	, syntax_examples      =
@@ -329,6 +361,38 @@ bs_instance = (["instance"],
 		[ "instance zero Int\nwhere\n\tzero = 0"
 		, "instance zero Real\nwhere\n\tzero = 0.0"
 		]
+	})
+
+bs_lambda = (["lambda", "\\*", "->", "."],
+	{ syntax_title         = "lambda abstraction"
+	, syntax_code          = ["\\... -> ...", "\\... . ...", "\\... = ..."]
+	, syntax_description   = "An anonymous, inline function."
+	, syntax_doc_locations = [CLR 5 "3.4.1" "_Toc311798000"]
+	, syntax_examples      = map (EXs "Function" "macro")
+		[ "(o) f g = \\x -> f (g x)         // Simple lambda expression"
+		, "swapall = map (\\(x,y) -> (y,x)) // Pattern matching in lambda arguments"
+		, "mul     = \\x y -> x * y         // Multiple arguments (of course, it would be better to write `mul x y = x * y` or `mul = (*)`)"
+		]
+	})
+
+bs_layout_rule = ([";", "{", "}"],
+	{ syntax_title         = "layout rule"
+	, syntax_code          = ["...;", "{ ... }"]
+	, syntax_description   =
+		"Most Clean programs are written using the layout rule, which means that scopes are indicated with indent levels." +
+		"The layout sensitive mode can be turned off by adding a semicolon `;` at the end of the {{module}} line." +
+		"Then, scopes have to be indicated with `{ ... }` and definitions have to end with `;`."
+	, syntax_doc_locations = [CLR 4 "2.3.3" "_Toc311797989"]
+	, syntax_examples      = [EX "Module" $
+		"module test;\n" +
+		"import StdEnv;\n" +
+		"Start :: [(Int,Int)];\n" +
+		"Start = [(x,y) \\\\ x <- odds, y <- evens];\n" +
+		"where\n" +
+		"{\n" +
+		"\todds  = [1,3..9];\n" +
+		"\tevens = [0,2..8];\n" +
+		"}"]
 	})
 
 bs_let = (["let", "in", "let in"],
@@ -351,11 +415,26 @@ bs_let_before = (["#", "#!"],
 		]
 	})
 
+bs_list_expressions = (["list", "[]", "[:]", ":", "[\\e:\\e]", "['*"],
+	{ syntax_title         = "list expression"
+	, syntax_code          = ["[]", "[...:...]", "[..., ..., ...]", "['...']"]
+	, syntax_description   =
+		"A list can be composed of individual elements or a head and a tail. Special syntax is available for creating `[{{Char}}]` lists.\n\n" +
+		"See also {{dotdot}} expressions.\n\n" +
+		"The colon is not an operator in Clean, because it must always be surrounded by `[` and `]`. It can therefore not be curried, flipped, etc."
+	, syntax_doc_locations = [CLR 6 "4.2.1" "_Toc311798021"]
+	, syntax_examples      = map (EXs "Function" "macro")
+		[ "abc = ['a', 'b', 'c']     // Individual elements"
+		, "abc = ['a':['b':['c':[]]] // Head and tail, ending with the empty list"
+		, "abc = ['abc']             // Special syntax for [Char] lists"
+		]
+	})
+
 bs_macro = ([":==", "macro"],
 	{ syntax_title         = "macro"
 	, syntax_code          = ["... :== ..."]
 	, syntax_description   =
-		"A macro is a compile-time rewrite rule. It can be used for constants, inline subtitutions, renaming functions, conditional compilation, etc.\n" +
+		"A macro is a compile-time rewrite rule. It can be used for constants, inline subtitutions, renaming functions, conditional compilation, etc.\n\n" +
 		"Macros can appear in patterns to match on constants."
 	, syntax_doc_locations = [CLR 12 "10.3" "_Toc311798111"]
 	, syntax_examples      = map (EXs "Function" "macro")
@@ -387,6 +466,61 @@ bs_otherwise = (["otherwise"],
 	, syntax_examples      =
 		[ EXs "Function" "macrorhs" "| otherwise = ..."
 		, EXs "Function" "macro"    "sign :: !Int -> Int\nsign n\n| n  < 0    = -1 // Negative number\n| n == 0    =  0 // Zero\n| otherwise =  1 // Must be positive"
+		]
+	})
+
+bs_pattern_named = (["=:"],
+	{ syntax_title         = "named pattern match"
+	, syntax_code          = ["...=:(...)"]
+	, syntax_description   = "Give a name to the expression of a pattern to be able to use the whole expression without creating new graphs."
+	, syntax_doc_locations = [CLR 5 "3.2" "_Toc311797997"]
+	, syntax_examples      =
+		[ EXs "Function" "macro" "isJustU e=:(Just _) = (True, e) // On an ADT"
+		, EX  "Function"         ":: Position = {px :: Int, py :: Int}\ngetx p=:{px} = (px, p) // On a record; this has type :: Position -> (Int, Position)"
+		]
+	})
+
+bs_selection_array = ([".[]", ".[\\e]", ".[,*]", ".[\\e,*]"],
+	{ syntax_title         = "array selection"
+	, syntax_code          = [".[i]", ".[i,j,...]"]
+	, syntax_description   = "Select an element from a (possibly multidimensional) array. The indexes must have the type {{`Int`}}."
+	, syntax_doc_locations = [CLR 6 "4.4.1" "_Toc311798033"]
+	, syntax_examples      = map (EXs "Function" "macro")
+		[ "five = {1,2,3,4,5,6,7,8,9,10}.[4]    // Arrays are zero-indexed"
+		, "five = {{1,2},{3,4,5},{6,7,8}}.[1,2] // This is equivalent to (...).[1].[2]"
+		]
+	})
+bs_selection_array_unique = (["![]", "![\\e]", "![,*]", "![\\e,*]"],
+	{ syntax_title         = "unique array selection"
+	, syntax_code          = ["![i]", "![i,j,...]"]
+	, syntax_description   = "Select an element from a (possibly multidimensional, possibly unique) array and return both the element and the array. The indexes must have the type {{`Int`}}."
+	, syntax_doc_locations = [CLR 6 "4.4.1" "_Toc311798033"]
+	, syntax_examples      = map (EXs "Function" "macro")
+		[ "(five,arr) = {1,2,3,4,5,6,7,8,9,10}![4]"
+		, "(five,arr) = {{1,2},{3,4,5},{6,7,8}}![1,2]"
+		]
+	})
+bs_selection_record = (["."],
+	{ syntax_title         = "record selection"
+	, syntax_code          = ["."]
+	, syntax_description   = "Select a field from a (possibly multilevel) record."
+	, syntax_doc_locations = [CLR 7 "5.2.1" "_Toc311798050"]
+	, syntax_examples      = map (EXs "Function" "macro")
+		[ "five = {px=5, py=10}.px"
+		, "five = {pxy={px=5, py=10}, pz=2}.pxy.px"
+		, "five = {px=5, py=10}.Position.px // If multiple records have a field px, the type name can be used for disambiguation"
+		]
+	})
+bs_selection_record_unique = (["!"],
+	{ syntax_title         = "unique record selection"
+	, syntax_code          = ["!"]
+	, syntax_description   = "Select a field from a (possibly multilevel, possibly unique) record and return both the field data and the record."
+	, syntax_doc_locations = [CLR 7 "5.2.1" "_Toc311798050"]
+	, syntax_examples      = map (EXs "Function" "macro")
+		[ "(five,rec) = {px=5, py=10}!px"
+		, "(five,rec) = {pxy={px=5, py=10}, pz=2}!pxy.px // Only the first field should have the exclamation mark"
+		, "(five,rec) = {px=5, py=10}!Position.px // If multiple records have a field px, the type name can be used for disambiguation\n" +
+		  "                                       // The language report is erroneous here. It is !Position.px, not .Position!px."
 		]
 	})
 
@@ -456,4 +590,20 @@ bs_with = (["with"],
 	, syntax_description   = "Introduces guard-local definitions. For function-local definitions, see {{`where`}}."
 	, syntax_doc_locations = [CLR 5 "3.5.3" "_Toc311798005"]
 	, syntax_examples      = [EXs "Function" "macro" "f x y\n| guard1 = alt1\n\twith local = expr1\n| guard2 = alt2\n\twith local = expr2"]
+	})
+
+bs_zf = (["ZF-expression", "ZF", "zf", "comprehension", "<-", "<|-", "<-:", "\\\\", ",", "&", "|"],
+	{ syntax_title         = "list comprehension"
+	, syntax_code          = ["[... \\\\ ... <- ...]"]
+	, syntax_description   = "Constructs a list composed of elements drawn from other lists or arrays."
+	, syntax_doc_locations = [CLR 6 "4.2.1" "_Toc311798024"]
+	, syntax_examples      = map (EXs "Function" "macro")
+		[ "cartesian    = [(x,y) \\\\ x <- [1,2,3], y <- [10,20]] // Cartesian product: (1,10), (1,20), (2,10), (2,20), (3,10), (3,20)"
+		, "zip xs ys    = [(x,y) \\\\ x <- xs & y <- ys]          // Pairwise zip through the lists"
+		, "filter f xs  = [x \\\\ x <- xs | f x]                  // Guard to add conditions"
+		, "catMaybes ms = [x \\\\ Just x <- ms]                   // Pattern matching in the selector"
+		, "triangle     = [(x,y) \\\\ x <- [1,2,3], y <- [1..x]]  // Reusing x in the next generator: (1,1), (2,1), (2,2), (3,1), (3,2), (3,3)"
+		, "arrToList a  = [x \\\\ x <-: a]                        // <-: for arrays"
+		, "castList xs  = [|x \\\\ x <|- xs]                      // The two pipe characters make both xs and the result overloaded lists"
+		]
 	})

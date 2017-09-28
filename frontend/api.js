@@ -183,11 +183,14 @@ function makeRequiredContext(context) {
 }
 
 function highlightExample(example) {
-	if ('cleanjs_start' in example) {
-		return window['highlight' + example.cleanjs_type](
+	var f = 'highlight' + example.cleanjs_type;
+	if (!(f in window)) {
+		return example.example;
+	} else if ('cleanjs_start' in example) {
+		return window[f](
 				example.example, highlightCallback, example.cleanjs_start);
 	} else {
-		return window['highlight' + example.cleanjs_type](
+		return window[f](
 				example.example, highlightCallback);
 	}
 }
@@ -210,7 +213,12 @@ function highlightSyntaxConstruct(elem) {
 			[/(\w+)/,    ['keyword optional']],
 			[/(\S)/,     ['punctuation']]
 		]
-	}, elem, highlightCallback);
+	}, elem, function (span, cls, str) {
+		if (str == '...')
+			return span.replace('...', '&#8230;');
+		else
+			return span;
+	});
 }
 
 function makeExampleList(examples) {

@@ -542,7 +542,7 @@ function getResults(str, libs, include_builtins, include_core, include_apps, pag
 				}
 
 				return '<div class="result">' +
-						'<div class="result-basic">Clean syntax: ' + extra['syntax_title'] + urls + '</div>' +
+						'<div class="result-basic">Clean syntax: ' + extra['syntax_title'] + '</div>' +
 						'<div class="result-extra">' + meta.join('<br/>') + '</div>' +
 						'<div class="result-extra toggle-container">' +
 							toggler +

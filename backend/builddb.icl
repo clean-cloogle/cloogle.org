@@ -21,7 +21,7 @@ import Type
 from CloogleDBFactory import :: TemporaryDB, newTemporaryDb, finaliseDb,
 	findModules, indexModule, constructor_functions, record_functions
 
-import BuiltinSyntax
+import Builtins
 
 :: CLI = { help    :: Bool
          , version :: Bool
@@ -91,13 +91,13 @@ Start w
 	# mods        = flatten modss
 	#! (db, w)    = loop cli.root mods newTemporaryDb w
 	#! db         = finaliseDb db newDb
-	#! db         = putFunctions predefFunctions db
-	#! db         = putClasses predefClasses db
-	#! db         = putTypes predefTypes db
-	#! db         = putFunctions (flatten $ map constructor_functions predefTypes) db
-	#! db         = putFunctions (flatten $ map record_functions predefTypes) db
-	#! db         = syncDb 2 db
+	#! db         = putFunctions builtin_functions db
+	#! db         = putClasses builtin_classes db
+	#! db         = putTypes builtin_types db
+	#! db         = putFunctions (flatten $ map constructor_functions builtin_types) db
+	#! db         = putFunctions (flatten $ map record_functions builtin_types) db
 	#! db         = putSyntaxElems builtin_syntax db
+	#! db         = syncDb 2 db
 	#! (ok1,w)    = fclose (printStats db stderr) w
 	#! f          = saveDb db f
 	#! (ok2,w)    = fclose f w
@@ -153,51 +153,3 @@ where
 				, syntaxCount db
 				]
 		pad n i = {' ' \\ _ <- [0..n-size (toString i)-1]} +++ toString i
-
-predefFunctions :: [(Location, FunctionEntry)]
-predefFunctions
-	= [ ( Builtin "if"
-	    , {zero & fe_type=Just $ Func [Type "Bool" [], Var "a", Var "a"] (Var "a") []}
-	    )
-	  , ( Builtin "dynamic"
-	    , {zero & fe_type=Just $ Func [Var "a"] (Type "Dynamic" []) [Instance "TC" [Var "a"]]}
-	    )
-	  ]
-
-predefClasses :: [(Location, ClassEntry)]
-predefClasses
-	= [ ( Builtin "TC"
-	    , { ce_vars=["v"]
-	      , ce_context=[]
-	      , ce_documentation=Nothing
-	      , ce_members=[]
-	      , ce_instances=[]
-	      , ce_derivations=[]
-	      }
-	    )
-	  ]
-
-predefTypes :: [(Location, TypeDefEntry)]
-predefTypes
-	= [ ( Builtin "Bool"
-	    , { deft
-	      & tde_typedef.td_name = "Bool"
-	      , tde_typedef.td_rhs  = TDRCons False
-	        [ { defc & cons_name="False" }
-	        , { defc & cons_name="True" }
-	        ]
-	      }
-	    )
-	  , ( Builtin "Int",     { deft & tde_typedef.td_name = "Int"     } )
-	  , ( Builtin "Real",    { deft & tde_typedef.td_name = "Real"    } )
-	  , ( Builtin "Char",    { deft & tde_typedef.td_name = "Char"    } )
-	  , ( Builtin "String",  { deft & tde_typedef.td_name = "String",
-	      tde_typedef.td_rhs = TDRSynonym (Type "_#Array" [Type "Char" []]) } )
-	  , ( Builtin "Dynamic", { deft & tde_typedef.td_name = "Dynamic" } )
-	  , ( Builtin "File",    { deft & tde_typedef.td_name = "File"    } )
-	  , ( Builtin "World",   { deft & tde_typedef.td_name = "World",
-	      tde_typedef.td_uniq = True } )
-	  ]
-where
-	deft = {tde_typedef={td_name="", td_uniq=False, td_args=[], td_rhs=TDRAbstract}, tde_doc=Nothing}
-	defc = {cons_name="", cons_args=[], cons_exi_vars=[], cons_context=[], cons_priority=Nothing}

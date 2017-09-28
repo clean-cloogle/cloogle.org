@@ -1,4 +1,4 @@
-implementation module BuiltinSyntax
+implementation module Builtins
 
 import StdBool
 import StdEnum
@@ -7,11 +7,62 @@ import StdList
 import StdOverloaded
 import StdString
 
+from Data.Func import $
 import Data.Maybe
 import Text
 
+import Type
+
 import Cloogle
 import CloogleDB
+
+builtin_functions :: [(Location, FunctionEntry)]
+builtin_functions
+	= [ ( Builtin "if"
+	    , {zero & fe_type=Just $ Func [Type "Bool" [], Var "a", Var "a"] (Var "a") []}
+	    )
+	  , ( Builtin "dynamic"
+	    , {zero & fe_type=Just $ Func [Var "a"] (Type "Dynamic" []) [Instance "TC" [Var "a"]]}
+	    )
+	  ]
+
+builtin_classes :: [(Location, ClassEntry)]
+builtin_classes
+	= [ ( Builtin "TC"
+	    , { ce_vars=["v"]
+	      , ce_context=[]
+	      , ce_documentation=Nothing
+	      , ce_members=[]
+	      , ce_instances=[]
+	      , ce_derivations=[]
+	      }
+	    )
+	  ]
+
+builtin_types :: [(Location, TypeDefEntry)]
+builtin_types
+	= [ ( Builtin "Bool"
+	    , { deft
+	      & tde_typedef.td_name = "Bool"
+	      , tde_typedef.td_rhs  = TDRCons False
+	        [ { defc & cons_name="False" }
+	        , { defc & cons_name="True" }
+	        ]
+	      }
+	    )
+	  , ( Builtin "Int",     { deft & tde_typedef.td_name = "Int"     } )
+	  , ( Builtin "Real",    { deft & tde_typedef.td_name = "Real"    } )
+	  , ( Builtin "Char",    { deft & tde_typedef.td_name = "Char"    } )
+	  , ( Builtin "String",  { deft & tde_typedef.td_name = "String",
+	      tde_typedef.td_rhs = TDRSynonym (Type "_#Array" [Type "Char" []]) } )
+	  , ( Builtin "Dynamic", { deft & tde_typedef.td_name = "Dynamic" } )
+	  , ( Builtin "File",    { deft & tde_typedef.td_name = "File"    } )
+	  , ( Builtin "World",   { deft & tde_typedef.td_name = "World",
+	      tde_typedef.td_uniq = True } )
+	  ]
+where
+	deft = {tde_typedef={td_name="", td_uniq=False, td_args=[], td_rhs=TDRAbstract}, tde_doc=Nothing}
+	defc = {cons_name="", cons_args=[], cons_exi_vars=[], cons_context=[], cons_priority=Nothing}
 
 builtin_syntax :: [([String], SyntaxEntry)]
 builtin_syntax =

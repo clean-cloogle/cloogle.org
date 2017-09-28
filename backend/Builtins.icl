@@ -8,6 +8,7 @@ import StdOverloaded
 import StdString
 
 from Data.Func import $
+import Data.List
 import Data.Maybe
 import Text
 
@@ -60,7 +61,9 @@ builtin_types
 	  , ( Builtin "File"    [CLR 6 "4.7" "_Toc311798037"], {deft & tde_typedef.td_name = "File"})
 	  , ( Builtin "World"   [CLR 6 "4.7" "_Toc311798037"], {deft & tde_typedef.td_name = "World",
 	      tde_typedef.td_uniq = True } )
-	  : lists
+	  :  lists
+	  ++ arrays
+	  ++ tuples
 	  ]
 where
 	deft = {tde_typedef={td_name="", td_uniq=False, td_args=[], td_rhs=TDRAbstract}, tde_doc=Nothing}
@@ -73,7 +76,10 @@ where
 			{ deft
 			& tde_typedef.td_name = toString (['_':k] ++ ['List'] ++ s)
 			, tde_typedef.td_args = [Var "a"]
-			, tde_doc             = Just $ TypeDoc (Just $ "A" + kind + spine + " list.\n\n" + description) ["The type of the list elements."] Nothing
+			, tde_doc = Just $ TypeDoc
+				(Just $ "A" + kind + spine + " list.\n\n" + description)
+				["The type of the list elements."]
+				Nothing
 			})
 		where
 			higherorder = toString (['[':k] ++ s` ++ [']'])
@@ -99,9 +105,52 @@ where
 				"- {{`[!a!]`}}, a head-strict spine-strict list\n" +
 				"- {{`[|a]`}}, an overloaded list (one of the types above)"
 
+	arrays = [make_array kind \\ kind <- [[], ['!'], ['#']]]
+	where
+		make_array :: [Char] -> (Location, TypeDefEntry)
+		make_array k = (Builtin typec [CLR 6 "4.4" "_Toc311798029"],
+			{ deft
+			& tde_typedef.td_name = toString (['_':k] ++ ['Array'])
+			, tde_typedef.td_args = [Var "a"]
+			, tde_doc = Just $ TypeDoc
+				(Just $ "An array contains a finite number of elements of the same type. Access time is constant.\n\n" + description)
+				["The type of the array elements."]
+				Nothing
+			})
+		where
+			typec = toString (['{':k]++['}'])
+
+			description = "These types of array are available:\n" +
+				"- `{a}`, a normal array\n" +
+				"- `{#a}`, an unboxed strict array (elements are stored directly, without pointers)\n" +
+				"- `{!a}`, a strict array (the elements are in root normal form)"
+
+	tuples = [make_tuple n \\ n <- [2..32]]
+	where
+		make_tuple :: Int -> (Location, TypeDefEntry)
+		make_tuple n = (Builtin typec [CLR 6 "4.3" "_Toc311798026"],
+			{ deft
+			& tde_typedef.td_name = "_Tuple" <+ n
+			, tde_typedef.td_args = [Var $ toString [v:repeatn (n / 26) '`'] \\ v <- cycle ['a'..'z'] & n <- [0..n-1]]
+			, tde_doc = Just $ TypeDoc
+				(Just $ article + " " + ary + "ary tuple.\n\n" +
+				 "Tuples allow bundling a finite number of expressions of different types into one object without defining a new data type.\n\n" +
+				 "Clean supports tuples of arity 2 to 32.")
+				[] Nothing
+			})
+		where
+			typec = toString ['(':repeatn (n-1) ',' ++ [')']]
+			ary = case n of
+				2 -> "bin"
+				3 -> "tern"
+				n -> n <+ "-"
+			article = case n of
+				11 -> "An"
+				18 -> "An"
+				_  -> "A"
+
 builtin_syntax :: [([String], SyntaxEntry)]
 builtin_syntax =
-	  bs_arrays ++
 	[ bs_case
 	, bs_class
 	, bs_code
@@ -122,8 +171,7 @@ builtin_syntax =
 	, bs_strict
 	, bs_synonym
 	, bs_synonym_abstract
-	] ++ bs_tuples ++
-	[ bs_update_array
+	, bs_update_array
 	, bs_update_record
 	, bs_where_class
 	, bs_where_instance
@@ -145,23 +193,6 @@ EX :: String String -> SyntaxExample
 EX t c = {example=c, cleanjs_type=t, cleanjs_start=Nothing}
 EXs :: String String String -> SyntaxExample
 EXs t s c = {example=c, cleanjs_type=t, cleanjs_start=Just s}
-
-bs_arrays = [make_array kind \\ kind <- [[], ['!'], ['#']]]
-where
-	make_array :: [Char] -> ([SyntaxPattern], SyntaxEntry)
-	make_array k = (["array", typec, toString (['{':k]++['\\w}'])],
-		{ syntax_title         = kind + "array"
-		, syntax_code          = [typec]
-		, syntax_description   = "An array contains a finite number of elements of the same type. Access time is constant."
-		, syntax_doc_locations = [CLR 6 "4.4" "_Toc311798029"]
-		, syntax_examples      = [EX "Function" ("xs :: {" <+ k <+ "Int}\nxs = {" <+ k <+ "1,3,6,10}")]
-		})
-	where
-		typec = toString (['{':k]++['}'])
-		kind = case k of
-			[]    -> ""
-			['!'] -> "strict "
-			['#'] -> "unboxed "
 
 bs_case = (["case", "of", "case of"],
 	{ syntax_title         = "case expression"
@@ -381,26 +412,6 @@ bs_synonym_abstract = (["synonym", ":=="],
 	, syntax_doc_locations = [CLR 7 "5.4.1" "_Toc311798054"]
 	, syntax_examples      = [EX "TypeDef" ":: Stack a (:== [a])"]
 	})
-
-bs_tuples = [make_tuple n \\ n <- [1..31]]
-where
-	make_tuple :: Int -> ([SyntaxPattern], SyntaxEntry)
-	make_tuple n = ([toString ['(':repeatn n ','++[')']], withargs, "tuple"],
-		{ syntax_title         = ary + "ary tuple"
-		, syntax_code          = [withvars]
-		, syntax_description   =
-			"Tuples allow bundling a finite number of expressions of different types into one object without defining a new data type.\n" +
-			"Clean supports tuples of arity 2 to 32."
-		, syntax_doc_locations = [CLR 6 "4.3" "_Toc311798026"]
-		, syntax_examples      = []
-		})
-	where
-		withargs = toString ['(\\w':foldl (++) [] [[',\\w'] \\ _ <- [1..n]] ++ [')']]
-		withvars = toString ['(a'  :foldl (++) [] [[',':v]  \\ _ <- [1..n] & v <- map (\x->[x]) ['b'..'z'] ++ [[v,'`'] \\ v <- ['a'..]]] ++ [')']]
-		ary = case n of
-			1 -> "bin"
-			2 -> "tren"
-			n -> n+1 <+ "-"
 
 bs_update_array = (["&", "{*&*[\\e]*=*}"],
 	{ syntax_title         = "array update"

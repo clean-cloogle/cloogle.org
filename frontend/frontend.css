@@ -16,6 +16,10 @@ a {
 	color: #26c;
 }
 
+br.parbreak {
+	margin-bottom: .5em;
+}
+
 #header {
 	margin-top: 10%;
 	text-align: center;

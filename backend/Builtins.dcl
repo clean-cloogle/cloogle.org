@@ -1,7 +1,7 @@
 definition module Builtins
 
 from CloogleDB import :: Location, :: FunctionEntry, :: ClassEntry,
-	:: TypeDefEntry, :: SyntaxEntry, :: SyntaxResultExtras
+	:: TypeDefEntry, :: SyntaxEntry
 
 builtin_functions :: [(Location, FunctionEntry)]
 builtin_classes :: [(Location, ClassEntry)]

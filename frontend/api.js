@@ -222,6 +222,8 @@ function makeExampleList(examples) {
 }
 
 function markupDocumentation(doc) {
+	doc = doc.replace(/\n\n/g, '<br class="parbreak"/>');
+	doc = doc.replace(/\n\s*-\s*/g, '<br/>- ');
 	doc = doc.replace(/{{`([^`}]+)`}}/g, '`{{$1}}`');
 	doc = doc.replace(/`([^`]+)`/g, '<code>$1</code>');
 	doc = doc.replace(/{{([^}]+)}}/g, function (m,c) {
@@ -512,8 +514,6 @@ function getResults(str, libs, include_builtins, include_core, include_apps, pag
 						highlightFunction('import ' + basic['modul']));
 
 			case 'SyntaxResult':
-				meta.push(markupDocumentation(extra['syntax_description'].replace(/\n/g, '<br/>')));
-
 				var urls = '';
 				if (extra['syntax_doc_location'].length > 0) {
 					urls += ' (';

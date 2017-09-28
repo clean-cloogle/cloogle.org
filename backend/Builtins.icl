@@ -19,17 +19,17 @@ import CloogleDB
 
 builtin_functions :: [(Location, FunctionEntry)]
 builtin_functions
-	= [ ( Builtin "if"
+	= [ ( Builtin "if" [CLR 5 "3.4.2" "_Toc311798001"]
 	    , {zero & fe_type=Just $ Func [Type "Bool" [], Var "a", Var "a"] (Var "a") []}
 	    )
-	  , ( Builtin "dynamic"
+	  , ( Builtin "dynamic" [CLR 10 "8.1" "_Toc311798076"]
 	    , {zero & fe_type=Just $ Func [Var "a"] (Type "Dynamic" []) [Instance "TC" [Var "a"]]}
 	    )
 	  ]
 
 builtin_classes :: [(Location, ClassEntry)]
 builtin_classes
-	= [ ( Builtin "TC"
+	= [ ( Builtin "TC" [CLR 10 "8.1.4" "_Toc311798080"]
 	    , { ce_vars=["v"]
 	      , ce_context=[]
 	      , ce_documentation=Nothing
@@ -42,7 +42,7 @@ builtin_classes
 
 builtin_types :: [(Location, TypeDefEntry)]
 builtin_types
-	= [ ( Builtin "Bool"
+	= [ ( Builtin "Bool" [CLR 6 "4.1" "_Toc311798017"]
 	    , { deft
 	      & tde_typedef.td_name = "Bool"
 	      , tde_typedef.td_rhs  = TDRCons False
@@ -51,14 +51,14 @@ builtin_types
 	        ]
 	      }
 	    )
-	  , ( Builtin "Int",     { deft & tde_typedef.td_name = "Int"     } )
-	  , ( Builtin "Real",    { deft & tde_typedef.td_name = "Real"    } )
-	  , ( Builtin "Char",    { deft & tde_typedef.td_name = "Char"    } )
-	  , ( Builtin "String",  { deft & tde_typedef.td_name = "String",
+	  , ( Builtin "Int"     [CLR 6 "4.1" "_Toc311798017"], {deft & tde_typedef.td_name = "Int"})
+	  , ( Builtin "Real"    [CLR 6 "4.1" "_Toc311798017"], {deft & tde_typedef.td_name = "Real"})
+	  , ( Builtin "Char"    [CLR 6 "4.1" "_Toc311798017"], {deft & tde_typedef.td_name = "Char"})
+	  , ( Builtin "String"  [CLR 6 "4.7" "_Toc311798037"], {deft & tde_typedef.td_name = "String",
 	      tde_typedef.td_rhs = TDRSynonym (Type "_#Array" [Type "Char" []]) } )
-	  , ( Builtin "Dynamic", { deft & tde_typedef.td_name = "Dynamic" } )
-	  , ( Builtin "File",    { deft & tde_typedef.td_name = "File"    } )
-	  , ( Builtin "World",   { deft & tde_typedef.td_name = "World",
+	  , ( Builtin "Dynamic" [CLR 10 "8"  "_Toc311798077"], {deft & tde_typedef.td_name = "Dynamic"})
+	  , ( Builtin "File"    [CLR 6 "4.7" "_Toc311798037"], {deft & tde_typedef.td_name = "File"})
+	  , ( Builtin "World"   [CLR 6 "4.7" "_Toc311798037"], {deft & tde_typedef.td_name = "World",
 	      tde_typedef.td_uniq = True } )
 	  : lists
 	  ]
@@ -69,13 +69,11 @@ where
 	lists = [make_list kind spine \\ kind <- [[], ['#'], ['!'], ['|']], spine <- [[], ['!']] | kind <> ['|'] || spine <> ['!']]
 	where
 		make_list :: [Char] [Char] -> (Location, TypeDefEntry)
-		make_list k s = (Builtin higherorder,
+		make_list k s = (Builtin higherorder [CLR 6 "4.2" "_Toc311798019"],
 			{ deft
 			& tde_typedef.td_name = toString (['_':k] ++ ['List'] ++ s)
 			, tde_typedef.td_args = [Var "a"]
 			, tde_doc             = Just $ TypeDoc (Just $ "A" + kind + spine + " list.\n\n" + description) ["The type of the list elements."] Nothing
-		//	, syntax_doc_locations = [CLR 6 "4.2" "_Toc311798019"]
-		//	, syntax_examples      = map (EXs "Function" "macro") ["f :: " <+ lista <+ " -> a", "ints = " <+ listints]
 			})
 		where
 			higherorder = toString (['[':k] ++ s` ++ [']'])

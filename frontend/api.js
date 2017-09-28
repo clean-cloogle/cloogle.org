@@ -343,7 +343,7 @@ function getResults(str, libs, include_builtins, include_core, include_apps, pag
 				'<a href="' + iclUrl + '" target="_blank">icl' + iclLine + '</a>)';
 
 		if ('builtin' in basic && basic['builtin'])
-			basicText = [['Clean core. The actual implementation may differ. For documentation, see the Clean language report.']];
+			basicText = [['Clean core. The actual implementation may differ.']];
 
 		var toggler = '';
 		if (hidden.length > 0) {
@@ -369,6 +369,21 @@ function getResults(str, libs, include_builtins, include_core, include_apps, pag
 
 		var meta = [];
 		var hidden = [];
+
+		if ('langrep_documentation' in basic &&
+				basic['langrep_documentation'].length > 0) {
+			var doc = 'See the language report: ';
+			for (var i in basic['langrep_documentation']) {
+				var loc = basic['langrep_documentation'][i];
+				if (i != 0)
+					doc += '; ';
+				doc += '<a target="_blank" ' +
+					'href="/doc/#' + loc.clr_file + ';jump=' + loc.clr_heading + '">' +
+					loc.clr_section + '</a>';
+			}
+			doc += '.';
+			meta.push(doc);
+		}
 
 		if ('documentation' in basic)
 			meta.push(markupDocumentation(basic['documentation']));
@@ -514,20 +529,6 @@ function getResults(str, libs, include_builtins, include_core, include_apps, pag
 						highlightFunction('import ' + basic['modul']));
 
 			case 'SyntaxResult':
-				var urls = '';
-				if (extra['syntax_doc_location'].length > 0) {
-					urls += ' (';
-					for (var i in extra['syntax_doc_location']) {
-						var loc = extra['syntax_doc_location'][i][1];
-						if (i != 0)
-							urls += '; ';
-						urls += '<a target="_blank" ' +
-							'href="/doc/#' + loc.clr_file + ';jump=' + loc.clr_heading + '">' +
-							'Section ' + loc.clr_section + ' of the Language report v' + loc.clr_version + '</a>';
-					}
-					urls += ')';
-				}
-
 				var toggler = '';
 				if (extra['syntax_examples'].length > 0) {
 					toggler = '<div class="toggler" title="More details" onclick="toggle(this)">' +

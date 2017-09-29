@@ -12,7 +12,7 @@
 	<link rel="stylesheet" href="../common.css" type="text/css"/>
 	<link rel="stylesheet" href="view.css" type="text/css"/>
 </head>
-<body>
+<body class="framelike">
 	<div id="sidebar">
 		<a href="/"><img id="logo" src="../logo.png" alt="Cloogle logo"/></a>
 		<h3>Library browser</h3>

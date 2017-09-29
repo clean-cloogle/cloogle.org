@@ -1,5 +1,6 @@
 <?php
 define('CLEANHOME', '/opt/clean');
+define('CLEANLIB', CLEANHOME . '/lib');
 
 $lib = isset($_GET['lib']) ? $_GET['lib'] : 'StdEnv';
 $lib = preg_replace('/[^\\w\\/\\-]/', '', $lib);
@@ -70,13 +71,55 @@ function makeBrowser($dir, $basemodule) {
 
 	foreach ($elems['modules'] as $m) {
 		$fullm = $basemodule . $m;
-		echo '<div class="browser-item module" data-name="' . $m . '">' . $m . '</span>' .
-			'</div>';
+		echo '<div class="browser-item module" data-name="' . $m . '">' . $m . '</div>';
 	}
 
 	echo '</div>';
 }
 
-$dname = CLEANHOME . '/lib';
+$alllibs = [
+	'Clean 2.4' => [
+		'StdEnv',
+		'ArgEnv',
+		'Directory',
+		'Dynamics',
+		'Gast',
+		'Generics',
+		'MersenneTwister',
+		'StdLib',
+		'TCPIP',
+	],
+	'Official' => [
+		'GraphCopy',
+		'ObjectIO',
+		'Platform',
+		'Sapl',
+		'iTasks',
+	],
+	'Miscellaneous' => [
+		'CleanInotify',
+		'CleanPrettyPrint',
+		'CleanSerial',
+		'CleanSnappy',
+		'CleanTypeUnifier',
+		'Cloogle',
+		'SoccerFun',
+		'clean-compiler',
+		'clean-ide',
+		'libcloogle',
+	]
+];
 
-makeBrowser($dname, '');
+echo '<div class="browser">';
+foreach ($alllibs as $group => $libs) {
+	echo '<h4 class="browser-header">' . $group . '</h4>';
+	foreach ($libs as $lib) {
+		echo '<div class="browser-item directory toggle-container" data-name="' . $lib . '">' .
+				'<span class="toggler">' .
+					'<span class="toggle-icon">&#x229e</span>' .
+					'<span class="title">' . $lib . '</span></span>';
+		makeBrowser(CLEANLIB . '/' . $lib, '');
+		echo '</div>';
+	}
+}
+echo '</div>';

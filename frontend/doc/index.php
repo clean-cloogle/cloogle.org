@@ -10,7 +10,6 @@
 	<script src="../browser.js" type="text/javascript" defer="defer"></script>
 	<script src="doc.js" type="text/javascript" defer="defer"></script>
 	<link rel="stylesheet" href="../common.css" type="text/css"/>
-	<link rel="stylesheet" href="../src/view.css" type="text/css"/>
 	<style type="text/css">
 		#viewer {
 			padding: 10px;
@@ -41,14 +40,9 @@
 		a:visited {
 			color: blue !important;
 		}
-
-		.browser-item {
-			padding-left: 1em;
-			text-indent: -1em;
-		}
 	</style>
 </head>
-<body>
+<body class="framelike">
 	<div id="sidebar">
 		<a href="/"><img id="logo" src="../logo.png" alt="Cloogle logo"/></a>
 		<h3>Documentation browser</h3>

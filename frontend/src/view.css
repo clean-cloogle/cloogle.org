@@ -72,82 +72,11 @@
 .highlighttable .vm { color: #19177C } /* Name.Variable.Magic */
 .highlighttable .il { color: #666666 } /* Literal.Number.Integer.Long */
 
-body {
-	margin: 0;
-	overflow: hidden;
-}
-
-#sidebar {
-	float: left;
-	overflow: auto;
-	padding: 10px 1em;
-	width: 15em;
-}
-
-#sidebar h3 {
-	margin-top: .2em;
-}
-
-#logo {
-	margin-bottom: 1em;
-	max-width: 100%;
-}
-
-#select-lib {
-	margin-bottom: .8em;
-}
-
 #share-button {
 	margin-top: .8em;
 }
 
-#viewer {
-	margin-left: 16em;
-	overflow: auto;
-}
-
-#viewer #loading {
-	font-style: italic;
-	margin-top: 8em;
-	text-align: center;
-}
-
-.browser-item {
+.linenodiv .special {
 	cursor: pointer;
-	font-weight: normal;
-}
-
-.browser-item.directory {
-	font-weight: bold;
-}
-
-.browser-item.active {
-	font-style: italic;
-}
-
-.browser-item.directory .browser {
-	background-color: rgba(0, 0, 0, 0.05);
-	padding-left: 1em;
-}
-
-@media (max-width: 800px) {
-	body {
-		overflow: auto;
-	}
-
-	#sidebar {
-		float: none;
-		overflow: initial;
-		width: calc(100% - 2em);
-	}
-
-	#viewer {
-		clear: both;
-		margin-left: 0;
-		overflow: initial;
-	}
-}
-
-.special {
-	cursor: pointer;
+	padding-left: .8em;
 }

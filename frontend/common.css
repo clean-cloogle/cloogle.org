@@ -1,3 +1,13 @@
+body.framelike {
+	margin: 0;
+	overflow: hidden;
+}
+
+body.framelike #logo {
+	margin-bottom: 1em;
+	max-width: 100%;
+}
+
 pre {
 	-moz-tab-size: 4;
 	-o-tab-size: 4;
@@ -31,4 +41,68 @@ td, th {
 
 #share-link {
 	display: none;
+}
+
+.browser-header {
+	margin-bottom: 0.2em;
+}
+
+.browser-item {
+	cursor: pointer;
+	font-weight: normal;
+}
+
+.browser-item.active {
+	font-style: italic;
+}
+
+.browser-item.directory .browser {
+	background-color: rgba(0, 0, 0, 0.05);
+	padding-left: 1em;
+}
+
+.browser-item {
+	padding-left: 1em;
+	text-indent: -1em;
+}
+
+#sidebar {
+	float: left;
+	overflow: auto;
+	padding: 10px 1em;
+	width: 15em;
+}
+
+#sidebar h3 {
+	margin-top: .2em;
+}
+
+
+#viewer {
+	margin-left: 16em;
+	overflow: auto;
+}
+
+#viewer #loading {
+	font-style: italic;
+	margin-top: 8em;
+	text-align: center;
+}
+
+@media (max-width: 800px) {
+	body {
+		overflow: auto;
+	}
+
+	#sidebar {
+		float: none;
+		overflow: initial;
+		width: calc(100% - 2em);
+	}
+
+	#viewer {
+		clear: both;
+		margin-left: 0;
+		overflow: initial;
+	}
 }

@@ -48,6 +48,9 @@
 		<h3>Documentation browser</h3>
 		<hr/>
 		<?php include_once('contents.php'); ?>
+		<hr/>
+		The content of the language report is copyright &copy; 1987-2001, Hilt B.V., The Netherlands.
+		See the <a href="#CleanRep.2.2_2.htm;jump=_Toc311797972">copyright notice</a>.
 	</div><div id="viewer">
 		<?php include_once('src.php'); ?>
 	</div>

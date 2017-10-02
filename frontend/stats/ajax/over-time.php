@@ -25,7 +25,7 @@ if ($range < 24 * 3600) {
 	$timemod = 7 * 86400;
 } else {
 	// otherwise: monthly data
-	$group = 'year(`date`), month(`date`)';
+	$group = 'year(min(`date`)), month(min(`date`))';
 	$timestamp = "unix_timestamp(concat(year(`date`), '/', month(`date`), '/', '1'))";
 	$timemod = 'monthly';
 }

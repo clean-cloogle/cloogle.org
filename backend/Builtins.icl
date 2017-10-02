@@ -549,15 +549,21 @@ bs_synonym_abstract = (["synonym", ":=="],
 
 bs_update_array = (["&", "{*&*[\\e]*=*}"],
 	{ syntax_title         = "array update"
-	, syntax_code          = ["{ a & [i]=x, [j]=y, ... } // Updates a by setting index i to x, j to y, ..."]
-	, syntax_description   = "Updates an array by creating a copy and replacing one or more elements"
+	, syntax_code          =
+		[ "{ a & [i]=x, [j]=y, ... } // Updates a by setting index i to x, j to y, ..."
+		, "# a & [i]=x, [j]=y, ...   // Same as # a = {a & [i]=x, [j]=y, ...}" // See https://clean.cs.ru.nl/Clean_2.3
+		]
+	, syntax_description   = "Updates an array by creating a copy and replacing one or more elements."
 	, syntax_doc_locations = [CLR 6 "4.4.1" "_Toc311798032"]
 	, syntax_examples      = []
 	})
 bs_update_record = (["&", "{*&*=*}"],
 	{ syntax_title         = "record update"
-	, syntax_code          = ["{ r & f1=x, f2=y, ... } // Updates r by setting f1 to x, f2 to y, ..."]
-	, syntax_description   = "Updates a record by creating a copy and replacing one or more fields"
+	, syntax_code          =
+		[ "{ r & f1=x, f2=y, ... } // Updates r by setting f1 to x, f2 to y, ..."
+		, "# r & f1=x, f2=y, ...   // Same as # r = {r & f1=x, f2=y, ...}" // See https://clean.cs.ru.nl/Clean_2.3
+		]
+	, syntax_description   = "Updates a record by creating a copy and replacing one or more fields."
 	, syntax_doc_locations = [CLR 7 "5.2.1" "_Toc311798049"]
 	, syntax_examples      = []
 	})

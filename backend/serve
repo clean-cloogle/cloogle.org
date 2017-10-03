@@ -1,4 +1,5 @@
 #!/bin/sh
+cp /tags /frontend-tags
 mkdir -p ./cache/lt ./cache/brief
 while :
 do

@@ -8,3 +8,4 @@ node_modules/
 backend/clean-compiler/
 db/storage/
 cache
+frontend/tags

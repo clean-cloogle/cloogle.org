@@ -1,4 +1,6 @@
-FROM camilstaps/clean:2.4-itasks
+FROM camilstaps/clean:nightly
+
+RUN install_clean.sh bundle-complete 2017-10-03
 
 COPY . /usr/src/cloogle
 WORKDIR /usr/src/cloogle

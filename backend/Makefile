@@ -2,17 +2,14 @@ BIN:=CloogleServer builddb
 DB=types.json
 MAN:=builddb.1 # Others don't have --help/--version # $(addsuffix .1,$(BIN))
 CLM:=clm
-CLMFLAGS:=-h 250M -nr -nt -l -no-pie\
+CLMFLAGS:=-h 250M -nr -nt\
 	-I $$CLEAN_HOME/lib/ArgEnv\
 	-I $$CLEAN_HOME/lib/Generics\
 	-I $$CLEAN_HOME/lib/TCPIP\
+	-I $$CLEAN_HOME/lib/Platform\
+	-I $$CLEAN_HOME/lib/Platform/Deprecated/StdLib\
 	-I Cloogle\
 	-I Cloogle/libcloogle\
-	-I Cloogle/clean-platform/src/libraries/OS-Independent\
-	-I Cloogle/clean-platform/src/libraries/OS-Independent/Deprecated/StdLib\
-	-I Cloogle/clean-platform/src/libraries/OS-Linux-64\
-	-I Cloogle/clean-platform/src/libraries/OS-Linux\
-	-I Cloogle/clean-platform/src/libraries/OS-Posix\
 	-I Cloogle/CleanTypeUnifier\
 	-I Cloogle/CleanPrettyPrint\
 	-I Cloogle/compiler-patch\
@@ -20,6 +17,9 @@ CLMFLAGS:=-h 250M -nr -nt -l -no-pie\
 	-I clean-compiler/backend\
 	-I clean-compiler/main\
 	-I clean-compiler/main/Unix
+ifeq "$(shell expr `gcc -dumpversion | cut -f1 -d.` \>= 6)" "1"
+	CLMFLAGS+=-l -no-pie
+endif
 
 .PHONY: all clean distclean
 

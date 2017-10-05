@@ -94,8 +94,7 @@ Start w
 	#! db         = putFunctions builtin_functions db
 	#! db         = putClasses builtin_classes db
 	#! db         = putTypes builtin_types db
-	#! db         = putFunctions (flatten $ map constructor_functions builtin_types) db
-	#! db         = putFunctions (flatten $ map record_functions builtin_types) db
+	#! db         = putFunctions [(setName n loc, f)\\ (loc,t) <- builtin_types, (n, f) <- constructor_functions t ++ record_functions t] db
 	#! db         = putSyntaxElems builtin_syntax db
 	#! db         = syncDb 2 db
 	#! (ok1,w)    = fclose (printStats db stderr) w

@@ -4,6 +4,3 @@
 [submodule "frontend/clean.js"]
 	path = frontend/clean.js
 	url = https://github.com/clean-cloogle/clean.js
-[submodule "backend/cloogle-tags"]
-	path = backend/cloogle-tags
-	url = https://github.com/clean-cloogle/cloogle-tags

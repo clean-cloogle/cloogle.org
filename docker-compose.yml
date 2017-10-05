@@ -7,7 +7,6 @@ services:
     volumes:
       - "./cloogle.log:/usr/src/cloogle/cloogle.log"
       - "./cache:/usr/src/cloogle/cache"
-      - "./frontend/tags:/frontend-tags"
     restart: always
     cap_add:
       - IPC_LOCK

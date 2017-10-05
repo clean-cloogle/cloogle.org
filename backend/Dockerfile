@@ -10,7 +10,6 @@ RUN PACKAGES="make subversion ca-certificates gcc git curl patch" \
 	&& apt-get install -qq $PACKAGES --no-install-recommends \
 	&& make distclean \
 	&& make CloogleServer builddb\
-	&& make -C cloogle-tags\
 	&& rm -r /opt/clean/lib/*\
 	&& svn checkout https://svn.cs.ru.nl/repos/SoccerFun/src /opt/clean/lib/SoccerFun \
 	&& mv /opt/clean/lib/SoccerFun/*/*.[id]cl /opt/clean/lib/SoccerFun \
@@ -29,11 +28,9 @@ RUN PACKAGES="make subversion ca-certificates gcc git curl patch" \
 	&& curl -sSL ftp://ftp.cs.ru.nl/pub/Clean/builds/linux-x64/clean-bundle-complete-linux-x64-latest.tgz |\
 	 	tar -xz -C /opt/clean --strip-components=1\
 	&& make types.json\
-	&& cloogle-tags/cloogletags -i types.json -o /tags\
 # Cleanup
 	&& rm -rf \
 		Cloogle \
-		cloogle-tags \
 		Clean\ System\ Files \
 		clean-compiler \
 		*.dcl *.icl \

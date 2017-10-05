@@ -139,7 +139,7 @@ After installing
 following commands:
 
 ```bash
-touch cloogle.log frontend/tags
+touch cloogle.log
 sudo docker-compose up
 ```
 

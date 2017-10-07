@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS `log` (
 
 CREATE TABLE IF NOT EXISTS `useragent` (
 	`id` int(10) unsigned NOT NULL,
-	`useragent` text NOT NULL,
+	`useragent` text,
 	`ua_hash` varchar(32) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 

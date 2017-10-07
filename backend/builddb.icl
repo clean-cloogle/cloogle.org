@@ -107,7 +107,7 @@ where
 	loop _ [] db w = (db,w)
 	loop root [(lib,mod,modf):list] db w
 	#! w = snd (fclose (stderr <<< lib <<< ": " <<< mod <<< "\n") w)
-	#! (db, w) = indexModule root mod lib modf db w
+	#! (db, w) = indexModule False root mod lib modf db w
 	#! db = eval_all_nodes db
 	= loop root list db w
 

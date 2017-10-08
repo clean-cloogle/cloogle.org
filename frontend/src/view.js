@@ -58,7 +58,7 @@ window.onload = function() {
 
 	var browser = document.getElementsByClassName('browser')[0].browser({
 		newPath: function (path) {
-			this.state.mod = path.join('.');
+			this.state.mod = path.join('/');
 			this.state.line = null;
 			this.newState();
 		},
@@ -74,7 +74,7 @@ window.onload = function() {
 					this.state.line = hashelems[i].substring(5);
 			}
 
-			browser.openPath(this.state.mod.split('.'));
+			browser.openPath(this.state.mod.split('/'));
 		},
 		newState: function () {
 			var hash = this.state.mod;

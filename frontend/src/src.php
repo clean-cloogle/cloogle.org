@@ -6,7 +6,6 @@ if (empty($_REQUEST['mod'])) :
 else :
 
 $mod = preg_replace('/[^\\w\\/\\. -]/', '', $_REQUEST['mod']);
-$mod = str_replace('.', '/', $mod);
 
 $iclordcl = isset($_REQUEST['icl']) ? 'icl' : 'dcl';
 $hl_lines = isset($_REQUEST['line']) ? escapeshellarg($_REQUEST['line']) : '';

@@ -128,19 +128,19 @@ function makeParametersHTML(name, params) {
 }
 
 function makeLocationUrl(loc) {
-	var dclUrl = 'src#' + encodeURIComponent(loc[0] + '.' + loc[1]);
+	var dclUrl = 'src#' + encodeURIComponent(loc[0] + '/' + loc[2].replace('.dcl', ''));
 	var iclUrl = dclUrl + ';icl';
 
-	if (loc[2].length > 1)
-		dclUrl += ';line=' + loc[2][1];
 	if (loc[3].length > 1)
-		iclUrl += ';line=' + loc[3][1];
+		dclUrl += ';line=' + loc[3][1];
+	if (loc[4].length > 1)
+		iclUrl += ';line=' + loc[4][1];
 
 	return loc[1] +
 		' (<a target="_blank" href="' + dclUrl + '">dcl' +
-			(loc[2].length > 1 ? ':' + loc[2][1] : '') + '</a>; ' +
+			(loc[3].length > 1 ? ':' + loc[3][1] : '') + '</a>; ' +
 		'<a target="_blank" href="' + iclUrl + '">icl' +
-			(loc[3].length > 1 ? ':' + loc[3][1] : '') + '</a>) ' +
+			(loc[4].length > 1 ? ':' + loc[4][1] : '') + '</a>) ' +
 		'(' + loc[0] + ')';
 }
 
@@ -332,7 +332,7 @@ function getResults(str, libs, include_builtins, include_core, include_apps, pag
 	}
 
 	var makeGenericResultHTML = function (basic, meta, hidden, code) {
-		var dclUrl = 'src#' + encodeURIComponent(basic['library'] + '.' + basic['modul']);
+		var dclUrl = 'src#' + encodeURIComponent(basic['library'] + '/' + basic['filename'].replace('.dcl', ''));
 		var iclUrl = dclUrl + ';icl';
 		var dclLine = '';
 		var iclLine = '';

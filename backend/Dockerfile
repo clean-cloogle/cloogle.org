@@ -28,7 +28,6 @@ RUN PACKAGES="make subversion ca-certificates gcc git curl patch" \
 	&& curl -sSL ftp://ftp.cs.ru.nl/pub/Clean/builds/linux-x64/clean-bundle-complete-linux-x64-latest.tgz |\
 	 	tar -xz -C /opt/clean --strip-components=1\
 	&& make types.json\
-# Cleanup
 	&& rm -rf \
 		Cloogle \
 		Clean\ System\ Files \

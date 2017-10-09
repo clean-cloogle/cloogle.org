@@ -1,11 +1,10 @@
 FROM camilstaps/clean:nightly
 
-RUN install_clean.sh bundle-complete 2017-10-03
-
 COPY . /usr/src/cloogle
 WORKDIR /usr/src/cloogle
 
-RUN PACKAGES="make subversion ca-certificates gcc git curl patch" \
+RUN install_clean.sh bundle-complete 2017-10-03 \
+	&& PACKAGES="make subversion ca-certificates gcc git curl patch" \
 	&& apt-get update -qq\
 	&& apt-get install -qq $PACKAGES --no-install-recommends \
 	&& make distclean \
@@ -38,7 +37,8 @@ RUN PACKAGES="make subversion ca-certificates gcc git curl patch" \
 	&& rm -rf /opt/clean \
 	&& apt-get remove --purge -qq $PACKAGES \
 	&& apt-get autoremove -qq \
-	&& rm -rf /var/lib/apt/lists
+	&& rm -rf /var/lib/apt/lists \
+	&& uninstall_clean.sh
 
 EXPOSE 31215
 

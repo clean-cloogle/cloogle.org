@@ -25,14 +25,15 @@ $oss = [
 	"`useragent` LIKE 'cloogle-cli'",
 	"`useragent` LIKE 'CloogleMail'",
 	"`useragent` LIKE 'cloogle-irc'",
-	"`useragent` NOT LIKE '%Linux%' " .
+	"(`useragent` NOT LIKE '%Linux%' " .
 		"AND `useragent` NOT LIKE '%Macintosh%' " .
 		"AND `useragent` NOT LIKE '%Windows%' " .
 		"AND `useragent` NOT LIKE 'CloogleBot' " .
 		"AND `useragent` NOT LIKE 'vim-clean' " .
 		"AND `useragent` NOT LIKE 'cloogle-cli' " .
 		"AND `useragent` NOT LIKE 'CloogleMail'" .
-		"AND `useragent` NOT LIKE 'cloogle-irc'"
+		"AND `useragent` NOT LIKE 'cloogle-irc')" .
+		"OR `useragent` IS NULL"
 ];
 
 $results = [

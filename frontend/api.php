@@ -117,7 +117,7 @@ function log_request($code) {
 	$stmt->bind_param('sisii',
 		$ip,
 		$ua_id,
-		$_GET['str'],
+		substr($_GET['str'], 0, 199),
 		$code,
 		$time);
 	$stmt->execute();
@@ -142,6 +142,8 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET'){
 	respond(E_ILLEGALREQUEST, 'GET variable "str" must be set');
 } else if (defined('CLOOGLE_KEEP_STATISTICS') && dos_protect()) {
 	respond(E_DOSPROTECT, "Yes, cloogle is great, but you don't need it so badly.");
+} else if (strlen($_GET['str']) >= 200) {
+	respond(E_QUERYTOOLONG, 'Query too long');
 } else {
 	$str = array_map('trim', explode('::', $_GET['str']));
 	$name = trim($str[0]);

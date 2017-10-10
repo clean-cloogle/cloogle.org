@@ -58,6 +58,7 @@ fields:
 	* `152`: no input (GET variable `str` should be set to the search string)
 	* `153`: the Clean backend timed out
 	* `154`: you have sent too many requests; try again later (DoS protection)
+	* `155`: the query was too long
 
 - `msg`
 

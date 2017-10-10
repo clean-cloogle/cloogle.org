@@ -7,7 +7,7 @@ $sql =
 			useragent,
 			(SELECT count(*) FROM log
 				WHERE useragent_id=useragent.id AND
-				`responsecode` <> " . E_DOSPROTECT . " AND
+				" . SQL_NOT_SILLYUSER . " AND
 				`date` BETWEEN timestamp('$startTime') AND timestamp('$endTime')) as cnt,
 			(CASE
 				WHEN useragent LIKE '%Linux%' THEN 'Linux'

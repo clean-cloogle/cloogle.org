@@ -9,7 +9,7 @@ $sql =
 		sum(case when `query` LIKE 'class %' then 1 else null end)
 	FROM `log`
 	WHERE
-		`responsecode` <> " . E_DOSPROTECT . " AND
+		" . SQL_NOT_SILLYUSER . " AND
 		`date` BETWEEN timestamp('$startTime') AND timestamp('$endTime')";
 
 $stmt = $db->stmt_init();

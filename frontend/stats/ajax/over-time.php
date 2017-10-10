@@ -40,7 +40,7 @@ $sql =
 		avg(responsetime)
 	FROM `log`
 	WHERE
-		`responsecode` <> " . E_DOSPROTECT . " AND
+		" . SQL_NOT_SILLYUSER . " AND
 		`date` BETWEEN timestamp('$startTime') AND timestamp('$endTime')
 	GROUP BY $group
 	ORDER BY min(`date`) ASC";

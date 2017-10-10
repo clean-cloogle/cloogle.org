@@ -6,7 +6,7 @@ $sqlavgreq =
 	(SELECT COUNT(*) as number
 		FROM `log`
 		WHERE
-			`responsecode` <> " . E_DOSPROTECT . " AND
+			" . SQL_NOT_SILLYUSER . " AND
 			`date` BETWEEN timestamp('$startTime') AND timestamp('$endTime')
 		GROUP BY DATE(`date`)) counts";
 $sqlmaxreq =
@@ -14,7 +14,7 @@ $sqlmaxreq =
 	(SELECT DATE(`date`) as thedate, COUNT(*) as number
 		FROM `log`
 		WHERE
-			`responsecode` <> " . E_DOSPROTECT . " AND
+			" . SQL_NOT_SILLYUSER . " AND
 			`date` BETWEEN timestamp('$startTime') AND timestamp('$endTime')
 		GROUP BY DATE(`date`)
 		ORDER BY number DESC, thedate DESC
@@ -24,7 +24,7 @@ $sqlavgvis =
 	(SELECT DATE(`date`) as thedate, COUNT(DISTINCT ip, useragent_id) as number
 		FROM `log`
 		WHERE
-			`responsecode` <> " . E_DOSPROTECT . " AND
+			" . SQL_NOT_SILLYUSER . " AND
 			`date` BETWEEN timestamp('$startTime') AND timestamp('$endTime')
 		GROUP BY DATE(`date`)) counts;";
 $sqlmaxvis =
@@ -32,7 +32,7 @@ $sqlmaxvis =
 	(SELECT DATE(`date`) as thedate, COUNT(DISTINCT ip, useragent_id) as number
 		FROM `log`
 		WHERE
-			`responsecode` <> " . E_DOSPROTECT . " AND
+			" . SQL_NOT_SILLYUSER . " AND
 			`date` BETWEEN timestamp('$startTime') AND timestamp('$endTime')
 		GROUP BY DATE(`date`)
 		ORDER BY number DESC, thedate DESC

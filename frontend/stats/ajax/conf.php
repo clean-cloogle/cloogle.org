@@ -10,6 +10,8 @@ $db = new mysqli(
 if (mysqli_connect_errno())
 	return;
 
+define('SQL_NOT_SILLYUSER', '`responsecode` not in (' . E_DOSPROTECT . ', ' . E_QUERYTOOLONG . ')');
+
 $db->query("SET time_zone = '+00:00'");
 date_default_timezone_set('UTC');
 

@@ -662,7 +662,7 @@ function formsubmit() {
 		sresults.innerHTML = '';
 
 		if (q.indexOf('::') == -1 && q.indexOf('->') != -1) {
-			var sug = ':: ' + q.replace('->', ' -> ');
+			var sug = ':: ' + q.replace(/->/g, ' -> ').replace(/  /g, ' ');
 			sresults.innerHTML = '<p>' +
 				'Searching for <code>' + highlightFunction(q) + '</code>. ' +
 				'Did you mean to search for ' +

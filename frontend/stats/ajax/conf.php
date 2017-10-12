@@ -41,3 +41,15 @@ if (!$end || $end > time())
 
 $startTime = gmstrftime('%Y-%m-%d %H:%M:%S', $start);
 $endTime = gmstrftime('%Y-%m-%d %H:%M:%S', $end);
+
+$user_agents =
+	[ 'Linux'        => ['pattern' => '%Linux%']
+	, 'Macintosh'    => ['pattern' => '%Macintosh%']
+	, 'Windows'      => ['pattern' => '%Windows%']
+	, 'CloogleBot'   => ['pattern' => 'CloogleBot',   'url' => 'https://telegram.me/CloogleBot']
+	, 'vim-clean'    => ['pattern' => 'vim-clean',    'url' => 'https://github.com/camilstaps/vim-clean']
+	, 'cloogle-cli'  => ['pattern' => 'cloogle-cli',  'url' => 'https://github.com/clean-cloogle/cloogle-cli']
+	, 'CloogleMail'  => ['pattern' => 'CloogleMail',  'url' => 'mailto:query@cloogle.org']
+	, 'cloogle-irc'  => ['pattern' => 'cloogle-irc',  'url' => 'https://github.com/clean-cloogle/clean-irc']
+	, 'clean-vscode' => ['pattern' => 'clean-vscode', 'url' => 'https://github.com/W95Psp/CleanForVSCode']
+	];

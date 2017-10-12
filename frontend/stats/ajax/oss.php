@@ -1,6 +1,11 @@
 <?php
 require_once('./conf.php');
 
+$uacase = 'CASE';
+foreach ($user_agents as $name => $ua)
+	$uacase .= " WHEN `useragent` LIKE '" . $ua['pattern'] . "' THEN '" . $name . "'";
+$uacase .= " ELSE 'Other' END";
+
 $sql =
 	"SELECT type, sum(cnt) as sumcnt FROM (
 		select
@@ -9,17 +14,7 @@ $sql =
 				WHERE useragent_id=useragent.id AND
 				" . SQL_NOT_SILLYUSER . " AND
 				`date` BETWEEN timestamp('$startTime') AND timestamp('$endTime')) as cnt,
-			(CASE
-				WHEN useragent LIKE '%Linux%' THEN 'Linux'
-				WHEN useragent LIKE '%Macintosh%' THEN 'Macintosh'
-				WHEN useragent LIKE '%Windows%' THEN 'Windows'
-				WHEN useragent LIKE 'CloogleBot' THEN 'CloogleBot'
-				WHEN useragent LIKE 'vim-clean' THEN 'vim-clean'
-				WHEN useragent LIKE 'cloogle-cli' THEN 'cloogle-cli'
-				WHEN useragent LIKE 'CloogleMail' THEN 'CloogleMail'
-				WHEN useragent LIKE 'cloogle-irc' THEN 'cloogle-irc'
-				ELSE 'Other'
-			END) as type
+			($uacase) as type
 		FROM useragent
 		ORDER BY cnt DESC
 	) counts

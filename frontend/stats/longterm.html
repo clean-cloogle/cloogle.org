@@ -185,8 +185,9 @@
 			per_oss.showLoading('Loading data...');
 			$.getJSON('ajax/per_oss.php' + query,
 				function(data) {
-					for (var i in data)
-						per_oss.series[i].setData(data[i].data);
+					per_oss.xAxis[0].update({categories: data.oss});
+					for (var i in data.data)
+						per_oss.series[i].setData(data.data[i].data);
 					per_oss.hideLoading();
 				}
 			);
@@ -338,17 +339,18 @@
 					legend: { enabled: false },
 					title: { text: 'Per operating system' },
 					xAxis: {
-						categories:
-							[ 'Linux'
-							, 'Macintosh'
-							, 'Windows'
-							, 'CloogleBot'
-							, 'vim-clean'
-							, 'cloogle-cli'
-							, 'CloogleMail'
-							, 'cloogle-irc'
-							, 'Other'
-							]
+						categories: data.oss,
+						labels: {
+							formatter: function() {
+								console.log(this.value);
+								var parts = this.value.split(/^([^:]+):(.+)$/);
+								if (parts.length > 1)
+									return '<a target="_blank" href="' + parts[2] + '">' + parts[1] + '</a>';
+								else
+									return this.value;
+							},
+							useHTML: true
+						}
 					},
 					yAxis: {
 						title: { enabled: false },
@@ -359,7 +361,6 @@
 						borderColor: '#000000',
 						followPointer: true,
 						formatter: function () {
-							console.log(this);
 							var chart = this.series.chart;
 							var stack = this.series.userOptions.stack;
 							var pointIndex = this.point.index;
@@ -376,7 +377,7 @@
 							return label;
 						}
 					},
-					series: data
+					series: data.data
 				});
 			});
 

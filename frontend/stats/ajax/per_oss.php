@@ -16,25 +16,18 @@ $sql =
 		`date` BETWEEN timestamp('$startTime') AND timestamp('$endTime')
 		AND ";
 
-$oss = [
-	"`useragent` LIKE '%Linux%'",
-	"`useragent` LIKE '%Macintosh%'",
-	"`useragent` LIKE '%Windows%'",
-	"`useragent` LIKE 'CloogleBot'",
-	"`useragent` LIKE 'vim-clean'",
-	"`useragent` LIKE 'cloogle-cli'",
-	"`useragent` LIKE 'CloogleMail'",
-	"`useragent` LIKE 'cloogle-irc'",
-	"(`useragent` NOT LIKE '%Linux%' " .
-		"AND `useragent` NOT LIKE '%Macintosh%' " .
-		"AND `useragent` NOT LIKE '%Windows%' " .
-		"AND `useragent` NOT LIKE 'CloogleBot' " .
-		"AND `useragent` NOT LIKE 'vim-clean' " .
-		"AND `useragent` NOT LIKE 'cloogle-cli' " .
-		"AND `useragent` NOT LIKE 'CloogleMail'" .
-		"AND `useragent` NOT LIKE 'cloogle-irc')" .
-		"OR `useragent` IS NULL"
-];
+$oss = [];
+$oss_results = [];
+$uas = [];
+foreach ($user_agents as $k => $ua) {
+	$oss[] = "`useragent` LIKE '" . $ua['pattern'] . "'";
+	$oss_results[] = empty($ua['url']) ? $k : $k . ':' . $ua['url'];
+	$uas[] = $ua['pattern'];
+}
+$oss[] = "(`useragent` NOT LIKE '" .
+		implode("' AND `useragent` NOT LIKE '", $uas) .
+		"') OR `useragent` IS NULL";
+$oss_results[] = 'Other';
 
 $results = [
 	['name' => 'Success', 'data' => [], 'stack' => 'response'],
@@ -72,5 +65,7 @@ foreach ($oss as $os) {
 	$results[6]['data'][] = $class;
 }
 
+$response = ['data' => $results, 'oss' => $oss_results];
+
 header('Content-Type: text/javascript');
-echo "$callback(" . json_encode($results) . ");";
+echo "$callback(" . json_encode($response) . ");";

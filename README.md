@@ -18,7 +18,7 @@ Use any of the available frontends:
 	implementation).
 
 For support and/or contact please join us at the `#cloogle` irc channel on
-[freenode](https://freenode.net)
+[freenode](https://freenode.net).
 
 ---
 

@@ -50,7 +50,7 @@ instance zero CLI where
 	                   , ("ObjectIO",         \s me -> {me & me_is_core=not (startsWith "Std" s)})
 	                   , ("Platform",         const id)
 	                   , ("Sapl",             const id)
-	                   , ("SoccerFun",        const id)
+	                   , ("SoccerFun",        const \me -> {me & me_is_app=True})
 	                   , ("StdEnv",           const id)
 	                   , ("StdLib",           const id)
 	                   , ("TCPIP",            const id)

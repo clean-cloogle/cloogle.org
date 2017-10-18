@@ -233,8 +233,8 @@ where
 	makeLogEntry :: LogMessage` LogMemory -> LogEntry
 	makeLogEntry (Sent response ck) mem =
 		{ ip            = toString mem.mem_ip
-		, time_start    = (toString mem.mem_time_start, toInt $ mkTime mem.mem_time_start)
-		, time_end      = (toString mem.mem_time_end, toInt $ mkTime mem.mem_time_end)
+		, time_start    = (toString mem.mem_time_start, toInt $ timeGm mem.mem_time_start)
+		, time_end      = (toString mem.mem_time_end, toInt $ timeGm mem.mem_time_end)
 		, request       = mem.mem_request
 		, cachekey      = ck
 		, response_code = response.return

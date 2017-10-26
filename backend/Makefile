@@ -44,7 +44,7 @@ $(DB): builddb
 	./$< -s 10M -h 1000M > $(DB)
 
 clean:
-	$(RM) -r 'Clean System Files' $(BIN) $(MAN) $(DB)
+	$(RM) -r **/Clean\ System\ Files $(BIN) $(MAN) $(DB)
 
 distclean: clean
 	$(RM) -r clean-compiler

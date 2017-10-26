@@ -37,7 +37,7 @@ man: $(MAN)
 %.1: %
 	help2man -N ./$< > $@
 
-$(BIN): clean-compiler .FORCE
+$(BIN): clean-compiler
 	$(CLM) $(CLMFLAGS) $@ -o $@
 
 $(DB): builddb
@@ -48,5 +48,3 @@ clean:
 
 distclean: clean
 	$(RM) -r clean-compiler
-
-.FORCE:

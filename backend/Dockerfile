@@ -3,11 +3,10 @@ FROM camilstaps/clean:nightly
 COPY . /usr/src/cloogle
 WORKDIR /usr/src/cloogle
 
-RUN install_clean.sh bundle-complete 2017-10-26 \
+RUN install_clean.sh bundle-complete \
 	&& PACKAGES="make subversion ca-certificates gcc git curl patch" \
 	&& apt-get update -qq\
 	&& apt-get install -qq $PACKAGES --no-install-recommends \
-	&& (cd /opt/clean/lib/Platform; patch -p1 < /usr/src/cloogle/platform.patch) \
 	&& make distclean \
 	&& make CloogleServer builddb\
 	&& rm -r /opt/clean/lib/*\

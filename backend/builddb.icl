@@ -99,6 +99,9 @@ Start w
 	#! (ok1,w)    = fclose (printStats db stderr) w
 	#! f          = saveDb db f
 	#! (ok2,w)    = fclose f w
+	#! (_,dbg,w)  = fopen "typetree.dot" FWriteText w
+	#! dbg        = writeTypeTree db dbg
+	#! (_,w)      = fclose dbg w
 	= (ok1 && ok2,w)
 | not ok = abort "Couldn't close stdio"
 = w
@@ -135,19 +138,24 @@ where
 		<<< "+-------------------+-------+\n"
 		<<< "| Modules           | " <<< modules <<< " |\n"
 		<<< "| Functions         | " <<< funs    <<< " |\n"
-		<<< "| Types             | " <<< types   <<< " |\n"
+		<<< "| Unique types      | " <<< unqfuns <<< " |\n"
+		<<< "| Type tree depth   | " <<< treedep <<< " |\n"
+		<<< "| Typedefs          | " <<< types   <<< " |\n"
 		<<< "| Classes           | " <<< classes <<< " |\n"
 		<<< "| Derivations       | " <<< derives <<< " |\n"
 		<<< "| Syntax constructs | " <<< syntaxs <<< " |\n"
 		<<< "+-------------------+-------+\n"
 	where
-		[modules,funs,types,classes,derives,syntaxs:_]
+		[modules,funs,unqfuns,treedep,types,classes,derives,syntaxs:_]
 			= map (pad 5)
 				[ moduleCount db
 				, functionCount db
+				, num
+				, depth
 				, typeCount db
 				, classCount db
 				, deriveCount db
 				, syntaxCount db
 				]
+		(num,depth) = typeTreeStats db
 		pad n i = {' ' \\ _ <- [0..n-size (toString i)-1]} +++ toString i

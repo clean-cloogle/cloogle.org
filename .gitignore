@@ -3,6 +3,7 @@ builddb
 CloogleServer
 *.1
 types.json
+typetree.dot
 cloogle.log
 node_modules/
 backend/clean-compiler/

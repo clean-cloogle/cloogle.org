@@ -140,13 +140,14 @@ where
 		<<< "| Functions         | " <<< funs    <<< " |\n"
 		<<< "| Unique types      | " <<< unqfuns <<< " |\n"
 		<<< "| Type tree depth   | " <<< treedep <<< " |\n"
-		<<< "| Typedefs          | " <<< types   <<< " |\n"
+		<<< "| Type definitions  | " <<< types   <<< " |\n"
 		<<< "| Classes           | " <<< classes <<< " |\n"
+		<<< "| Instances         | " <<< insts   <<< " |\n"
 		<<< "| Derivations       | " <<< derives <<< " |\n"
 		<<< "| Syntax constructs | " <<< syntaxs <<< " |\n"
 		<<< "+-------------------+-------+\n"
 	where
-		[modules,funs,unqfuns,treedep,types,classes,derives,syntaxs:_]
+		[modules,funs,unqfuns,treedep,types,classes,insts,derives,syntaxs:_]
 			= map (pad 5)
 				[ moduleCount db
 				, functionCount db
@@ -154,6 +155,7 @@ where
 				, depth
 				, typeCount db
 				, classCount db
+				, instanceCount db
 				, deriveCount db
 				, syntaxCount db
 				]

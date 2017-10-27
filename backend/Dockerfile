@@ -3,7 +3,7 @@ FROM camilstaps/clean:nightly
 COPY . /usr/src/cloogle
 WORKDIR /usr/src/cloogle
 
-RUN install_clean.sh bundle-complete \
+RUN install_clean.sh bundle-complete 2017-10-27 \
 	&& PACKAGES="make subversion ca-certificates gcc git curl patch" \
 	&& apt-get update -qq\
 	&& apt-get install -qq $PACKAGES --no-install-recommends \

@@ -11,11 +11,7 @@ CLMFLAGS:=-h 250M -nr -nt -nortsopts\
 	-I Cloogle\
 	-I Cloogle/libcloogle\
 	-I Cloogle/CleanTypeUnifier\
-	-I Cloogle/CleanPrettyPrint\
-	-I clean-compiler/frontend\
-	-I clean-compiler/backend\
-	-I clean-compiler/main\
-	-I clean-compiler/main/Unix
+	-I Cloogle/CleanPrettyPrint
 ifeq "$(shell expr `gcc -dumpversion | cut -f1 -d.` \>= 6)" "1"
 	CLMFLAGS+=-l -no-pie
 endif
@@ -37,11 +33,19 @@ man: $(MAN)
 %.1: %
 	help2man -N ./$< > $@
 
-$(BIN): clean-compiler
+$(BIN):
 	$(CLM) $(CLMFLAGS) $@ -o $@
 
+builddb: clean-compiler
+	$(CLM) $(CLMFLAGS) -s 10M -h 1000M \
+		-I clean-compiler/frontend\
+		-I clean-compiler/backend\
+		-I clean-compiler/main\
+		-I clean-compiler/main/Unix\
+		$@ -o $@
+
 $(DB): builddb
-	./$< -s 10M -h 1000M > $(DB)
+	./$< > $(DB)
 
 clean:
 	$(RM) -r **/Clean\ System\ Files $(BIN) $(MAN) $(DB)

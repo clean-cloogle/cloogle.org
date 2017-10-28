@@ -16,7 +16,7 @@ import Control.Monad
 import Data.Error
 import qualified Data.Foldable as Foldable
 from Data.Foldable import class Foldable, instance Foldable Maybe
-from Data.Func import $
+from Data.Func import $, hyperstrict
 import Data.Functor
 import Data.List
 import Data.Tuple
@@ -115,7 +115,7 @@ Start w
 # w = disableSwap w
 #! (_,f,w) = fopen "types.json" FReadText w
 #! (db,f) = openDb f
-#! db = eval_all_nodes db
+#! db = hyperstrict db
 #! w = if opts.reload_cache (reloadCache db) id w
 #! (_,w) = fclose f w
 = serve
@@ -140,14 +140,6 @@ where
 	# (io,w) = stdio w
 	# io = io <<< "Could not lock memory (" <<< err <<< "); process may get swapped out\n"
 	= snd $ fclose io w
-
-	eval_all_nodes :: !.a -> .a // From GraphCopy
-	eval_all_nodes g = code {
-		push_a 0
-		.d 1 0
-		jsr	_eval_to_nf
-		.o 0 0
-	}
 
 	handle :: !CloogleDB !(Maybe Request) !*World -> *(!Response, CacheKey, !*World)
 	handle db Nothing w = (err InvalidInput "Couldn't parse input", "", w)

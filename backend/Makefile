@@ -21,7 +21,7 @@ endif
 all: $(BIN) $(DB)
 
 clean-compiler:
-	svn checkout -r 2796 https://svn.cs.ru.nl/repos/clean-compiler/branches/itask/ clean-compiler
+	svn export -r 2838 https://svn.cs.ru.nl/repos/clean-compiler/branches/itask/ clean-compiler
 	cd clean-compiler; for f in ../Cloogle/compiler-patch/*.patch; do patch -p1 < "$$f"; done
 	mkdir -p clean-compiler/main/Unix/Clean\ System\ Files
 	$(MAKE) -j -C clean-compiler/main/Unix

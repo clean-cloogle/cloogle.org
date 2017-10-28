@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-CACHE_SIZE=1000
+CACHE_SIZE=2000
 INTERVAL=600
 CACHE_DIR=/var/cache
 

@@ -1,8 +1,9 @@
 #!/bin/sh
 mkdir -p ./cache/lt ./cache/brief
+
+RELOAD="--reload-cache"
 while :
 do
-	stdbuf -i0 -o0 -e0 \
-	./CloogleServer 31215 \
-		| tee -a cloogle.log
+	stdbuf -i0 -o0 -e0 ./CloogleServer -p 31215 $RELOAD | tee -a cloogle.log
+	RELOAD=""
 done

@@ -3,8 +3,8 @@ module CloogleServer
 import StdArray
 import StdBool
 import StdFile
-from StdFunc import o, seq
-from StdMisc import abort, undef
+from StdFunc import id, o, seq
+from StdMisc import undef
 import StdOrdList
 import StdOverloaded
 import StdTuple
@@ -13,6 +13,7 @@ from TCPIP import :: IPAddress, :: Port, instance toString IPAddress
 
 import Control.Applicative
 import Control.Monad
+import Data.Error
 import qualified Data.Foldable as Foldable
 from Data.Foldable import class Foldable, instance Foldable Maybe
 from Data.Func import $
@@ -22,7 +23,7 @@ import Data.Tuple
 import System._Posix
 import System.CommandLine
 import System.Time
-from Text import class Text(concat), instance Text String
+from Text import class Text(concat), instance Text String, <+
 import Text.JSON
 
 import Cloogle
@@ -51,6 +52,7 @@ CACHE_PREFETCH :== 5
 	  }
 
 derive JSONEncode Kind, Type, RequestCacheKey, TypeRestriction
+derive JSONDecode Kind, Type, RequestCacheKey, TypeRestriction
 instance toString RequestCacheKey
 where toString rck = toString $ toJSON rck
 
@@ -67,29 +69,67 @@ toRequestCacheKey r =
 	, c_include_apps     = fromJust (r.include_apps <|> Just DEFAULT_INCLUDE_APPS)
 	, c_page             = fromJust (r.page <|> Just 0)
 	}
+fromRequestCacheKey :: RequestCacheKey -> Request
+fromRequestCacheKey k =
+	{ unify            = concat <$> print False <$> k.c_unify
+	, name             = k.c_name
+	, className        = k.c_className
+	, typeName         = k.c_typeName
+	, modules          = k.c_modules
+	, libraries        = k.c_libraries
+	, include_builtins = Just k.c_include_builtins
+	, include_core     = Just k.c_include_core
+	, include_apps     = Just k.c_include_apps
+	, page             = Just k.c_page
+	}
+
+:: Options =
+	{ port         :: Int
+	, help         :: Bool
+	, reload_cache :: Bool
+	}
+
+instance zero Options where zero = {port=31215, help=False, reload_cache=False}
+
+parseOptions :: Options [String] -> MaybeErrorString Options
+parseOptions opt [] = Ok opt
+parseOptions opt ["-p":p:rest] = case (toInt p, p) of
+	(0, "0") -> Error "Cannot use port 0"
+	(0, p)   -> Error $ "'" <+ p <+ "' is not an integer"
+	(p, _)   -> parseOptions {Options | opt & port=p} rest
+parseOptions opt ["-h":rest] = parseOptions {opt & help=True} rest
+parseOptions opt ["--help":rest] = parseOptions {opt & help=True} rest
+parseOptions opt ["--reload-cache":rest] = parseOptions {opt & reload_cache=True} rest
+parseOptions opt [arg:_] = Error $ "Unknown option '" <+ arg <+ "'"
 
 Start w
 # (cmdline, w) = getCommandLine w
-| length cmdline <> 2
-	= help w
-# [_,port:_] = cmdline
+# opts = parseOptions zero (tl cmdline)
+| isError opts
+	# (io,w) = stdio w
+	# io = io <<< fromError opts <<< "\n"
+	# (_,w) = fclose io w
+	= w
+# opts = fromOk opts
+| opts.help = help (hd cmdline) w
 # w = disableSwap w
 #! (_,f,w) = fopen "types.json" FReadText w
 #! (db,f) = openDb f
 #! db = eval_all_nodes db
+#! w = if opts.reload_cache (reloadCache db) id w
 #! (_,w) = fclose f w
 = serve
 	{ handler           = handle db
 	, logger            = Just log
-	, port              = toInt port
+	, port              = opts.Options.port
 	, connect_timeout   = Just 3600000 // 1h
 	, keepalive_timeout = Just 5000    // 5s
 	} w
 where
-	help :: *World -> *World
-	help w
+	help :: String *World -> *World
+	help pgm w
 	# (io, w) = stdio w
-	# io = io <<< "Usage: ./CloogleServer <port>\n"
+	# io = io <<< "Usage: " <<< pgm <<< " [--reload-cache] [-p <port>] [-h] [--help]\n"
 	= snd $ fclose io w
 
 	disableSwap :: *World -> *World
@@ -178,6 +218,16 @@ where
 			        (request, search request db)
 			        \\ is` <- permutations is | is` <> is]
 	suggs _ _ _ = Nothing
+
+	reloadCache :: !CloogleDB !*World -> *World
+	reloadCache db w
+	# (keys,w) = allCacheKeys LongTerm w
+	# w = search (map fromRequestCacheKey keys) w
+	= w
+	where
+		search :: ![Request] !*World -> *World
+		search [] w = w
+		search [r:rs] w = search rs $ thd3 $ handle db (Just r) w
 
 :: LogMemory =
 	{ mem_ip         :: IPAddress

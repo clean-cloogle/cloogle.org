@@ -120,7 +120,7 @@ String.prototype.makeParagraphs = function() {
 		.split('\n\n').join('<br/>');
 }
 
-function makeParametersHTML(name, params) {
+function makeDocFieldsHTML(name, params) {
 	if (params.length == 1)
 		return name + ': ' + params[0].makeParagraphs();
 	else
@@ -399,11 +399,11 @@ function getResults(str, libs, include_builtins, include_core, include_apps, pag
 		switch (kind) {
 			case 'FunctionResult':
 				if ('param_doc' in extra && extra['param_doc'].length > 0)
-					hidden.push([makeParametersHTML('Parameter', extra['param_doc'])]);
+					hidden.push([makeDocFieldsHTML('Parameter', extra['param_doc'])]);
 				if ('generic_var_doc' in extra && extra['generic_var_doc'].length > 0)
-					hidden.push([makeParametersHTML('Generic type variable', extra['generic_var_doc'])]);
+					hidden.push([makeDocFieldsHTML('Generic type variable', extra['generic_var_doc'])]);
 				if ('result_doc' in extra)
-					hidden.push(['Result: ' + extra['result_doc']]);
+					hidden.push([makeDocFieldsHTML('Result', extra['result_doc'])]);
 
 				if ('cls' in extra)
 					meta.push('Class: <code>' +

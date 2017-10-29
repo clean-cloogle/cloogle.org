@@ -211,15 +211,11 @@ where
 			        \\ is` <- permutations is | is` <> is]
 	suggs _ _ _ = Nothing
 
-	reloadCache :: !CloogleDB !*World -> *World
-	reloadCache db w
-	# (keys,w) = allCacheKeys LongTerm w
-	# w = search (map fromRequestCacheKey keys) w
-	= w
+	reloadCache :: !CloogleDB -> *World -> *World
+	reloadCache db = uncurry (flip (foldr search)) o allCacheKeys LongTerm
 	where
-		search :: ![Request] !*World -> *World
-		search [] w = w
-		search [r:rs] w = search rs $ thd3 $ handle db (Just r) w
+		search :: !RequestCacheKey -> *World -> *World
+		search r = thd3 o handle db (Just $ fromRequestCacheKey r) o removeFromCache LongTerm r
 
 :: LogMemory =
 	{ mem_ip         :: IPAddress

@@ -212,7 +212,7 @@ where
 	suggs _ _ _ = Nothing
 
 	reloadCache :: !CloogleDB -> *World -> *World
-	reloadCache db = uncurry (flip (foldr search)) o allCacheKeys LongTerm
+	reloadCache db = uncurry (flip (foldl (flip search))) o allCacheKeys LongTerm
 	where
 		search :: !RequestCacheKey -> *World -> *World
 		search r = thd3 o handle db (Just $ fromRequestCacheKey r) o removeFromCache LongTerm r

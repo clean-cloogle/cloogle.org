@@ -221,8 +221,8 @@ where
 	doInBackground f w
 	#! (pid,w) = fork w
 	| pid  < 0 = abort "fork failed\n"
-	| pid  > 0 = w   // Parent: return directly
-	| pid == 0 = f w // Child: do function
+	| pid  > 0 = w // Parent: return directly
+	| pid == 0 = snd $ exit 0 $ f w // Child: do function
 
 :: LogMemory =
 	{ mem_ip         :: IPAddress

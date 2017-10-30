@@ -2,7 +2,9 @@ implementation module Cache
 
 import StdFile
 import StdFunc
+import StdList
 import StdOrdList
+import StdString
 import StdTuple
 
 import Control.Applicative
@@ -11,6 +13,7 @@ import Crypto.Hash.MD5
 import Data.Error
 from Data.Func import $, on
 import Data.Functor
+import Data.Maybe
 import Data.Tuple
 import System.Directory
 import System.File

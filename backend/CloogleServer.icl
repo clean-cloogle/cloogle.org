@@ -7,6 +7,7 @@ from StdFunc import id, o, seq
 import StdMisc
 import StdOrdList
 import StdOverloaded
+import StdString
 import StdTuple
 
 from TCPIP import :: IPAddress, :: Port, instance toString IPAddress
@@ -19,6 +20,7 @@ from Data.Foldable import class Foldable, instance Foldable Maybe
 from Data.Func import $, hyperstrict
 import Data.Functor
 import Data.List
+import Data.Maybe
 import Data.Tuple
 import System._Posix
 import System.CommandLine

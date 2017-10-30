@@ -3,12 +3,11 @@ FROM camilstaps/clean:nightly
 COPY . /usr/src/cloogle
 WORKDIR /usr/src/cloogle
 
-RUN install_clean.sh bundle-complete 2017-10-27 \
+RUN install_clean.sh bundle-complete 2017-10-31 \
 	&& PACKAGES="make subversion ca-certificates gcc git curl patch" \
 	&& apt-get update -qq\
 	&& apt-get install -qq $PACKAGES --no-install-recommends \
-	&& make distclean \
-	&& make CloogleServer builddb\
+	&& make distclean CloogleServer builddb\
 	&& rm -r /opt/clean/lib/*\
 	&& svn checkout https://svn.cs.ru.nl/repos/SoccerFun/src /opt/clean/lib/SoccerFun \
 	&& mv /opt/clean/lib/SoccerFun/*/*.[id]cl /opt/clean/lib/SoccerFun \

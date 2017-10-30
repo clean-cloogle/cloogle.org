@@ -136,28 +136,30 @@ where
 	printStats :: !CloogleDB !*File -> *File
 	printStats db f = f
 		<<< "+-------------------+-------+\n"
-		<<< "| Modules           | " <<< modules <<< " |\n"
-		<<< "| Functions         | " <<< funs    <<< " |\n"
-		<<< "| Unique types      | " <<< unqfuns <<< " |\n"
-		<<< "| Type tree depth   | " <<< treedep <<< " |\n"
-		<<< "| Type definitions  | " <<< types   <<< " |\n"
-		<<< "| Classes           | " <<< classes <<< " |\n"
-		<<< "| Instances         | " <<< insts   <<< " |\n"
-		<<< "| Derivations       | " <<< derives <<< " |\n"
-		<<< "| Syntax constructs | " <<< syntaxs <<< " |\n"
+		<<< "| Modules           | " <<< modules  <<< " |\n"
+		<<< "| Functions         | " <<< funs     <<< " |\n"
+		<<< "| With types        | " <<< treesize <<< " |\n"
+		<<< "| Unique types      | " <<< unqtypes <<< " |\n"
+		<<< "| Type tree depth   | " <<< treedep  <<< " |\n"
+		<<< "| Type definitions  | " <<< types    <<< " |\n"
+		<<< "| Classes           | " <<< classes  <<< " |\n"
+		<<< "| Instances         | " <<< insts    <<< " |\n"
+		<<< "| Derivations       | " <<< derives  <<< " |\n"
+		<<< "| Syntax constructs | " <<< syntaxs  <<< " |\n"
 		<<< "+-------------------+-------+\n"
 	where
-		[modules,funs,unqfuns,treedep,types,classes,insts,derives,syntaxs:_]
+		[modules,funs,unqtypes,treesize,treedep,types,classes,insts,derives,syntaxs:_]
 			= map (pad 5)
 				[ moduleCount db
 				, functionCount db
-				, num
-				, depth
+				, treenodes
+				, treesize
+				, treedepth
 				, typeCount db
 				, classCount db
 				, instanceCount db
 				, deriveCount db
 				, syntaxCount db
 				]
-		(num,depth) = typeTreeStats db
+		where (treenodes,treesize,treedepth) = typeTreeStats db
 		pad n i = {' ' \\ _ <- [0..n-size (toString i)-1]} +++ toString i

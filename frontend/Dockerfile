@@ -28,7 +28,9 @@ RUN svn checkout https://svn.cs.ru.nl/repos/SoccerFun/src /opt/clean/lib/SoccerF
 	&& git clone https://github.com/clean-cloogle/CleanTypeUnifier /opt/clean/lib/CleanTypeUnifier \
 	&& git clone https://github.com/clean-cloogle/CleanPrettyPrint /opt/clean/lib/CleanPrettyPrint \
 	&& git clone https://github.com/camilstaps/CleanInotify /opt/clean/lib/CleanInotify \
-	&& git clone https://github.com/camilstaps/CleanSnappy /opt/clean/lib/CleanSnappy
+	&& git clone https://github.com/camilstaps/CleanSnappy /opt/clean/lib/CleanSnappy \
+	&& rm -r /opt/clean/lib/StdEnv \
+	&& git clone https://github.com/clean-cloogle/StdEnv-doc /opt/clean/lib/StdEnv
 
 # Pygments, for highlighting
 RUN apt-get update \

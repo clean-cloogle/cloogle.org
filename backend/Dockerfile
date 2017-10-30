@@ -25,6 +25,8 @@ RUN install_clean.sh bundle-complete 2017-10-31 \
 	&& git clone https://github.com/camilstaps/CleanSnappy /opt/clean/lib/CleanSnappy \
 	&& curl -sSL ftp://ftp.cs.ru.nl/pub/Clean/builds/linux-x64/clean-bundle-complete-linux-x64-latest.tgz |\
 	 	tar -xz -C /opt/clean --strip-components=1\
+	&& rm -r /opt/clean/lib/StdEnv\
+	&& git clone https://github.com/clean-cloogle/StdEnv-doc /opt/clean/lib/StdEnv\
 	&& make types.json\
 	&& rm -rf \
 		Cloogle \

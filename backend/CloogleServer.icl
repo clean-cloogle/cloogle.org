@@ -4,7 +4,7 @@ import StdArray
 import StdBool
 import StdFile
 from StdFunc import id, o, seq
-from StdMisc import undef
+import StdMisc
 import StdOrdList
 import StdOverloaded
 import StdTuple
@@ -116,7 +116,7 @@ Start w
 #! (_,f,w) = fopen "types.json" FReadText w
 #! (db,f) = openDb f
 #! db = hyperstrict db
-#! w = if opts.reload_cache (reloadCache db) id w
+#! w = if opts.reload_cache (doInBackground (reloadCache db)) id w
 #! (_,w) = fclose f w
 = serve
 	{ handler           = handle db
@@ -216,6 +216,13 @@ where
 	where
 		search :: !RequestCacheKey -> *World -> *World
 		search r = thd3 o handle db (Just $ fromRequestCacheKey r) o removeFromCache LongTerm r
+
+	doInBackground :: (*World -> *World) *World -> *World
+	doInBackground f w
+	#! (pid,w) = fork w
+	| pid  < 0 = abort "fork failed\n"
+	| pid  > 0 = w   // Parent: return directly
+	| pid == 0 = f w // Child: do function
 
 :: LogMemory =
 	{ mem_ip         :: IPAddress

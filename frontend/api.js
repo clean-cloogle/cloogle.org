@@ -402,7 +402,7 @@ function getResults(str, libs, include_builtins, include_core, include_apps, pag
 					hidden.push([makeDocFieldsHTML('Parameter', extra['param_doc'])]);
 				if ('generic_var_doc' in extra && extra['generic_var_doc'].length > 0)
 					hidden.push([makeDocFieldsHTML('Generic type variable', extra['generic_var_doc'])]);
-				if ('result_doc' in extra)
+				if ('result_doc' in extra && extra['result_doc'].length > 0)
 					hidden.push([makeDocFieldsHTML('Result', extra['result_doc'])]);
 
 				if ('cls' in extra)

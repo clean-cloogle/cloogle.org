@@ -4,7 +4,7 @@ COPY . /usr/src/cloogle
 WORKDIR /usr/src/cloogle
 
 RUN install_clean.sh bundle-complete 2017-10-31 \
-	&& PACKAGES="make subversion ca-certificates gcc git curl patch" \
+	&& PACKAGES="patch" \
 	&& apt-get update -qq\
 	&& apt-get install -qq $PACKAGES --no-install-recommends \
 	&& make distclean CloogleServer builddb\

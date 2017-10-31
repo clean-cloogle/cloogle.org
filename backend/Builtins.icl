@@ -70,6 +70,11 @@ builtin_types
 	        (Just "The arrow type is used to denote functions.\n\nOften, function types can be written in an uncurried fashion, e.g. `a b -> c` is the same as `a -> b -> c`.")
 	        ["The argument type", "The result type"]
 	        Nothing})
+	  , ( Builtin "()" [], {deft & tde_typedef.td_name="_Unit",
+	      tde_doc = Just $ TypeDoc
+	        (Just "The void / unit type.")
+	        [] Nothing,
+	      tde_typedef.td_rhs = TDRCons False [{defc & cons_name="()"}]})
 	  :  lists
 	  ++ arrays
 	  ++ tuples

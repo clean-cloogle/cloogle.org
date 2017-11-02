@@ -7,8 +7,17 @@ RUN docker-php-source extract \
 	&& docker-php-ext-install sockets mysqli \
 	&& docker-php-source delete
 
+COPY logo.svg /var/www/logo.svg
+RUN cd /var/www \
+	&& apt-get update -qq \
+	&& apt-get install -qq imagemagick librsvg2-bin \
+	&& rsvg-convert -w 400 logo.svg > logo.png \
+	&& convert -resize 200x logo.png logo.png \
+	&& apt-get remove -qq imagemagick librsvg2-bin \
+	&& apt-get autoremove -qq
+
 # Clean libraries, for /src
-RUN apt-get update && apt-get install -y subversion ca-certificates git
+RUN apt-get update -qq && apt-get install -qq subversion ca-certificates git
 
 RUN mkdir -p /opt/clean && cd /opt/clean && \
 	curl -sSL ftp://ftp.cs.ru.nl/pub/Clean/builds/linux-x64/clean-bundle-complete-linux-x64-latest.tgz \
@@ -33,17 +42,12 @@ RUN svn checkout https://svn.cs.ru.nl/repos/SoccerFun/src /opt/clean/lib/SoccerF
 	&& git clone https://github.com/clean-cloogle/StdEnv-doc /opt/clean/lib/StdEnv
 
 # Pygments, for highlighting
-RUN apt-get update \
-	&& apt-get install -y python3.5 python3-pip \
+RUN apt-get update -qq \
+	&& apt-get install -qq python3.5 python3-pip \
 	&& pip3 install pygments pygments-lexer-clean
+
+COPY index_common_problems.py .
+RUN ./index_common_problems.py && rm index_common_problems.py
 
 COPY iconv.sh .
 RUN bash iconv.sh && rm iconv.sh
-
-COPY logo.svg /var/www/logo.svg
-RUN cd /var/www \
-	&& apt-get install -qq imagemagick librsvg2-bin \
-	&& rsvg-convert -w 400 logo.svg > logo.png \
-	&& convert -resize 200x logo.png logo.png \
-	&& apt-get remove -qq imagemagick librsvg2-bin \
-	&& apt-get autoremove -qq

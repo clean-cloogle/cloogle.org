@@ -12,6 +12,10 @@ define('DOS_MAX_BLOCK', 60);
 if (file_exists('conf.php'))
 	require_once('conf.php');
 
+$common_problems = [];
+if (file_exists('common-problems.json'))
+	$common_problems = json_decode(file_get_contents('common-problems.json'), true);
+
 $start_time = microtime(true);
 
 if (defined('CLOOGLE_KEEP_STATISTICS')) {
@@ -49,7 +53,7 @@ function has_database() {
 function dos_protect() {
 	global $db, $ua_id, $ip;
 
-	if (!has_database)
+	if (!has_database())
 		return false;
 
 	$stmt = $db->prepare('SELECT COUNT(*) FROM `blacklist`
@@ -150,6 +154,28 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET'){
 	$unify = isset($str[1]) ? trim($str[1]) : '';
 	$command = [];
 
+	$extra_results = [];
+	foreach ($common_problems as $problem) {
+		$match = false;
+		foreach ($problem['keywords'] as $kw) {
+			if (preg_match("/(?i)$kw/", $name) === 1) {
+				$match = true;
+				break;
+			}
+		}
+
+		if ($match) {
+			$extra_results[] = ['ProblemResult',
+				[ 'problem_key' => $problem['key']
+				, 'problem_title' => $problem['title']
+				, 'problem_description' => $problem['description']
+				, 'problem_solutions' => $problem['solutions']
+				, 'problem_examples' => $problem['examples']
+				]
+			];
+		}
+	}
+
 	if (substr($name, 0, 6) == 'class ') {
 		$command['className'] = substr($name, 6);
 	} elseif (substr($name, 0, 5) == 'type ') {
@@ -188,22 +214,23 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET'){
 
 	$skt = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
 	if (!socket_connect($skt, SERVER_HOSTNAME, SERVER_PORT)) {
-		respond(E_CLOOGLEDOWN, 'Cloogle server unreachable');
+		respond(E_CLOOGLEDOWN, 'Cloogle server unreachable', $extra_results);
 	} else {
 		$response = '';
 		socket_write($skt, json_encode($command));
 		$read = [$skt];
 		if (socket_select($read, $w = null, $e = null, SERVER_TIMEOUT) !== 1) {
-			respond(E_TIMEOUT, 'Connection to the Cloogle server timed out');
+			respond(E_TIMEOUT, 'Connection to the Cloogle server timed out', $extra_results);
 		} else {
 			while (($_response = socket_read($skt, 128, PHP_NORMAL_READ)) !== false) {
 				$response .= $_response;
 				if (strpos($_response, "\n") !== false)
 					break;
 			}
-			echo $response;
 			$decoded = json_decode($response, true);
 			log_request($decoded['return']);
+			$decoded['data'] = array_merge($extra_results, $decoded['data']);
+			echo json_encode($decoded);
 		}
 		socket_close($skt);
 	}

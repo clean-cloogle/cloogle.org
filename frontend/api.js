@@ -230,6 +230,8 @@ function makeExampleList(examples) {
 }
 
 function markupDocumentation(doc) {
+	doc = doc.replace(/\n```[^\n]+\n/g, '<pre>');
+	doc = doc.replace(/\n```\n/g, '</pre>');
 	doc = doc.replace(/\n\n/g, '<br class="parbreak"/>');
 	doc = doc.replace(/\n\s*-\s*/g, '<br/>- ');
 	doc = doc.replace(/{{`([^`}]+)`}}/g, '`{{$1}}`');
@@ -378,7 +380,8 @@ function getResults(str, libs, include_builtins, include_core, include_apps, pag
 		var meta = [];
 		var hidden = [];
 
-		if ('langrep_documentation' in basic &&
+		if (typeof basic != 'undefined' &&
+				'langrep_documentation' in basic &&
 				basic['langrep_documentation'].length > 0) {
 			var doc = 'See the language report: ';
 			for (var i in basic['langrep_documentation']) {
@@ -393,7 +396,7 @@ function getResults(str, libs, include_builtins, include_core, include_apps, pag
 			meta.push(doc);
 		}
 
-		if ('documentation' in basic)
+		if (typeof basic != 'undefined' && 'documentation' in basic)
 			meta.push(markupDocumentation(basic['documentation']));
 
 		switch (kind) {
@@ -558,6 +561,24 @@ function getResults(str, libs, include_builtins, include_core, include_apps, pag
 						'<pre class="result-code">' + code + '</pre>' +
 					'</div>';
 
+			case 'ProblemResult':
+				result = result[1];
+				var solutions = '', examples = [];
+				for (var i in result.problem_solutions)
+					solutions += '<li>' + markupDocumentation(result.problem_solutions[i]) + '</li>';
+				for (var i in result.problem_examples)
+					examples += '<li>' + markupDocumentation(result.problem_examples[i]) + '</li>';
+				return '<div class="result">' +
+						'<div class="result-basic">Common problem: ' + result.problem_title + '</div>' +
+						'<div class="result-extra">' +
+							result.problem_description +
+							'<br/><br/>Possible solutions:<ul>' + solutions + '</ul>' +
+							'Examples:<ul>' + examples + '</ul>' +
+							'<a href="https://github.com/clean-cloogle/common-problems/blob/master/' + result.problem_key + '.md" target="_blank">Edit this explanation.</a><br/><br/>' +
+						'</div>' +
+						'<div class="result-code"></div>' +
+					'</div>';
+
 			default:
 				return '';
 		}
@@ -587,33 +608,33 @@ function getResults(str, libs, include_builtins, include_core, include_apps, pag
 		if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
 			document.getElementById('loading').remove();
 			var responsedata = JSON.parse(xmlHttp.responseText);
-			if (responsedata['return'] >= 0 && responsedata['return'] <= 64) {
-				for (var i = 0; i<responsedata['data'].length; i++) {
-					var c = responsedata['data'][i];
-					elem.innerHTML += makeResultHTML(c);
-				}
+			if (responsedata['return'] > 64) {
+				elem.innerHTML +=
+					'<p>Return code: ' + responsedata['return'] + ' (' + responsedata['msg'] + ')</p>';
+			}
 
-				var par = elem.parentNode;
-				if (responsedata['more_available'] != 0) {
-					par.innerHTML += '<div id="page-' + (page+1) + '">' +
-						'<p id="more" class="remove-at-request">' +
-						'<a href="javascript:getResults(null,null,null,null,null,' + (page+1) +
-						')">' + responsedata['more_available'] + ' more...</a></p>' +
-						'</div>';
-				}
+			for (var i = 0; i<responsedata['data'].length; i++) {
+				var c = responsedata['data'][i];
+				elem.innerHTML += makeResultHTML(c);
+			}
 
-				par.innerHTML += '<div class="remove-at-request general-help">' + makeGeneralHelp(str) + '</span>';
+			var par = elem.parentNode;
+			if ('more_available' in responsedata &&
+					responsedata['more_available'] != 0) {
+				par.innerHTML += '<div id="page-' + (page+1) + '">' +
+					'<p id="more" class="remove-at-request">' +
+					'<a href="javascript:getResults(null,null,null,null,null,' + (page+1) +
+					')">' + responsedata['more_available'] + ' more&#8230;<a></p>' +
+					'</div>';
+			}
 
-				if ('suggestions' in responsedata &&
-						responsedata['suggestions'].length > 0) {
-					par.innerHTML =
-						makeSuggestions(responsedata['suggestions'])
-						+ par.innerHTML;
-				}
-			} else {
-				elem.innerHTML =
-					'<p>Return code: ' + responsedata['return'] + '</p>' +
-					'<p>Message: ' + responsedata['msg'] + '</p>';
+			par.innerHTML += '<div class="remove-at-request general-help">' + makeGeneralHelp(str) + '</span>';
+
+			if ('suggestions' in responsedata &&
+					responsedata['suggestions'].length > 0) {
+				par.innerHTML =
+					makeSuggestions(responsedata['suggestions'])
+					+ par.innerHTML;
 			}
 		}
 	};

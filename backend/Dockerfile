@@ -6,7 +6,7 @@ WORKDIR /usr/src/cloogle
 RUN install_clean.sh bundle-complete 2017-10-31 \
 	&& PACKAGES="patch" \
 	&& apt-get update -qq\
-	&& apt-get install -qq $PACKAGES --no-install-recommends \
+	&& apt-get install -qq $PACKAGES --no-install-recommends\
 	&& make distclean CloogleServer builddb\
 	&& rm -r /opt/clean/lib/*\
 	&& svn checkout https://svn.cs.ru.nl/repos/SoccerFun/src /opt/clean/lib/SoccerFun \

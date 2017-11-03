@@ -13,8 +13,8 @@ if (file_exists('conf.php'))
 	require_once('conf.php');
 
 $common_problems = [];
-if (file_exists('common-problems.json'))
-	$common_problems = json_decode(file_get_contents('common-problems.json'), true);
+if (file_exists('/var/common-problems.json'))
+	$common_problems = json_decode(file_get_contents('/var/common-problems.json'), true);
 
 $start_time = microtime(true);
 

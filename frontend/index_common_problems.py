@@ -84,7 +84,7 @@ if __name__ == '__main__':
         if f != 'README.md':
             problems.append(index(f))
 
-    with open('common-problems.json', 'w') as f:
+    with open('/var/common-problems.json', 'w') as f:
         f.write(json.dumps(problems))
 
     call(['rm', '-r', '-f', 'common-problems'])

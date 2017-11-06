@@ -78,8 +78,9 @@ for (var i = 0; i < banners.length; i++) {
 
 	var hidelink = document.createElement('a');
 	hidelink.classList.add('hidelink');
+	hidelink.innerHTML = '&times;';
 	hidelink.setAttribute('href', '#');
-	hidelink.text = '(hide this banner)';
+	hidelink.setAttribute('title', 'Hide this banner forever');
 	hidelink.onclick = function() {
 		banner.remove();
 		document.cookie = 'hidden_banners=' + hidden + ' ' + id;

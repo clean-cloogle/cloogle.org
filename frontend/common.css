@@ -27,16 +27,25 @@ td, th {
 	border-color: #87aade;
 	border-style: solid;
 	border-width: 0 0 1px;
+	box-sizing: border-box;
 	display: none;
-	padding: .5em 0;
+	font-size: 90%;
+	line-height: 1.4em;
+	padding: .5em 2em;
 	position: relative;
 	text-align: center;
 	width: 100%;
 }
 
 .banner .hidelink {
+	align-items: center;
+	display: flex;
+	font-weight: bold;
+	height: 100%;
 	position: absolute;
 	right: 1em;
+	text-decoration: none;
+	top: 0;
 }
 
 .toggle-container .toggler {

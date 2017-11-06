@@ -22,6 +22,23 @@ td, th {
 	padding-right: 1em;
 }
 
+.banner {
+	background-color: #d7e3f4;
+	border-color: #87aade;
+	border-style: solid;
+	border-width: 0 0 1px;
+	display: none;
+	padding: .5em 0;
+	position: relative;
+	text-align: center;
+	width: 100%;
+}
+
+.banner .hidelink {
+	position: absolute;
+	right: 1em;
+}
+
 .toggle-container .toggler {
 	cursor: pointer;
 }

@@ -61,3 +61,28 @@ function shortenURL(type, url, onUpdate) {
 	xmlHttp.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
 	xmlHttp.send('type=' + type + '&url=' + encodeURIComponent(url));
 }
+
+var banners = document.getElementsByClassName('banner');
+for (var i = 0; i < banners.length; i++) {
+	var banner = banners[i];
+	banner.dataset.index = i;
+
+	var id = banner.dataset.id;
+	var hidden = document.cookie.replace(/(?:(?:^|.*;\s*)hidden_banners\s*\=\s*([^;]*).*$)|^.*$/, "$1");
+	if (hidden.split(' ').indexOf(id) >= 0)
+		continue;
+
+	var until = new Date(banner.dataset.until);
+	if (until >= new Date())
+		banner.style.display = 'block';
+
+	var hidelink = document.createElement('a');
+	hidelink.classList.add('hidelink');
+	hidelink.setAttribute('href', '#');
+	hidelink.text = '(hide this banner)';
+	hidelink.onclick = function() {
+		banner.remove();
+		document.cookie = 'hidden_banners=' + hidden + ' ' + id;
+	}
+	banner.appendChild(hidelink);
+}

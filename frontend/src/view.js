@@ -116,12 +116,4 @@ window.onload = function() {
 		browser.triggerChange();
 	};
 	icl.onchange();
-
-	var sidebar = document.getElementById('sidebar');
-	var viewer = document.getElementById('viewer');
-	if (window.innerWidth > 800) {
-		var height = window.innerHeight;
-		sidebar.style.height = (height - 20) + 'px';
-		viewer.style.height = height + 'px';
-	}
 };

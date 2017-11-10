@@ -69,6 +69,10 @@ td, th {
 	display: none;
 }
 
+.browser {
+	margin-bottom: 1em;
+}
+
 .browser-header {
 	margin-bottom: 0.2em;
 }
@@ -93,11 +97,12 @@ td, th {
 }
 
 #sidebar {
+	box-sizing: border-box;
 	float: left;
-	overflow: scroll;
-	width: 15em;
-	padding: 0 1em;
 	height: 100%;
+	overflow: auto;
+	padding: 1em;
+	width: 15em;
 }
 
 #sidebar h3 {
@@ -110,7 +115,7 @@ td, th {
 
 #viewer {
 	height: 100%;
-	overflow: scroll;
+	overflow: auto;
 }
 
 #viewer #loading {

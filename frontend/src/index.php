@@ -20,6 +20,7 @@
 		<input id="share-button" type="button" value="Share" onclick="shareButtonClick()"/>
 		<hr/>
 		<?php include_once('lib.php'); ?>
+		<br/>
 	</div><div id="viewer">
 		<?php include_once('src.php'); ?>
 	</div>

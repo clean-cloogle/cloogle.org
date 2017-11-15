@@ -102,6 +102,10 @@ window.onload = function() {
 				viewer.scrollTop = 0;
 			}
 
+			var modparts = state.mod.split('/');
+			var lib = modparts.shift();
+			document.title = modparts.join('.') + ' (' + lib + ') - Cloogle library browser';
+
 			bindLinenos();
 			restoreShareUI();
 		},

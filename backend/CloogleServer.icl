@@ -58,9 +58,11 @@ derive JSONDecode Kind, Type, RequestCacheKey, TypeRestriction
 instance toString RequestCacheKey
 where toString rck = toString $ toJSON rck
 
-toRequestCacheKey :: Request -> RequestCacheKey
-toRequestCacheKey r =
-	{ c_unify            = r.unify >>= parseType o fromString
+toRequestCacheKey :: CloogleDB Request -> RequestCacheKey
+toRequestCacheKey db r =
+	{ c_unify            = snd <$>
+		prepare_unification True (map getTypeDef $ allTypes db) <$>
+		(parseType o fromString =<< r.unify)
 	, c_name             = r.name
 	, c_className        = r.className
 	, c_typeName         = r.typeName
@@ -164,7 +166,7 @@ where
 		// Suggestions
 		#! suggestions = unify >>= parseType o fromString >>= flip (suggs name) db
 		#! w = seq [cachePages
-				(toRequestCacheKey req) CACHE_PREFETCH 0 zero suggs
+				(toRequestCacheKey db req) CACHE_PREFETCH 0 zero suggs
 				\\ (req,suggs) <- 'Foldable'.concat suggestions] w
 		#! suggestions
 			= sortBy (\a b -> snd a > snd b) <$>
@@ -184,7 +186,7 @@ where
 		// Save cache file
 		= respond response w
 	where
-		key = toRequestCacheKey request
+		key = toRequestCacheKey db request
 
 		respond :: !Response !*World -> *(!Response, !CacheKey, !*World)
 		respond r w = (r, cacheKey key, writeCache LongTerm key r w)

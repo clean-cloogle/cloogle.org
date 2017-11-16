@@ -113,18 +113,26 @@ function mergeComments(code, comments) {
 	return code;
 }
 
-String.prototype.makeParagraphs = function() {
+String.prototype.markup = function() {
 	return this
-		.split('\n-').join('<br/>-')
-		.split('\n*').join('<br/>*')
-		.split('\n\n').join('<br/>');
+		.split(/\n\n/).join('<br class="parbreak"/>')
+		.split(/\n\s*-/).join('<br/>-')
+		.split(/\n\s*\*/).join('<br/>*')
+		.replace(/\n```[^\n]+\n/g, '<pre>')
+		.replace(/\n```\n/g, '</pre>')
+		.replace(/{{`([^`}]+)`}}/g, '`{{$1}}`')
+		.replace(/`([^`]+)`/g, '<code>$1</code>')
+		.replace(/{{([^}]+)}}/g, function (m,c) {
+			return '<a class="hidden" title="Search ' + c +
+				'" href="#' + encodeURIComponent(c) + '">' + c + '</a>';
+		});
 }
 
 function makeDocFieldsHTML(name, params) {
 	if (params.length == 1)
-		return name + ': ' + params[0].makeParagraphs();
+		return name + ': ' + params[0].markup();
 	else
-		return name + 's:<ul><li>' + params.join('</li><li>').makeParagraphs() + '</li></ul>';
+		return name + 's:<ul><li>' + params.join('</li><li>').markup() + '</li></ul>';
 }
 
 function makeLocationUrl(loc) {
@@ -227,20 +235,6 @@ function makeExampleList(examples) {
 		html += '<li><pre class="example">' + highlightExample(examples[i]) + '</pre></li>';
 	html += '</ul>';
 	return html;
-}
-
-function markupDocumentation(doc) {
-	doc = doc.replace(/\n```[^\n]+\n/g, '<pre>');
-	doc = doc.replace(/\n```\n/g, '</pre>');
-	doc = doc.replace(/\n\n/g, '<br class="parbreak"/>');
-	doc = doc.replace(/\n\s*-\s*/g, '<br/>- ');
-	doc = doc.replace(/{{`([^`}]+)`}}/g, '`{{$1}}`');
-	doc = doc.replace(/`([^`]+)`/g, '<code>$1</code>');
-	doc = doc.replace(/{{([^}]+)}}/g, function (m,c) {
-		return '<a class="hidden" title="Search ' + c +
-			'" href="#' + encodeURIComponent(c) + '">' + c + '</a>';
-	});
-	return doc;
 }
 
 function getResults(str, libs, include_builtins, include_core, include_apps, page) {
@@ -397,7 +391,7 @@ function getResults(str, libs, include_builtins, include_core, include_apps, pag
 		}
 
 		if (typeof basic != 'undefined' && 'documentation' in basic)
-			meta.push(markupDocumentation(basic['documentation']));
+			meta.push(basic['documentation'].markup());
 
 		switch (kind) {
 			case 'FunctionResult':
@@ -565,9 +559,9 @@ function getResults(str, libs, include_builtins, include_core, include_apps, pag
 				result = result[1];
 				var solutions = '', examples = [];
 				for (var i in result.problem_solutions)
-					solutions += '<li>' + markupDocumentation(result.problem_solutions[i]) + '</li>';
+					solutions += '<li>' + result.problem_solutions[i].markup() + '</li>';
 				for (var i in result.problem_examples)
-					examples += '<li>' + markupDocumentation(result.problem_examples[i]) + '</li>';
+					examples += '<li>' + result.problem_examples[i].markup() + '</li>';
 				return '<div class="result">' +
 						'<div class="result-basic">Common problem: ' + result.problem_title + '</div>' +
 						'<div class="result-extra">' +

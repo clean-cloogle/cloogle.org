@@ -103,8 +103,10 @@ window.onload = function() {
 			}
 
 			var modparts = state.mod.split('/');
-			var lib = modparts.shift();
-			document.title = modparts.join('.') + ' (' + lib + ') - Cloogle library browser';
+			if (modparts.length > 1) {
+				var lib = modparts.shift();
+				document.title = modparts.join('.') + ' (' + lib + ') - Cloogle library browser';
+			}
 
 			bindLinenos();
 			restoreShareUI();

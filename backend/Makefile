@@ -37,7 +37,7 @@ $(BIN):
 	$(CLM) $(CLMFLAGS) $@ -o $@
 
 builddb: clean-compiler
-	$(CLM) $(CLMFLAGS) -s 20M -h 1000M -gci 500M\
+	$(CLM) $(CLMFLAGS) -s 50M -h 750M -gcm\
 		-I clean-compiler/frontend\
 		-I clean-compiler/backend\
 		-I clean-compiler/main\

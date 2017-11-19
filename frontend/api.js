@@ -457,7 +457,7 @@ function getResults(str, libs, include_builtins, include_core, include_apps, pag
 					var lines = extra['func'].split('\n');
 					if (lines.length <= 1 || lines[0].indexOf(' :: ') == -1) {
 						var name = extra['func'].split(' ')[0];
-						var type = highlight(name + ' :: ' + extra['type_doc'], highlightCallback);
+						var type = highlightFunction(name + ' :: ' + extra['type_doc'], highlightCallback);
 						code = type + '\r\n' + code;
 					}
 				}

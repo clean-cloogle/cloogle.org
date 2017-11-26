@@ -36,6 +36,7 @@ echo "Updating containers..."
 
 sudo docker-compose build --force-rm --no-cache --pull
 sudo docker-compose up -d
+sudo docker image prune -f
 
 echo "All done."
 

@@ -681,11 +681,28 @@ function formsubmit() {
 
 		if (q.indexOf('::') == -1 && q.indexOf('->') != -1) {
 			var sug = ':: ' + q.replace(/->/g, ' -> ').replace(/  /g, ' ');
-			sresults.innerHTML = '<p>' +
-				'Searching for <code>' + highlightFunction(q) + '</code>. ' +
-				'Did you mean to search for ' +
+			sug = 'Did you mean to search for ' +
 				'<a class="hidden" href="#' + sug + '"><code>' +
-				highlightFunction(sug) + '</code></a>?</p>';
+				highlightFunction(sug) + '</code></a>?';
+			if (q.indexOf(' ') == -1) {
+				sresults.innerHTML += '<p>Searching for the <em>name</em> <code>' +
+					highlightFunction(q) + '</code>. ' + sug + '</p>';
+			} else {
+				sresults.innerHTML += '<p>Cloogle does not accept spaces in the input. ' + sug + '</p>';
+				return;
+			}
+		} else if (q.indexOf('instance ') == 0) {
+			var qname = q.substr(9);
+			var sug =
+				[ ['class ' + qname, '<span class="keyword">class</span> ' + highlightFunction(qname)]
+				, ['type '  + qname, '<span class="keyword">type</span> '  + highlightFunction(qname)]
+				];
+			sresults.innerHTML += '<p>' +
+				'Cloogle does not accept spaces in the input. ' +
+				'Did you mean to search for ' +
+				'<a class="hidden" href="#' + sug[0][0] + '"><code>' + sug[0][1] + '</code></a> or ' +
+				'<a class="hidden" href="#' + sug[1][0] + '"><code>' + sug[1][1] + '</code></a>?</p>';
+			return;
 		}
 
 		var libs = getLibs();

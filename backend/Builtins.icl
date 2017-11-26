@@ -80,7 +80,7 @@ builtin_types
 	  ++ tuples
 	  ]
 where
-	deft = {tde_typedef={td_name="", td_uniq=False, td_args=[], td_rhs=TDRAbstract}, tde_doc=Nothing}
+	deft = {tde_typedef={td_name="", td_uniq=False, td_args=[], td_rhs=TDRAbstract Nothing}, tde_doc=Nothing}
 	defc = {cons_name="", cons_args=[], cons_exi_vars=[], cons_context=[], cons_priority=Nothing}
 
 	lists = [make_list kind spine \\ kind <- [[], ['#'], ['!'], ['|']], spine <- [[], ['!']] | kind <> ['|'] || spine <> ['!']]

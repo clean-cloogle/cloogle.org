@@ -33,7 +33,7 @@ man: $(MAN)
 %.1: %
 	help2man -N ./$< > $@
 
-$(BIN):
+CloogleServer:
 	$(CLM) $(CLMFLAGS) $@ -o $@
 
 builddb: clean-compiler

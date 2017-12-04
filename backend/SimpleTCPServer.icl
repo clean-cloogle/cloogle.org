@@ -1,7 +1,7 @@
 implementation module SimpleTCPServer
 
 import StdEnv
-import StdMaybe
+import Data.Maybe
 import System._Posix
 import TCPIP
 
@@ -16,7 +16,7 @@ serve server w
 # (listener, w) = loop listener w
 = closeRChannel listener w
 where
-	logger = if (isNothing server.logger) zero (fromJust server.logger)
+	logger = fromMaybe zero server.logger
 
 	loop :: TCP_Listener *World -> (TCP_Listener, *World)
 	loop li w

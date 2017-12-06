@@ -464,13 +464,15 @@ bs_module = (["module", "definition", "implementation", "system", "definition mo
 		]
 	})
 
-bs_pattern_named = (["=:"],
-	{ syntax_title         = "newtype definition (experimental)"
-	, syntax_code          = [":: ... =: T c"]
-	, syntax_description   = "Define a newtype, a newtype is a type synonym that is treated as a real type."
+bs_pattern_newtype = (["=:"],
+	{ syntax_title         = "Newtype definition (experimental)"
+	, syntax_code          = [":: ... =: ..."]
+	, syntax_description   = "A newtype is a type synonym at runtime but treated as a real type at compiletime.\n"
+	                       + "This allows the creation of instances and speeds the program up."
 	, syntax_doc_locations = []
 	, syntax_examples      =
-		[ EX  "Function"         ":: T = T Int"
+		[ EX  "TypeDef" ":: T =: T Int"
+		[ EX  "TypeDef" ":: T a =: T a"
 		]
 	})
 

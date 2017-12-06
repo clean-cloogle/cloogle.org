@@ -184,6 +184,7 @@ builtin_syntax =
 	, bs_list_expressions
 	, bs_macro
 	, bs_module
+	, bs_newtype
 	, bs_otherwise
 	, bs_pattern_named
 	, bs_selection_array
@@ -460,6 +461,16 @@ bs_module = (["module", "definition", "implementation", "system", "definition mo
 		, "implementation module StdList // The implementations of the functions"
 		, "module test                   // An implementation module without corresponding dcl"
 		, "system module StdInt          // The definitions of a module that contains foreign code (see section 2.6 of the language report)"
+		]
+	})
+
+bs_pattern_named = (["=:"],
+	{ syntax_title         = "newtype definition (experimental)"
+	, syntax_code          = [":: ... =: T c"]
+	, syntax_description   = "Define a newtype, a newtype is a type synonym that is treated as a real type."
+	, syntax_doc_locations = []
+	, syntax_examples      =
+		[ EX  "Function"         ":: T = T Int"
 		]
 	})
 

@@ -185,6 +185,7 @@ builtin_syntax =
 	, bs_macro
 	, bs_module
 	, bs_newtype
+	, bs_overloaded_type_variable
 	, bs_otherwise
 	, bs_pattern_named
 	, bs_selection_array
@@ -474,6 +475,14 @@ bs_newtype = (["=:", "newtype"],
 		[ EX "TypeDef" ":: T =: T Int"
 		, EX "TypeDef" ":: T a =: T a"
 		]
+	})
+
+bs_overloaded_type_variable = (["^", "a^"],
+	{ syntax_title         = "Overloaded type variable"
+	, syntax_code          = ["... :: ...^"]
+	, syntax_description   = "A pattern match on the type of a dynamic depending on the type of the function."
+	, syntax_doc_locations = [CLR 10 "8.2.5" "_Toc311798087"]
+	, syntax_examples      = [EX "Function" "unpack :: Dynamic -> Maybe a\nunpack (x :: a^) = Just x // Only values of type a\nunpack _         = Nothing"]
 	})
 
 bs_otherwise = (["otherwise"],

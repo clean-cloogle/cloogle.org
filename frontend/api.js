@@ -485,7 +485,7 @@ function getResults(str, libs, include_builtins, include_core, include_apps, pag
 
 				var code = extra['type'].split('\n');
 				if ('type_field_doc' in extra) {
-					var comments = [];
+					var comments = [''];
 					for (var i in extra['type_field_doc'])
 						comments.push(extra['type_field_doc'][i].length > 1
 								? '//* ' + extra['type_field_doc'][i][1]
@@ -493,7 +493,7 @@ function getResults(str, libs, include_builtins, include_core, include_apps, pag
 					code = mergeComments(code, comments)
 				}
 				if ('type_constructor_doc' in extra) {
-					var comments = [];
+					var comments = [''];
 					for (var i in extra['type_constructor_doc'])
 						comments.push(extra['type_constructor_doc'][i].length > 1
 								? '//* ' + extra['type_constructor_doc'][i][1]

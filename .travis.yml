@@ -3,4 +3,4 @@ sudo: required
 services:
   - docker
 install:
-  - docker-compose build
+  - travis_wait docker-compose build

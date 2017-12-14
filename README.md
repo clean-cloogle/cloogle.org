@@ -1,4 +1,4 @@
-# Cloogle
+# Cloogle ![][status check]
 
 A Clean hoogle clone: search for functions, types, and classes from the Clean
 standard libraries.
@@ -195,3 +195,5 @@ Contributors:
 ## Copyright &amp; License
 Copyright &copy; Mart Lubbers and Camil Staps.
 Licensed under MIT; See the `LICENSE` file.
+
+[status check]: https://api.travis-ci.org/clean-cloogle/cloogle.org.svg?branch=master

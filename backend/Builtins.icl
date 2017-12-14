@@ -61,19 +61,22 @@ builtin_types
 	  , ( Builtin "File"    [CLR 6 "4.7" "_Toc311798037"], {deft & tde_typedef.td_name = "File"})
 	  , ( Builtin "World"   [CLR 6 "4.7" "_Toc311798037"], {deft & tde_typedef.td_name = "World",
 	      tde_typedef.td_uniq = True,
-	      tde_doc = Just $ TypeDoc
-	        (Just "An object of this type is automatically created when the program is started, if needed. It makes efficient interfacing with the outside world possible. Its value is always `65536`.")
-	        [] Nothing})
+	      tde_doc = Just
+	        { TypeDoc | gDefault{|*|}
+	        & description = Just "An object of this type is automatically created when the program is started, if needed. It makes efficient interfacing with the outside world possible. Its value is always `65536`."
+	        }})
 	  , ( Builtin "->"      [CLR 6 "4.6" "_Toc311798036"], {deft & tde_typedef.td_name = "(->)",
 	      tde_typedef.td_args = [Var "a", Var "b"],
-	      tde_doc = Just $ TypeDoc
-	        (Just "The arrow type is used to denote functions.\n\nOften, function types can be written in an uncurried fashion, e.g. `a b -> c` is the same as `a -> b -> c`.")
-	        ["The argument type", "The result type"]
-	        Nothing})
+	      tde_doc = Just
+	        { TypeDoc | gDefault{|*|}
+	        & description = Just "The arrow type is used to denote functions.\n\nOften, function types can be written in an uncurried fashion, e.g. `a b -> c` is the same as `a -> b -> c`."
+	        , vars = ["The argument type", "The result type"]
+	        }})
 	  , ( Builtin "()" [], {deft & tde_typedef.td_name="_Unit",
-	      tde_doc = Just $ TypeDoc
-	        (Just "The void / unit type.")
-	        [] Nothing,
+	      tde_doc = Just
+	        { TypeDoc | gDefault{|*|}
+	        & description = Just "The void / unit type."
+	        },
 	      tde_typedef.td_rhs = TDRCons False [{defc & cons_name="()"}]})
 	  :  lists
 	  ++ arrays
@@ -90,10 +93,11 @@ where
 			{ deft
 			& tde_typedef.td_name = toString (['_':k] ++ ['List'] ++ s)
 			, tde_typedef.td_args = [Var "a"]
-			, tde_doc = Just $ TypeDoc
-				(Just $ "A" + kind + spine + " list.\n\n" + description)
-				["The type of the list elements."]
-				Nothing
+			, tde_doc = Just
+				{ TypeDoc | gDefault{|*|}
+				& description = Just $ "A" + kind + spine + " list.\n\n" + description
+				, vars = ["The type of the list elements."]
+				}
 			})
 		where
 			higherorder = toString (['[':k] ++ s` ++ [']'])
@@ -126,10 +130,11 @@ where
 			{ deft
 			& tde_typedef.td_name = toString (['_':k] ++ ['Array'])
 			, tde_typedef.td_args = [Var "a"]
-			, tde_doc = Just $ TypeDoc
-				(Just $ "An array contains a finite number of elements of the same type. Access time is constant.\n\n" + description)
-				["The type of the array elements."]
-				Nothing
+			, tde_doc = Just
+				{ TypeDoc | gDefault{|*|}
+				& description = Just $ "An array contains a finite number of elements of the same type. Access time is constant.\n\n" + description
+				, vars = ["The type of the array elements."]
+				}
 			})
 		where
 			typec = toString (['{':k]++['}'])
@@ -146,11 +151,12 @@ where
 			{ deft
 			& tde_typedef.td_name = "_Tuple" <+ n
 			, tde_typedef.td_args = [Var $ toString [v:repeatn (n / 26) '`'] \\ v <- cycle ['a'..'z'] & n <- [0..n-1]]
-			, tde_doc = Just $ TypeDoc
-				(Just $ article + " " + ary + "ary tuple.\n\n" +
-				 "Tuples allow bundling a finite number of expressions of different types into one object without defining a new data type.\n\n" +
-				 "Clean supports tuples of arity 2 to 32.")
-				[] Nothing
+			, tde_doc = Just
+				{ TypeDoc | gDefault{|*|}
+				& description = Just $ article + " " + ary + "ary tuple.\n\n" +
+					"Tuples allow bundling a finite number of expressions of different types into one object without defining a new data type.\n\n" +
+					"Clean supports tuples of arity 2 to 32."
+				}
 			})
 		where
 			typec = toString ['(':repeatn (n-1) ',' ++ [')']]

@@ -1,4 +1,4 @@
-# Cloogle ![][status check]
+# Cloogle [![][travis badge]][travis]
 
 A Clean hoogle clone: search for functions, types, and classes from the Clean
 standard libraries.
@@ -196,4 +196,5 @@ Contributors:
 Copyright &copy; Mart Lubbers and Camil Staps.
 Licensed under MIT; See the `LICENSE` file.
 
-[status check]: https://api.travis-ci.org/clean-cloogle/cloogle.org.svg?branch=master
+[travis badge]: https://api.travis-ci.org/clean-cloogle/cloogle.org.svg?branch=master
+[travis]: https://travis-ci.org/clean-cloogle/cloogle.org

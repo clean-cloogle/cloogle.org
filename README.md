@@ -16,6 +16,9 @@ Use any of the available frontends:
 - An email to `query@cloogle.org` with the query in the subject (see
 	[cloogle-mail](https://github.com/clean-cloogle/cloogle-mail) for the
 	implementation).
+- IRC bot who is often residing on the channel mentioned below and the general
+	clean channel `#cleanlang`
+	(See [clean-irc](https://github.com/clean-cloogle/clean-irc)).
 
 For support and/or contact please join us at the `#cloogle` irc channel on
 [freenode](https://freenode.net).

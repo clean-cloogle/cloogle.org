@@ -14,14 +14,13 @@ Use any of the available frontends:
 - The `:Cloogle` command in
 	[camilstaps/vim-clean](https://github.com/camilstaps/vim-clean).
 - An email to `query@cloogle.org` with the query in the subject (see
-	[cloogle-mail](https://github.com/clean-cloogle/cloogle-mail) for the
-	implementation).
-- IRC bot who is often residing on the channel mentioned below and the general
-	clean channel `#cleanlang`
-	(See [clean-irc](https://github.com/clean-cloogle/clean-irc)).
+	[cloogle-mail](https://github.com/clean-cloogle/cloogle-mail)).
+- The IRC bot which often resides on the `#cloogle` channel and the general
+	Clean channel `#cleanlang` on [freenode][].
+	(see [clean-irc](https://github.com/clean-cloogle/clean-irc)).
 
 For support and/or contact please join us at the `#cloogle` irc channel on
-[freenode](https://freenode.net).
+[freenode][].
 
 ---
 
@@ -201,3 +200,4 @@ Licensed under MIT; See the `LICENSE` file.
 
 [travis badge]: https://api.travis-ci.org/clean-cloogle/cloogle.org.svg?branch=master
 [travis]: https://travis-ci.org/clean-cloogle/cloogle.org
+[freenode]: https://freenode.net

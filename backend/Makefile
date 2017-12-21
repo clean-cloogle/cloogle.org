@@ -4,7 +4,6 @@ MAN:=builddb.1 # Others don't have --help/--version # $(addsuffix .1,$(BIN))
 CLM:=clm
 CLMFLAGS:=-h 250M -nr -nt -nortsopts\
 	-I $$CLEAN_HOME/lib/ArgEnv\
-	-I $$CLEAN_HOME/lib/Generics\
 	-I $$CLEAN_HOME/lib/TCPIP\
 	-I $$CLEAN_HOME/lib/Platform\
 	-I $$CLEAN_HOME/lib/Platform/Deprecated/StdLib\

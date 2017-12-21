@@ -11,7 +11,7 @@ import Control.Applicative
 import Control.Monad
 import Crypto.Hash.MD5
 import Data.Error
-from Data.Func import $, on
+from Data.Func import $, on, instance Functor ((->) r)
 import Data.Functor
 import Data.Maybe
 import Data.Tuple

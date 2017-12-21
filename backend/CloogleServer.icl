@@ -4,6 +4,7 @@ import StdArray
 import StdBool
 import StdFile
 from StdFunc import id, o, seq
+import StdList
 import StdMisc
 import StdOrdList
 import StdOverloaded
@@ -16,10 +17,10 @@ import Control.Applicative
 import Control.Monad
 import Data.Error
 import qualified Data.Foldable as Foldable
-from Data.Foldable import class Foldable, instance Foldable Maybe
-from Data.Func import $, hyperstrict
+from Data.Foldable import class Foldable
+from Data.Func import $, hyperstrict, instance Functor ((->) r)
 import Data.Functor
-import Data.List
+from Data.List import permutations
 import Data.Maybe
 import Data.Tuple
 import System._Posix

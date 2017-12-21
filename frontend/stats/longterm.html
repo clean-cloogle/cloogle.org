@@ -232,6 +232,15 @@
 						{ floor: 0, title: { text: 'Visitors' }, opposite: false },
 						{ floor: 0, title: { text: 'ms' }, opposite: true }
 					],
+					tooltip: {
+						formatter: function (tooltip) {
+							if (this.points[0].point.index == this.points[0].series.data.length - 1) {
+								return false;
+							} else {
+								return tooltip.chart.tooltip.defaultFormatter.call(this, tooltip);
+							}
+						}
+					},
 					plotOptions: {
 						area: { stacking: 'normal' },
 						spline: { lineWidth: 1.5 }
@@ -342,7 +351,6 @@
 						categories: data.oss,
 						labels: {
 							formatter: function() {
-								console.log(this.value);
 								var parts = this.value.split(/^([^:]+):(.+)$/);
 								if (parts.length > 1)
 									return '<a target="_blank" href="' + parts[2] + '">' + parts[1] + '</a>';

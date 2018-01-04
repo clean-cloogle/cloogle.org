@@ -43,6 +43,7 @@ if (defined('CLOOGLE_KEEP_STATISTICS')) {
 
 	$ip = isset($_SERVER['HTTP_X_FORWARDED_FOR']) ?
 		$_SERVER['HTTP_X_FORWARDED_FOR'] : $_SERVER['REMOTE_ADDR'];
+	$ip = substr(md5($ip), 0, 12);
 }
 
 function has_database() {

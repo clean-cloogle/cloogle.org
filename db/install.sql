@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS `useragent` (
 
 CREATE TABLE IF NOT EXISTS `blacklist` (
 	`id` int(10) unsigned NOT NULL,
-	`ip` varchar(45) NOT NULL,
+	`ip` varchar(12) NOT NULL,
 	`useragent_id` int(10) unsigned NOT NULL,
 	`start` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	`end` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP

@@ -76,10 +76,10 @@ To add a library you have to add it in to the following places:
 
 ## 4. I just want to add a new user agent to the statistics
 If you have created a new Cloogle client, please give it a specific user agent
-and add it to the `$user_agents` array in `frontend/stats/conf.php`. That way,
-it will show up in the statistics on https://cloogle.org/stats/longterm.html.
-There are no strict naming conventions, but you can have a look at the other
-user agents for inspiration.
+and add it to the `$user_agents` array in `frontend/stats/ajax/conf.php`. That
+way, it will show up in the statistics on
+https://cloogle.org/stats/longterm.html. There are no strict naming
+conventions, but you can have a look at the other user agents for inspiration.
 
 Each entry has a key, which is the name of the client (e.g. 'vim-clean'). The
 value is an array with a required `pattern`, which is used in SQL `LIKE`

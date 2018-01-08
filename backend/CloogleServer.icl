@@ -59,11 +59,11 @@ derive JSONDecode Kind, Type, RequestCacheKey, TypeRestriction
 instance toString RequestCacheKey
 where toString rck = toString $ toJSON rck
 
-toRequestCacheKey :: CloogleDB Request -> RequestCacheKey
-toRequestCacheKey db r =
-	{ c_unify            = snd <$>
+toRequestCacheKey :: !*CloogleDB !Request -> *(!RequestCacheKey, !*CloogleDB)
+toRequestCacheKey db r = (
+	{ c_unify            = Nothing /*snd <$>
 		prepare_unification True (map getTypeDef $ allTypes db) <$>
-		(parseType o fromString =<< r.unify)
+		(parseType o fromString =<< r.unify)*/
 	, c_name             = r.name
 	, c_className        = r.className
 	, c_typeName         = r.typeName
@@ -73,7 +73,7 @@ toRequestCacheKey db r =
 	, c_include_core     = fromJust (r.include_core <|> Just DEFAULT_INCLUDE_CORE)
 	, c_include_apps     = fromJust (r.include_apps <|> Just DEFAULT_INCLUDE_APPS)
 	, c_page             = fromJust (r.page <|> Just 0)
-	}
+	}, db)
 fromRequestCacheKey :: RequestCacheKey -> Request
 fromRequestCacheKey k =
 	{ unify            = concat <$> print False <$> k.c_unify
@@ -119,17 +119,23 @@ Start w
 | opts.help = help (hd cmdline) w
 # w = disableSwap w
 #! (_,f,w) = fopen "types.json" FReadText w
-#! (db,f) = openDb f
-#! db = hyperstrict db
-#! w = if opts.reload_cache (doInBackground (reloadCache db)) id w
+#! (db,f) = openDB f
+#! (ok,db) = isJustU db
+| not ok
+	# (io,w) = stdio w
+	# io = io <<< "Could not open database\n"
+	# (_,w) = fclose io w
+	= w
+#! db = hyperstrict (fromJust db)
+//#! w = if opts.reload_cache (doInBackground (reloadCache db)) id w
 #! (_,w) = fclose f w
 = serve
-	{ handler           = handle db
+	{ handler           = handle
 	, logger            = Just log
 	, port              = opts.Options.port
 	, connect_timeout   = Just 3600000 // 1h
 	, keepalive_timeout = Just 5000    // 5s
-	} w
+	} db w
 where
 	help :: String *World -> *World
 	help pgm w
@@ -146,33 +152,36 @@ where
 	# io = io <<< "Could not lock memory (" <<< err <<< "); process may get swapped out\n"
 	= snd $ fclose io w
 
-	handle :: !CloogleDB !(Maybe Request) !*World -> *(!Response, CacheKey, !*World)
-	handle db Nothing w = (err InvalidInput "Couldn't parse input", "", w)
-	handle db (Just request=:{unify,name,page}) w
+	handle :: !(Maybe Request) !*CloogleDB !*World -> *(!Response, CacheKey, !*CloogleDB, !*World)
+	handle Nothing db w = (err InvalidInput "Couldn't parse input", "", db, w)
+	handle (Just request=:{unify,name,page}) db w
 		//Check cache
+		#! (key,db) = toRequestCacheKey db request
 		#! (mbResponse, w) = readCache key w
 		| isJust mbResponse
 			# r = fromJust mbResponse
-			= respond {r & return = if (r.return == 0) 1 r.return} w
+			= respond key {r & return = if (r.return == 0) 1 r.return} db w
 		| isJust name && size (fromJust name) > 40
-			= respond (err InvalidName "Function name too long") w
+			= respond key (err InvalidName "Function name too long") db w
 		| isJust name && any isSpace (fromString $ fromJust name)
-			= respond (err InvalidName "Name cannot contain spaces") w
+			= respond key (err InvalidName "Name cannot contain spaces") db w
 		| isJust unify && isNothing (parseType $ fromString $ fromJust unify)
-			= respond (err InvalidType "Couldn't parse type") w
+			= respond key (err InvalidType "Couldn't parse type") db w
 		// Results
 		#! drop_n = fromJust (page <|> pure 0) * MAX_RESULTS
-		#! results = drop drop_n $ sort $ search request db
+		#! (res,db) = search request db
+		#! results = drop drop_n res
 		#! more = max 0 (length results - MAX_RESULTS)
 		// Suggestions
-		#! suggestions = unify >>= parseType o fromString >>= flip (suggs name) db
-		#! w = seq [cachePages
-				(toRequestCacheKey db req) CACHE_PREFETCH 0 zero suggs
-				\\ (req,suggs) <- 'Foldable'.concat suggestions] w
-		#! suggestions
-			= sortBy (\a b -> snd a > snd b) <$>
-			  filter ((<) (length results) o snd) <$>
-			  map (appSnd length) <$> suggestions
+//		#! suggestions = unify >>= parseType o fromString >>= flip (suggs name) db
+//		#! w = seq [cachePages
+//				(toRequestCacheKey db req) CACHE_PREFETCH 0 zero suggs
+//				\\ (req,suggs) <- 'Foldable'.concat suggestions] w
+//		#! suggestions
+//			= sortBy (\a b -> snd a > snd b) <$>
+//			  filter ((<) (length results) o snd) <$>
+//			  map (appSnd length) <$> suggestions
+		# suggestions = Nothing
 		#! (results,nextpages) = splitAt MAX_RESULTS results
 		// Response
 		#! response = if (isEmpty results)
@@ -185,12 +194,10 @@ where
 		// Save page prefetches
 		#! w = cachePages key CACHE_PREFETCH 1 response nextpages w
 		// Save cache file
-		= respond response w
+		= respond key response db w
 	where
-		key = toRequestCacheKey db request
-
-		respond :: !Response !*World -> *(!Response, !CacheKey, !*World)
-		respond r w = (r, cacheKey key, writeCache LongTerm key r w)
+		respond :: !RequestCacheKey !Response !*CloogleDB !*World -> *(!Response, !CacheKey, !*CloogleDB, !*World)
+		respond key r db w = (r, cacheKey key, db, writeCache LongTerm key r w)
 
 		cachePages :: !RequestCacheKey !Int !Int !Response ![Result] !*World -> *World
 		cachePages key _ _  _ [] w = w

@@ -4,20 +4,21 @@ from StdOverloaded import class zero, class fromString, class toString
 from StdMaybe import :: Maybe
 from TCPIP import ::IPAddress, ::Port
 
-:: LogMessage a b t
+:: LogMessage req res sentinfo
 	= Connected IPAddress
-	| Received a
-	| Sent b t
+	| Received req
+	| Sent res sentinfo
 	| Disconnected
 
-:: Logger a b s t :== (LogMessage a b t) (Maybe s) *World -> *(Maybe s, *World)
+:: Logger req res logst sentinfo
+	:== (LogMessage req res sentinfo) (Maybe logst) *World -> *(Maybe logst, *World)
 
-:: Server a b s t
-	= { handler           :: !a *World -> *(!b, !t, !*World)
-	  , logger            :: !Maybe (Logger a b s t)
-	  , port              :: !Int
-	  , connect_timeout   :: !Maybe Int
-	  , keepalive_timeout :: !Maybe Int
-	  }
+:: Server req res st logst sentinfo =
+	{ handler           :: !req -> .(st -> *(*World -> *(!res, !sentinfo, !st, !*World)))
+	, logger            :: !Maybe (Logger req res logst sentinfo)
+	, port              :: !Int
+	, connect_timeout   :: !Maybe Int
+	, keepalive_timeout :: !Maybe Int
+	}
 
-serve :: !(Server a b s t) !*World -> *World | fromString a & toString b
+serve :: !(Server req res .st logst sentinfo) .st !*World -> *World | fromString req & toString res

@@ -1,9 +1,9 @@
 definition module Builtins
 
-from CloogleDB import :: Location, :: FunctionEntry, :: ClassEntry,
-	:: TypeDefEntry, :: SyntaxEntry
+from CloogleDB import :: FunctionEntry, :: ClassEntry, :: TypeDefEntry,
+	:: SyntaxEntry
 
-builtin_functions :: [(Location, FunctionEntry)]
-builtin_classes :: [(Location, ClassEntry)]
-builtin_types :: [(Location, TypeDefEntry)]
+builtin_functions :: [(FunctionEntry)]
+builtin_classes :: [(ClassEntry)]
+builtin_types :: [(TypeDefEntry)]
 builtin_syntax :: [([String], SyntaxEntry)]

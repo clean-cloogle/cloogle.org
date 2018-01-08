@@ -7,8 +7,8 @@ import TCPIP
 
 instance zero (Logger a b s t) where zero = \_ _ w -> (undef, w)
 
-serve :: !(Server a b s t) !*World -> *World | fromString a & toString b
-serve server w
+serve :: !(Server req res .st logst sentinfo) .st !*World -> *World | fromString req & toString res
+serve server st w
 # (ok, mbListener, w) = openTCP_Listener server.port w
 | not ok = abort ("Couldn't open port " +++ toString server.port +++ "\n")
 # listener = fromJust mbListener
@@ -30,22 +30,22 @@ where
 	| pid > 0 // Parent: handle new requests
 		= loop li w
 	| pid == 0 // Child: handle current request
-		#! (st,w)       = logger (Connected ip) Nothing w
-		= handle st dupChan w
+		#! (logst,w)    = logger (Connected ip) Nothing w
+		= handle logst st dupChan w
 
 	//handle :: !(Maybe s) !TCP_DuplexChannel !*World -> *(!TCP_Listener, !*World)
-	handle st dupChannel=:{rChannel,sChannel} w
+	handle logst st dupChannel=:{rChannel,sChannel} w
 	#! (tRep,msg,rChannel,w) = receive_MT server.keepalive_timeout rChannel w
 	| tRep <> TR_Success
-		#! (st,w)            = logger Disconnected st w
+		#! (logst,w)         = logger Disconnected logst w
 		#! w                 = closeChannel sChannel (closeRChannel rChannel w)
 		= exit 0 w
 	#! msg                   = fromString (toString (fromJust msg))
-	#! (st, w)               = logger (Received msg) st w
-	#! (resp, hidden, w)     = server.handler msg w
+	#! (logst, w)            = logger (Received msg) logst w
+	#! (resp, hidden, st, w) = server.handler msg st w
 	#! (sChannel, w)         = send (toByteSeq (toString resp)) sChannel w
-	#! (st, w)               = logger (Sent resp hidden) st w
-	= handle st {dupChannel & rChannel=rChannel, sChannel=sChannel} w
+	#! (logst, w)            = logger (Sent resp hidden) logst w
+	= handle logst st {dupChannel & rChannel=rChannel, sChannel=sChannel} w
 
 signal :: !Int !Int !*World -> *(!Int, !*World)
 signal signum handler w = code {

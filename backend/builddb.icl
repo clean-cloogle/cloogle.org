@@ -91,11 +91,6 @@ Start w
 	# mods        = flatten modss
 	#! (db, w)    = loop cli.root mods newTemporaryDb w
 	#! db         = finaliseDb builtins db
-	//#! db         = putFunctions builtin_functions db
-	//#! db         = putClasses builtin_classes db
-	//#! db         = putTypes builtin_types db
-	//#! db         = putFunctions [(setName n loc, f)\\ (loc,t) <- builtin_types, (n, f) <- constructor_functions t ++ record_functions t] db
-	//#! db         = putSyntaxElems builtin_syntax db
 	#! db         = syncDB 2 db
 	#! (ok1,w)    = (True,w) // TODO fclose (printStats db stderr) w
 	#! (db,f)     = saveDB db f
@@ -120,7 +115,8 @@ where
 		map ClassEntry builtin_classes ++
 		map TypeDefEntry builtin_types ++
 		map FunctionEntry (concatMap constructor_functions builtin_types) ++
-		map FunctionEntry (concatMap record_functions builtin_types)
+		map FunctionEntry (concatMap record_functions builtin_types) ++
+		map SyntaxEntry builtin_syntax
 
 	eval_all_nodes :: !.a -> .a // From GraphCopy
 	eval_all_nodes g = code {

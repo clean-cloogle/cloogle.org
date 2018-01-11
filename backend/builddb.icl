@@ -12,6 +12,7 @@ import StdTuple
 import Data.Either
 from Data.Func import $, mapSt
 import Data.Functor
+import Data.List
 import Data.Maybe
 import System.CommandLine
 from Text import class Text(concat,startsWith), instance Text String
@@ -89,7 +90,7 @@ Start w
 	# (modss, w)  = mapSt (flip (uncurry $ findModules cli.exclude cli.root) "") cli.libs w
 	# mods        = flatten modss
 	#! (db, w)    = loop cli.root mods newTemporaryDb w
-	#! db         = finaliseDb db
+	#! db         = finaliseDb builtins db
 	//#! db         = putFunctions builtin_functions db
 	//#! db         = putClasses builtin_classes db
 	//#! db         = putTypes builtin_types db
@@ -113,6 +114,13 @@ where
 	#! (db, w) = indexModule False root mod lib modf db w
 	#! db = eval_all_nodes db
 	= loop root list db w
+
+	builtins =
+		map FunctionEntry builtin_functions ++
+		map ClassEntry builtin_classes ++
+		map TypeDefEntry builtin_types ++
+		map FunctionEntry (concatMap constructor_functions builtin_types) ++
+		map FunctionEntry (concatMap record_functions builtin_types)
 
 	eval_all_nodes :: !.a -> .a // From GraphCopy
 	eval_all_nodes g = code {

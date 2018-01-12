@@ -510,11 +510,6 @@ function getResults(str, libs, include_builtins, include_core, include_apps, pag
 							'Instances',
 							makeInstanceTable(extra['class_instances'], highlightType),
 							pluralise(extra['class_instances'].length, 'instance')]);
-				if (extra['class_derivations'].length > 0)
-					hidden.push([
-							'Derivations',
-							makeInstanceTable(extra['class_derivations'], highlightType),
-							pluralise(extra['class_derivations'].length, 'derivation')]);
 
 				var html = highlightClassDef(
 						'class ' + extra['class_heading'] +

@@ -3,7 +3,7 @@ module CloogleServer
 import StdArray
 import StdBool
 import StdFile
-from StdFunc import id, o, seq
+from StdFunc import id, o
 import StdList
 import StdMisc
 import StdOrdList
@@ -18,7 +18,7 @@ import Control.Monad
 import Data.Error
 import qualified Data.Foldable as Foldable
 from Data.Foldable import class Foldable
-from Data.Func import $, hyperstrict, instance Functor ((->) r)
+from Data.Func import $, hyperstrict, instance Functor ((->) r), mapSt, seqSt
 import Data.Functor
 from Data.List import permutations
 import Data.Maybe
@@ -173,15 +173,17 @@ where
 		#! results = drop drop_n res
 		#! more = max 0 (length results - MAX_RESULTS)
 		// Suggestions
-//		#! suggestions = unify >>= parseType o fromString >>= flip (suggs name) db
-//		#! w = seq [cachePages
-//				(toRequestCacheKey db req) CACHE_PREFETCH 0 zero suggs
-//				\\ (req,suggs) <- 'Foldable'.concat suggestions] w
-//		#! suggestions
-//			= sortBy (\a b -> snd a > snd b) <$>
-//			  filter ((<) (length results) o snd) <$>
-//			  map (appSnd length) <$> suggestions
-		# suggestions = Nothing
+		#! (suggestions,db) = case unify >>= parseType o fromString of
+			Just t -> suggs name t db
+			Nothing -> (Nothing, db)
+		#! (db,w) = seqSt
+			(\(req,res) (db,w) -> let (k,db`) = toRequestCacheKey db req in (db`,cachePages k CACHE_PREFETCH 0 zero res w))
+			(fromMaybe [] suggestions)
+			(db,w)
+		#! suggestions
+			= sortBy (\a b -> snd a > snd b) <$>
+			  filter ((<) (length results) o snd) <$>
+			  map (appSnd length) <$> suggestions
 		#! (results,nextpages) = splitAt MAX_RESULTS results
 		// Response
 		#! response = if (isEmpty results)
@@ -214,14 +216,13 @@ where
 				}
 			(give,keep) = splitAt MAX_RESULTS results
 
-	suggs :: !(Maybe String) !Type !CloogleDB -> Maybe [(Request, [Result])]
-	suggs n (Func is r cc) db
-		| length is < 3
-			= Just [let t` = concat $ print False $ Func is` r cc in
-			        let request = {zero & name=n, unify=Just t`} in
-			        (request, search request db)
-			        \\ is` <- permutations is | is` <> is]
-	suggs _ _ _ = Nothing
+	suggs :: !(Maybe String) !Type !*CloogleDB -> *(Maybe [(Request, [Result])], *CloogleDB)
+	suggs n (Func is r cc) db | length is < 3
+	= appFst Just $ mapSt (\r -> appFst (tuple r) o search r o resetDB) reqs db
+	where
+		reqs = [{zero & name=n, unify=Just $ concat $ print False $ Func is` r cc}
+			\\ is` <- permutations is | is` <> is]
+	suggs _ _ db = (Nothing, db)
 
 	reloadCache :: !CloogleDB -> *World -> *World
 	reloadCache db = uncurry (flip (foldl (flip search))) o allCacheKeys LongTerm

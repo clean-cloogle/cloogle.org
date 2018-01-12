@@ -34,6 +34,7 @@ builtin_classes :: [ClassEntry]
 builtin_classes =
 	[ { ce_loc=Builtin "TC" [CLR 10 "8.1.4" "_Toc311798080"]
 	  , ce_vars=["v"]
+	  , ce_is_meta=False
 	  , ce_context=[]
 	  , ce_documentation=Nothing
 	  , ce_members=[]
@@ -103,6 +104,7 @@ where
 			}
 		, tde_doc=Nothing
 		, tde_instances=[]
+		, tde_derivations=[]
 		}
 	defc =
 		{ cons_name=""

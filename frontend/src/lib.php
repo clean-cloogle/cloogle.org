@@ -79,34 +79,34 @@ function makeBrowser($dir, $basemodule) {
 
 $alllibs = [
 	'Clean 2.4' => [
-		'StdEnv',
 		'ArgEnv',
 		'Directory',
 		'Dynamics',
 		'Gast',
 		'Generics',
 		'MersenneTwister',
+		'StdEnv',
 		'StdLib',
 		'TCPIP',
 	],
 	'Official' => [
 		'GraphCopy',
+		'iTasks',
 		'ObjectIO',
 		'Platform',
 		'Sapl',
-		'iTasks',
 	],
 	'Miscellaneous' => [
+		'clean-compiler',
+		'clean-ide',
 		'CleanInotify',
 		'CleanPrettyPrint',
 		'CleanSerial',
 		'CleanSnappy',
 		'CleanTypeUnifier',
 		'Cloogle',
-		'SoccerFun',
-		'clean-compiler',
-		'clean-ide',
 		'libcloogle',
+		'SoccerFun',
 	]
 ];
 

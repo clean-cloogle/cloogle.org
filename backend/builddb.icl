@@ -91,7 +91,6 @@ Start w
 	# mods        = flatten modss
 	#! (db, w)    = loop cli.root mods newTemporaryDb w
 	#! db         = finaliseDb builtins db
-	#! db         = syncDB 2 db
 	#! (db,err)   = printStats db stderr
 	#! (ok1,w)    = fclose err w
 	#! (db,f)     = saveDB db f

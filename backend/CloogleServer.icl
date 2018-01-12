@@ -60,10 +60,12 @@ instance toString RequestCacheKey
 where toString rck = toString $ toJSON rck
 
 toRequestCacheKey :: !*CloogleDB !Request -> *(!RequestCacheKey, !*CloogleDB)
-toRequestCacheKey db r = (
-	{ c_unify            = Nothing /*snd <$>
-		prepare_unification True (map getTypeDef $ allTypes db) <$>
-		(parseType o fromString =<< r.unify)*/
+toRequestCacheKey db r
+# (tds,db) = allTypeDefs db
+= (
+	{ c_unify            = snd <$>
+		prepare_unification True (map getTypeDef tds) <$>
+		(parseType o fromString =<< r.unify)
 	, c_name             = r.name
 	, c_className        = r.className
 	, c_typeName         = r.typeName

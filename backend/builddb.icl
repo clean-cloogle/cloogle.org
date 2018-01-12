@@ -92,12 +92,13 @@ Start w
 	#! (db, w)    = loop cli.root mods newTemporaryDb w
 	#! db         = finaliseDb builtins db
 	#! db         = syncDB 2 db
-	#! (ok1,w)    = (True,w) // TODO fclose (printStats db stderr) w
+	#! (db,err)   = printStats db stderr
+	#! (ok1,w)    = fclose err w
 	#! (db,f)     = saveDB db f
 	#! (ok2,w)    = fclose f w
-	//#! (_,dbg,w)  = fopen "typetree.dot" FWriteText w
-	//#! dbg        = writeTypeTree db dbg
-	//#! (_,w)      = fclose dbg w
+	#! (_,dbg,w)  = fopen "typetree.dot" FWriteText w
+	#! (db,dbg)   = writeTypeTree db dbg
+	#! (_,w)      = fclose dbg w
 	= (ok1 && ok2,w)
 | not ok = abort "Couldn't close stdio"
 = w
@@ -137,33 +138,28 @@ where
 		("-l", [x:xs]) = (\c->{c & libs=[(x,const id):c.libs]}) <$> parseCLI xs
 		(x, _) = Left $ "Unknown option '" +++ x +++ "'"
 
-	//printStats :: !CloogleDB !*File -> *File
-	//printStats db f = f
-	//	<<< "+-------------------+-------+\n"
-	//	<<< "| Modules           | " <<< modules  <<< " |\n"
-	//	<<< "| Functions         | " <<< funs     <<< " |\n"
-	//	<<< "| With types        | " <<< treesize <<< " |\n"
-	//	<<< "| Unique types      | " <<< unqtypes <<< " |\n"
-	//	<<< "| Type tree depth   | " <<< treedep  <<< " |\n"
-	//	<<< "| Type definitions  | " <<< types    <<< " |\n"
-	//	<<< "| Classes           | " <<< classes  <<< " |\n"
-	//	<<< "| Instances         | " <<< insts    <<< " |\n"
-	//	<<< "| Derivations       | " <<< derives  <<< " |\n"
-	//	<<< "| Syntax constructs | " <<< syntaxs  <<< " |\n"
-	//	<<< "+-------------------+-------+\n"
-	//where
-	//	[modules,funs,unqtypes,treesize,treedep,types,classes,insts,derives,syntaxs:_]
-	//		= map (pad 5)
-	//			[ moduleCount db
-	//			, functionCount db
-	//			, treenodes
-	//			, treesize
-	//			, treedepth
-	//			, typeCount db
-	//			, classCount db
-	//			, instanceCount db
-	//			, deriveCount db
-	//			, syntaxCount db
-	//			]
-	//	where (treenodes,treesize,treedepth) = typeTreeStats db
-	//	pad n i = {' ' \\ _ <- [0..n-size (toString i)-1]} +++ toString i
+	printStats :: !*CloogleDB !*File -> *(*CloogleDB, *File)
+	printStats db f
+	# (s,db) = dbStats db
+	= (db, f
+		<<< "+-------------------+-------+\n"
+		<< "Modules"           <-- s.n_modules
+		<< "Functions"         <-- s.n_functions
+		<< "With types"        <-- s.n_functions_with_type
+		<< "Unique types"      <-- s.n_unique_types
+		<< "Type tree depth"   <-- s.type_tree_depth
+		<< "Type definitions"  <-- s.n_type_definitions
+		<< "Classes"           <-- s.n_classes
+		<< "Instances"         <-- s.n_instances
+		<< "Derivations"       <-- s.n_derivations
+		<< "Syntax constructs" <-- s.n_syntax_constructs
+		<<< "+-------------------+-------+\n")
+	where
+		(<<) infixl :: *File String -> *File
+		(<<) f s = f <<< "| " <<< rpad 17 s <<< " | "
+
+		(<--) infixl :: *File Int -> *File
+		(<--) f i = f <<< lpad 5 i <<< " |\n"
+
+		lpad n s = {' ' \\ _ <- [0..n-size (toString s)-1]} +++ toString s
+		rpad n s = toString s +++ {' ' \\ _ <- [0..n-size (toString s)-1]}

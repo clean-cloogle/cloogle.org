@@ -52,7 +52,7 @@ class CloogleHtmlFormatter(pygments.formatters.HtmlFormatter):
                 cspan = cls and '<span class="%s">' % cls or ''
 
             safe_value = value.translate(escape_table)
-            if ttype in [Name.Class, Name, Operator, Literal] \
+            if ttype in [Name.Class, Name.Function, Name, Operator, Literal] \
                     and value not in CLEAN_SYNTAX_TOKENS:
                 value = u'<a href="/#%s">%s</a>' % (
                     urllib.parse.quote(value), safe_value)

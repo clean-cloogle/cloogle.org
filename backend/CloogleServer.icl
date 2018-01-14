@@ -46,6 +46,7 @@ CACHE_PREFETCH :== 5
 	  , c_name             :: Maybe String
 	  , c_className        :: Maybe String
 	  , c_typeName         :: Maybe String
+	  , c_using            :: Bool
 	  , c_modules          :: Maybe [String]
 	  , c_libraries        :: Maybe [String]
 	  , c_include_builtins :: Bool
@@ -69,12 +70,13 @@ toRequestCacheKey db r
 	, c_name             = toLowerCase <$> r.name
 	, c_className        = r.className
 	, c_typeName         = r.typeName
+	, c_using            = fromMaybe False r.using
 	, c_modules          = sort <$> r.modules
 	, c_libraries        = sort <$> r.libraries
-	, c_include_builtins = fromJust (r.include_builtins <|> Just DEFAULT_INCLUDE_BUILTINS)
-	, c_include_core     = fromJust (r.include_core <|> Just DEFAULT_INCLUDE_CORE)
-	, c_include_apps     = fromJust (r.include_apps <|> Just DEFAULT_INCLUDE_APPS)
-	, c_page             = fromJust (r.page <|> Just 0)
+	, c_include_builtins = fromMaybe DEFAULT_INCLUDE_BUILTINS r.include_builtins
+	, c_include_core     = fromMaybe DEFAULT_INCLUDE_CORE r.include_core
+	, c_include_apps     = fromMaybe DEFAULT_INCLUDE_APPS r.include_apps
+	, c_page             = fromMaybe 0 r.page
 	}, db)
 fromRequestCacheKey :: RequestCacheKey -> Request
 fromRequestCacheKey k =
@@ -82,6 +84,7 @@ fromRequestCacheKey k =
 	, name             = k.c_name
 	, className        = k.c_className
 	, typeName         = k.c_typeName
+	, using            = Just k.c_using
 	, modules          = k.c_modules
 	, libraries        = k.c_libraries
 	, include_builtins = Just k.c_include_builtins

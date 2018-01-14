@@ -105,6 +105,7 @@ where
 		, tde_doc=Nothing
 		, tde_instances=[]
 		, tde_derivations=[]
+		, tde_usages=[]
 		}
 	defc =
 		{ cons_name=""

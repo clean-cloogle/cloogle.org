@@ -177,6 +177,11 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET'){
 		}
 	}
 
+	if (substr($name, 0, 6) == 'using ') {
+		$command['using'] = true;
+		$name = substr($name, 6);
+	}
+
 	if (substr($name, 0, 6) == 'class ') {
 		$command['className'] = substr($name, 6);
 	} elseif (substr($name, 0, 5) == 'type ') {

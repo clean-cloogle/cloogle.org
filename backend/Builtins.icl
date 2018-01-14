@@ -40,6 +40,7 @@ builtin_classes =
 	  , ce_members=[]
 	  , ce_instances=[]
 	  , ce_derivations=[]
+	  , ce_usages=[]
 	  }
 	]
 

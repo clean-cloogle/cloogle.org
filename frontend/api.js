@@ -115,11 +115,11 @@ function mergeComments(code, comments) {
 
 String.prototype.markup = function() {
 	return this
+		.replace(/\n```[^\n]+\n/g, '<pre>')
+		.replace(/\n```\n/g, '</pre>')
 		.split(/\n\n/).join('<br class="parbreak"/>')
 		.split(/\n\s*-/).join('<br/>-')
 		.split(/\n\s*\*/).join('<br/>*')
-		.replace(/\n```[^\n]+\n/g, '<pre>')
-		.replace(/\n```\n/g, '</pre>')
 		.replace(/{{`([^`}]+)`}}/g, '`{{$1}}`')
 		.replace(/`([^`]+)`/g, '<code>$1</code>')
 		.replace(/{{([^}]+)}}/g, function (m,c) {

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import glob
 import json
+from os.path import basename
 import re
 from subprocess import call
 
@@ -67,7 +68,7 @@ def index(fname):
         examples = extract_examples(lines)
 
         return {
-            'key': fname[:-3],
+            'key': basename(fname)[:-3],
             'title': title,
             'keywords': keywords,
             'description': description,

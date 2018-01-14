@@ -19,7 +19,7 @@ from Text import class Text(concat,startsWith), instance Text String
 
 import CloogleDB
 import Type
-from CloogleDBFactory import :: TemporaryDB, newTemporaryDb, finaliseDb,
+from CloogleDBFactory import :: TemporaryDB, newTemporaryDB, finaliseDB,
 	findModules, indexModule, constructor_functions, record_functions
 
 import Builtins
@@ -89,8 +89,8 @@ Start w
 	| cli.version = fclose (f <<< VERSION) w
 	# (modss, w)  = mapSt (flip (uncurry $ findModules cli.exclude cli.root) "") cli.libs w
 	# mods        = flatten modss
-	#! (db, w)    = loop cli.root mods newTemporaryDb w
-	#! db         = finaliseDb builtins db
+	#! (db, w)    = loop cli.root mods newTemporaryDB w
+	#! db         = finaliseDB builtins db
 	#! (db,err)   = printStats db stderr
 	#! (ok1,w)    = fclose err w
 	#! (db,f)     = saveDB db f

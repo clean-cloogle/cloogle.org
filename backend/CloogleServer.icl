@@ -67,8 +67,8 @@ toRequestCacheKey db r
 		prepare_unification True allsyns <$>
 		(parseType o fromString =<< r.unify)
 	, c_name             = toLowerCase <$> r.name
-	, c_className        = toLowerCase <$> r.className
-	, c_typeName         = toLowerCase <$> r.typeName
+	, c_className        = r.className
+	, c_typeName         = r.typeName
 	, c_modules          = sort <$> r.modules
 	, c_libraries        = sort <$> r.libraries
 	, c_include_builtins = fromJust (r.include_builtins <|> Just DEFAULT_INCLUDE_BUILTINS)

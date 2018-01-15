@@ -132,7 +132,7 @@ Start w
 	# (_,w) = fclose io w
 	= w
 #! db = hyperstrict (fromJust db)
-//#! w = if opts.reload_cache (doInBackground (reloadCache db)) id w
+#! (db,w) = if opts.reload_cache (doInBackground reloadCache) id (db,w)
 #! (_,w) = fclose f w
 = serve
 	{ handler           = handle
@@ -229,13 +229,20 @@ where
 			\\ is` <- permutations is | is` <> is]
 	suggs _ _ db = (Nothing, db)
 
-	reloadCache :: !CloogleDB -> *World -> *World
-	reloadCache db = uncurry (flip (foldl (flip search))) o allCacheKeys LongTerm
+	reloadCache :: !*(!*CloogleDB, !*World) -> *(!*CloogleDB, !*World)
+	reloadCache (db,w)
+	# (ks,w) = allCacheKeys LongTerm w
+	= loop ks db w
 	where
-		search :: !RequestCacheKey -> *World -> *World
-		search r = thd3 o handle db (Just $ fromRequestCacheKey r) o removeFromCache LongTerm r
+		loop :: ![RequestCacheKey] !*CloogleDB !*World -> *(!*CloogleDB, !*World)
+		loop [] db w = (db,w)
+		loop [k:ks] db w
+		# w = removeFromCache LongTerm k w
+		# (_,_,db,w) = handle (Just $ fromRequestCacheKey k) db w
+		# db = resetDB db
+		= loop ks db w
 
-	doInBackground :: (*World -> *World) *World -> *World
+	doInBackground :: (*a -> *a) *a -> *a
 	doInBackground f w
 	#! (pid,w) = fork w
 	| pid  < 0 = abort "fork failed\n"

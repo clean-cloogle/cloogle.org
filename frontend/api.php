@@ -177,21 +177,22 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET'){
 		}
 	}
 
-	if (substr($name, 0, 6) == 'using ') {
-		$command['using'] = true;
-		$name = substr($name, 6);
+	if ($unify != '') {
+		$command['unify'] = $unify;
 	}
 
-	if (substr($name, 0, 6) == 'class ') {
+	if (substr($name, 0, 6) == 'using ') {
+		$command['using'] = [];
+		$usingnames = explode(',', substr($name, 6));
+		foreach ($usingnames as $usingname) {
+			$command['using'][] = trim($usingname);
+		}
+	} elseif (substr($name, 0, 6) == 'class ') {
 		$command['className'] = substr($name, 6);
 	} elseif (substr($name, 0, 5) == 'type ') {
 		$command['typeName'] = substr($name, 5);
 	} elseif ($name != '') {
 		$command['name'] = $name;
-	}
-
-	if ($unify != '') {
-		$command['unify'] = $unify;
 	}
 
 	if (isset($_GET['lib'])) {

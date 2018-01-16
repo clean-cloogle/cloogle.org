@@ -24,6 +24,16 @@ function updateSearches() {
 			return '<span class="keyword">type</span> ' +
 				highlightFunction(q.substring(5));
 		}
+	} else if (query.substring(0,6) == 'using ') {
+		highlighter = function(q) {
+			return '<span class="keyword">using</span> ' +
+				highlightToHTML({
+					start: [
+						[/(,)/,     ['punctuation']],
+						[/([^,]+)/, ['funcname']],
+					]
+				}, q.substring(6));
+		}
 	}
 
 	last.innerHTML = '<pre>' + highlighter(query) + '</pre>';
@@ -67,6 +77,8 @@ function addRecord(req) {
 		query = 'class ' + req.className;
 	else if ('typeName' in req)
 		query = 'type ' + req.typeName;
+	else if ('using' in req)
+		query = 'using ' + req.using.join(', ');
 
 	searches.splice(0, 0, [query, time]);
 	if (searches.length > 10)

@@ -38,8 +38,9 @@ import SimpleTCPServer
 import Cache
 import Memory
 
-MAX_RESULTS    :== 15
-CACHE_PREFETCH :== 5
+MAX_RESULTS        :== 15
+CACHE_PREFETCH     :== 5
+CACHE_NS_THRESHOLD :== 40000000
 
 :: RequestCacheKey
 	= { c_unify            :: Maybe Type
@@ -157,21 +158,22 @@ where
 	# io = io <<< "Could not lock memory (" <<< err <<< "); process may get swapped out\n"
 	= snd $ fclose io w
 
-	handle :: !(Maybe Request) !*CloogleDB !*World -> *(!Response, CacheKey, !*CloogleDB, !*World)
-	handle Nothing db w = (err InvalidInput "Couldn't parse input", "", db, w)
+	handle :: !(Maybe Request) !*CloogleDB !*World -> *(!Response, !(!Maybe CacheKey, !MicroSeconds), !*CloogleDB, !*World)
+	handle Nothing db w = (err InvalidInput "Couldn't parse input", (Nothing,0), db, w)
 	handle (Just request=:{unify,name,page}) db w
+		#! (start,w) = nsTime w
 		//Check cache
 		#! (key,db) = toRequestCacheKey db request
 		#! (mbResponse, w) = readCache key w
 		| isJust mbResponse
 			# r = fromJust mbResponse
-			= respond key {r & return = if (r.return == 0) 1 r.return} db w
+			= respond start Nothing {r & return = if (r.return == 0) 1 r.return} db w
 		| isJust name && size (fromJust name) > 40
-			= respond key (err InvalidName "Function name too long") db w
+			= respond start Nothing (err InvalidName "Function name too long") db w
 		| isJust name && any isSpace (fromString $ fromJust name)
-			= respond key (err InvalidName "Name cannot contain spaces") db w
+			= respond start Nothing (err InvalidName "Name cannot contain spaces") db w
 		| isJust unify && isNothing (parseType $ fromString $ fromJust unify)
-			= respond key (err InvalidType "Couldn't parse type") db w
+			= respond start Nothing (err InvalidType "Couldn't parse type") db w
 		// Results
 		#! drop_n = fromJust (page <|> pure 0) * MAX_RESULTS
 		#! (res,db) = search request db
@@ -201,10 +203,17 @@ where
 		// Save page prefetches
 		#! w = cachePages key CACHE_PREFETCH 1 response nextpages w
 		// Save cache file
-		= respond key response db w
+		= respond start (Just key) response db w
 	where
-		respond :: !RequestCacheKey !Response !*CloogleDB !*World -> *(!Response, !CacheKey, !*CloogleDB, !*World)
-		respond key r db w = (r, cacheKey key, db, writeCache LongTerm key r w)
+		respond :: !Timespec !(Maybe RequestCacheKey) !Response !*CloogleDB !*World ->
+			*(!Response, !(!Maybe CacheKey, !MicroSeconds), !*CloogleDB, !*World)
+		respond start key r db w
+		#! (end,w) = nsTime w
+		#! duration = 1000000000 * (end.tv_sec - start.tv_sec) + end.tv_nsec - start.tv_nsec
+		#! cache = duration > CACHE_NS_THRESHOLD
+		= (r, (if cache (cacheKey <$> key) Nothing, duration / 1000), db, case (cache,key) of
+			(True,Just k) -> writeCache LongTerm k r w
+			_             -> w)
 
 		cachePages :: !RequestCacheKey !Int !Int !Response ![Result] !*World -> *World
 		cachePages key _ _  _ [] w = w
@@ -265,14 +274,17 @@ where
 		, mem_request    = undef
 		}
 
-:: LogMessage` :== LogMessage (Maybe Request) Response CacheKey
+:: MicroSeconds :== Int
+
+:: LogMessage` :== LogMessage (Maybe Request) Response (Maybe CacheKey, MicroSeconds)
 
 :: LogEntry =
 	{ ip            :: String
 	, time_start    :: (String, Int)
 	, time_end      :: (String, Int)
+	, microseconds  :: Int
 	, request       :: Maybe Request
-	, cachekey      :: String
+	, cachekey      :: Maybe String
 	, response_code :: Int
 	, results       :: Int
 	}
@@ -301,10 +313,11 @@ where
 	updateMemory _                   s w = (s,w)
 
 	makeLogEntry :: LogMessage` LogMemory -> LogEntry
-	makeLogEntry (Sent response ck) mem =
+	makeLogEntry (Sent response (ck,us)) mem =
 		{ ip            = toString mem.mem_ip
 		, time_start    = (toString mem.mem_time_start, toInt $ timeGm mem.mem_time_start)
 		, time_end      = (toString mem.mem_time_end, toInt $ timeGm mem.mem_time_end)
+		, microseconds  = us
 		, request       = mem.mem_request
 		, cachekey      = ck
 		, response_code = response.return

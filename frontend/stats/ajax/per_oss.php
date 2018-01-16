@@ -8,7 +8,8 @@ $sql =
 		count(case when `responsecode`>1 and `responsecode`<150 then 1 else null end),
 		sum(case when `query` LIKE '%::%' then 1 else null end),
 		sum(case when `query` LIKE 'type %' then 1 else null end),
-		sum(case when `query` LIKE 'class %' then 1 else null end)
+		sum(case when `query` LIKE 'class %' then 1 else null end),
+		sum(case when `query` LIKE 'using %' then 1 else null end)
 	FROM `log`
 	INNER JOIN `useragent` ON `log`.`useragent_id` = `useragent`.`id`
 	WHERE
@@ -36,7 +37,8 @@ $results = [
 	['name' => 'Name only', 'data' => [], 'stack' => 'search kind'],
 	['name' => 'Unification', 'data' => [], 'stack' => 'search kind'],
 	['name' => 'Type', 'data' => [], 'stack' => 'search kind'],
-	['name' => 'Class', 'data' => [], 'stack' => 'search kind']
+	['name' => 'Class', 'data' => [], 'stack' => 'search kind'],
+	['name' => 'Using', 'data' => [], 'stack' => 'search kind']
 ];
 
 foreach ($oss as $os) {
@@ -44,7 +46,7 @@ foreach ($oss as $os) {
 	if (!$stmt->prepare($sql . $os))
 		var_dump($stmt->error);
 	$stmt->execute();
-	$stmt->bind_result($total, $servererr, $usererr, $unify, $type, $class);
+	$stmt->bind_result($total, $servererr, $usererr, $unify, $type, $class, $using);
 	$stmt->fetch();
 	$stmt->close();
 
@@ -54,15 +56,17 @@ foreach ($oss as $os) {
 	$unify = (int) $unify;
 	$type = (int) $type;
 	$class = (int) $class;
+	$using = (int) $using;
 
 	$results[0]['data'][] = $total - $servererr - $usererr;
 	$results[1]['data'][] = $servererr;
 	$results[2]['data'][] = $usererr;
 
-	$results[3]['data'][] = $total - $unify - $type - $class;
+	$results[3]['data'][] = $total - $unify - $type - $class - $using;
 	$results[4]['data'][] = $unify;
 	$results[5]['data'][] = $type;
 	$results[6]['data'][] = $class;
+	$results[7]['data'][] = $using;
 }
 
 $response = ['data' => $results, 'oss' => $oss_results];

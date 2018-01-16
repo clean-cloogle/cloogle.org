@@ -323,6 +323,7 @@
 
 			$.getJSON('ajax/types.php?callback=?', function(data) {
 				$('#types').highcharts({
+					colors: ['#7cb5ec', '#434348', '#90ed7d', '#8085e9', '#f7a35c'],
 					chart: { type: 'pie' },
 					credits: { enabled: false },
 					title: { text: 'Search kinds' },
@@ -342,7 +343,7 @@
 
 			$.getJSON('ajax/per_oss.php?callback=?', function(data) {
 				$('#per-oss').highcharts({
-					colors: ['#00aa00', '#dd0000', '#dddd00', '#f7a35c', '#7cb5ec', '#434348', '#90ed7d'],
+					colors: ['#00aa00', '#dd0000', '#dddd00', '#f7a35c', '#7cb5ec', '#434348', '#90ed7d', '#8085e9'],
 					chart: { type: 'column' },
 					credits: { enabled: false },
 					legend: { enabled: false },

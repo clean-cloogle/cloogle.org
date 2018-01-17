@@ -63,10 +63,11 @@ where toString rck = toString $ toJSON rck
 
 toRequestCacheKey :: !*CloogleDB !Request -> *(!RequestCacheKey, !*CloogleDB)
 toRequestCacheKey db r
+# (alwaysUnique,db) = alwaysUniquePredicate db
 # (allsyns,db) = allTypeSynonyms db
 = (
 	{ c_unify            = snd <$>
-		prepare_unification True allsyns <$>
+		prepare_unification True alwaysUnique allsyns <$>
 		(parseType o fromString =<< r.unify)
 	, c_name             = toLowerCase <$> r.name
 	, c_className        = r.className

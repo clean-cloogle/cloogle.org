@@ -1,7 +1,8 @@
 <?php
 error_reporting(0);
 
-define('SERVER_HOSTNAME', 'backend');
+//define('SERVER_HOSTNAME', 'backend');
+define('SERVER_HOSTNAME', '172.17.0.1');
 define('SERVER_PORT', 31215);
 define('SERVER_TIMEOUT', 8);
 

@@ -325,7 +325,7 @@ bs_define_graph =
 
 bs_dotdot =
 	{ syntax_title         = "dotdot expression"
-	, syntax_patterns      = ["[\\e..]", "[\\e..\e]", "[\\e,\\e..]", "[[\\e,\\e..\\e]", "dotdot", "dot-dot"]
+	, syntax_patterns      = ["[\\e..]", "[\\e..\e]", "[\\e,\\e..]", "[[\\e,\\e..\\e]", "dotdot", "dot-dot", ".."]
 	, syntax_code          = ["[i..]", "[i..k]", "[i,j..]", "[i,j..k]"]
 	, syntax_description   =
 		"A shorthand for lists of enumerable types.\n\n" +

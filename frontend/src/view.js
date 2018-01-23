@@ -96,10 +96,9 @@ window.onload = function() {
 		onLoad: function(state) {
 			viewer.scrollLeft = 0;
 			if (state.line != null) {
-				var l = document.getElementById('line-' + state.line).documentOffsetTop();
-				viewer.scrollTop = l - window.innerHeight/4;
+				browser.scrollTo(document.getElementById('line-' + state.line));
 			} else {
-				viewer.scrollTop = 0;
+				browser.scrollTo();
 			}
 
 			var modparts = state.mod.split('/');

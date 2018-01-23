@@ -124,6 +124,21 @@ Element.prototype.browser = function(opts) {
 		},
 		open: function() {
 			opts.newHash(decodeURIComponent(window.location.hash.substring(1)));
+		},
+		scrollTo: function(element) {
+			if (typeof element == 'undefined') {
+				var to = 0;
+			} else {
+				var to = element.documentOffsetTop() - window.innerHeight / 4;
+			}
+
+			if (opts.viewer != null) {
+				if (opts.viewer.scrollHeight > opts.viewer.clientHeight) {
+					viewer.scrollTop = to;
+				} else {
+					window.scrollTo(0, to);
+				}
+			}
 		}
 	};
 }

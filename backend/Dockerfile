@@ -3,7 +3,7 @@ FROM camilstaps/clean:nightly
 COPY . /usr/src/cloogle
 WORKDIR /usr/src/cloogle
 
-RUN install_clean.sh bundle-complete 2018-01-14 \
+RUN install_clean.sh bundle-complete 2018-01-29 \
 	&& PACKAGES="patch" \
 	&& apt-get update -qq\
 	&& apt-get install -qq $PACKAGES --no-install-recommends\

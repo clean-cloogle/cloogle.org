@@ -50,7 +50,9 @@
 		<?php include_once('contents.php'); ?>
 		<hr/>
 		The content of the language report is copyright &copy; 1987-2001, Hilt B.V., The Netherlands.
-		See the <a href="#CleanRep.2.2_2.htm;jump=_Toc311797972">copyright notice</a>.
+		See the <a style="padding-left:0;" href="#CleanRep.2.2_2.htm;jump=_Toc311797972">copyright notice</a>.
+		<hr/>
+		Download the language report as a <a style="padding-left:0;" href="http://clean.cs.ru.nl/download/doc/CleanLangRep.2.2.pdf">PDF</a>.
 		<br/>
 	</div><div id="viewer">
 		<?php include_once('src.php'); ?>

@@ -615,7 +615,7 @@ function getResults(str, libs, include_builtins, include_core, include_apps, pag
 				par.innerHTML += '<div id="page-' + (page+1) + '">' +
 					'<p id="more" class="remove-at-request">' +
 					'<a href="javascript:getResults(null,null,null,null,null,' + (page+1) +
-					')">' + responsedata['more_available'] + ' more&#8230;<a></p>' +
+					')">' + responsedata['more_available'] + ' more&#8230;</a></p>' +
 					'</div>';
 			}
 

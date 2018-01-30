@@ -72,8 +72,10 @@ for (var i = 0; i < banners.length; i++) {
 	if (hidden.split(' ').indexOf(id) >= 0)
 		continue;
 
+	var from = new Date(banner.dataset.from);
 	var until = new Date(banner.dataset.until);
-	if (until >= new Date())
+	var now = new Date();
+	if (from <= now && now <= until)
 		banner.style.display = 'block';
 
 	var hidelink = document.createElement('a');

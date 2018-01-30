@@ -263,7 +263,10 @@ function getResults(str, libs, include_builtins, include_core, include_apps, pag
 
 	var elem = document.getElementById('page-' + page);
 
-	elem.innerHTML += '<p id="loading">Processing...</p>';
+	var p = document.createElement('p');
+	p.id = 'loading';
+	p.innerHTML = 'Processing...';
+	elem.appendChild(p);
 	var remove = document.getElementsByClassName('remove-at-request');
 	for (var i = remove.length - 1; i >= 0; i--)
 		remove[i].remove();
@@ -346,23 +349,52 @@ function getResults(str, libs, include_builtins, include_core, include_apps, pag
 				'<a href="' + iclUrl + '" target="_blank">icl' + iclLine + '</a>)';
 
 		if ('builtin' in basic && basic['builtin'])
-			basicText = [['Clean core. The actual implementation may differ.']];
+			basicText = 'Clean core. The actual implementation may differ.';
 
-		var toggler = '';
+		var result = document.createElement('div');
+
+		var basic = document.createElement('div');
+		basic.className = 'result-basic';
+		basic.innerHTML = basicText;
+		result.appendChild(basic);
+
+		var extra = document.createElement('div');
+		extra.className = 'result-extra';
+		extra.innerHTML = meta.join('<br/>');
+		result.appendChild(extra);
+
 		if (hidden.length > 0) {
-			toggler = '<div class="toggler" title="More details" onclick="toggle(this)">' +
-				'<span class="toggle-icon">&#x229e;</span>' + makeSummary(hidden) +
-				'</div>';
+			var toggler = document.createElement('div');
+			toggler.className = 'toggler';
+			toggler.title = 'More details';
+			toggler.innerHTML = '<span class="toggle-icon">&#x229e;</span>' + makeSummary(hidden);
+
+			var togglee = document.createElement('div');
+			togglee.className = 'togglee';
+			togglee.innerHTML = makeTable(hidden);
+
+			var hasLoaded = false;
+			toggler.onclick = function() {
+				toggle(toggler);
+				if (!hasLoaded) {
+					togglee.innerHTML = makeTable(hidden);
+					hasLoaded = true;
+				}
+			};
+
+			var extra_container = document.createElement('div');
+			extra_container.className = 'result-extra toggle-container';
+			extra_container.appendChild(toggler);
+			extra_container.appendChild(togglee);
+			result.appendChild(extra_container);
 		}
 
-		return '<div class="result">' +
-				'<div class="result-basic">' + basicText + '</div>' +
-				'<div class="result-extra">' + meta.join('<br/>') + '</div>' +
-				'<div class="result-extra toggle-container">' +
-					toggler +
-					'<div class="togglee">' + makeTable(hidden) + '</div></div>' +
-				'<pre class="result-code">' + code + '</pre>' +
-			'</div>';
+		var rcode = document.createElement('pre');
+		rcode.className = 'result-code';
+		rcode.innerHTML = code;
+		result.appendChild(rcode);
+
+		return result;
 	}
 
 	var makeResultHTML = function (result) {
@@ -543,14 +575,16 @@ function getResults(str, libs, include_builtins, include_core, include_apps, pag
 					code += highlightSyntaxConstruct(extra['syntax_code'][i]) + '\n';
 				}
 
-				return '<div class="result">' +
+				var res = document.createElement('div');
+				res.className = 'result';
+				res.innerHTML =
 						'<div class="result-basic">Clean syntax: ' + extra['syntax_title'] + '</div>' +
 						'<div class="result-extra">' + meta.join('<br/>') + '</div>' +
 						'<div class="result-extra toggle-container">' +
 							toggler +
 							'<div class="togglee">' + makeExampleList(extra['syntax_examples']) + '</div></div>' +
-						'<pre class="result-code">' + code + '</pre>' +
-					'</div>';
+						'<pre class="result-code">' + code + '</pre>';
+				return res;
 
 			case 'ProblemResult':
 				result = result[1];
@@ -559,7 +593,10 @@ function getResults(str, libs, include_builtins, include_core, include_apps, pag
 					solutions += '<li>' + result.problem_solutions[i].markup() + '</li>';
 				for (var i in result.problem_examples)
 					examples += '<li>' + result.problem_examples[i].markup() + '</li>';
-				return '<div class="result">' +
+
+				var res = document.createElement('div');
+				res.className = 'result';
+				res.innerHTML =
 						'<div class="result-basic">Common problem: ' + result.problem_title + '</div>' +
 						'<div class="result-extra">' +
 							result.problem_description +
@@ -567,18 +604,25 @@ function getResults(str, libs, include_builtins, include_core, include_apps, pag
 							'Examples:<ul>' + examples + '</ul>' +
 							'<a href="https://github.com/clean-cloogle/common-problems/blob/master/' + result.problem_key + '.md" target="_blank">Edit this explanation.</a><br/><br/>' +
 						'</div>' +
-						'<div class="result-code"></div>' +
-					'</div>';
+						'<div class="result-code"></div>';
+				return res;
 
 			default:
-				return '';
+				console.log('Unknown result type: ' + kind);
 		}
 	}
 
-	var makeSuggestions = function (suggs) {
-		var str = '<div id="suggestions"><b>Did you mean...</b><table>';
-		for (i in suggs) {
-			var sug = suggs[i][0];
+	var makeSuggestions = function (suggestions) {
+		var suggs = document.createElement('div');
+		suggs.id = 'suggestions';
+
+		var label = document.createElement('b');
+		label.innerHTML = 'Did you mean...';
+		suggs.appendChild(label);
+
+		var table = document.createElement('table');
+		for (i in suggestions) {
+			var sug = suggestions[i][0];
 			var sugstr = [];
 			if ('name' in sug) {
 				sugstr.push(sug.name);
@@ -587,12 +631,13 @@ function getResults(str, libs, include_builtins, include_core, include_apps, pag
 				sugstr.push(':: ' + sug.unify);
 			}
 			sugstr = sugstr.join(' ');
-			str += '<tr><td><a class="hidden" href="#' + encodeURIComponent(sugstr) + '"><code>' +
+			table.innerHTML += '<tr><td><a class="hidden" href="#' + encodeURIComponent(sugstr) + '"><code>' +
 				highlightFunction(sugstr) + '</code></a></td><td>(' +
-				suggs[i][1] + ' results)</td></tr>';
+				suggestions[i][1] + ' results)</td></tr>';
 		}
-		str += '</table></div>';
-		return str;
+		suggs.appendChild(table);
+
+		return suggs;
 	}
 
 	xmlHttp.onreadystatechange = function () {
@@ -600,36 +645,38 @@ function getResults(str, libs, include_builtins, include_core, include_apps, pag
 			document.getElementById('loading').remove();
 			var responsedata = JSON.parse(xmlHttp.responseText);
 
-			var elemHTML = elem.innerHTML;
 			if (responsedata['return'] > 64) {
-				elemHTML +=
-					'<p>Return code: ' + responsedata['return'] + ' (' + responsedata['msg'] + ')</p>';
+				var p = document.createElement('p');
+				p.innerHTML = 'Return code: ' + responsedata['return'] + ' (' + responsedata['msg'] + ')';
+				elem.appendChild(p);
 			}
 
 			for (var i = 0; i<responsedata['data'].length; i++) {
 				var c = responsedata['data'][i];
-				elemHTML += makeResultHTML(c);
+				elem.appendChild(makeResultHTML(c));
 			}
-			elem.innerHTML = elemHTML;
 
 			var par = elem.parentNode;
-			var parHTML = par.innerHTML;
 			if ('more_available' in responsedata &&
 					responsedata['more_available'] != 0) {
-				parHTML += '<div id="page-' + (page+1) + '">' +
+				var more = document.createElement('div');
+				more.id = 'page-' + (page+1);
+				more.innerHTML =
 					'<p id="more" class="remove-at-request">' +
 					'<a href="javascript:getResults(null,null,null,null,null,' + (page+1) +
-					')">' + responsedata['more_available'] + ' more&#8230;</a></p>' +
-					'</div>';
+					')">' + responsedata['more_available'] + ' more&#8230;</a></p>';
+				par.appendChild(more);
 			}
 
-			parHTML += '<div class="remove-at-request general-help">' + makeGeneralHelp(str) + '</span>';
+			var generalHelp = document.createElement('div');
+			generalHelp.className = 'remove-at-request general-help';
+			generalHelp.innerHTML = makeGeneralHelp(str);
+			par.appendChild(generalHelp);
 
 			if ('suggestions' in responsedata &&
 					responsedata['suggestions'].length > 0) {
-				parHTML = makeSuggestions(responsedata['suggestions']) + parHTML;
+				par.insertBefore(makeSuggestions(responsedata['suggestions']), par.firstChild);
 			}
-			par.innerHTML = parHTML;
 		}
 	};
 

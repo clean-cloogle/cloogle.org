@@ -599,34 +599,37 @@ function getResults(str, libs, include_builtins, include_core, include_apps, pag
 		if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
 			document.getElementById('loading').remove();
 			var responsedata = JSON.parse(xmlHttp.responseText);
+
+			var elemHTML = elem.innerHTML;
 			if (responsedata['return'] > 64) {
-				elem.innerHTML +=
+				elemHTML +=
 					'<p>Return code: ' + responsedata['return'] + ' (' + responsedata['msg'] + ')</p>';
 			}
 
 			for (var i = 0; i<responsedata['data'].length; i++) {
 				var c = responsedata['data'][i];
-				elem.innerHTML += makeResultHTML(c);
+				elemHTML += makeResultHTML(c);
 			}
+			elem.innerHTML = elemHTML;
 
 			var par = elem.parentNode;
+			var parHTML = par.innerHTML;
 			if ('more_available' in responsedata &&
 					responsedata['more_available'] != 0) {
-				par.innerHTML += '<div id="page-' + (page+1) + '">' +
+				parHTML += '<div id="page-' + (page+1) + '">' +
 					'<p id="more" class="remove-at-request">' +
 					'<a href="javascript:getResults(null,null,null,null,null,' + (page+1) +
 					')">' + responsedata['more_available'] + ' more&#8230;</a></p>' +
 					'</div>';
 			}
 
-			par.innerHTML += '<div class="remove-at-request general-help">' + makeGeneralHelp(str) + '</span>';
+			parHTML += '<div class="remove-at-request general-help">' + makeGeneralHelp(str) + '</span>';
 
 			if ('suggestions' in responsedata &&
 					responsedata['suggestions'].length > 0) {
-				par.innerHTML =
-					makeSuggestions(responsedata['suggestions'])
-					+ par.innerHTML;
+				parHTML = makeSuggestions(responsedata['suggestions']) + parHTML;
 			}
+			par.innerHTML = parHTML;
 		}
 	};
 

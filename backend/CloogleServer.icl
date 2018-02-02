@@ -175,6 +175,8 @@ where
 			= respond start Nothing (err InvalidName "Name cannot contain spaces") db w
 		| isJust unify && isNothing (parseType $ fromString $ fromJust unify)
 			= respond start Nothing (err InvalidType "Couldn't parse type") db w
+		| all isNothing [unify,name,request.typeName,request.className] && isNothing request.unify
+			= respond start Nothing (err InvalidInput "Empty query") db w
 		// Results
 		#! drop_n = fromJust (page <|> pure 0) * MAX_RESULTS
 		#! (res,db) = search request db

@@ -151,8 +151,14 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET'){
 	respond(E_QUERYTOOLONG, 'Query too long');
 } else {
 	$str = array_map('trim', explode('::', $_GET['str']));
-	$name = trim($str[0]);
-	$unify = isset($str[1]) ? trim($str[1]) : '';
+	$name = $str[0];
+	$unify = '';
+	if (isset($str[1])) {
+		$unify = trim($str[1]);
+		if ($unify == '')
+			$name .= '::';
+	}
+	$name = trim($name);
 	$command = [];
 
 	$extra_results = [];

@@ -3,7 +3,7 @@ error_reporting(0);
 
 define('SERVER_HOSTNAME', 'backend');
 define('SERVER_PORT', 31215);
-define('SERVER_TIMEOUT', 8);
+define('SERVER_TIMEOUT', 3);
 
 define('DOS_INITIAL_BLOCK', 1);
 define('DOS_BLOCK_MULTIPLY', 2);

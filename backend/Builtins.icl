@@ -296,7 +296,7 @@ bs_code =
 	, syntax_examples      = map (EX "Function") // TODO highlighting
 		[ "add :: !Int !Int -> Int                   // Primitive function\nadd a b = code inline {\n\taddI\n}"
 		, "sleep :: !Int !*World -> *(!Int, !*World) // Linking with C\nsleep n w = code {\n\tccall sleep \"I:I:A\"\n}"
-		, "cast :: !.a -> .b                         // Bypassing the type system\ncast _ = code {\n\tpop_a 1\n}"
+		, "cast :: !.a -> .b                         // Bypassing the type system\ncast _ = code {\n\tno_op\n}"
 		]
 	}
 

@@ -10,7 +10,7 @@ import StdString
 import StdTuple
 
 import Data.Either
-from Data.Func import $, mapSt
+from Data.Func import $, hyperstrict, mapSt
 import Data.Functor
 import Data.List
 import Data.Maybe
@@ -107,7 +107,7 @@ where
 	loop root [(lib,mod,modf):list] db w
 	#! w = snd (fclose (stderr <<< lib <<< ": " <<< mod <<< "\n") w)
 	#! (db, w) = indexModule False root mod lib modf db w
-	#! db = eval_all_nodes db
+	#! db = hyperstrict db
 	= loop root list db w
 
 	builtins =
@@ -117,14 +117,6 @@ where
 		map FunctionEntry (concatMap constructor_functions builtin_types) ++
 		map FunctionEntry (concatMap record_functions builtin_types) ++
 		map SyntaxEntry builtin_syntax
-
-	eval_all_nodes :: !.a -> .a // From GraphCopy
-	eval_all_nodes g = code {
-		push_a 0
-		.d 1 0
-		jsr	_eval_to_nf
-		.o 0 0
-	}
 
 	parseCLI :: [String] -> Either String CLI
 	parseCLI [] = Right zero

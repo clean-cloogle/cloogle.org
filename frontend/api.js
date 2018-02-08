@@ -649,6 +649,15 @@ function getResults(str, libs, include_builtins, include_core, include_apps, pag
 				var p = document.createElement('p');
 				p.innerHTML = 'Return code: ' + responsedata['return'] + ' (' + responsedata['msg'] + ')';
 				elem.appendChild(p);
+				if (responsedata['return'] == 153) {
+					var p = document.createElement('p');
+					p.innerHTML = 'Chances are your request got cached. ' +
+						'Try again in a few seconds to get the cached result. ' +
+						'If the problem persists, please ' +
+						'<a href="https://github.com/clean-cloogle/cloogle.org/issues/new">open an issue</a> ' +
+						'on our bug tracker.';
+					elem.appendChild(p);
+				}
 			}
 
 			for (var i = 0; i<responsedata['data'].length; i++) {

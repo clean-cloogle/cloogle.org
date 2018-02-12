@@ -560,7 +560,7 @@ function getResults(str, libs, include_builtins, include_core, include_apps, pag
 							'</span>']);
 
 				return makeGenericResultHTML(basic, meta, hidden,
-						highlightFunction('import ' + basic['modul']));
+						highlightFunction('definition module ' + basic['modul']));
 
 			case 'SyntaxResult':
 				var toggler = '';

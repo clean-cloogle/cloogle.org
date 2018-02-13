@@ -10,8 +10,6 @@ RUN install_clean.sh bundle-complete 2018-02-10 \
 	&& make distclean CloogleServer builddb\
 	&& rm -r /opt/clean/lib/*\
 	&& svn checkout https://svn.cs.ru.nl/repos/SoccerFun/src /opt/clean/lib/SoccerFun \
-	&& mv /opt/clean/lib/SoccerFun/*/*.[id]cl /opt/clean/lib/SoccerFun \
-	&& bash -c 'rm -r /opt/clean/lib/SoccerFun/{Game,Gui,StdLibExt,StdReferee,StdTeam,afbeeldingen,sound}' \
 	&& svn checkout https://svn.cs.ru.nl/repos/clean-libraries/trunk/Libraries/ObjectIO/ObjectIO /opt/clean/lib/ObjectIO \
 	&& svn checkout https://svn.cs.ru.nl/repos/clean-libraries/trunk/Libraries/MersenneTwister /opt/clean/lib/MersenneTwister \
 	&& svn checkout https://svn.cs.ru.nl/repos/clean-compiler/trunk /opt/clean/lib/clean-compiler \

@@ -378,8 +378,12 @@ bs_generic =
 
 bs_import =
 	{ syntax_title         = "imports"
-	, syntax_patterns      = ["import", "from", "qualified", "as"]
-	, syntax_code          = ["import [qualified] ... [as ...]", "from ... import ..."]
+	, syntax_patterns      = ["import", "from", "qualified", "as", "=>"]
+	, syntax_code          =
+		[ "import [qualified] ... [as ...]"
+		, "from ... import ..."
+		, "import ... qualified => ..."
+		]
 	, syntax_description   =
 		"Imports code from other modules.\n\n" +
 		"With the `from` keyword, one can achieve more granularity.\n\n" +
@@ -387,9 +391,11 @@ bs_import =
 	, syntax_doc_locations = [CLR 4 "2.5" "_Toc311797991"]
 	, syntax_examples      = map (EX "Function")
 		[ "import ..."
-		, "import StdEnv                  // Import all code from the StdEnv definition module"
-		, "from StdFunc import o          // Import only the o function from StdFunc"
-		, "import qualified Data.Map as M // Import Data.Map such that functions are available as e.g. 'M'.get."
+		, "import StdEnv                          // Import all code from the StdEnv definition module"
+		, "from StdFunc import o                  // Import only the o function from StdFunc"
+		, "import Control.Monad => qualified join // Import all code from Control.Monad except for join. join is imported qualified"
+		, "import qualified Data.Map              // Import Data.Map such that functions are available as e.g. 'Data.Map'.get."
+		, "import qualified Data.Map as M         // Import Data.Map such that functions are available as e.g. 'M'.get."
 		]
 	}
 

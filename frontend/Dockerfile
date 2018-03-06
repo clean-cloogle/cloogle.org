@@ -8,9 +8,12 @@ RUN docker-php-source extract \
 	&& docker-php-source delete
 
 COPY logo.svg /var/www/logo.svg
+COPY birthday.patch /var/www/birthday.patch
+COPY birthday.sh /var/www/birthday.sh
 RUN cd /var/www \
 	&& apt-get update -qq \
 	&& apt-get install -qq imagemagick librsvg2-bin \
+	&& ./birthday.sh \
 	&& rsvg-convert -w 400 logo.svg > logo.png \
 	&& convert -resize 200x logo.png logo.png \
 	&& apt-get remove -qq imagemagick librsvg2-bin \

@@ -82,7 +82,7 @@ toRequestCacheKey db r
 	}, db)
 fromRequestCacheKey :: RequestCacheKey -> Request
 fromRequestCacheKey k =
-	{ unify            = concat <$> print False <$> k.c_unify
+	{ unify            = concat <$> print False <$> unprepare <$> k.c_unify
 	, name             = k.c_name
 	, className        = k.c_className
 	, typeName         = k.c_typeName
@@ -94,6 +94,19 @@ fromRequestCacheKey k =
 	, include_apps     = Just k.c_include_apps
 	, page             = Just k.c_page
 	}
+where
+	unprepare :: !Type -> Type
+	unprepare (Type t ts) = Type t (map unprepare ts)
+	unprepare (Func is t tc) = Func (map unprepare is) (unprepare t) (map unprepareTR tc)
+	unprepare (Var tv) = Var (tv % (1,size tv-1))
+	unprepare (Cons v ts) = Cons (v % (1,size v-1)) (map unprepare ts)
+	unprepare (Uniq t) = Uniq (unprepare t)
+	unprepare (Forall ts t tc) = Forall (map unprepare ts) (unprepare t) (map unprepareTR tc)
+	unprepare (Arrow mt) = Arrow (unprepare <$> mt)
+
+	unprepareTR :: !TypeRestriction -> TypeRestriction
+	unprepareTR (Instance c ts) = Instance c (map unprepare ts)
+	unprepareTR (Derivation g t) = Derivation g (unprepare t)
 
 :: Options =
 	{ port         :: Int

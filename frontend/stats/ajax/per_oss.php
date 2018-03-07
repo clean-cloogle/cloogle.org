@@ -4,8 +4,8 @@ require_once('./conf.php');
 $sql =
 	"SELECT
 		count(*),
-		count(case when `responsecode`>=150 then 1 else null end),
-		count(case when `responsecode`>1 and `responsecode`<150 then 1 else null end),
+		count(case when `responsecode` IN (" . SQL_SERVER_ERROR . ") then 1 else null end),
+		count(case when `responsecode`>1 and `responsecode` NOT IN (" . SQL_SERVER_ERROR . ") then 1 else null end),
 		sum(case when `query` LIKE '%::%' then 1 else null end),
 		sum(case when `query` LIKE 'type %' then 1 else null end),
 		sum(case when `query` LIKE 'class %' then 1 else null end),

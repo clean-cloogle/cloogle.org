@@ -383,14 +383,12 @@ bs_import =
 		[ "import [qualified] ... [as ...]"
 		, "from ... import ..."
 		, "import ... => qualified ..."
-		, "import ... qualified => ..."
-		, "import code from library ..."
-		, "import code from ..."
+		, "import code from [library] ..."
 		]
 	, syntax_description   =
 		"Imports code from other modules.\n\n" +
 		"With the `from` keyword, one can achieve more granularity.\n\n" +
-		"In case of name clashes, `qualified` can be used (undocumented)."
+		"In case of name clashes, `qualified` can be used (undocumented).\n\n" +
 		"Moreover, you can import from object files or windows dlls."
 	, syntax_doc_locations = [CLR 4 "2.5" "_Toc311797991"]
 	, syntax_examples      = map (EX "Function")
@@ -400,8 +398,9 @@ bs_import =
 		, "import qualified Data.Map              // Import Data.Map such that functions are available as e.g. 'Data.Map'.get."
 		, "import qualified Data.Map as M         // Import Data.Map such that functions are available as e.g. 'M'.get."
 		, "import Control.Monad => qualified join // Import all code from Control.Monad except for join. join is imported qualified"
-		, "import code from \"tty.\"              // Import functions from the object file starting called tty from Clean System Files."
-		, "import code from library \"msvcrt\"    // Import functions from linked dlls according to the msvcrt file in Clean System Files.\nThe file should start with the dll name (e.g. msvcrt) and followed by one line per function you want to link."
+		, "import code from \"tty.\"              // Import functions from the object file matching 'Clean System Files/tty.*'"
+		, "import code from library \"msvcrt\"    // Import functions from linked dlls according to the msvcrt file in Clean System Files."
+		, "                                       // The file should start with the dll name (e.g. msvcrt) and followed by one line per function you want to link."
 		]
 	}
 

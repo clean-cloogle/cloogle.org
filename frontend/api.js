@@ -346,7 +346,8 @@ function getResults(str, libs, include_builtins, include_core, include_apps, pag
 		var basicText = basic['library'] + ': ' +
 				basic['modul'] + ' (' +
 				'<a href="' + dclUrl + '" target="_blank">dcl' + dclLine + '</a>; ' +
-				'<a href="' + iclUrl + '" target="_blank">icl' + iclLine + '</a>)';
+				'<a href="' + iclUrl + '" target="_blank">icl' + iclLine + '</a>) ' +
+				'<a class="usages-link" href="#using ' + basic['name'] + '" title="Find where this is used">usages &rarr;</a>';
 
 		if ('builtin' in basic && basic['builtin'])
 			basicText = 'Clean core. The actual implementation may differ.';

@@ -171,6 +171,12 @@ div.visible {
 	padding: .2em .2em .2em 1em;
 }
 
+.result-basic .usages-link {
+	float: right;
+	margin-right: 1em;
+	font-size: 85%;
+}
+
 .result-extra {
 	background-color: #f4f4f4;
 	font-size: 85%;

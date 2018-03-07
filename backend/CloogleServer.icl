@@ -69,7 +69,7 @@ toRequestCacheKey db r
 	{ c_unify            = snd <$>
 		prepare_unification True alwaysUnique allsyns <$>
 		(parseType o fromString =<< r.unify)
-	, c_name             = toLowerCase <$> r.name
+	, c_name             = toLowerCase <$> r.Request.name
 	, c_className        = r.className
 	, c_typeName         = r.typeName
 	, c_using            = r.using

@@ -389,18 +389,17 @@ bs_import =
 		"Imports code from other modules.\n\n" +
 		"With the `from` keyword, one can achieve more granularity.\n\n" +
 		"In case of name clashes, `qualified` can be used (undocumented).\n\n" +
-		"Moreover, you can import from object files or windows dlls."
+		"Moreover, you can import from object files or windows DLLs."
 	, syntax_doc_locations = [CLR 4 "2.5" "_Toc311797991"]
 	, syntax_examples      = map (EX "Function")
-		[ "import ..."
-		, "import StdEnv                          // Import all code from the StdEnv definition module"
+		[ "import StdEnv                          // Import all code from the StdEnv definition module"
 		, "from StdFunc import o                  // Import only the o function from StdFunc"
 		, "import qualified Data.Map              // Import Data.Map such that functions are available as e.g. 'Data.Map'.get."
 		, "import qualified Data.Map as M         // Import Data.Map such that functions are available as e.g. 'M'.get."
 		, "import Control.Monad => qualified join // Import all code from Control.Monad except for join. join is imported qualified"
-		, "import code from \"tty.\"              // Import functions from the object file matching 'Clean System Files/tty.*'"
-		, "import code from library \"msvcrt\"    // Import functions from linked dlls according to the msvcrt file in Clean System Files."
-		, "                                       // The file should start with the dll name (e.g. msvcrt) and followed by one line per function you want to link."
+		, "import code from \"tty.\"                // Import functions from the object file matching 'Clean System Files/tty.*'"
+		, "import code from library \"msvcrt\"      // Import functions from linked DLLs according to the msvcrt file in Clean System Files.\n" +
+		  "                                       // The file should start with the DLL name (e.g. msvcrt) and followed by one line per function you want to link."
 		]
 	}
 

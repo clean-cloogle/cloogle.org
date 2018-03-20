@@ -5,7 +5,7 @@ if (empty($_REQUEST['mod'])) :
 	echo '<p>Select a module on the left.</p>';
 else :
 
-$mod = preg_replace('/[^\\w\\/\\. -]/', '', $_REQUEST['mod']);
+$mod = preg_replace('/[^\\w\\/\\. -`]/', '', $_REQUEST['mod']);
 
 $iclordcl = isset($_REQUEST['icl']) ? 'icl' : 'dcl';
 $hl_lines = isset($_REQUEST['line']) ? escapeshellarg($_REQUEST['line']) : '';

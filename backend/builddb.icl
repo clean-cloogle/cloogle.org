@@ -45,7 +45,6 @@ instance zero CLI where
 	                   , ("Directory",        const id)
 	                   , ("Dynamics",         const id)
 	                   , ("Gast",             const id)
-	                   , ("Generics",         const id)
 	                   , ("GraphCopy",        const id)
 	                   , ("MersenneTwister",  const id)
 	                   , ("ObjectIO",         \s me -> {me & me_is_core=not (startsWith "Std" s)})

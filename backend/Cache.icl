@@ -20,7 +20,7 @@ import System.File
 import System.FilePath
 import System.Time
 from Text import class Text(endsWith), instance Text String
-import Text.JSON
+import Text.GenJSON
 
 cache_types :== [Brief, LongTerm]
 

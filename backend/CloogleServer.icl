@@ -27,7 +27,7 @@ import System._Posix
 import System.CommandLine
 import System.Time
 from Text import class Text(concat,toLowerCase), instance Text String, <+
-import Text.JSON
+import Text.GenJSON
 
 import Cloogle
 import Type

@@ -132,7 +132,8 @@ where
 	printStats db f
 	# (s,db) = dbStats db
 	= (db, f
-		<<< "+-------------------+-------+\n"
+		<<< "| Table             | Size  |\n"
+		<<< "|-------------------|------:|\n"
 		<< "Modules"           <-- s.n_modules
 		<< "Functions"         <-- s.n_functions
 		<< "With types"        <-- s.n_functions_with_type
@@ -142,8 +143,7 @@ where
 		<< "Classes"           <-- s.n_classes
 		<< "Instances"         <-- s.n_instances
 		<< "Derivations"       <-- s.n_derivations
-		<< "Syntax constructs" <-- s.n_syntax_constructs
-		<<< "+-------------------+-------+\n")
+		<< "Syntax constructs" <-- s.n_syntax_constructs)
 	where
 		(<<) infixl :: *File String -> *File
 		(<<) f s = f <<< "| " <<< rpad 17 s <<< " | "

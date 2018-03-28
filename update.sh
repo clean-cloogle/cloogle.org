@@ -38,7 +38,7 @@ git submodule update --init --recursive
 
 echo "Updating containers..."
 
-#sudo docker-compose build --force-rm --no-cache --pull &> /tmp/cloogle-build.log
+sudo docker-compose build --force-rm --no-cache --pull &> /tmp/cloogle-build.log
 RES=$?
 cat /tmp/cloogle-build.log
 if [ $RES -ne 0 ]; then

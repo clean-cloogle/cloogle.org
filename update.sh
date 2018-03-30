@@ -74,7 +74,7 @@ if [[ "$HUGINN" != "" ]]; then
 	curl -s -d text="Cloogle build succeeded." "$HUGINN"; echo
 fi
 if [[ "$RELEASE_REPO" != "" ]]; then
-	timeout -k 10 10 sudo docker-compose exec backend cat types.json > /tmp/types.json
+	timeout -k 10 10 sudo docker-compose exec -T backend cat types.json > /tmp/types.json
 	DATE="$(date +%Y-%m-%d)"
 	ID="$(curl -s -X POST \
 		-H "Content-Type:application/json" \

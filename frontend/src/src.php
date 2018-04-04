@@ -13,6 +13,6 @@ $hl_lines = isset($_REQUEST['line']) ? escapeshellarg($_REQUEST['line']) : '';
 $fname = CLEANHOME . '/lib/' . $mod . '.' . $iclordcl;
 $efname = escapeshellarg($fname);
 
-system("python3 cloogle_pygments.py $efname $hl_lines");
+system("python3.5 cloogle_pygments.py $efname $hl_lines");
 
 endif;

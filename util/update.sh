@@ -32,7 +32,7 @@ fi
 
 echo "Pulling new commits..."
 
-git checkout frontend/index.html
+git checkout frontend/index.php
 if [ $INTERACTIVE -eq 0 ]; then
 	git pull origin master
 else
@@ -41,7 +41,7 @@ fi
 git submodule update --init --recursive
 
 COMMIT_INFO="$(git log -1 --decorate --pretty=oneline --no-color | escape_sed)"
-sed -i "s/{{{COMMIT}}}/$COMMIT_INFO/g" "frontend/index.html"
+sed -i "s/{{{COMMIT}}}/$COMMIT_INFO/g" "frontend/index.php"
 
 echo "Updating containers..."
 

@@ -53,26 +53,34 @@ We will take immediate action.
 - Add yourself to the authors list in `README.md`
 
 ## 3. I just want to add library X
-If the library is not well known it is advised to first open an issue to see
+If the library is not well-known it is advised to first open an issue to see
 whether it is suitable to be indexed by cloogle.
 
-To add a library you have to add it in to the following places:
+To add a library you have to modify [`libs.json`](/libs.json). This file is a
+JSON record with three collections of Clean libraries. Usually, you should add
+the new library to the `Miscellaneous` collection. The newly added item may
+contain the following fields:
 
-- `backend/builddb.icl`
+- `name` (**required**): a human-readable name.
+- `fetch_url` (**required**): choose one of:
+  - `["Git", "<URL>"]` where `<URL>` points to a public git repository;
+  - `["SVN", "<URL>"]` where `<URL>` points to a public Subversion repository;
+  - `["CleanDistribution", "<NAME>"]`, if the library is distributed in Clean
+    nightlies as `<NAME>`.
+- `path`: the path from the root of the repository to the files that should be
+  indexed.
+- `info_url`: a URL to an informative page about the library.
+- `pattern_exclude`: a pattern (see below) for files to exclude.
+- `pattern_app`: a pattern (see below) for modules that should be marked as
+  apps rather than libraries.
+- `pattern_core`: a pattern (see below) for modules that are part of the core
+  of the library.
 
-	Add your library to the `zero` instance of `CLI` to get it indexed.
-- `backend/Dockerfile`
+Patterns are JSON lists of simple patterns. A simple pattern is one of:
 
-	In this file you have to add the download of the library. E.g. add a line
-	to get the files to the docker (e.g. with subversion, git, mercurial etc.)
-	to `/opt/clean/lib`.
-- `frontend/Dockerfile`
-
-	In this file do the same as in the backend to make the files through the
-	web frontend.
-- `frontend/index.html`
-
-	Add your library to the checkboxes in the miscellaneous column.
+- `["PWildcard"]`, to match everything;
+- `["PStartsWith",<S>]`, to match paths starting with `<S>`;
+- `["PNot",<P>]`, to negate the simple pattern `<P>`.
 
 ## 4. I just want to add a new user agent to the statistics
 If you have created a new Cloogle client, please give it a specific user agent

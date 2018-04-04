@@ -9,75 +9,51 @@ import StdMisc
 import StdString
 import StdTuple
 
+import Control.Monad => qualified join
 import Data.Either
+import Data.Error
 from Data.Func import $, hyperstrict, mapSt
 import Data.Functor
 import Data.List
 import Data.Maybe
 import System.CommandLine
-from Text import class Text(concat,startsWith), instance Text String
+import System.File
+from Text import class Text(join,startsWith), instance Text String
+import Text.GenJSON
 
 import CloogleDB
 import Type
 from CloogleDBFactory import :: TemporaryDB, newTemporaryDB, finaliseDB,
-	findModules, indexModule, constructor_functions, record_functions
+	findModules, indexModule, constructor_functions, record_functions,
+	:: IndexItem, :: SourceURL, :: PathPattern
 
 import Builtins
 
-:: CLI = { help    :: Bool
-         , version :: Bool
-         , root    :: String
-         , libs    :: [(String, String ModuleEntry -> ModuleEntry)]
-         , exclude :: [String]
-         }
+:: CLI =
+	{ help      :: !Bool
+	, root      :: !String
+	, libs_file :: !String
+	}
 
-instance zero CLI where
-	zero = { version = False
-	       , help    = False
-	       , root    = "/opt/clean/lib/"
-	       , libs    = [ ("ArgEnv",           const id)
-	                   , ("CleanInotify",     const id)
-	                   , ("CleanPrettyPrint", const id)
-	                   , ("CleanSerial",      const id)
-	                   , ("CleanSnappy",      const id)
-	                   , ("CleanTypeUnifier", const id)
-	                   , ("Cloogle",          const id)
-	                   , ("Directory",        const id)
-	                   , ("Dynamics",         const id)
-	                   , ("Gast",             const id)
-	                   , ("GraphCopy",        const id)
-	                   , ("MersenneTwister",  const id)
-	                   , ("ObjectIO",         \s me -> {me & me_is_core=not (startsWith "Std" s)})
-	                   , ("Platform",         const id)
-	                   , ("Sapl",             const id)
-	                   , ("SoccerFun",        const \me -> {me & me_is_app=True})
-	                   , ("StdEnv",           const id)
-	                   , ("StdLib",           const id)
-	                   , ("TCPIP",            const id)
-	                   , ("iTasks",           const id)
-	                   , ("clean-compiler",   const \me -> {me & me_is_app=True})
-	                   , ("clean-ide",        const \me -> {me & me_is_app=True})
-	                   , ("clean-irc",        const id)
-	                   , ("clean-selectloop", const id)
-	                   , ("libcloogle",       const id)
-	                   ]
-	       , exclude = [ "StdEnv/_startup"
-	                   , "StdEnv/_system"
-	                   , "Platform/Deprecated"
-	                   , "Platform/Data/Graph/Inductive/Query"
-	                   , "SoccerFun/RefereeCoach_"
-	                   , "SoccerFun/Team_"
-	                   ]
-	       }
+derive JSONDecode IndexItem, SourceURL, PathPattern
+
+instance zero CLI
+where
+	zero =
+		{ help      = False
+		, root      = "/opt/clean/lib/"
+		, libs_file = "libs.json"
+		}
 
 
-VERSION :== "Cloogle's builddb version 0.1\n"
-USAGE :== concat [
-	VERSION, "\n",
-	"Usage: ./builddb [opts] > types.json\n\n",
-	"\t-h, --help Show this help\n",
-	"\t-r PATH    Change the library root to PATH\n",
-	"\t-l PATH    Add PATH to the librarypaths relative to the root\n"]
+USAGE :== join "\n"
+	[ "Cloogle builddb\n"
+	, "Usage: ./builddb [opts] > types.json\n"
+	, "Options:"
+	, "  --help    Show this help"
+	, "  -r PATH   Change the library root to PATH (default: /opt/clean/lib)"
+	, "  -l PATH   Use PATH for a list of libraries to index (default: libs.json)"
+	, ""]
 
 Start :: *World -> *World
 Start w
@@ -87,8 +63,17 @@ Start w
 	(Left e) = fclose (f <<< e) w
 	(Right cli)
 	| cli.help    = fclose (f <<< USAGE) w
-	| cli.version = fclose (f <<< VERSION) w
-	# (modss, w)  = mapSt (flip (uncurry $ findModules cli.exclude cli.root) "") cli.libs w
+	# (libsf, w)  = readFile cli.libs_file w
+	# libsjson    = fromString $ fromOk libsf
+	# libs        = case libsjson of
+		JSONObject groups -> sequence $ [fromJSON i \\ (_,JSONArray g) <- groups, i <- g]
+		_                 -> Nothing
+	| isError libsf || isNothing libs
+		# err = stderr <<< "Could not read " <<< cli.libs_file <<< "\n"
+		# (_,w) = fclose err w
+		= fclose f w
+	# libs        = fromJust libs
+	# (modss, w)  = mapSt (flip (findModules cli.root) "") libs w
 	# mods        = flatten modss
 	#! (db, w)    = loop cli.root mods newTemporaryDB w
 	#! db         = finaliseDB builtins db
@@ -103,13 +88,16 @@ Start w
 | not ok = abort "Couldn't close stdio"
 = w
 where
-	loop :: String [(String,String,String ModuleEntry -> ModuleEntry)] !TemporaryDB !*World -> *(!TemporaryDB, !*World)
+	loop :: String [ModuleEntry] !TemporaryDB !*World -> *(!TemporaryDB, !*World)
 	loop _ [] db w = (db,w)
-	loop root [(lib,mod,modf):list] db w
-	#! w = snd (fclose (stderr <<< lib <<< ": " <<< mod <<< "\n") w)
-	#! (db, w) = indexModule False root mod lib modf db w
+	loop root [mod:list] db w
+	#! (_, w) = fclose (stderr <<< lib <<< ": " <<< modname <<< "\n") w
+	#! (db, w) = indexModule False root mod db w
 	#! db = hyperstrict db
 	= loop root list db w
+	where
+		lib = fromJust (getLibrary mod.me_loc)
+		modname = getName mod.me_loc
 
 	builtins =
 		map FunctionEntry builtin_functions ++
@@ -123,11 +111,10 @@ where
 	parseCLI [] = Right zero
 	parseCLI [x:a] = case (x,a) of
 		("--help", xs) = (\c->{c & help=True}) <$> parseCLI xs
-		("--version", xs) = (\c->{c & version=True}) <$> parseCLI xs
-		("-l", []) = Left "'-l' requires an argument"
 		("-r", []) = Left "'-r' requires an argument"
 		("-r", [x:xs]) = (\c->{c & root=x}) <$> parseCLI xs
-		("-l", [x:xs]) = (\c->{c & libs=[(x,const id):c.libs]}) <$> parseCLI xs
+		("-l", []) = Left "'-l' requires an argument"
+		("-l", [x:xs]) = (\c->{c & libs_file=x}) <$> parseCLI xs
 		(x, _) = Left $ "Unknown option '" +++ x +++ "'"
 
 	printStats :: !*CloogleDB !*File -> *(*CloogleDB, *File)

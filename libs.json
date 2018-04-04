@@ -1,0 +1,138 @@
+{
+	"Clean 2.4":
+	[
+		{
+			"name": "ArgEnv",
+			"fetch_url": ["CleanDistribution", "ArgEnv"]
+		},
+		{
+			"name": "Directory",
+			"fetch_url": ["CleanDistribution", "Directory"]
+		},
+		{
+			"name": "Dynamics",
+			"fetch_url": ["CleanDistribution", "Dynamics"]
+		},
+		{
+			"name": "Gast",
+			"fetch_url": ["CleanDistribution", "Gast"],
+			"info_url": "https://gitlab.science.ru.nl/clean-and-itasks/gast"
+		},
+		{
+			"name": "MersenneTwister",
+			"fetch_url": ["SVN", "https://svn.cs.ru.nl/repos/clean-libraries"],
+			"path": "trunk/Libraries/MersenneTwister"
+		},
+		{
+			"name": "StdEnv",
+			"fetch_url": ["Git", "https://github.com/clean-cloogle/StdEnv-doc"],
+			"pattern_exclude": [["PStartsWith","_startup"],["PStartsWith","_system"]]
+		},
+		{
+			"name": "StdLib",
+			"fetch_url": ["CleanDistribution", "StdLib"]
+		},
+		{
+			"name": "TCPIP",
+			"fetch_url": ["CleanDistribution", "TCPIP"]
+		}
+	],
+	"Official":
+	[
+		{
+			"name": "GraphCopy",
+			"fetch_url": ["CleanDistribution", "GraphCopy"]
+		},
+		{
+			"name": "iTasks",
+			"fetch_url": ["CleanDistribution", "iTasks"],
+			"info_url": "https://gitlab.science.ru.nl/clean-and-itasks/iTasks-SDK"
+		},
+		{
+			"name": "ObjectIO",
+			"fetch_url": ["SVN", "https://svn.cs.ru.nl/repos/clean-libraries"],
+			"path": "trunk/Libraries/ObjectIO/ObjectIO"
+		},
+		{
+			"name": "Platform",
+			"fetch_url": ["CleanDistribution", "Platform"],
+			"info_url": "https://gitlab.science.ru.nl/clean-and-itasks/clean-platform",
+			"pattern_exclude": [["PStartsWith","Deprecated"]]
+		},
+		{
+			"name": "Sapl",
+			"fetch_url": ["CleanDistribution", "Sapl"],
+			"info_url": "https://gitlab.science.ru.nl/clean-and-itasks/clean-sapl"
+		}
+	],
+	"Miscellaneous":
+	[
+		{
+			"name": "CleanInotify",
+			"fetch_url": ["Git", "https://github.com/camilstaps/CleanInotify"],
+			"info_url": "https://github.com/camilstaps/CleanInotify"
+		},
+		{
+			"name": "CleanPrettyPrint",
+			"fetch_url": ["Git", "https://github.com/clean-cloogle/CleanPrettyPrint"],
+			"info_url": "https://github.com/clean-cloogle/CleanPrettyPrint"
+		},
+		{
+			"name": "CleanSerial",
+			"fetch_url": ["Git", "https://gitlab.science.ru.nl/mlubbers/CleanSerial"],
+			"info_url": "https://gitlab.science.ru.nl/mlubbers/CleanSerial"
+		},
+		{
+			"name": "CleanSnappy",
+			"fetch_url": ["Git", "https://github.com/camilstaps/CleanSnappy"],
+			"info_url": "https://github.com/camilstaps/CleanSnappy"
+		},
+		{
+			"name": "CleanTypeUnifier",
+			"fetch_url": ["Git", "https://github.com/clean-cloogle/CleanTypeUnifier"],
+			"info_url": "https://github.com/clean-cloogle/CleanTypeUnifier"
+		},
+		{
+			"name": "clean-compiler",
+			"fetch_url": ["SVN", "https://svn.cs.ru.nl/repos/clean-compiler"],
+			"path": "trunk",
+			"info_url": "https://svn.cs.ru.nl/repos/clean-compiler/",
+			"pattern_app": [["PWildcard"]]
+		},
+		{
+			"name": "clean-ide",
+			"fetch_url": ["SVN", "https://svn.cs.ru.nl/repos/clean-ide"],
+			"path": "trunk",
+			"info_url": "https://svn.cs.ru.nl/repos/clean-ide/",
+			"pattern_app": [["PWildcard"]]
+		},
+		{
+			"name": "clean-irc",
+			"fetch_url": ["Git", "https://github.com/clean-cloogle/clean-irc"],
+			"info_url": "https://github.com/clean-cloogle/clean-irc"
+		},
+		{
+			"name": "clean-selectloop",
+			"fetch_url": ["Git", "https://github.com/dopefishh/clean-selectloop"],
+			"info_url": "https://github.com/dopefishh/clean-selectloop",
+			"path": "libraries"
+		},
+		{
+			"name": "Cloogle",
+			"fetch_url": ["Git", "https://github.com/clean-cloogle/Cloogle"],
+			"info_url": "https://github.com/clean-cloogle/Cloogle"
+		},
+		{
+			"name": "libcloogle",
+			"fetch_url": ["Git", "https://github.com/clean-cloogle/libcloogle"],
+			"info_url": "https://github.com/clean-cloogle/libcloogle"
+		},
+		{
+			"name": "SoccerFun",
+			"fetch_url": ["SVN", "https://svn.cs.ru.nl/repos/SoccerFun"],
+			"path": "src",
+			"pattern_app": [["PWildcard"]],
+			"pattern_exclude": [["PStartsWith","StdTeam/Team_"],["PStartsWith","StdReferee/RefereeCoach_"]]
+		}
+	]
+}

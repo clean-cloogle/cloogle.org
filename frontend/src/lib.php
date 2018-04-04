@@ -77,48 +77,17 @@ function makeBrowser($dir, $basemodule) {
 	echo '</div>';
 }
 
-$alllibs = [
-	'Clean 2.4' => [
-		'ArgEnv',
-		'Directory',
-		'Dynamics',
-		'Gast',
-		'Generics',
-		'MersenneTwister',
-		'StdEnv',
-		'StdLib',
-		'TCPIP',
-	],
-	'Official' => [
-		'GraphCopy',
-		'iTasks',
-		'ObjectIO',
-		'Platform',
-		'Sapl',
-	],
-	'Miscellaneous' => [
-		'clean-compiler',
-		'clean-ide',
-		'CleanInotify',
-		'CleanPrettyPrint',
-		'CleanSerial',
-		'CleanSnappy',
-		'CleanTypeUnifier',
-		'Cloogle',
-		'libcloogle',
-		'SoccerFun',
-	]
-];
+$groups = json_decode(file_get_contents('/var/libs.json'), true);
 
 echo '<div class="browser">';
-foreach ($alllibs as $group => $libs) {
+foreach ($groups as $group => $libs) {
 	echo '<h4 class="browser-header">' . $group . '</h4>';
 	foreach ($libs as $lib) {
-		echo '<div class="browser-item directory toggle-container" data-name="' . $lib . '">' .
+		echo '<div class="browser-item directory toggle-container" data-name="' . $lib['name'] . '">' .
 				'<span class="toggler">' .
 					'<span class="toggle-icon">&#x229e</span>' .
-					'<span class="title">' . $lib . '</span></span>';
-		makeBrowser(CLEANLIB . '/' . $lib, '');
+					'<span class="title">' . $lib['name'] . '</span></span>';
+		makeBrowser(CLEANLIB . '/' . $lib['name'], '');
 		echo '</div>';
 	}
 }

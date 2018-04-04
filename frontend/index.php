@@ -43,44 +43,33 @@
 				<label><input type="checkbox" id="include-core"/> Include library core modules</label><br/>
 				<label><input type="checkbox" id="include-apps"/> Include apps</label><br/>
 				<table>
-					<tr>
-						<th><a title="Toggle selection" href="javascript:toggleLibSelection('libs-clean-2.4')">Clean 2.4</a></th>
-						<th><a title="Toggle selection" href="javascript:toggleLibSelection('libs-official')">Official</a></th>
-						<th><a title="Toggle selection" href="javascript:toggleLibSelection('libs-misc')">Miscellaneous</a></th>
-					</tr>
-					<tr>
-						<td id="libs-clean-2.4">
-							<label><input type="checkbox" class="search-libs" checked="checked" value="ArgEnv"/> ArgEnv</label><br/>
-							<label><input type="checkbox" class="search-libs" checked="checked" value="Directory"/> Directory</label><br/>
-							<label><input type="checkbox" class="search-libs" checked="checked" value="Dynamics"/> Dynamics</label><br/>
-							<label><input type="checkbox" class="search-libs" checked="checked" value="Gast"/> Gast</label><br/>
-							<label><input type="checkbox" class="search-libs" checked="checked" value="MersenneTwister"/> MersenneTwister</label><br/>
-							<label><input type="checkbox" class="search-libs" checked="checked" value="StdEnv"/> StdEnv</label><br/>
-							<label><input type="checkbox" class="search-libs" checked="checked" value="StdLib"/> StdLib</label><br/>
-							<label><input type="checkbox" class="search-libs" checked="checked" value="TCPIP"/> TCPIP</label><br/>
-						</td>
-						<td id="libs-official">
-							<label><input type="checkbox" class="search-libs" checked="checked" value="GraphCopy"/> GraphCopy</label><br/>
-							<label><input type="checkbox" class="search-libs" checked="checked" value="iTasks"/> iTasks</label><br/>
-							<label><input type="checkbox" class="search-libs" checked="checked" value="ObjectIO"> ObjectIO</label><br/>
-							<label><input type="checkbox" class="search-libs" checked="checked" value="Platform"/> Platform</label><br/>
-							<label><input type="checkbox" class="search-libs" checked="checked" value="Sapl"/> Sapl</label><br/>
-						</td>
-						<td id="libs-misc">
-							<label><input type="checkbox" class="search-libs" checked="checked" value="clean-compiler"/> clean-compiler (<abbr title="This requires that 'include apps' is set.">app</abbr>)</label><br/>
-							<label><input type="checkbox" class="search-libs" checked="checked" value="clean-ide"/> clean-ide (<abbr title="This requires that 'include apps' is set.">app</abbr>)</label><br/>
-							<label><input type="checkbox" class="search-libs" checked="checked" value="clean-irc"/> clean-irc</label><br/>
-							<label><input type="checkbox" class="search-libs" checked="checked" value="clean-selectloop"/> clean-selectloop</label><br/>
-							<label><input type="checkbox" class="search-libs" checked="checked" value="CleanInotify"/> CleanInotify</label><br/>
-							<label><input type="checkbox" class="search-libs" checked="checked" value="CleanSerial"/> CleanSerial</label><br/>
-							<label><input type="checkbox" class="search-libs" checked="checked" value="CleanSnappy"/> CleanSnappy</label><br/>
-							<label><input type="checkbox" class="search-libs" checked="checked" value="CleanTypeUnifier"/> CleanTypeUnifier</label><br/>
-							<label><input type="checkbox" class="search-libs" checked="checked" value="CleanPrettyPrint"/> CleanPrettyPrint</label><br/>
-							<label><input type="checkbox" class="search-libs" checked="checked" value="Cloogle"/> Cloogle</label><br/>
-							<label><input type="checkbox" class="search-libs" checked="checked" value="libcloogle"/> libcloogle</label><br/>
-							<label><input type="checkbox" class="search-libs" checked="checked" value="SoccerFun"> SoccerFun (<abbr title="This requires that 'include apps' is set.">app</abbr>)</label><br/>
-						</td>
-					</tr>
+					<?php
+						function make_group_id($name) {
+							return 'libs-' . str_replace(' ', '-', $name);
+						}
+
+						$groups = json_decode(file_get_contents('/var/libs.json'), true);
+
+						echo '<tr>';
+						foreach (array_keys($groups) as $group) {
+							echo '<th><a title="Toggle selection" href="javascript:toggleLibSelection(\'' . make_group_id($group) . '\')">' . $group . '</a></th>';
+						}
+						echo '</tr>';
+
+						echo '<tr>';
+						foreach ($groups as $group => $libs) {
+							echo '<td id="' . make_group_id($group) . '">';
+							foreach ($libs as $lib) {
+								echo '<label><input type="checkbox" class="search-libs" checked="checked" value="' . $lib['name'] . '"/> ' . $lib['name'];
+								if (isset($lib['pattern_app']) && $lib['pattern_app'] == [['PWildcard']]) {
+									echo ' (<abbr title="Some modules in this library require that \'include apps\' is turned on.">app</abbr>)';
+								}
+								echo '</label><br/>';
+							}
+							echo '</td>';
+						}
+						echo '</tr>';
+					?>
 				</table>
 			</div>
 		</div>

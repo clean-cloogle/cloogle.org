@@ -1,7 +1,9 @@
 version: '2'
 services:
   backend:
-    build: backend
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
     ports:
       - "31215:31215"
     volumes:
@@ -12,7 +14,9 @@ services:
       - IPC_LOCK
 
   frontend:
-    build: frontend
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
     depends_on:
       - backend
     ports:

@@ -16,27 +16,7 @@ function updateSearches() {
 	var time = searches[0][1];
 	var last = document.getElementById('last-search');
 
-	var highlighter = highlightFunction;
-	if (query.substring(0,6) == 'class ') {
-		highlighter = highlightClassDef;
-	} else if (query.substring(0,5) == 'type ') {
-		highlighter = function(q) {
-			return '<span class="keyword">type</span> ' +
-				highlightFunction(q.substring(5));
-		}
-	} else if (query.substring(0,6) == 'using ') {
-		highlighter = function(q) {
-			return '<span class="keyword">using</span> ' +
-				highlightToHTML({
-					start: [
-						[/(,)/,     ['punctuation']],
-						[/([^,]+)/, ['funcname']],
-					]
-				}, q.substring(6));
-		}
-	}
-
-	last.innerHTML = '<pre>' + highlighter(query) + '</pre>';
+	last.innerHTML = '<pre>' + highlightQuery(query) + '</pre>';
 	last.innerHTML += '<div class="time">' + time + '</div>';
 
 	var previous = document.getElementById('previous-searches');

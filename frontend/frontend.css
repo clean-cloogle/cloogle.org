@@ -56,6 +56,25 @@ br.parbreak {
 	text-align: left;
 }
 
+#search-str, #search button {
+	border: 1px solid #ccc;
+	border-radius: 2px;
+	box-sizing: content-box;
+	display: inline-block;
+	height: 20px;
+	vertical-align: bottom;
+}
+
+#search-str {
+	font-family: monospace;
+	font-size: 14px;
+	outline: none;
+	padding: 0 .3em;
+	position: relative;
+	text-align: left;
+	width: 20em;
+}
+
 a.hidden {
 	text-decoration: none;
 }

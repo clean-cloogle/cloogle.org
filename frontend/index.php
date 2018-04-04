@@ -96,7 +96,19 @@
 					</tr>
 					<tr>
 						<td class='code'>:: A.a: [a] -&gt; a</td>
-						<td class='description'>Type search, where <code>a</code> cannot be unified.</td>
+						<td class='description'>Type search, where <code>a</code> cannot be unified</td>
+					</tr>
+					<tr>
+						<td class='code'>\\</td>
+						<td class='description'>Information about the syntax construct <code>\\</code></td>
+					</tr>
+					<tr>
+						<td class='code'>stack overflow</td>
+						<td class='description'>Information about the error message "stack overflow"</td>
+					</tr>
+					<tr>
+						<td class='code'>using Maybe, ==</td>
+						<td class='description'>Anything that uses <code>Maybe</code> <em>and</em> <code>==</code></td>
 					</tr>
 					<tr>
 						<td class='code'>type Maybe</td>
@@ -105,10 +117,6 @@
 					<tr>
 						<td class='code'>class Text</td>
 						<td class='description'>The class definition of <code>Text</code></td>
-					</tr>
-					<tr>
-						<td class='code'>using Maybe, ==</td>
-						<td class='description'>Anything that uses <code>Maybe</code> <em>and</em> <code>==</code></td>
 					</tr>
 				</table>
 				<p><b>Besides this web app, there are other frontends available:</b></p>
@@ -119,7 +127,7 @@
 					<li>The <code>:Cloogle</code> command in Vim, if you use <a href="https://github.com/camilstaps/vim-clean">vim-clean</a></li>
 					<li>An email to <a href="mailto:query@cloogle.org">query@cloogle.org</a>, with the query in the subject</li>
 				</ul>
-				<p>You can also browse the <a href="src">standard libraries</a> and the <a href="doc">documentation</a>.</p>
+				<p>You can also <b>browse the <a href="src">index</a></b> and <b>read the <a href="doc">documentation</a></b>.</p>
 			</div>
 		</div>
 		<div id="contributetext" class="tooltip">

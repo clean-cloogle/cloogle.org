@@ -777,7 +777,7 @@ function formsubmit() {
 
 	var q = form_str.innerText.replace(/\u00a0/g, ' ');
 	if (q === '') {
-		sresults.innerHTML = 'Can\'t search for the empty string';
+		sresults.innerHTML = '<p>Can\'t search for the empty string</p>';
 	} else {
 		sresults.innerHTML = '';
 

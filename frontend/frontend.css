@@ -77,6 +77,12 @@ br.parbreak {
 	width: 20em;
 }
 
+#search-str.placeholder:before {
+	color: #aaa;
+	content: 'See "How to use" for query examples';
+	font-family: sans-serif;
+}
+
 a.hidden {
 	text-decoration: none;
 }

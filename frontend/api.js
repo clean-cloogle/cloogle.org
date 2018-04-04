@@ -891,8 +891,12 @@ form_str.oninput = function() {
 	var caret = this.getCaretPosition();
 	var val = this.innerText.replace(/^\s+|\n\n$/g, '').replace(/\n/g, '\u00a0');
 	var html = highlightQuery(val);
-	if (html == '')
+	if (html == '') {
 		html = '<span style="position:absolute;left:0;top:0;"></span>';
+		this.classList.add('placeholder');
+	} else {
+		this.classList.remove('placeholder');
+	}
 	this.innerHTML = html;
 	this.setCaretPosition(caret);
 };

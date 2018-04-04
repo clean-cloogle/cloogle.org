@@ -23,7 +23,7 @@
 		</div>
 		<div id="search">
 			<form id="search-form" action="#">
-				<div id="search-str" contenteditable="true">:: [Maybe a] -> Maybe [a]</div>
+				<div id="search-str" spellcheck="false" contenteditable="true">:: [Maybe a] -> Maybe [a]</div>
 				<button>Search</button><br/>
 				<ul id="searchlinks">
 					<li onclick="toggleAdvanced();this.classList.toggle('active');">Advanced</li>

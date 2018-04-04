@@ -62,6 +62,7 @@ br.parbreak {
 	box-sizing: content-box;
 	display: inline-block;
 	height: 20px;
+	padding: 2px .5em;
 	vertical-align: bottom;
 }
 
@@ -69,7 +70,8 @@ br.parbreak {
 	font-family: monospace;
 	font-size: 14px;
 	outline: none;
-	padding: 0 .3em;
+	padding-top: 4px;
+	padding-bottom: 0;
 	position: relative;
 	text-align: left;
 	width: 20em;

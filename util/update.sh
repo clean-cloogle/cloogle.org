@@ -2,6 +2,10 @@
 CLEAR_CACHE=-1
 INTERACTIVE=1
 
+escape_sed() {
+	sed -e 's/\//\\\//g' -e 's/\&/\\\&/g'
+}
+
 while [ $# -gt 0 ]; do
 	case "$1" in
 		--interactive ) INTERACTIVE=1;;
@@ -35,6 +39,9 @@ else
 	git pull --no-edit origin master
 fi
 git submodule update --init --recursive
+
+COMMIT_INFO="$(git log -1 --decorate --pretty=oneline --no-color | escape_sed)"
+sed -i "s/{{{COMMIT}}}/$COMMIT_INFO/g" "frontend/index.html"
 
 echo "Updating containers..."
 

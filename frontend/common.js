@@ -62,6 +62,31 @@ function shortenURL(type, url, onUpdate) {
 	xmlHttp.send('type=' + type + '&url=' + encodeURIComponent(url));
 }
 
+function highlightQuery(query) {
+	var highlighter = highlightFunction;
+	if (query == 'class' || query == 'type' || query == 'using') {
+		return '<span class="keyword">' + query + '</span>';
+	} else if (query.match(/^class\s/)) {
+		highlighter = highlightClassDef;
+	} else if (query.match(/^type\s/)) {
+		highlighter = function(q) {
+			return '<span class="keyword">type</span><span class="whitespace">' + q.substring(4,5) + '</span>' +
+				highlightType(q.substring(5));
+		};
+	} else if (query.match(/^using\s/)) {
+		highlighter = function(q) {
+			return '<span class="keyword">using</span><span class="whitespace">' + q.substring(5,6) + '</span>' +
+				highlightToHTML({
+					start: [
+						[/(,)/,     ['punctuation']],
+						[/([^,]+)/, ['funcname']],
+					]
+				}, q.substring(6));
+		};
+	}
+	return highlighter(query);
+}
+
 var banners = document.getElementsByClassName('banner');
 for (var i = 0; i < banners.length; i++) {
 	var banner = banners[i];

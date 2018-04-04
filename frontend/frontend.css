@@ -67,8 +67,9 @@ br.parbreak {
 
 #search-str {
 	font-family: monospace;
-	font-size: 16px;
+	font-size: 14px;
 	outline: none;
+	padding: 0 .3em;
 	position: relative;
 	text-align: left;
 	width: 20em;

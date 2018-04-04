@@ -890,7 +890,7 @@ window.onhashchange = function () {
 form_str.oninput = function() {
 	var caret = this.getCaretPosition();
 	var val = this.innerText.replace(/^\s+|\n\n$/g, '').replace(/\n/g, '\u00a0');
-	var html = highlightFunction(val);
+	var html = highlightQuery(val);
 	if (html == '')
 		html = '<span style="position:absolute;left:0;top:0;"></span>';
 	this.innerHTML = html;
@@ -902,6 +902,8 @@ form_str.onkeydown = function(e) {
 	}
 };
 form_str.oninput();
+form_str.setCaretPosition(form_str.innerText.length);
+form_str.focus();
 
 function restoreShareUI() {
 	share_button.innerHTML = "Share";

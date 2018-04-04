@@ -8,8 +8,8 @@
 	<meta name="description" content="Cloogle is the unofficial Clean language search engine"/>
 	<meta name="keywords" content="Clean,Clean language,Concurrent Clean,search,functions,search engine,programming language,clean platform,iTasks,cloogle,hoogle"/>
 	<script src="common.js" type="text/javascript" defer="defer"></script>
-	<script src="api.js" type="text/javascript" defer="defer"></script>
 	<script src="clean.js/clean.js" type="text/javascript" defer="defer"></script>
+	<script src="api.js" type="text/javascript" defer="defer"></script>
 	<link rel="stylesheet" href="common.css" type="text/css"/>
 	<link rel="stylesheet" href="clean.js/clean.css" type="text/css"/>
 	<link rel="stylesheet" href="frontend.css" type="text/css"/>
@@ -23,8 +23,8 @@
 		</div>
 		<div id="search">
 			<form id="search-form" action="#">
-				<input type="text" id="search-str" placeholder="fix :: (a -> a) -> a" />
-				<input type="submit" value="Search" /><br/>
+				<div id="search-str" contenteditable="true">:: [Maybe a] -> Maybe [a]</div>
+				<button>Search</button><br/>
 				<ul id="searchlinks">
 					<li onclick="toggleAdvanced();this.classList.toggle('active');">Advanced</li>
 					<li class="separator">|</li>

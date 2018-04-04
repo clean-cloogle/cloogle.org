@@ -17,6 +17,54 @@ var old_include_builtins = null;
 var old_include_core = null;
 var old_include_apps = null;
 
+// https://stackoverflow.com/a/4812022/1544337
+Element.prototype.getCaretPosition = function() {
+	var caretOffset = 0;
+	var doc = this.ownerDocument || this.document;
+	var win = doc.defaultView || doc.parentWindow;
+	var sel;
+	if (typeof win.getSelection != "undefined") {
+		sel = win.getSelection();
+		if (sel.rangeCount > 0) {
+			var range = win.getSelection().getRangeAt(0);
+			var preCaretRange = range.cloneRange();
+			preCaretRange.selectNodeContents(this);
+			preCaretRange.setEnd(range.endContainer, range.endOffset);
+			caretOffset = preCaretRange.toString().length;
+		}
+	} else if ((sel = doc.selection) && sel.type != "Control") {
+		var textRange = sel.createRange();
+		var preCaretTextRange = doc.body.createTextRange();
+		preCaretTextRange.moveToElementText(this);
+		preCaretTextRange.setEndPoint("EndToEnd", textRange);
+		caretOffset = preCaretTextRange.text.length;
+	}
+	return caretOffset;
+};
+
+Element.prototype.setCaretPosition = function(pos) {
+	var sel = window.getSelection();
+	sel.removeAllRanges();
+	var range = document.createRange();
+	var nodes = this.childNodes;
+	var set = false;
+	for (var i = 0; i < nodes.length; i++) {
+		var len = nodes[i].innerText.length;
+		if (len > pos) {
+			range.setStart(nodes[i].childNodes[0], pos);
+			set = true;
+			break;
+		}
+		pos -= len;
+	}
+	if (!set) {
+		range.setStartAfter(nodes[nodes.length-1]);
+	}
+	range.collapse(true);
+	sel.addRange(range);
+	this.focus();
+};
+
 function makeGeneralHelp(query) {
 	return 'For general information about Clean, ' +
 		'<a href="http://clean.cs.ru.nl/index.php?title=Special:Search&fulltext=Search&search=' + encodeURIComponent(query) + '" target="_blank">' +
@@ -727,7 +775,7 @@ function getLibs() {
 function formsubmit() {
 	document.getElementById("header").classList.add('result-view');
 
-	var q = form_str.value;
+	var q = form_str.innerText.replace(/\u00a0/g, ' ');
 	if (q === '') {
 		sresults.innerHTML = 'Can\'t search for the empty string';
 	} else {
@@ -786,7 +834,8 @@ function hashQuery() {
 		return;
 
 	var args = document.location.hash.substring(1).split('%0A');
-	form_str.value = decodeURIComponent(args[0]);
+	form_str.innerText = decodeURIComponent(args[0]);
+	form_str.oninput();
 	page = 0;
 
 	if (args.length > 1) {
@@ -837,6 +886,22 @@ window.onhashchange = function () {
 		restoreShareUI();
 	}
 }
+
+form_str.oninput = function() {
+	var caret = this.getCaretPosition();
+	var val = this.innerText.replace(/^\s+|\n\n$/g, '').replace(/\n/g, '\u00a0');
+	var html = highlightFunction(val);
+	if (html == '')
+		html = '<span style="position:absolute;left:0;top:0;"></span>';
+	this.innerHTML = html;
+	this.setCaretPosition(caret);
+};
+form_str.onkeydown = function(e) {
+	if (e.keyCode == 13) {
+		formsubmit();
+	}
+};
+form_str.oninput();
 
 function restoreShareUI() {
 	share_button.innerHTML = "Share";

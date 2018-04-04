@@ -58,8 +58,10 @@ whether it is suitable to be indexed by cloogle.
 
 To add a library you have to modify [`libs.json`](/libs.json). This file is a
 JSON record with three collections of Clean libraries. Usually, you should add
-the new library to the `Miscellaneous` collection. The newly added item may
-contain the following fields:
+the new library to the `Miscellaneous` collection. Please keep the alphabetic
+order intact.
+
+The newly added item may contain the following fields:
 
 - `name` (**required**): a human-readable name.
 - `fetch_url` (**required**): choose one of:

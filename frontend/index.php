@@ -64,7 +64,11 @@
 								if (isset($lib['pattern_app']) && $lib['pattern_app'] == [['PWildcard']]) {
 									echo ' (<abbr title="Some modules in this library require that \'include apps\' is turned on.">app</abbr>)';
 								}
-								echo '</label><br/>';
+								echo '</label>';
+								if (isset($lib['info_url'])) {
+									echo ' <a href="' . $lib['info_url'] . '" target="_blank" title="More information">&#x2197;</a>';
+								}
+								echo '<br/>';
 							}
 							echo '</td>';
 						}

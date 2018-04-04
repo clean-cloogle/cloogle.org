@@ -26,6 +26,7 @@
 		{
 			"name": "StdEnv",
 			"fetch_url": ["Git", "https://github.com/clean-cloogle/StdEnv-doc"],
+			"info_url": "https://github.com/clean-cloogle/StdEnv-doc",
 			"pattern_exclude": [["PStartsWith","_startup"],["PStartsWith","_system"]]
 		},
 		{
@@ -34,7 +35,8 @@
 		},
 		{
 			"name": "TCPIP",
-			"fetch_url": ["CleanDistribution", "TCPIP"]
+			"fetch_url": ["CleanDistribution", "TCPIP"],
+			"info_url": "https://clean.cs.ru.nl/TCP"
 		}
 	],
 	"Official":
@@ -51,6 +53,7 @@
 		{
 			"name": "ObjectIO",
 			"fetch_url": ["SVN", "https://svn.cs.ru.nl/repos/clean-libraries"],
+			"info_url": "https://clean.cs.ru.nl/Object_I/O",
 			"path": "trunk/Libraries/ObjectIO/ObjectIO"
 		},
 		{
@@ -130,6 +133,7 @@
 		{
 			"name": "SoccerFun",
 			"fetch_url": ["SVN", "https://svn.cs.ru.nl/repos/SoccerFun"],
+			"info_url": "http://www.cs.ru.nl/P.Achten/SoccerFun/SoccerFun.html",
 			"path": "src",
 			"pattern_app": [["PWildcard"]],
 			"pattern_exclude": [["PStartsWith","StdTeam/Team_"],["PStartsWith","StdReferee/RefereeCoach_"]]

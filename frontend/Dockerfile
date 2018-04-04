@@ -38,6 +38,9 @@ RUN svn checkout https://svn.cs.ru.nl/repos/SoccerFun/src /opt/clean/lib/SoccerF
 	&& git clone https://github.com/clean-cloogle/CleanPrettyPrint /opt/clean/lib/CleanPrettyPrint \
 	&& git clone https://github.com/camilstaps/CleanInotify /opt/clean/lib/CleanInotify \
 	&& git clone https://github.com/camilstaps/CleanSnappy /opt/clean/lib/CleanSnappy \
+	&& git clone https://github.com/clean-cloogle/clean-irc /opt/clean/lib/clean-irc \
+	&& git clone https://github.com/dopefishh/clean-selectloop /tmp/clean-selectloop \
+		&& mv /tmp/clean-selectloop/libraries /opt/clean/lib/clean-selectloop \
 	&& rm -r /opt/clean/lib/StdEnv \
 	&& git clone https://github.com/clean-cloogle/StdEnv-doc /opt/clean/lib/StdEnv
 

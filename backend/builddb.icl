@@ -57,6 +57,8 @@ instance zero CLI where
 	                   , ("iTasks",           const id)
 	                   , ("clean-compiler",   const \me -> {me & me_is_app=True})
 	                   , ("clean-ide",        const \me -> {me & me_is_app=True})
+	                   , ("clean-irc",        const id)
+	                   , ("clean-selectloop", const id)
 	                   , ("libcloogle",       const id)
 	                   ]
 	       , exclude = [ "StdEnv/_startup"

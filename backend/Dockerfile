@@ -21,6 +21,9 @@ RUN install_clean.sh bundle-complete 2018-03-27 \
 	&& git clone https://github.com/clean-cloogle/CleanPrettyPrint /opt/clean/lib/CleanPrettyPrint \
 	&& git clone https://github.com/camilstaps/CleanInotify /opt/clean/lib/CleanInotify \
 	&& git clone https://github.com/camilstaps/CleanSnappy /opt/clean/lib/CleanSnappy \
+	&& git clone https://github.com/clean-cloogle/clean-irc /opt/clean/lib/clean-irc \
+	&& git clone https://github.com/dopefishh/clean-selectloop /tmp/clean-selectloop \
+		&& mv /tmp/clean-selectloop/libraries /opt/clean/lib/clean-selectloop \
 	&& curl -sSL ftp://ftp.cs.ru.nl/pub/Clean/builds/linux-x64/clean-bundle-complete-linux-x64-latest.tgz |\
 	 	tar -xz -C /opt/clean --strip-components=1\
 	&& rm -r /opt/clean/lib/StdEnv\

@@ -86,7 +86,11 @@ foreach ($groups as $group => $libs) {
 		echo '<div class="browser-item directory toggle-container" data-name="' . $lib['name'] . '">' .
 				'<span class="toggler">' .
 					'<span class="toggle-icon">&#x229e</span>' .
-					'<span class="title">' . $lib['name'] . '</span></span>';
+					'<span class="title">' . $lib['name'] . '</span>';
+		if (isset($lib['info_url'])) {
+			echo '<a class="more-info" href="' . $lib['info_url'] . '" target="_blank" title="More information" onclick="arguments[0].stopPropagation();">&#x2197;</a>';
+		}
+		echo '</span>';
 		makeBrowser(CLEANLIB . '/' . $lib['name'], '');
 		echo '</div>';
 	}

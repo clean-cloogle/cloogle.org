@@ -57,6 +57,10 @@ td, th {
 	margin-right: .3em;
 }
 
+.toggle-container a.more-info {
+	color: #26c;
+}
+
 .toggle-container .togglee {
 	display: none;
 }

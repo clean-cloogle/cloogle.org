@@ -40,7 +40,7 @@ else
 fi
 git submodule update --init --recursive
 
-COMMIT_INFO="$(git log -1 --decorate --pretty=oneline --no-color | escape_sed)"
+COMMIT_INFO="$(git log -2 --decorate --pretty=oneline --no-color | tail -1 | escape_sed)"
 sed -i "s/{{{COMMIT}}}/$COMMIT_INFO/g" "frontend/index.php"
 
 echo "Updating containers..."

@@ -1,3 +1,4 @@
+SHELL=/bin/bash
 BIN:=CloogleServer builddb
 DB=types.json
 MAN:=builddb.1 # Others don't have --help/--version # $(addsuffix .1,$(BIN))
@@ -33,6 +34,9 @@ man: $(MAN)
 	help2man -N ./$< > $@
 
 CloogleServer:
+	$(CLM) $(CLMFLAGS) $@ -o $@
+	shopt -s globstar
+	touch **/*.[di]cl
 	$(CLM) $(CLMFLAGS) $@ -o $@
 
 builddb: clean-compiler

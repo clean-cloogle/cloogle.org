@@ -54,7 +54,8 @@
 			"name": "ObjectIO",
 			"fetch_url": ["SVN", "https://svn.cs.ru.nl/repos/clean-libraries"],
 			"info_url": "https://clean.cs.ru.nl/Object_I/O",
-			"path": "trunk/Libraries/ObjectIO/ObjectIO"
+			"path": "trunk/Libraries/ObjectIO/ObjectIO",
+			"pattern_core": [["PNot",["PStartsWith","Std"]]]
 		},
 		{
 			"name": "Platform",
@@ -107,7 +108,8 @@
 			"fetch_url": ["SVN", "https://svn.cs.ru.nl/repos/clean-ide"],
 			"path": "trunk",
 			"info_url": "https://svn.cs.ru.nl/repos/clean-ide/",
-			"pattern_app": [["PWildcard"]]
+			"pattern_app": [["PWildcard"]],
+			"pattern_exclude": [["PStartsWith","Mac/"],["PStartsWith","MacOSX/"],["PStartsWith","Win/"]]
 		},
 		{
 			"name": "clean-irc",

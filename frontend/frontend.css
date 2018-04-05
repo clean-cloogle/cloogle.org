@@ -77,9 +77,16 @@ br.parbreak {
 	width: 20em;
 }
 
+#search-str #caret-spacer {
+	left: .4em;
+	position: absolute;
+	top: 4px;
+}
+
 #search-str.placeholder:before {
 	color: #aaa;
 	content: 'See "How to use" for query examples';
+	cursor: text;
 	font-family: sans-serif;
 }
 

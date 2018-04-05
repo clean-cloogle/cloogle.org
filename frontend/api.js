@@ -892,7 +892,7 @@ form_str.oninput = function() {
 	var val = this.innerText.replace(/^\s+|\n\n$/g, '').replace(/\n/g, '\u00a0');
 	var html = highlightQuery(val);
 	if (html == '') {
-		html = '<span style="position:absolute;left:0;top:0;"></span>';
+		html = '<span id="caret-spacer"></span>';
 		this.classList.add('placeholder');
 	} else {
 		this.classList.remove('placeholder');

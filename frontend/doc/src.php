@@ -1,5 +1,6 @@
 <?php
 define('CLEANHOME', '/opt/clean');
+error_reporting(0);
 
 $loc = $_REQUEST['loc'] ?: 'CleanRep.2.2_1.htm;jump=_Toc311797959';
 $loc = preg_replace('/\.\.+/', '.', $loc);

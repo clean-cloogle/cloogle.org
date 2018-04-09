@@ -4,14 +4,17 @@
 		{
 			"name": "ArgEnv",
 			"fetch_url": ["CleanDistribution", "ArgEnv"]
+			"info_url": "https://svn.cs.ru.nl/repos/clean-libraries/trunk/Libraries/ArgEnvUnix/"
 		},
 		{
 			"name": "Directory",
 			"fetch_url": ["CleanDistribution", "Directory"]
+			"info_url": "https://svn.cs.ru.nl/repos/clean-libraries/trunk/Libraries/Directory/"
 		},
 		{
 			"name": "Dynamics",
 			"fetch_url": ["CleanDistribution", "Dynamics"]
+			"info_url": "https://svn.cs.ru.nl/repos/clean-dynamic-system/trunk/dynamics/StdDynamicEnv/implementation/"
 		},
 		{
 			"name": "Gast",
@@ -31,7 +34,8 @@
 		},
 		{
 			"name": "StdLib",
-			"fetch_url": ["CleanDistribution", "StdLib"]
+			"fetch_url": ["CleanDistribution", "StdLib"],
+			"info_url": "https://svn.cs.ru.nl/repos/clean-libraries/trunk/Libraries/StdLib/"
 		},
 		{
 			"name": "TCPIP",
@@ -44,6 +48,7 @@
 		{
 			"name": "GraphCopy",
 			"fetch_url": ["CleanDistribution", "GraphCopy"]
+			"info_url": "https://svn.cs.ru.nl/repos/clean-libraries/trunk/Libraries/Directory/"
 		},
 		{
 			"name": "iTasks",

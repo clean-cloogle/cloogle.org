@@ -24,6 +24,7 @@
 		{
 			"name": "MersenneTwister",
 			"fetch_url": ["SVN", "https://svn.cs.ru.nl/repos/clean-libraries"],
+			"info_url": "http://clean.cs.ru.nl/MersenneTwister",
 			"path": "trunk/Libraries/MersenneTwister"
 		},
 		{

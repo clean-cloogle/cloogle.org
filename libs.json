@@ -14,7 +14,7 @@
 		{
 			"name": "Dynamics",
 			"fetch_url": ["CleanDistribution", "Dynamics"],
-			"info_url": "https://svn.cs.ru.nl/repos/clean-dynamic-system/trunk/dynamics/StdDynamicEnv/implementation/"
+			"info_url": "https://cloogle.org/doc/#CleanRep.2.2_10.htm;jump=_Toc311798075"
 		},
 		{
 			"name": "Gast",
@@ -35,7 +35,7 @@
 		{
 			"name": "StdLib",
 			"fetch_url": ["CleanDistribution", "StdLib"],
-			"info_url": "https://svn.cs.ru.nl/repos/clean-libraries/trunk/Libraries/StdLib/"
+			"info_url": "http://clean.cs.ru.nl/StdLib"
 		},
 		{
 			"name": "TCPIP",
@@ -48,7 +48,7 @@
 		{
 			"name": "GraphCopy",
 			"fetch_url": ["CleanDistribution", "GraphCopy"],
-			"info_url": "https://svn.cs.ru.nl/repos/clean-libraries/trunk/Libraries/Directory/"
+			"info_url": "https://gitlab.science.ru.nl/clean-and-itasks/clean-graph-copy"
 		},
 		{
 			"name": "iTasks",

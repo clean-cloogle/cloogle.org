@@ -183,7 +183,7 @@ function makeDocFieldsHTML(name, params) {
 }
 
 function makeLocationUrl(loc) {
-	var dclUrl = 'src#' + encodeURIComponent(loc[0] + '/' + loc[2].replace('.dcl', ''));
+	var dclUrl = 'src#' + encodeURIComponent(loc[0] + '/' + loc[2].replace('.icl', ''));
 	var iclUrl = dclUrl + ';icl';
 
 	if (loc[3].length > 1)
@@ -378,7 +378,7 @@ function getResults(str, libs, include_builtins, include_core, include_apps, pag
 	}
 
 	var makeGenericResultHTML = function (basic, meta, hidden, code) {
-		var dclUrl = 'src#' + encodeURIComponent(basic['library'] + '/' + basic['filename'].replace('.dcl', ''));
+		var dclUrl = 'src#' + encodeURIComponent(basic['library'] + '/' + basic['filename'].replace('.icl', ''));
 		var iclUrl = dclUrl + ';icl';
 		var dclLine = '';
 		var iclLine = '';

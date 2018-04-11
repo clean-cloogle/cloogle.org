@@ -73,8 +73,8 @@ Start w
 		# (_,w) = fclose err w
 		= fclose f w
 	# libs        = fromJust libs
-	# (modss, w)  = mapSt (flip (findModules cli.root) "") libs w
-	# mods        = flatten modss
+	# (mods, w)   = mapSt (flip (findModules cli.root) "") libs w
+	# mods        = flatten mods
 	#! (db, w)    = loop cli.root mods newTemporaryDB w
 	#! db         = finaliseDB builtins db
 	#! (db,err)   = printStats db stderr

@@ -42,7 +42,7 @@
 				<label><input type="checkbox" id="include-builtins" checked="checked"/> Include language builtins</label><br/>
 				<label><input type="checkbox" id="include-core"/> Include library core modules</label><br/>
 				<label><input type="checkbox" id="include-apps"/> Include apps</label><br/>
-				<table>
+				<div id="libraries">
 					<?php
 						function make_group_id($name) {
 							return 'libs-' . str_replace(' ', '-', $name);
@@ -50,15 +50,10 @@
 
 						$groups = json_decode(file_get_contents('/var/libs.json'), true);
 
-						echo '<tr>';
-						foreach (array_keys($groups) as $group) {
-							echo '<th><a title="Toggle selection" href="javascript:toggleLibSelection(\'' . make_group_id($group) . '\')">' . $group . '</a></th>';
-						}
-						echo '</tr>';
-
-						echo '<tr>';
 						foreach ($groups as $group => $libs) {
-							echo '<td id="' . make_group_id($group) . '">';
+							echo '<div class="libraries-list">';
+							echo '<a class="libraries-heading" title="Toggle selection" href="javascript:toggleLibSelection(\'' . make_group_id($group) . '\')">' . $group . '</a>';
+							echo '<div clsas="libraries-list-content" id="' . make_group_id($group) . '">';
 							foreach ($libs as $lib) {
 								echo '<label><input type="checkbox" class="search-libs" checked="checked" value="' . $lib['name'] . '"/> ' . $lib['name'];
 								if (isset($lib['pattern_app']) && $lib['pattern_app'] == [['PWildcard']]) {
@@ -70,11 +65,10 @@
 								}
 								echo '<br/>';
 							}
-							echo '</td>';
+							echo '</div></div>';
 						}
-						echo '</tr>';
 					?>
-				</table>
+				</div>
 			</div>
 		</div>
 		<div id="helptext" class="tooltip">

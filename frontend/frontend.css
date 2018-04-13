@@ -140,9 +140,10 @@ a.hidden {
 .tooltip {
 	background: #f8f8f8;
 	display: block;
-	max-height: 0px;
+	height: 0;
+	opacity: 0;
 	overflow: hidden;
-	transition: max-height 0.15s ease-out;
+	transition: opacity 0.25s ease-out;
 }
 
 #header.result-view .tooltip {
@@ -161,13 +162,28 @@ a.hidden {
 	display: inline-block;
 }
 
+.visible {
+	height: auto;
+	opacity: 1;
+}
+
 #advanced.visible {
 	padding-bottom: .6em;
 	padding-top: .6em;
 }
 
-div.visible {
-	max-height: 500px !important;
+#advanced #libraries .libraries-list {
+	display: inline-block;
+	margin-right: 1em;
+	margin-top: 1em;
+	vertical-align: top;
+}
+
+#advanced #libraries .libraries-list .libraries-heading {
+	display: block;
+	font-weight: bold;
+	text-align: center;
+	width: 100%;
 }
 
 #helptext code, #helptext .code {
@@ -256,12 +272,17 @@ div.visible {
 }
 
 @media (max-width: 600px) {
-	#header.result-view > * {
+	#header.result-view #logo {
+		margin-bottom: 20px;
+	}
+
+	#advanced #libraries .libraries-list {
 		display: block;
 	}
 
-	#header.result-view #logo {
-		margin-bottom: 20px;
+	#advanced #libraries .libraries-list .libraries-heading {
+		margin-bottom: .5em;
+		text-align: left;
 	}
 
 	#search {

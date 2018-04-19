@@ -63,12 +63,14 @@ br.parbreak {
 	display: inline-block;
 	height: 20px;
 	padding: 2px .5em;
-	vertical-align: bottom;
+	vertical-align: middle;
 }
 
 #search-str {
 	font-family: monospace;
 	font-size: 14px;
+	height: auto;
+	min-height: 20px;
 	outline: none;
 	padding-top: 4px;
 	padding-bottom: 0;

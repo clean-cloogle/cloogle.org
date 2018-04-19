@@ -889,7 +889,13 @@ window.onhashchange = function () {
 
 form_str.oninput = function() {
 	var caret = this.getCaretPosition();
-	var val = this.innerText.replace(/^\s+|\n\n$/g, '').replace(/\n/g, '\u00a0');
+	if (caret == 1 && this.innerText.match(/^\s/)) {
+		// No idea why anybody should do this, but okay... Without this
+		// specialization, the caret jumps while no space is added when you try to
+		// add a space at the start.
+		caret = 0;
+	}
+	var val = this.innerText.replace(/^\s+|\n\n$/g, '').replace(/\n$/, '\u00a0').replace(/\n/g, '');
 	var html = highlightQuery(val);
 	if (html == '') {
 		html = '<span id="caret-spacer"></span>';

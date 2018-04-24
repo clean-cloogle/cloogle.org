@@ -3,6 +3,8 @@ implementation module BuiltinABCInstructions
 import StdMisc
 import StdOverloaded
 
+import Text
+
 import Cloogle
 
 import CloogleDB
@@ -10,8 +12,16 @@ import CloogleDB
 builtin_abc_instructions :: [ABCInstructionEntry]
 builtin_abc_instructions =
 	[ i_ccall
+	, i_centry
 	, i_halt
+	, i_instruction
+	, i_load_i
+	, i_load_si16
+	, i_load_si32
+	, i_load_ui8
 	, i_no_op
+	, d_d
+	, d_o
 	: [{zero & aie_instruction=i} \\ i <- other_instructions]
 	]
 
@@ -23,12 +33,30 @@ where
 		, aie_description = "There is no documentation for this ABC instruction yet."
 		}
 
+LABEL   :== ABCArgument ABCTypeLabel  False
+LABEL_  :== ABCArgument ABCTypeLabel  True
+STRING  :== ABCArgument ABCTypeString False
+STRING_ :== ABCArgument ABCTypeString True
+INT     :== ABCArgument ABCTypeInt    False
+INT_    :== ABCArgument ABCTypeInt    True
+
 i_ccall :: ABCInstructionEntry
 i_ccall =
 	{ zero
 	& aie_instruction = "ccall"
-	, aie_arguments   = [ABCArgument ABCTypeLabel False, ABCArgument ABCTypeString False]
+	, aie_arguments   = [LABEL, STRING]
 	, aie_description = "Calls a C function."
+	}
+
+i_centry :: ABCInstructionEntry
+i_centry =
+	{ zero
+	& aie_instruction = "centry"
+	, aie_arguments   = [LABEL, LABEL, STRING]
+	, aie_description = "Adds code to call a Clean function from C." +
+		"Usually it is not needed to write this instruction yourself. It is generated with the `foreign export` construct.\n\n" +
+		"The first label is the name of the C function to generate. The second label is the Clean function to link it to.\n\n" +
+		"The string argument indicates the type. For more information, see {{`ccall`}}."
 	}
 
 i_halt :: ABCInstructionEntry
@@ -38,11 +66,77 @@ i_halt =
 	, aie_description = "Terminates the program immediately."
 	}
 
+i_instruction :: ABCInstructionEntry
+i_instruction =
+	{ zero
+	& aie_instruction = "instruction"
+	, aie_arguments   = [INT]
+	, aie_description = "Adds the raw argument as a word in the generated object file."
+	}
+
+i_load_i :: ABCInstructionEntry
+i_load_i =
+	{ zero
+	& aie_instruction = "load_i"
+	, aie_arguments   = [INT]
+	, aie_description = "Take the top of the B-stack as a pointer and read an integer from that pointer with the argument as offset.\n\n" +
+		"See also {{`load_si16`}}, {{`load_si32`}}, {{`load_ui8`}}."
+	}
+
+i_load_si16 :: ABCInstructionEntry
+i_load_si16 =
+	{ zero
+	& aie_instruction = "load_si16"
+	, aie_arguments   = [INT]
+	, aie_description = "Take the top of the B-stack as a pointer and read a 16-bit signed integer from that pointer with the argument as offset.\n\n" +
+		"See also {{`load_i}}, {{`load_si32`}}, {{`load_ui8`}}."
+	}
+
+i_load_si32 :: ABCInstructionEntry
+i_load_si32 =
+	{ zero
+	& aie_instruction = "load_si32"
+	, aie_arguments   = [INT]
+	, aie_description = "Take the top of the B-stack as a pointer and read a 32-bit signed integer from that pointer with the argument as offset.\n\n" +
+		"This instruction is only available on 64-bit systems. On 32-bit systems, {{`load_i`}} has the same effect.\n\n" +
+		"See also {{`load_i`}}, {{`load_si16`}}, {{`load_ui8`}}."
+	}
+
+i_load_ui8 :: ABCInstructionEntry
+i_load_ui8 =
+	{ zero
+	& aie_instruction = "load_ui8"
+	, aie_arguments   = [INT]
+	, aie_description = "Take the top of the B-stack as a pointer and read a 8-bit unsigned integer from that pointer with the argument as offset.\n\n" +
+		"See also {{`load_i`}}, {{`load_si16`}}, {{`load_si32`}}."
+	}
+
 i_no_op :: ABCInstructionEntry
 i_no_op =
 	{ zero
 	& aie_instruction = "no_op"
-	, aie_description = "Do nothing. This is for example useful in the `cast` function:\n\n```clean\ncast :: .a -> .b\ncast _ = code {\n\tno_op\n}\n```"
+	, aie_description = "Do nothing. This is for example useful in the `cast` function:\n\n" +
+		"```clean\ncast :: .a -> .b\ncast _ = code {\n\tno_op\n}\n```"
+	}
+
+d_d :: ABCInstructionEntry
+d_d =
+	{ zero
+	& aie_instruction = ".d"
+	, aie_arguments   = [INT, INT, STRING_]
+	, aie_description = "Indicates how many stack elements are on the stack when a jump follows." +
+		"The first integer is the number of elements on the A-stack; the second that of B-stack elements." +
+		"The optional third argument indicates the type of the B-stack elements, e.g. `bbi` for two booleans and an integer."
+	}
+
+d_o :: ABCInstructionEntry
+d_o =
+	{ zero
+	& aie_instruction = ".o"
+	, aie_arguments   = [INT, INT, STRING_]
+	, aie_description = "Indicates how many stack elements are 'given back' to a calling function when a {{`rtn`}} follows." +
+		"The first integer is the number of elements on the A-stack; the second that of B-stack elements." +
+		"The optional third argument indicates the type of the B-stack elements, e.g. `bbi` for two booleans and an integer."
 	}
 
 /**
@@ -76,7 +170,6 @@ other_instructions =
 	, "build_u"
 	, "catS"
 	, "call"
-	, "centry"
 	, "cmpS"
 	, "ceilingR"
 	, "CtoAC"
@@ -151,7 +244,6 @@ other_instructions =
 	, "gtU"
 	, "in"
 	, "incI"
-	, "instruction"
 	, "is_record"
 	, "ItoC"
 	, "ItoP"
@@ -170,10 +262,6 @@ other_instructions =
 	, "jsr_ap"
 	, "jsr_eval"
 	, "lnR"
-	, "load_i"
-	, "load_si16"
-	, "load_si32"
-	, "load_ui8"
 	, "log10R"
 	, "ltC"
 	, "ltI"
@@ -300,7 +388,6 @@ other_instructions =
 	, ".code"
 	, ".comp"
 	, ".a"
-	, ".d"
 	, ".depend"
 	, ".desc"
 	, ".desc0"
@@ -322,7 +409,6 @@ other_instructions =
 	, ".nu"
 	, ".newlocallabel"
 	, ".n_string"
-	, ".o"
 	, ".pb"
 	, ".pd"
 	, ".pe"

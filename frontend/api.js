@@ -163,7 +163,7 @@ function mergeComments(code, comments) {
 String.prototype.markup = function() {
 	return this
 		.replace(/\n```[^\n]+\n/g, '<pre>')
-		.replace(/\n```\n/g, '</pre>')
+		.replace(/\n```(\n|$)/g, '</pre>')
 		.split(/\n\n/).join('<br class="parbreak"/>')
 		.split(/\n\s*-/).join('<br/>-')
 		.split(/\n\s*\*/).join('<br/>*')
@@ -628,11 +628,33 @@ function getResults(str, libs, include_builtins, include_core, include_apps, pag
 				res.className = 'result';
 				res.innerHTML =
 						'<div class="result-basic">Clean syntax: ' + extra['syntax_title'] + '</div>' +
-						'<div class="result-extra">' + meta.join('<br/>') + '</div>' +
+						'<div class="result-extra">' +
+							meta.join('<br/>') +
+							'<br class="parbreak"/>' +
+							'<a href="https://github.com/clean-cloogle/cloogle.org/blob/master/backend/BuiltinSyntax.icl" target="_blank">Edit this explanation on GitHub.</a>' +
+						'</div>' +
 						'<div class="result-extra toggle-container">' +
 							toggler +
 							'<div class="togglee">' + makeExampleList(extra['syntax_examples']) + '</div></div>' +
 						'<pre class="result-code">' + code + '</pre>';
+				return res;
+
+			case 'ABCInstructionResult':
+				var parameters = extra['abc_arguments'].length > 0
+					? '<code>' + extra['abc_arguments'].join(' ') + '</code>'
+					: 'none';
+				meta.unshift('Parameters: ' + parameters + '.');
+
+				var res = document.createElement('div');
+				res.className = 'result';
+				res.innerHTML =
+						'<div class="result-basic">ABC ' + (extra['abc_instruction'][0] == '.' ? 'directive' : 'instruction') +
+						': <code>' + extra['abc_instruction'] + '</code></div>' +
+						'<div class="result-extra">' +
+							meta.join('<br/>') +
+							'<a class="parbreak" href="https://github.com/clean-cloogle/cloogle.org/blob/master/backend/BuiltinABCInstructions.icl" target="_blank">Edit this explanation on GitHub.</a>' +
+						'</div>' +
+						'<pre class="result-code"><span class="keyword">' + extra['abc_instruction'] + '</span></pre>';
 				return res;
 
 			case 'ProblemResult':
@@ -649,9 +671,9 @@ function getResults(str, libs, include_builtins, include_core, include_apps, pag
 						'<div class="result-basic">Common problem: ' + result.problem_title + '</div>' +
 						'<div class="result-extra">' +
 							result.problem_description +
-							'<br/><br/>Possible solutions:<ul>' + solutions + '</ul>' +
+							'<br class="parbreak"/>Possible solutions:<ul>' + solutions + '</ul>' +
 							'Examples:<ul>' + examples + '</ul>' +
-							'<a href="https://github.com/clean-cloogle/common-problems/blob/master/' + result.problem_key + '.md" target="_blank">Edit this explanation.</a><br/><br/>' +
+							'<a href="https://github.com/clean-cloogle/common-problems/blob/master/' + result.problem_key + '.md" target="_blank">Edit this explanation on GitHub.</a>' +
 						'</div>' +
 						'<div class="result-code"></div>';
 				return res;

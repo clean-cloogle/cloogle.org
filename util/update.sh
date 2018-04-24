@@ -76,7 +76,7 @@ else
 	echo "Not clearing the cache."
 fi
 
-RESULTS="$(grep -A11 -F '| Table' /tmp/cloogle-build.log | sed 's/\x1b\[[0-9;]*m//g')"
+RESULTS="$(grep -A12 -F '| Table' /tmp/cloogle-build.log | sed 's/\x1b\[[0-9;]*m//g')"
 if [[ "$HUGINN" != "" ]]; then
 	curl -s -d text="Cloogle build succeeded." "$HUGINN"; echo
 fi

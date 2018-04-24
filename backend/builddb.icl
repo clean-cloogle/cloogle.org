@@ -28,6 +28,8 @@ from CloogleDBFactory import :: TemporaryDB, newTemporaryDB, finaliseDB,
 	:: IndexItem, :: SourceURL, :: PathPattern
 
 import Builtins
+import BuiltinSyntax
+import BuiltinABCInstructions
 
 :: CLI =
 	{ help      :: !Bool
@@ -105,7 +107,8 @@ where
 		map TypeDefEntry builtin_types ++
 		map FunctionEntry (concatMap constructor_functions builtin_types) ++
 		map FunctionEntry (concatMap record_functions builtin_types) ++
-		map SyntaxEntry builtin_syntax
+		map SyntaxEntry builtin_syntax ++
+		map ABCInstructionEntry builtin_abc_instructions
 
 	parseCLI :: [String] -> Either String CLI
 	parseCLI [] = Right zero
@@ -132,7 +135,8 @@ where
 		<< "Classes"           <-- s.n_classes
 		<< "Instances"         <-- s.n_instances
 		<< "Derivations"       <-- s.n_derivations
-		<< "Syntax constructs" <-- s.n_syntax_constructs)
+		<< "Syntax constructs" <-- s.n_syntax_constructs
+		<< "ABC instructions"  <-- s.n_abc_instructions)
 	where
 		(<<) infixl :: *File String -> *File
 		(<<) f s = f <<< "| " <<< rpad 17 s <<< " | "

@@ -45,7 +45,28 @@ i_ccall =
 	{ zero
 	& aie_instruction = "ccall"
 	, aie_arguments   = [LABEL, STRING]
-	, aie_description = "Calls a C function."
+	, aie_description = join "\n"
+		["Calls a C function."
+		,"Some of this is documented in https://svn.cs.ru.nl/repos/clean-tools/trunk/htoclean/CallingCFromClean.html"
+		,"The first argument is the name of the function, the second is the signature."
+		,"\n"
+		,"The signature has to be of the form 'flags?(input sep)?output(sep state)?'."
+		,"- sep    can either '-' or ':'."
+		,"- flags  can be either or both G  to save the state in global variables or P to let the callee pop arguments (necessary on windows 32bit)."
+		,"- input  a number of input argument types (allowed: IpRrSsAOF)."
+		,"- output is a number of output argument types (allowed VIpRrSsAOF)."
+		,"- state  is a carried state that is not passed to the C function, it is used to thread {{`World`}} in ccalls (allowed: IpRSA)."
+		,"\n"
+		,"Input, output and state argument types can be:\n"
+		,"- I    Integers"
+		,"- p    Pointer (e.g. from {{`System.Pointer`}})"
+		,"- [Rr] Reals"
+		,"- S    Clean String ({#Char})."
+		,"- s    Characters of the Clean String (handy to use in conjuction with {{`packString`}})"
+		,"- A    Anything (e.g.\ used for *World, is an Int under the hood)"
+		,"- [OF] Function pointer"
+		,"- V    Void, packs the following argument types in a tuple (e.g.\ VIR means (Int, Real))"
+		]
 	}
 
 i_centry :: ABCInstructionEntry

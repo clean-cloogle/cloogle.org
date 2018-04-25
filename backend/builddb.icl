@@ -78,6 +78,8 @@ Start w
 	# (mods, w)   = mapSt (flip (findModules cli.root) "") libs w
 	# mods        = flatten mods
 	#! (db, w)    = loop cli.root mods newTemporaryDB w
+	#! (ok,w)     = fclose (stderr <<< "Linking database entries; this may take up to 10 minutes...\n") w
+	| not ok      = abort "Couldn't close stderr\n"
 	#! db         = finaliseDB builtins db
 	#! (db,err)   = printStats db stderr
 	#! (ok1,w)    = fclose err w
@@ -87,7 +89,7 @@ Start w
 	#! (db,dbg)   = writeTypeTree db dbg
 	#! (_,w)      = fclose dbg w
 	= (ok1 && ok2,w)
-| not ok = abort "Couldn't close stdio"
+| not ok = abort "Couldn't close stdio\n"
 = w
 where
 	loop :: String [ModuleEntry] !TemporaryDB !*World -> *(!TemporaryDB, !*World)

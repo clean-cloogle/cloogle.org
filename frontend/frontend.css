@@ -238,6 +238,10 @@ a.hidden {
 	padding-left: 1em;
 }
 
+.result-extra code {
+	font-size: 110%;
+}
+
 .result-extra .togglee ul {
 	margin: 0;
 	padding-left: 2em;

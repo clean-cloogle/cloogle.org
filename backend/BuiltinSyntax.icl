@@ -170,7 +170,7 @@ bs_foreign =
 		[ "foreign export [ccall | stdcall] ..."
 		]
 	, syntax_description   =
-		"Exports the clean function symbol to the binary.\n\n" +
+		"Exports the Clean function symbol to the binary.\n\n" +
 		"This is only possible if the function is also in the definition module and all arguments are basic types or tuples and fully strict."
 	, syntax_doc_locations = [CLR 13 "11.1" "_Toc311798114"]
 	, syntax_examples      = map (EX "Function")

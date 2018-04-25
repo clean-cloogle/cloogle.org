@@ -22,6 +22,7 @@ builtin_syntax =
 	, bs_dotdot
 	, bs_exists
 	, bs_forall
+	, bs_foreign
 	, bs_generic
 	, bs_import
 	, bs_infix
@@ -161,6 +162,21 @@ bs_forall =
 		, EX "TypeDef"  ":: T = C (A.a: a -> a)        // In a type"
 		]
 	}
+
+bs_foreign =
+	{ syntax_title         = "foreign export"
+	, syntax_patterns      = ["foreign", "export", "ccall", "stdcall"]
+	, syntax_code          =
+		[ "foreign export [ccall | stdcall] ..."
+		]
+	, syntax_description   =
+		"Exports the clean function symbol to the binary.\n\n" +
+		"This is only possible if the function is also in the definition module and all arguments are basic types or tuples and fully strict.\n\n" +
+	, syntax_doc_locations = [CLR 13 "11.1" "_Toc311798114"]
+	, syntax_examples      = map (EX "Function")
+		[ "foreign export factorial         // Export the factorial function"
+		, "foreign export stdcall factorial // Idem but with the stdcall calling convention"
+		]
 
 bs_generic =
 	{ syntax_title         = "generic function definition"

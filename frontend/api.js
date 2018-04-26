@@ -484,7 +484,7 @@ function getResults(str, libs, include_builtins, include_core, include_apps, pag
 
 				if ('cls' in extra)
 					meta.push('Class: <code>' +
-							highlightClassDef(extra['cls']['cls_name'] +
+							highlightFunction(extra['cls']['cls_name'] +
 							' ' + extra['cls']['cls_vars'].join(' '),
 							highlightCallback, 'className') + '</code>');
 
@@ -550,7 +550,7 @@ function getResults(str, libs, include_builtins, include_core, include_apps, pag
 							'Instances',
 							makeInstanceTable(
 								extra['type_instances'],
-								highlightClassDef, 'className'),
+								highlightFunction, 'className'),
 							pluralise(extra['type_instances'].length, 'instance')]);
 				}
 
@@ -591,7 +591,7 @@ function getResults(str, libs, include_builtins, include_core, include_apps, pag
 							makeInstanceTable(extra['class_instances'], highlightType),
 							pluralise(extra['class_instances'].length, 'instance')]);
 
-				var html = highlightClassDef(
+				var html = highlightFunction(
 						'class ' + extra['class_heading'] +
 						(extra['class_funs'].length > 0 ? ' where' : ''),
 						highlightCallback) + '\n';

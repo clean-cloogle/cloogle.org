@@ -23,6 +23,7 @@ builtin_syntax =
 	, bs_exists
 	, bs_forall
 	, bs_foreign
+	, bs_funcdep
 	, bs_generic
 	, bs_import
 	, bs_infix
@@ -176,6 +177,26 @@ bs_foreign =
 	, syntax_examples      = map (EX "Function")
 		[ "foreign export factorial         // Export the factorial function"
 		, "foreign export stdcall factorial // Idem but with the stdcall calling convention"
+		]
+	}
+
+bs_funcdep =
+	{ syntax_title         = "functional dependency"
+	, syntax_patterns      = ["~"]
+	, syntax_code          =
+		[ "class ... ~... ..."
+		]
+	, syntax_description   =
+		"Lets you point the type checker to the type that determines the other types.\n\n" +
+		"Most often this is the return type (undocumented and experimental)."
+	, syntax_doc_locations = []
+	, syntax_examples      = map (EX "Function")
+		[ "class plus a b c :: a b -> c\n" +
+		  "instance plus Int Int Int where plus x y = x + y\n" +
+		  "Start = plus 1 (plus 1 1) // Results in: internal overloading of \"plus\" could not be solved because the compiler doesn't know the type of the intermediate result."
+		, "class plus a b ~c :: a b -> c\n" +
+		  "instance plus Int Int Int where plus x y = x + y\n" +
+		  "Start = plus 1 (plus 1 1) // Works! because we told the compiler that c determines the other types."
 		]
 	}
 

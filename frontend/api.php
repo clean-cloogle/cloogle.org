@@ -241,6 +241,8 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET'){
 					break;
 			}
 			$decoded = json_decode($response, true);
+			if (count($extra_results) > 0 && $decoded['return'] > 1)
+				$decoded['return'] = 0;
 			log_request($decoded['return']);
 			$decoded['data'] = array_merge($extra_results, $decoded['data']);
 			echo json_encode($decoded);

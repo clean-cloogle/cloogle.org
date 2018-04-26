@@ -67,7 +67,7 @@ function highlightQuery(query) {
 	if (query == 'class' || query == 'type' || query == 'using') {
 		return '<span class="keyword">' + query + '</span>';
 	} else if (query.match(/^class\s/)) {
-		highlighter = highlightClassDef;
+		highlighter = highlightFunction;
 	} else if (query.match(/^type\s/)) {
 		highlighter = function(q) {
 			return '<span class="keyword">type</span><span class="whitespace">' + q.substring(4,5) + '</span>' +

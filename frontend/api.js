@@ -65,6 +65,22 @@ Element.prototype.setCaretPosition = function(pos) {
 	this.focus();
 };
 
+Element.prototype.getInputOrContentEditableValue = function() {
+	if (this.tagName == 'INPUT') {
+		return this.value;
+	} else {
+		return this.innerText;
+	}
+};
+
+Element.prototype.setInputOrContentEditableValue = function(val) {
+	if (this.tagName == 'INPUT') {
+		this.value = val;
+	} else {
+		this.innerText = val;
+	}
+};
+
 function makeGeneralHelp(query) {
 	return 'For general information about Clean, ' +
 		'<a href="http://clean.cs.ru.nl/index.php?title=Special:Search&fulltext=Search&search=' + encodeURIComponent(query) + '" target="_blank">' +
@@ -797,7 +813,7 @@ function getLibs() {
 function formsubmit() {
 	document.getElementById("header").classList.add('result-view');
 
-	var q = form_str.innerText.replace(/\u00a0/g, ' ');
+	var q = form_str.getInputOrContentEditableValue().replace(/\u00a0/g, ' ');
 	if (q === '') {
 		sresults.innerHTML = '<p>Can\'t search for the empty string</p>';
 	} else {
@@ -856,8 +872,9 @@ function hashQuery() {
 		return;
 
 	var args = document.location.hash.substring(1).split('%0A');
-	form_str.innerText = decodeURIComponent(args[0]);
-	form_str.oninput();
+	form_str.setInputOrContentEditableValue(decodeURIComponent(args[0]));
+	if (form_str.oninput != undefined)
+		form_str.oninput();
 	page = 0;
 
 	if (args.length > 1) {
@@ -909,33 +926,48 @@ window.onhashchange = function () {
 	}
 }
 
-form_str.oninput = function() {
-	var caret = this.getCaretPosition();
-	if (caret == 1 && this.innerText.match(/^\s/)) {
-		// No idea why anybody should do this, but okay... Without this
-		// specialization, the caret jumps while no space is added when you try to
-		// add a space at the start.
-		caret = 0;
-	}
-	var val = this.innerText.replace(/^\s+|\n\n$/g, '').replace(/\n$/, '\u00a0').replace(/\n/g, '');
-	var html = highlightQuery(val);
-	if (html == '') {
-		html = '<span id="caret-spacer"></span>';
-		this.classList.add('placeholder');
-	} else {
-		this.classList.remove('placeholder');
-	}
-	this.innerHTML = html;
-	this.setCaretPosition(caret);
-};
-form_str.onkeydown = function(e) {
-	if (e.keyCode == 13) {
-		formsubmit();
-	}
-};
-form_str.oninput();
-form_str.setCaretPosition(form_str.innerText.length);
-form_str.focus();
+var make_content_editable = true;
+if (navigator.userAgent.indexOf(' SEB ') != -1) // Safe exam browser
+	make_content_editable = false;
+if (make_content_editable) {
+	var new_form_str = document.createElement('div');
+	new_form_str.id = 'search-str';
+	new_form_str.spellcheck = false;
+	new_form_str.autocapitalize = 'none';
+	new_form_str.autocorrect = 'off';
+	new_form_str.autocomplete = 'off';
+	new_form_str.contentEditable = true;
+	form_str.parentNode.replaceChild(new_form_str, form_str);
+	form_str = new_form_str;
+
+	form_str.oninput = function() {
+		var caret = this.getCaretPosition();
+		if (caret == 1 && this.innerText.match(/^\s/)) {
+			// No idea why anybody should do this, but okay... Without this
+			// specialization, the caret jumps while no space is added when you try to
+			// add a space at the start.
+			caret = 0;
+		}
+		var val = this.innerText.replace(/^\s+|\n\n$/g, '').replace(/\n$/, '\u00a0').replace(/\n/g, '');
+		var html = highlightQuery(val);
+		if (html == '') {
+			html = '<span id="caret-spacer"></span>';
+			this.classList.add('placeholder');
+		} else {
+			this.classList.remove('placeholder');
+		}
+		this.innerHTML = html;
+		this.setCaretPosition(caret);
+	};
+	form_str.onkeydown = function(e) {
+		if (e.keyCode == 13) {
+			formsubmit();
+		}
+	};
+	form_str.oninput();
+	form_str.setCaretPosition(form_str.innerText.length);
+	form_str.focus();
+}
 
 function restoreShareUI() {
 	share_button.innerHTML = "Share";

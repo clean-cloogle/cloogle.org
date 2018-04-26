@@ -23,7 +23,7 @@
 		</div>
 		<div id="search">
 			<form id="search-form" action="#">
-				<div id="search-str" spellcheck="false" autocapitalize="none" autocorrect="off" autocomplete="off" contenteditable="true"></div>
+				<input id="search-str" spellcheck="false" autocapitalize="none" autocorrect="off" autocomplete="off"/>
 				<button>Search</button><br/>
 				<ul id="searchlinks">
 					<li onclick="toggleAdvanced();this.classList.toggle('active');">Advanced</li>

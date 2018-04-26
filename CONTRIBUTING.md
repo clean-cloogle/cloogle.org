@@ -30,11 +30,25 @@ We will take immediate action.
 
 ## 2. Submitting patches
 
+### Which repository to patch
+
+- [libcloogle][] describes the Cloogle API as a set of types. Because many
+  applications make assumptions about this API, one must be reluctant with
+  changing this. However, sometimes it is necessary. See
+  [`CONTRIBUTING.md`](https://github.com/clean-cloogle/libcloogle/blob/master/CONTRIBUTING.md)
+  in that repository for more details.
+- [Cloogle][] contains the core functionality for indexing and searching. It
+  relies on [CleanPrettyPrint][] to pretty-print the abstract syntax tree of
+  Clean, and on [CleanTypeUnifier][] to unify types in type search.
+- This repository ([cloogle.org](https://github.com/clean-cloogle/cloogle.org))
+  is only a wrapper around [Cloogle][]. It contains functionality for TCP,
+  caching, the web frontend and statistics.
+
 ### General
 
-- Fork the repo, make a topic branch and when done submit a pull request
+- Fork the repo, make a topic branch and when done submit a pull request.
 - If your PR fixes some issue, be sure to mention it in the commit message
-  (e.g. `Fix #15`)
+  (e.g. `Fix #15`).
 - Keep PRs as focused as possible. If you intend to fix multiple, independent
   things, open multiple, separate PRs.
 - If you intend to make large changes, it's probably best to open an issue and
@@ -43,14 +57,14 @@ We will take immediate action.
 
 ### Code style
 
-- Use tabs instead of spaces
-- Keep lines under 80 chars (except for HTML).
+- Use tabs instead of spaces.
+- Try to keep lines under 80 chars (except for HTML).
 - When editing the frontend, do not use external frameworks (jQuery,
   bootstrap, etc.). We strive for minimality and elegance.
 
 ### Other stuff
 
-- Add yourself to the authors list in `README.md`
+- Add yourself to the authors list in `README.md`.
 
 ## 3. I just want to add library X
 If the library is not well-known it is advised to first open an issue to see
@@ -96,3 +110,8 @@ value is an array with a required `pattern`, which is used in SQL `LIKE`
 queries so you can use `%` as in `%Linux%` - in most cases, the pattern will be
 equal to the name. The optional `url` is a link to where the client may be used
 or downloaded.
+
+[Cloogle]: https://github.com/clean-cloogle/Cloogle
+[libcloogle]: https://github.com/clean-cloogle/libcloogle
+[CleanPrettyPrint]: https://github.com/clean-cloogle/CleanPrettyPrint
+[CleanTypeUnifier]: https://github.com/clean-cloogle/CleanTypeUnifier

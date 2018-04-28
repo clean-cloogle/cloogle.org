@@ -282,22 +282,54 @@ where
 
 pushes :: [ABCInstructionEntry]
 pushes =
-	[ push "pushB"   "Char" BOOL 'B'
-	, push "pushB_a" "Char" BOOL 'A'
-	, push "pushC"   "Char" CHAR 'B'
-	, push "pushC_a" "Char" CHAR 'A'
-	, push "pushI"   "Int"  INT  'B'
-	, push "pushI_a" "Int"  INT  'A'
-	, push "pushR"   "Real" REAL 'B'
-	, push "pushR_a" "Real" REAL 'A'
+	[ push    "Bool" BOOL
+	, push    "Char" CHAR
+	, push    "Int"  INT
+	, push    "Real" REAL
+	, push_a  "Bool"
+	, push_a  "Char"
+	, push_a  "Int"
+	, push_a  "Real"
+	, build   "Bool" BOOL
+	, build   "Char" CHAR
+	, build   "Int"  INT
+	, build   "Real" REAL
+	, build_b "Bool"
+	, build_b "Char"
+	, build_b "Int"
+	, build_b "Real"
 	]
 where
-	push :: !String !String !ABCArgument !Char -> ABCInstructionEntry
-	push instr type arg stack =
+	push :: !String !ABCArgument -> ABCInstructionEntry
+	push type arg =
 		{ zero
-		& aie_instruction = instr
+		& aie_instruction = "push" + {type.[0]}
 		, aie_arguments   = [arg]
-		, aie_description = "Pushes the " + type + " argument to the " + {stack} + "-stack."
+		, aie_description = "Pushes the " + type + " argument to the B-stack."
+		}
+
+	push_a :: !String -> ABCInstructionEntry
+	push_a type =
+		{ zero
+		& aie_instruction = "push" + {type.[0]} + "_a"
+		, aie_arguments   = [INT]
+		, aie_description = "Pushes the " + type + " from the nth position on the A-stack to the B-stack."
+		}
+
+	build :: !String !ABCArgument -> ABCInstructionEntry
+	build type arg =
+		{ zero
+		& aie_instruction = "build" + {type.[0]}
+		, aie_arguments   = [arg]
+		, aie_description = "Builds a " + type + "-node with the argument as value on the A-stack."
+		}
+
+	build_b :: !String -> ABCInstructionEntry
+	build_b type =
+		{ zero
+		& aie_instruction = "build" + {type.[0]} + "_b"
+		, aie_arguments   = [INT]
+		, aie_description = "Builds a " + type + "-node with the value on the nth position of the B-stack on the A-stack."
 		}
 
 /**
@@ -308,16 +340,8 @@ other_instructions =
 	[ "add_args"
 	, "addLU"
 	, "build"
-	, "buildB"
-	, "buildC"
-	, "buildI"
-	, "buildR"
 	, "buildAC"
-	, "buildB_b"
-	, "buildC_b"
 	, "buildF_b"
-	, "buildI_b"
-	, "buildR_b"
 	, "buildh"
 	, "build_r"
 	, "build_u"

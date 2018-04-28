@@ -1,7 +1,8 @@
 implementation module BuiltinABCInstructions
 
+import _SystemArray
+import StdList
 import StdMisc
-import StdOverloaded
 
 import Text
 
@@ -22,7 +23,9 @@ builtin_abc_instructions =
 	, i_no_op
 	, d_d
 	, d_o
-	: [{zero & aie_instruction=i} \\ i <- other_instructions]
+	: arith_instructions ++
+	  pushes ++
+	  [{zero & aie_instruction=i} \\ i <- other_instructions]
 	]
 
 instance zero ABCInstructionEntry
@@ -37,8 +40,14 @@ LABEL   :== ABCArgument ABCTypeLabel  False
 LABEL_  :== ABCArgument ABCTypeLabel  True
 STRING  :== ABCArgument ABCTypeString False
 STRING_ :== ABCArgument ABCTypeString True
+BOOL    :== ABCArgument ABCTypeBool   False
+BOOL_   :== ABCArgument ABCTypeBool   True
+CHAR    :== ABCArgument ABCTypeChar   False
+CHAR_   :== ABCArgument ABCTypeChar   True
 INT     :== ABCArgument ABCTypeInt    False
 INT_    :== ABCArgument ABCTypeInt    True
+REAL    :== ABCArgument ABCTypeReal   False
+REAL_   :== ABCArgument ABCTypeReal   True
 
 i_ccall :: ABCInstructionEntry
 i_ccall =
@@ -184,21 +193,120 @@ d_o =
 		]
 	}
 
+arith_instructions :: [ABCInstructionEntry]
+arith_instructions =
+	[ arith1 "absR"    "Real" "absolute value"
+	, arith1 "acosR"   "Real" "arccosine"
+	, arith1 "asinR"   "Real" "arcsine"
+	, arith1 "atanR"   "Real" "arctangent"
+	, arith1 "cosR"    "Real" "cosine"
+	, arith1 "entierR" "Real" "(Int) entier (floor)"
+	, arith1 "expR"    "Real" "exponential function (e^r)"
+	, arith1 "lnR"     "Real" "natural logarithm"
+	, arith1 "log10R"  "Real" "base-10 logarithm"
+	, arith1 "notB"    "Bool" "logical negation"
+	, arith1 "sinR"    "Real" "sine"
+	, arith1 "sqrtR"   "Real" "square root"
+	, arith1 "tanR"    "Real" "tangent"
+
+	, op1 "decI" "Int"  "Decrements"
+	, op1 "incI" "Int"  "Increments"
+	, op1 "negI" "Int"  "Negates"
+	, op1 "negR" "Real" "Negates"
+	, op1 "not%" "Int"  "Bitwise negates"
+
+	, op2 "addI"    "Int"  "Sums"
+	, op2 "addR"    "Real" "Sums"
+	, op2 "andB"    "Bool" "Logically conjuncts"
+	, op2 "and%"    "Int"  "Bitwise conjuncts"
+	, op2 "divI"    "Int"  "Divides"
+	, op2 "divR"    "Real" "Divides"
+	, op2 "eqB"     "Bool" "Checks equality on"
+	, op2 "eqC"     "Char" "Checks equality on"
+	, op2 "eqI"     "Int"  "Checks equality on"
+	, op2 "eqR"     "Real" "Checks equality on"
+	, op2 "gtC"     "Char" "Checks greater-than on"
+	, op2 "gtI"     "Int"  "Checks greater-than on"
+	, op2 "gtR"     "Real" "Checks greater-than on"
+	, op2 "ltC"     "Char" "Checks less-than on"
+	, op2 "ltI"     "Int"  "Checks less-than on"
+	, op2 "ltR"     "Real" "Checks less-than on"
+	, op2 "mulI"    "Int"  "Multiplies"
+	, op2 "mulR"    "Real" "Multiplies"
+	, op2 "orB"     "Bool" "Logically disjuncts"
+	, op2 "or%"     "Int"  "Bitwise disjuncts"
+	, op2 "powR"    "Real" "Raises to the power on"
+	, op2 "remI"    "Int"  "Computes the remainder after division of"
+	, op2 "rotl%"   "Int"  "Bitwise left-rotate on"
+	, op2 "rotr%"   "Int"  "Bitwise right-rotate on"
+	, op2 "shiftl%" "Int"  "Bitwise left-shift on"
+	, op2 "shiftr%" "Int"  "Bitwise right-shift on"
+	, op2 "subI"    "Int"  "Subtracts"
+	, op2 "subR"    "Real" "Subtracts"
+	, op2 "xor%"    "Int"  "Bitwise XOR on"
+
+	, convert "CtoI"  "Char" "Int"
+	, convert "CtoAC" "Char" "String"
+	, convert "ItoC"  "Int"  "Char"
+	, convert "ItoR"  "Int"  "Real"
+	, convert "RtoI"  "Real" "Int"
+	]
+where
+	arith1 :: !String !String !String -> ABCInstructionEntry
+	arith1 instr type description =
+		{ zero
+		& aie_instruction = instr
+		, aie_description = "Computes the " + description + " of the " + type + " on top of the B-stack."
+		}
+
+	op1 :: !String !String !String -> ABCInstructionEntry
+	op1 instr type description =
+		{ zero
+		& aie_instruction = instr
+		, aie_description = description + " the " + type + " on top of the B-stack."
+		}
+
+	op2 :: !String !String !String -> ABCInstructionEntry
+	op2 instr type description =
+		{ zero
+		& aie_instruction = instr
+		, aie_description = description + " the two " + type + "s on top of the B-stack."
+		}
+
+	convert :: !String !String !String -> ABCInstructionEntry
+	convert instr fr to =
+		{ zero
+		& aie_instruction = instr
+		, aie_description = "Converts the " + fr + " on top of the B-stack to " + to + "."
+		}
+
+pushes :: [ABCInstructionEntry]
+pushes =
+	[ push "pushB"   "Char" BOOL 'B'
+	, push "pushB_a" "Char" BOOL 'A'
+	, push "pushC"   "Char" CHAR 'B'
+	, push "pushC_a" "Char" CHAR 'A'
+	, push "pushI"   "Int"  INT  'B'
+	, push "pushI_a" "Int"  INT  'A'
+	, push "pushR"   "Real" REAL 'B'
+	, push "pushR_a" "Real" REAL 'A'
+	]
+where
+	push :: !String !String !ABCArgument !Char -> ABCInstructionEntry
+	push instr type arg stack =
+		{ zero
+		& aie_instruction = instr
+		, aie_arguments   = [arg]
+		, aie_description = "Pushes the " + type + " argument to the " + {stack} + "-stack."
+		}
+
 /**
  * Instructions without documentation yet
  */
 other_instructions :: [String]
 other_instructions =
-	[ "absR"
-	, "acosR"
-	, "add_args"
-	, "addI"
+	[ "add_args"
 	, "addLU"
-	, "addR"
-	, "andB"
-	, "and%"
-	, "asinR"
-	, "atanR"
 	, "build"
 	, "buildB"
 	, "buildC"
@@ -217,34 +325,23 @@ other_instructions =
 	, "call"
 	, "cmpS"
 	, "ceilingR"
-	, "CtoAC"
 	, "copy_graph"
-	, "cosR"
 	, "code_channelP"
 	, "create"
 	, "create_array"
 	, "create_array_"
 	, "create_channel"
 	, "currentP"
-	, "CtoI"
-	, "decI"
 	, "del_args"
-	, "divI"
 	, "divLU"
-	, "divR"
 	, "divU"
-	, "entierR"
-	, "eqB"
 	, "eqB_a"
 	, "eqB_b"
-	, "eqC"
 	, "eqC_a"
 	, "eqC_b"
 	, "eqD_b"
-	, "eqI"
 	, "eqI_a"
 	, "eqI_b"
-	, "eqR"
 	, "eqR_a"
 	, "eqR_b"
 	, "eqAC_a"
@@ -253,7 +350,6 @@ other_instructions =
 	, "eq_nulldesc"
 	, "eq_symbol"
 	, "exit_false"
-	, "expR"
 	, "fill"
 	, "fill1"
 	, "fill2"
@@ -283,16 +379,10 @@ other_instructions =
 	, "get_desc_flags_b"
 	, "get_desc0_number"
 	, "get_node_arity"
-	, "gtC"
-	, "gtI"
-	, "gtR"
 	, "gtU"
 	, "in"
-	, "incI"
 	, "is_record"
-	, "ItoC"
 	, "ItoP"
-	, "ItoR"
 	, "jmp"
 	, "jmp_ap"
 	, "jmp_ap_upd"
@@ -306,29 +396,15 @@ other_instructions =
 	, "jsr"
 	, "jsr_ap"
 	, "jsr_eval"
-	, "lnR"
-	, "log10R"
-	, "ltC"
-	, "ltI"
-	, "ltR"
 	, "ltU"
 	, "modI"
-	, "mulI"
-	, "mulR"
 	, "mulUUL"
-	, "negI"
-	, "negR"
 	, "new_ext_reducer"
 	, "new_int_reducer"
 	, "newP"
-	, "notB"
-	, "not%"
-	, "orB"
-	, "or%"
 	, "out"
 	, "pop_a"
 	, "pop_b"
-	, "powR"
 	, "print"
 	, "printD"
 	, "print_char"
@@ -341,19 +417,11 @@ other_instructions =
 	, "pushcaf"
 	, "push_finalizers"
 	, "pushA_a"
-	, "pushB"
-	, "pushB_a"
-	, "pushC"
-	, "pushC_a"
 	, "pushD"
 	, "pushD_a"
 	, "pushF_a"
-	, "pushI"
-	, "pushI_a"
 	, "pushL"
 	, "pushLc"
-	, "pushR"
-	, "pushR_a"
 	, "pushzs"
 	, "push_a"
 	, "push_b"
@@ -383,7 +451,6 @@ other_instructions =
 	, "putWL"
 	, "randomP"
 	, "release"
-	, "remI"
 	, "remU"
 	, "replace"
 	, "repl_arg"
@@ -391,10 +458,7 @@ other_instructions =
 	, "repl_args_b"
 	, "repl_r_args"
 	, "repl_r_args_a"
-	, "rotl%"
-	, "rotr%"
 	, "rtn"
-	, "RtoI"
 	, "select"
 	, "send_graph"
 	, "send_request"
@@ -403,22 +467,15 @@ other_instructions =
 	, "set_entry"
 	, "set_finalizers"
 	, "setwait"
-	, "shiftl%"
-	, "shiftr%"
 	, "shiftrU"
-	, "sinR"
 	, "sincosR"
 	, "sliceS"
-	, "sqrtR"
 	, "stop_reducer"
-	, "subI"
 	, "subLU"
 	, "addIo"
 	, "mulIo"
 	, "subIo"
-	, "subR"
 	, "suspend"
-	, "tanR"
 	, "testcaf"
 	, "truncateR"
 	, "update_a"
@@ -427,7 +484,6 @@ other_instructions =
 	, "updatepop_b"
 	, "updateS"
 	, "update"
-	, "xor%"
 	, ".algtype"
 	, ".caf"
 	, ".code"

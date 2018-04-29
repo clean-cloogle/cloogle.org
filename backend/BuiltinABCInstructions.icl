@@ -14,7 +14,7 @@ builtin_abc_instructions :: [ABCInstructionEntry]
 builtin_abc_instructions =
 	[ i_create
 	: arith_instructions ++
-	  pushes ++
+	  stack_operations ++
 	  branches ++
 	  miscellaneous ++
 	  directives ++
@@ -155,8 +155,8 @@ where
 		, aie_description = "Converts the " + fr + " on top of the B-stack to " + to + "."
 		}
 
-pushes :: [ABCInstructionEntry]
-pushes =
+stack_operations :: [ABCInstructionEntry]
+stack_operations =
 	[ push    "Bool" BOOL
 	, push    "Char" CHAR
 	, push    "Int"  INT
@@ -173,6 +173,10 @@ pushes =
 	, build_b "Char"
 	, build_b "Int"
 	, build_b "Real"
+	, i_pop_a
+	, i_pop_b
+	, i_push_a
+	, i_push_b
 	]
 where
 	push :: !String !ABCArgument -> ABCInstructionEntry
@@ -205,6 +209,31 @@ where
 		& aie_instruction = "build" + {type.[0]} + "_b"
 		, aie_arguments   = [INT]
 		, aie_description = "Builds a " + type + "-node with the value on the nth position of the B-stack on the A-stack."
+		}
+
+	i_pop_a =
+		{ zero
+		& aie_instruction = "pop_a"
+		, aie_arguments   = [A_OFFSET]
+		, aie_description = "Pops elements off the A-stack until the referenced element."
+		}
+	i_pop_b =
+		{ zero
+		& aie_instruction = "pop_b"
+		, aie_arguments   = [B_OFFSET]
+		, aie_description = "Pops elements off the B-stack until the referenced element."
+		}
+	i_push_a =
+		{ zero
+		& aie_instruction = "push_a"
+		, aie_arguments   = [A_OFFSET]
+		, aie_description = "Pushes the referenced A-stack element on the A-stack."
+		}
+	i_push_b =
+		{ zero
+		& aie_instruction = "push_b"
+		, aie_arguments   = [B_OFFSET]
+		, aie_description = "Pushes the referenced B-stack element on the B-stack."
 		}
 
 branches :: [ABCInstructionEntry]
@@ -257,6 +286,7 @@ miscellaneous :: [ABCInstructionEntry]
 miscellaneous =
 	[ i_ccall
 	, i_centry
+	, i_get_node_arity
 	, i_halt
 	, i_instruction
 	, i_load_i
@@ -306,6 +336,13 @@ where
 			, "The string argument indicates the type."
 			, "For more information, see {{`ccall`}}."
 			]
+		}
+
+	i_get_node_arity =
+		{ zero
+		& aie_instruction = "get_node_arity"
+		, aie_arguments   = [A_OFFSET]
+		, aie_description = "Pushes the arity of the descriptor of the referenced A-stack element to the B-stack."
 		}
 
 	i_halt =
@@ -496,7 +533,6 @@ other_instructions =
 	, "get_desc_arity"
 	, "get_desc_flags_b"
 	, "get_desc0_number"
-	, "get_node_arity"
 	, "gtU"
 	, "in"
 	, "is_record"
@@ -516,8 +552,6 @@ other_instructions =
 	, "new_int_reducer"
 	, "newP"
 	, "out"
-	, "pop_a"
-	, "pop_b"
 	, "print"
 	, "printD"
 	, "print_char"
@@ -536,8 +570,6 @@ other_instructions =
 	, "pushL"
 	, "pushLc"
 	, "pushzs"
-	, "push_a"
-	, "push_b"
 	, "push_a_b"
 	, "push_arg"
 	, "push_arg_b"

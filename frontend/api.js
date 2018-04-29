@@ -119,12 +119,10 @@ function highlightCallback(span, cls, str) {
 		return '<a class="hidden" title="Search generic ' + str + '" href="#' +
 			encodeURIComponent(str) + '">' +
 			span + '</a>';
-	} else if (cls == 'funcname funcname-onlyused' || cls == 'constructor') {
-		return '<a class="hidden" title="Search ' + str + '" href="#' +
-			encodeURIComponent(str) + '">' +
-			span + '</a>';
-	} else if (cls == 'funcname funcname-generic') {
-		return '<a class="hidden" title="Search ' + str + '" href="#' +
+	} else if (cls == 'funcname funcname-onlyused' ||
+			cls == 'constructor' ||
+			cls == 'abc-instruction') {
+		return '<a class="hidden" title="Search for ' + str + '" href="#' +
 			encodeURIComponent(str) + '">' +
 			span + '</a>';
 	} else {

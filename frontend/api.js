@@ -656,11 +656,7 @@ function getResults(str, libs, include_builtins, include_core, include_apps, pag
 				return res;
 
 			case 'ABCInstructionResult':
-				var parameters = extra['abc_arguments'].length > 0
-					? '<code>' + extra['abc_arguments'].join(' ') + '</code>'
-					: 'none';
-				meta.unshift('Parameters: ' + parameters + '.');
-
+				var line = extra['abc_instruction'] + ' ' + extra['abc_arguments'].join(' ');
 				var res = document.createElement('div');
 				res.className = 'result';
 				res.innerHTML =
@@ -670,7 +666,9 @@ function getResults(str, libs, include_builtins, include_core, include_apps, pag
 							meta.join('<br/>') +
 							'<a class="parbreak" href="https://github.com/clean-cloogle/cloogle.org/blob/master/backend/BuiltinABCInstructions.icl" target="_blank">Edit this explanation on GitHub.</a>' +
 						'</div>' +
-						'<pre class="result-code"><span class="keyword">' + extra['abc_instruction'] + '</span></pre>';
+						'<pre class="result-code">' +
+							highlightFunction(line, null, line[0] == '.' ? 'abc' : 'abcInstruction') +
+						'</pre>';
 				return res;
 
 			case 'ProblemResult':

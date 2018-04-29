@@ -12,19 +12,12 @@ import CloogleDB
 
 builtin_abc_instructions :: [ABCInstructionEntry]
 builtin_abc_instructions =
-	[ i_ccall
-	, i_centry
-	, i_halt
-	, i_instruction
-	, i_load_i
-	, i_load_si16
-	, i_load_si32
-	, i_load_ui8
-	, i_no_op
-	, d_d
-	, d_o
+	[ i_create
 	: arith_instructions ++
 	  pushes ++
+	  branches ++
+	  miscellaneous ++
+	  directives ++
 	  [{zero & aie_instruction=i} \\ i <- other_instructions]
 	]
 
@@ -36,161 +29,26 @@ where
 		, aie_description = "There is no documentation for this ABC instruction yet."
 		}
 
-LABEL   :== ABCArgument ABCTypeLabel  False
-LABEL_  :== ABCArgument ABCTypeLabel  True
-STRING  :== ABCArgument ABCTypeString False
-STRING_ :== ABCArgument ABCTypeString True
-BOOL    :== ABCArgument ABCTypeBool   False
-BOOL_   :== ABCArgument ABCTypeBool   True
-CHAR    :== ABCArgument ABCTypeChar   False
-CHAR_   :== ABCArgument ABCTypeChar   True
-INT     :== ABCArgument ABCTypeInt    False
-INT_    :== ABCArgument ABCTypeInt    True
-REAL    :== ABCArgument ABCTypeReal   False
-REAL_   :== ABCArgument ABCTypeReal   True
+LABEL    :== ABCArgument ABCTypeLabel        False
+LABEL_   :== ABCArgument ABCTypeLabel        True
+A_OFFSET :== ABCArgument ABCTypeAStackOffset False
+B_OFFSET :== ABCArgument ABCTypeBStackOffset False
+STRING   :== ABCArgument ABCTypeString       False
+STRING_  :== ABCArgument ABCTypeString       True
+BOOL     :== ABCArgument ABCTypeBool         False
+BOOL_    :== ABCArgument ABCTypeBool         True
+CHAR     :== ABCArgument ABCTypeChar         False
+CHAR_    :== ABCArgument ABCTypeChar         True
+INT      :== ABCArgument ABCTypeInt          False
+INT_     :== ABCArgument ABCTypeInt          True
+REAL     :== ABCArgument ABCTypeReal         False
+REAL_    :== ABCArgument ABCTypeReal         True
 
-i_ccall :: ABCInstructionEntry
-i_ccall =
+i_create :: ABCInstructionEntry
+i_create =
 	{ zero
-	& aie_instruction = "ccall"
-	, aie_arguments   = [LABEL, STRING]
-	, aie_description = join "\n"
-		[ "Calls a C function."
-		, "Some of this is documented in https://svn.cs.ru.nl/repos/clean-tools/trunk/htoclean/CallingCFromClean.html"
-		, "The first argument is the name of the function, the second is the signature."
-		, "\n"
-		, "The signature has to be of the form `flags?input?sep output(sep state)?`, where"
-		, "- sep    can be either `-` or `:`."
-		, "- flags  can be `G` and/or `P`. `G` saves the state in global variables and is needed when the called C function will call Clean functions. `P` lets the callee pop arguments (necessary on 32-bit Windows)."
-		, "- input  is a number of input argument types (allowed: `IpRrSsAOF`)."
-		, "- output is a number of output argument types (allowed: `VIpRrSsAOF`)."
-		, "- state  is a carried state that is not passed to the C function, for example used to thread {{`World`}} in ccalls (allowed: `IpRSA`)."
-		, "\n"
-		, "Input, output and state argument types can be:"
-		, "- `I`    for integers"
-		, "- `p`    for pointers (e.g. from {{`System.Pointer`}}; on most systems this is identical to `I`)"
-		, "- [`Rr`] for reals"
-		, "- `S`    for Clean Strings (`{#Char}`)."
-		, "- `s`    for the characters of a Clean String (handy to use in conjuction with {{`packString`}})"
-		, "- `A`    for A-stack elements (e.g. used for `*World`, a boxed integer under the hood)"
-		, "- [`OF`] for function pointers"
-		, "- `V`    for `void`, packs the following argument types in a tuple (e.g. `VIR` means `(Int, Real)`)"
-		]
-	}
-
-i_centry :: ABCInstructionEntry
-i_centry =
-	{ zero
-	& aie_instruction = "centry"
-	, aie_arguments   = [LABEL, LABEL, STRING]
-	, aie_description = join "\n"
-		[ "Adds code to call a Clean function from C."
-		, "Usually it is not needed to write this instruction yourself."
-		, "It is generated with the `foreign export` construct.\n"
-		, "The first label is the name of the C function to generate."
-		, "The second label is the Clean function to link it to.\n"
-		, "The string argument indicates the type."
-		, "For more information, see {{`ccall`}}."
-		]
-	}
-
-i_halt :: ABCInstructionEntry
-i_halt =
-	{ zero
-	& aie_instruction = "halt"
-	, aie_description = "Terminates the program immediately."
-	}
-
-i_instruction :: ABCInstructionEntry
-i_instruction =
-	{ zero
-	& aie_instruction = "instruction"
-	, aie_arguments   = [INT]
-	, aie_description = "Adds the raw argument as a word in the generated object file."
-	}
-
-i_load_i :: ABCInstructionEntry
-i_load_i =
-	{ zero
-	& aie_instruction = "load_i"
-	, aie_arguments   = [INT]
-	, aie_description = join "\n\n"
-		[ "Take the top of the B-stack as a pointer and read an integer from that pointer with the argument as offset."
-		, "See also {{`load_si16`}}, {{`load_si32`}}, {{`load_ui8`}}."
-		]
-	}
-
-i_load_si16 :: ABCInstructionEntry
-i_load_si16 =
-	{ zero
-	& aie_instruction = "load_si16"
-	, aie_arguments   = [INT]
-	, aie_description = join "\n\n"
-		[ "Take the top of the B-stack as a pointer and read a 16-bit signed integer from that pointer with the argument as offset."
-		, "See also {{`load_i}}, {{`load_si32`}}, {{`load_ui8`}}."
-		]
-	}
-
-i_load_si32 :: ABCInstructionEntry
-i_load_si32 =
-	{ zero
-	& aie_instruction = "load_si32"
-	, aie_arguments   = [INT]
-	, aie_description = join "\n\n"
-		[ "Take the top of the B-stack as a pointer and read a 32-bit signed integer from that pointer with the argument as offset."
-		, "This instruction is only available on 64-bit systems. On 32-bit systems, {{`load_i`}} has the same effect."
-		, "See also {{`load_i`}}, {{`load_si16`}}, {{`load_ui8`}}."
-		]
-	}
-
-i_load_ui8 :: ABCInstructionEntry
-i_load_ui8 =
-	{ zero
-	& aie_instruction = "load_ui8"
-	, aie_arguments   = [INT]
-	, aie_description = join "\n\n"
-		[ "Take the top of the B-stack as a pointer and read a 8-bit unsigned integer from that pointer with the argument as offset."
-		, "See also {{`load_i`}}, {{`load_si16`}}, {{`load_si32`}}."
-		]
-	}
-
-i_no_op :: ABCInstructionEntry
-i_no_op =
-	{ zero
-	& aie_instruction = "no_op"
-	, aie_description = join "\n"
-		[ "Do nothing. This is for example useful in the `cast` function:\n"
-		, "```clean"
-		, "cast :: .a -> .b"
-		, "cast _ = code {"
-		, "\tno_op"
-		, "}"
-		, "```"
-		]
-	}
-
-d_d :: ABCInstructionEntry
-d_d =
-	{ zero
-	& aie_instruction = ".d"
-	, aie_arguments   = [INT, INT, STRING_]
-	, aie_description = concat
-		[ "Indicates how many stack elements are on the stack when a jump follows."
-		, "The first integer is the number of elements on the A-stack; the second that of B-stack elements."
-		, "The optional third argument indicates the type of the B-stack elements, e.g. `bbi` for two booleans and an integer."
-		]
-	}
-
-d_o :: ABCInstructionEntry
-d_o =
-	{ zero
-	& aie_instruction = ".o"
-	, aie_arguments   = [INT, INT, STRING_]
-	, aie_description = concat
-		[ "Indicates how many stack elements are 'given back' to a calling function when a {{`rtn`}} follows."
-		, "The first integer is the number of elements on the A-stack; the second that of B-stack elements."
-		, "The optional third argument indicates the type of the B-stack elements, e.g. `bbi` for two booleans and an integer."
-		]
+	& aie_instruction = "create"
+	, aie_description = "Creates a new empty node and pushes its address to the A-stack."
 	}
 
 arith_instructions :: [ABCInstructionEntry]
@@ -245,6 +103,15 @@ arith_instructions =
 	, op2 "subR"    "Real" "Subtracts"
 	, op2 "xor%"    "Int"  "Bitwise XOR on"
 
+	, eq_arg "Bool" BOOL 'A'
+	, eq_arg "Bool" BOOL 'B'
+	, eq_arg "Char" CHAR 'A'
+	, eq_arg "Char" CHAR 'B'
+	, eq_arg "Int"  INT  'A'
+	, eq_arg "Int"  INT  'B'
+	, eq_arg "Real" REAL 'A'
+	, eq_arg "Real" REAL 'B'
+
 	, convert "CtoI"  "Char" "Int"
 	, convert "CtoAC" "Char" "String"
 	, convert "ItoC"  "Int"  "Char"
@@ -271,6 +138,14 @@ where
 		{ zero
 		& aie_instruction = instr
 		, aie_description = description + " the two " + type + "s on top of the B-stack."
+		}
+
+	eq_arg :: !String !ABCArgument !Char -> ABCInstructionEntry
+	eq_arg type arg stack =
+		{ zero
+		& aie_instruction = {'e','q',type.[0],'_',toLower stack}
+		, aie_arguments   = [if (stack == 'A') A_OFFSET B_OFFSET, arg]
+		, aie_description = "Checks equality between the " + {stack} + "-stack element and the second argument."
 		}
 
 	convert :: !String !String !String -> ABCInstructionEntry
@@ -332,6 +207,234 @@ where
 		, aie_description = "Builds a " + type + "-node with the value on the nth position of the B-stack on the A-stack."
 		}
 
+branches :: [ABCInstructionEntry]
+branches =
+	[ i_jmp
+	, i_jmp_false
+	, i_jmp_true
+	, i_jsr
+	, i_jsr_eval
+	, i_rtn
+	]
+where
+	i_jmp =
+		{ zero
+		& aie_instruction = "jmp"
+		, aie_arguments   = [LABEL]
+		, aie_description = "Unconditional jump to a label."
+		}
+	i_jmp_false =
+		{ zero
+		& aie_instruction = "jmp_false"
+		, aie_arguments   = [LABEL]
+		, aie_description = "Jump to a label if the Bool on top of the B-stack is false."
+		}
+	i_jmp_true =
+		{ zero
+		& aie_instruction = "jmp_true"
+		, aie_arguments   = [LABEL]
+		, aie_description = "Jump to a label if the Bool on top of the B-stack is true."
+		}
+	i_jsr =
+		{ zero
+		& aie_instruction = "jsr"
+		, aie_arguments   = [LABEL]
+		, aie_description = "Subroutine jump to a label. {{`rtn`}} returns to the instruction after this `jsr`."
+		}
+	i_jsr_eval =
+		{ zero
+		& aie_instruction = "jsr_eval"
+		, aie_arguments   = [A_OFFSET, LABEL]
+		, aie_description = "Subroutine jump to evaluate the indicated A-stack element. {{`rtn`}} returns to the instruction after this `jsr_eval`."
+		}
+	i_rtn =
+		{ zero
+		& aie_instruction = "rtn"
+		, aie_description = "Returns from a subroutine call (e.g. {{`jsr`}})."
+		}
+
+miscellaneous :: [ABCInstructionEntry]
+miscellaneous =
+	[ i_ccall
+	, i_centry
+	, i_halt
+	, i_instruction
+	, i_load_i
+	, i_load_si16
+	, i_load_si32
+	, i_load_ui8
+	, i_no_op
+	]
+where
+	i_ccall =
+		{ zero
+		& aie_instruction = "ccall"
+		, aie_arguments   = [LABEL, STRING]
+		, aie_description = join "\n"
+			[ "Calls a C function."
+			, "Some of this is documented in https://svn.cs.ru.nl/repos/clean-tools/trunk/htoclean/CallingCFromClean.html"
+			, "The first argument is the name of the function, the second is the signature."
+			, "\n"
+			, "The signature has to be of the form `flags?input?sep output(sep state)?`, where"
+			, "- sep    can be either `-` or `:`."
+			, "- flags  can be `G` and/or `P`. `G` saves the state in global variables and is needed when the called C function will call Clean functions. `P` lets the callee pop arguments (necessary on 32-bit Windows)."
+			, "- input  is a number of input argument types (allowed: `IpRrSsAOF`)."
+			, "- output is a number of output argument types (allowed: `VIpRrSsAOF`)."
+			, "- state  is a carried state that is not passed to the C function, for example used to thread {{`World`}} in ccalls (allowed: `IpRSA`)."
+			, "\n"
+			, "Input, output and state argument types can be:"
+			, "- `I`    for integers"
+			, "- `p`    for pointers (e.g. from {{`System.Pointer`}}; on most systems this is identical to `I`)"
+			, "- [`Rr`] for reals"
+			, "- `S`    for Clean Strings (`{#Char}`)."
+			, "- `s`    for the characters of a Clean String (handy to use in conjuction with {{`packString`}})"
+			, "- `A`    for A-stack elements (e.g. used for `*World`, a boxed integer under the hood)"
+			, "- [`OF`] for function pointers"
+			, "- `V`    for `void`, packs the following argument types in a tuple (e.g. `VIR` means `(Int, Real)`)"
+			]
+		}
+	i_centry =
+		{ zero
+		& aie_instruction = "centry"
+		, aie_arguments   = [LABEL, LABEL, STRING]
+		, aie_description = join "\n"
+			[ "Adds code to call a Clean function from C."
+			, "Usually it is not needed to write this instruction yourself."
+			, "It is generated with the `foreign export` construct.\n"
+			, "The first label is the name of the C function to generate."
+			, "The second label is the Clean function to link it to.\n"
+			, "The string argument indicates the type."
+			, "For more information, see {{`ccall`}}."
+			]
+		}
+
+	i_halt =
+		{ zero
+		& aie_instruction = "halt"
+		, aie_description = "Terminates the program immediately."
+		}
+
+	i_instruction =
+		{ zero
+		& aie_instruction = "instruction"
+		, aie_arguments   = [INT]
+		, aie_description = "Adds the raw argument as a word in the generated object file."
+		}
+
+	i_load_i =
+		{ zero
+		& aie_instruction = "load_i"
+		, aie_arguments   = [INT]
+		, aie_description = join "\n\n"
+			[ "Take the top of the B-stack as a pointer and read an integer from that pointer with the argument as offset."
+			, "See also {{`load_si16`}}, {{`load_si32`}}, {{`load_ui8`}}."
+			]
+		}
+	i_load_si16 =
+		{ zero
+		& aie_instruction = "load_si16"
+		, aie_arguments   = [INT]
+		, aie_description = join "\n\n"
+			[ "Take the top of the B-stack as a pointer and read a 16-bit signed integer from that pointer with the argument as offset."
+			, "See also {{`load_i}}, {{`load_si32`}}, {{`load_ui8`}}."
+			]
+		}
+	i_load_si32 =
+		{ zero
+		& aie_instruction = "load_si32"
+		, aie_arguments   = [INT]
+		, aie_description = join "\n\n"
+			[ "Take the top of the B-stack as a pointer and read a 32-bit signed integer from that pointer with the argument as offset."
+			, "This instruction is only available on 64-bit systems. On 32-bit systems, {{`load_i`}} has the same effect."
+			, "See also {{`load_i`}}, {{`load_si16`}}, {{`load_ui8`}}."
+			]
+		}
+	i_load_ui8 =
+		{ zero
+		& aie_instruction = "load_ui8"
+		, aie_arguments   = [INT]
+		, aie_description = join "\n\n"
+			[ "Take the top of the B-stack as a pointer and read a 8-bit unsigned integer from that pointer with the argument as offset."
+			, "See also {{`load_i`}}, {{`load_si16`}}, {{`load_si32`}}."
+			]
+		}
+
+	i_no_op =
+		{ zero
+		& aie_instruction = "no_op"
+		, aie_description = join "\n"
+			[ "Do nothing. This is for example useful in the `cast` function:\n"
+			, "```clean"
+			, "cast :: .a -> .b"
+			, "cast _ = code {"
+			, "\tno_op"
+			, "}"
+			, "```"
+			]
+		}
+
+directives :: [ABCInstructionEntry]
+directives =
+	[ d_d
+	, d_o
+	, d_export
+	, d_module
+	, d_end
+	, d_endinfo
+	, d_start
+	]
+where
+	d_d =
+		{ zero
+		& aie_instruction = ".d"
+		, aie_arguments   = [A_OFFSET, B_OFFSET, STRING_]
+		, aie_description = concat
+			[ "Indicates how many stack elements are on the stack when a jump follows."
+			, "The first integer is the number of elements on the A-stack; the second that of B-stack elements."
+			, "The optional third argument indicates the type of the B-stack elements, e.g. `bbi` for two booleans and an integer."
+			]
+		}
+	d_o =
+		{ zero
+		& aie_instruction = ".o"
+		, aie_arguments   = [A_OFFSET, B_OFFSET, STRING_]
+		, aie_description = concat
+			[ "Indicates how many stack elements are 'given back' to a calling function when a {{`rtn`}} follows."
+			, "The first integer is the number of elements on the A-stack; the second that of B-stack elements."
+			, "The optional third argument indicates the type of the B-stack elements, e.g. `bbi` for two booleans and an integer."
+			]
+		}
+
+	d_export =
+		{ zero
+		& aie_instruction = ".export"
+		, aie_arguments   = [LABEL]
+		, aie_description = "Exports a label (allows linking)."
+		}
+
+	d_module =
+		{ zero
+		& aie_instruction = ".module"
+		, aie_arguments   = [LABEL]
+		, aie_description = "Indicates the name of the module."
+		}
+	d_end =
+		{ zero
+		& aie_instruction = ".end"
+		, aie_description = "Indicates the end of the ABC file."
+		}
+	d_endinfo =
+		{ zero
+		& aie_instruction = ".endinfo"
+		, aie_description = "Indicates the end of the metadata in the ABC file."
+		}
+	d_start =
+		{ zero
+		& aie_instruction = ".start"
+		, aie_arguments   = [LABEL]
+		, aie_description = "Indicates the label to start execution at."
+		}
+
 /**
  * Instructions without documentation yet
  */
@@ -351,7 +454,6 @@ other_instructions =
 	, "ceilingR"
 	, "copy_graph"
 	, "code_channelP"
-	, "create"
 	, "create_array"
 	, "create_array_"
 	, "create_channel"
@@ -359,15 +461,7 @@ other_instructions =
 	, "del_args"
 	, "divLU"
 	, "divU"
-	, "eqB_a"
-	, "eqB_b"
-	, "eqC_a"
-	, "eqC_b"
 	, "eqD_b"
-	, "eqI_a"
-	, "eqI_b"
-	, "eqR_a"
-	, "eqR_b"
 	, "eqAC_a"
 	, "eq_desc"
 	, "eq_desc_b"
@@ -407,19 +501,14 @@ other_instructions =
 	, "in"
 	, "is_record"
 	, "ItoP"
-	, "jmp"
 	, "jmp_ap"
 	, "jmp_ap_upd"
 	, "jmp_upd"
 	, "jmp_eval"
 	, "jmp_eval_upd"
-	, "jmp_false"
 	, "jmp_not_eqZ"
-	, "jmp_true"
 	, "jrsr"
-	, "jsr"
 	, "jsr_ap"
-	, "jsr_eval"
 	, "ltU"
 	, "modI"
 	, "mulUUL"
@@ -482,7 +571,6 @@ other_instructions =
 	, "repl_args_b"
 	, "repl_r_args"
 	, "repl_r_args_a"
-	, "rtn"
 	, "select"
 	, "send_graph"
 	, "send_request"
@@ -519,9 +607,6 @@ other_instructions =
 	, ".descn"
 	, ".descexp"
 	, ".descs"
-	, ".end"
-	, ".endinfo"
-	, ".export"
 	, ".keep"
 	, ".inline"
 	, ".impdesc"
@@ -529,7 +614,6 @@ other_instructions =
 	, ".implib"
 	, ".impmod"
 	, ".impobj"
-	, ".module"
 	, ".n"
 	, ".nu"
 	, ".newlocallabel"
@@ -542,6 +626,5 @@ other_instructions =
 	, ".pn"
 	, ".pt"
 	, ".record"
-	, ".start"
 	, ".string"
 	]

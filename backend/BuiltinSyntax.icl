@@ -82,9 +82,9 @@ bs_class =
 		"Classes are (sets of) overloaded functions. For classes with only one member function, a simplified syntax exists.\n\n" +
 		"Types can instantiate classes with the {{`instance`}} keyword."
 	, syntax_doc_locations = [CLR 8 "6.1" "_Toc311798056"]
-	, syntax_examples      = map (EX "ClassDef")
-		[ "class zero a :: a // one member" // TODO highlighting
-		, "class Text s      // multiple members\nwhere\n\ttextSize :: !s -> Int\n\tconcat :: ![s] -> s\n\t// ..." // TODO highlighting
+	, syntax_examples      = map (EX "Function")
+		[ "class zero a :: a // one member"
+		, "class Text s      // multiple members\nwhere\n\ttextSize :: !s -> Int\n\tconcat :: ![s] -> s\n\t// ..."
 		]
 	}
 
@@ -96,7 +96,7 @@ bs_code =
 		"A code block with raw ABC instructions, which can be used for primitive functions like integer addition, for linking with C, bypassing the type system... welcome down the rabbit hole!\n\n" +
 		"When `inline` is used, the function will be inlined when applied in a strict context."
 	, syntax_doc_locations = [CLR 13 "11.2" "_Toc311798115"]
-	, syntax_examples      = map (EX "Function") // TODO highlighting
+	, syntax_examples      = map (EX "Function")
 		[ "add :: !Int !Int -> Int                   // Primitive function\nadd a b = code inline {\n\taddI\n}"
 		, "sleep :: !Int !*World -> *(!Int, !*World) // Linking with C\nsleep n w = code {\n\tccall sleep \"I:I:A\"\n}"
 		, "cast :: !.a -> .b                         // Bypassing the type system\ncast _ = code {\n\tno_op\n}"
@@ -521,7 +521,7 @@ bs_where_class =
 	, syntax_code          = ["where"]
 	, syntax_description   = "Introduces the members of a {{`class`}} definition."
 	, syntax_doc_locations = [CLR 8 "6.1"   "_Toc311798056"]
-	, syntax_examples      = [EX "ClassDef" "class Arith a        // Class definition\nwhere\n\t(+) infixl 6 :: a a -> a\n\t(-) infixl 6 :: a a -> a"] // TODO highlighting
+	, syntax_examples      = [EX "Function" "class Arith a        // Class definition\nwhere\n\t(+) infixl 6 :: a a -> a\n\t(-) infixl 6 :: a a -> a"]
 	}
 bs_where_instance =
 	{ syntax_title         = "where"

@@ -65,11 +65,11 @@ class Toc {
 			if ($child->isLeaf()) {
 				echo '<div class="browser-item module" id="doc-' . $child->link .
 						'" data-name="' . $child->link . '">' .
-						$child->title . '</span></div>';
+						$child->title . '</div>';
 			} else {
 				echo '<div class="browser-item directory toggle-container" id="doc-' . $child->link . '">' .
 						'<span class="toggler">' .
-							'<span class="toggle-icon">&#x229e</span>' .
+							'<span class="toggle-icon">&#x229e;</span>' .
 							'<span class="title">' . $child->title . '</span></span>';
 				$child->printTree();
 				echo '</div>';

@@ -36,9 +36,9 @@ function toggle(toggler, open) {
 			continue;
 
 		if (typeof open == 'undefined')
-			icons[i].innerHTML = icons[i].innerHTML == '\u229e' ? '&#x229f' : '&#x229e';
+			icons[i].innerHTML = icons[i].innerHTML == '\u229e' ? '&#x229f;' : '&#x229e;';
 		else
-			icons[i].innerHTML = open ? '&#x229f' : '&#x229e';
+			icons[i].innerHTML = open ? '&#x229f;' : '&#x229e;';
 	}
 }
 

@@ -1,14 +1,14 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 	<title>Library browser</title>
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
 	<meta name="viewport" content="width=device-width, initial-scale=1"/>
 	<meta name="description" content="Cloogle is the unofficial Clean language search engine"/>
 	<meta name="keywords" content="Clean,Clean language,Concurrent Clean,search,functions,search engine,programming language,clean platform,iTasks,cloogle,hoogle"/>
-	<script src="../common.js" type="text/javascript" defer="defer"></script>
-	<script src="../browser.js" type="text/javascript" defer="defer"></script>
-	<script src="view.js" type="text/javascript" defer="defer"></script>
+	<script src="../common.js" defer="defer"></script>
+	<script src="../browser.js" defer="defer"></script>
+	<script src="view.js" defer="defer"></script>
 	<link rel="stylesheet" href="../common.css" type="text/css"/>
 	<link rel="stylesheet" href="view.css" type="text/css"/>
 </head>

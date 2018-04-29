@@ -63,7 +63,7 @@ function makeBrowser($dir, $basemodule) {
 	foreach ($elems['dirs'] as $d) {
 		echo '<div class="browser-item directory toggle-container" data-name="' . $d . '">' .
 				'<span class="toggler">' .
-					'<span class="toggle-icon">&#x229e</span>' .
+					'<span class="toggle-icon">&#x229e;</span>' .
 					'<span class="title">' . $d . '</span></span>';
 		makeBrowser($dir . '/' . $d, $basemodule . $d . '.');
 		echo '</div>';
@@ -85,7 +85,7 @@ foreach ($groups as $group => $libs) {
 	foreach ($libs as $lib) {
 		echo '<div class="browser-item directory toggle-container" data-name="' . $lib['name'] . '">' .
 				'<span class="toggler">' .
-					'<span class="toggle-icon">&#x229e</span>' .
+					'<span class="toggle-icon">&#x229e;</span>' .
 					'<span class="title">' . $lib['name'] . '</span>';
 		if (isset($lib['info_url'])) {
 			echo '<a class="more-info" href="' . $lib['info_url'] . '" target="_blank" title="More information" onclick="arguments[0].stopPropagation();">&#x2197;</a>';

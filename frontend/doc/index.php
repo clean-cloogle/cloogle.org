@@ -1,16 +1,16 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 	<title>Documentation browser</title>
-	<meta http-equiv="Content-Type" content="text/html; charset=windows-1252"/>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
 	<meta name="viewport" content="width=device-width, initial-scale=1"/>
 	<meta name="description" content="Cloogle is the unofficial Clean language search engine"/>
 	<meta name="keywords" content="Clean,Clean language,Concurrent Clean,search,functions,search engine,programming language,clean platform,iTasks,cloogle,hoogle"/>
-	<script src="../common.js" type="text/javascript" defer="defer"></script>
-	<script src="../browser.js" type="text/javascript" defer="defer"></script>
-	<script src="doc.js" type="text/javascript" defer="defer"></script>
+	<script src="../common.js" defer="defer"></script>
+	<script src="../browser.js" defer="defer"></script>
+	<script src="doc.js" defer="defer"></script>
 	<link rel="stylesheet" href="../common.css" type="text/css"/>
-	<style type="text/css">
+	<style>
 		#viewer {
 			padding: 10px;
 		}

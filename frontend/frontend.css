@@ -238,7 +238,7 @@ a.hidden {
 	padding-left: 1em;
 }
 
-.result-extra code {
+.result-extra code, .result-extra pre {
 	font-size: 110%;
 }
 

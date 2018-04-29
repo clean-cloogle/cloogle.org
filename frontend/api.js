@@ -177,9 +177,16 @@ function mergeComments(code, comments) {
 }
 
 String.prototype.markup = function() {
-	return this
-		.replace(/\n```[^\n]+\n/g, '<pre>')
-		.replace(/\n```(\n|$)/g, '</pre>')
+	var in_code = false;
+
+	var s = this
+		.replace(/\n```[^\n]*(?:\n|$)/g, function (m) {
+			in_code = !in_code;
+			return in_code ? '<pre>' : '</pre>';
+		})
+		.replace(/<pre>([\s\S]*?)<\/pre>/g, function (m,c) {
+			return '<pre>' + highlightFunction(c, highlightCallback) + '</pre>';
+		})
 		.split(/\n\n/).join('<br class="parbreak"/>')
 		.split(/\n\s*-/).join('<br/>-')
 		.split(/\n\s*\*/).join('<br/>*')
@@ -189,6 +196,9 @@ String.prototype.markup = function() {
 			return '<a class="hidden" title="Search ' + c +
 				'" href="#' + encodeURIComponent(c) + '">' + c + '</a>';
 		});
+	if (in_code)
+		s += '</pre>';
+	return s;
 }
 
 function makeDocFieldsHTML(name, params) {

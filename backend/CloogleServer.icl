@@ -40,7 +40,7 @@ import Memory
 
 MAX_RESULTS        :== 15
 CACHE_PREFETCH     :== 5
-CACHE_NS_THRESHOLD :== 40000000
+CACHE_NS_THRESHOLD :== 20000000
 
 :: RequestCacheKey
 	= { c_unify            :: Maybe Type

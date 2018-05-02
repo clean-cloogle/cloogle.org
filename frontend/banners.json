@@ -1,0 +1,21 @@
+[
+	{
+		"id": "nlfp2018",
+		"text": "On <strong>Friday, January 5, 2018</strong>, Cloogle will be discussed on the <a href='http://clean.cs.ru.nl/NL-FP_dag_2018' target='_blank'>NL-FP day</a>.",
+		"from": "Mon, 06 Nov 2017 17:00:00 UTC",
+		"until": "Fri, 05 Jan 2018 20:00:00 UTC"
+	},
+	{
+		"id": "ap2018",
+		"text": "<script type='text/javascript'>$=137;function f(){if(139<++$)alert(atob('Rm9vbGVkIHlvdSEgU29ycnksIG5vIGVhc3RlciBlZ2dzIGhlcmUgOik='))}_=document.getElementById(atob('YXAyMDE4'));_.title=atob('Q2xpY2sgdG8gY2hhdCB3aXRoIG90aGVyIHBhcnRpY2lwYW50cyE=');_.onclick=f;_.style.cursor='pointer';_.innerHTML=atob('R29vZCBsdWNrIG9uIHlvdXIgQVAgZXhhbSEgPGIgc3R5bGU9ImZvbnQtc2l6ZToxMzAlOyI+JiN4MWYzNDA7PC9iPg==');</script>",
+		"from": "Wed, 31 Jan 2018 11:30:00 UTC",
+		"until": "Wed, 31 Jan 2018 14:30:00 UTC"
+	},
+	{
+		"id": "ap2018retake",
+		"text": "Good luck on your AP exam!",
+		"from": "Wed, 2 May 2018 10:30:00 UTC",
+		"until": "Wed, 2 May 2018 13:30:00 UTC",
+		"useragent": "/SEB/"
+	}
+]

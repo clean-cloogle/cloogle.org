@@ -83,6 +83,7 @@ arith_instructions =
 	, op2 "eqC"     "Char" "Checks equality on"
 	, op2 "eqI"     "Int"  "Checks equality on"
 	, op2 "eqR"     "Real" "Checks equality on"
+	, i_eqAC_a
 	, op2 "gtC"     "Char" "Checks greater-than on"
 	, op2 "gtI"     "Int"  "Checks greater-than on"
 	, op2 "gtR"     "Real" "Checks greater-than on"
@@ -155,6 +156,13 @@ where
 		, aie_description = "Converts the " + fr + " on top of the B-stack to " + to + "."
 		}
 
+	i_eqAC_a =
+		{ zero
+		& aie_instruction = "eqAC_a"
+		, aie_arguments   = [STRING]
+		, aie_description = "Checks that the string on top of the A-stack equals the argument string."
+		}
+
 stack_operations :: [ABCInstructionEntry]
 stack_operations =
 	[ push    "Bool" BOOL
@@ -169,10 +177,16 @@ stack_operations =
 	, build   "Char" CHAR
 	, build   "Int"  INT
 	, build   "Real" REAL
+	, i_buildAC
 	, build_b "Bool"
 	, build_b "Char"
 	, build_b "Int"
 	, build_b "Real"
+	, i_create_array
+	, i_create_array_
+	, i_eq_desc
+	, i_eq_desc_b
+	, i_eq_nulldesc
 	, i_pop_a
 	, i_pop_b
 	, i_push_a
@@ -209,6 +223,61 @@ where
 		& aie_instruction = "build" + {type.[0]} + "_b"
 		, aie_arguments   = [INT]
 		, aie_description = "Builds a " + type + "-node with the value on the nth position of the B-stack on the A-stack."
+		}
+
+	i_buildAC =
+		{ zero
+		& aie_instruction = "buildAC"
+		, aie_arguments   = [STRING]
+		, aie_description = "Pushes the argument string to the A-stack."
+		}
+
+	i_create_array =
+		{ zero
+		& aie_instruction = "create_array"
+		, aie_arguments   = [LABEL, A_OFFSET, B_OFFSET]
+		, aie_description = join " "
+			[ "Creates an array on the A-stack."
+			, "The elements have type `label` (which can be `_` for any A-stack type)."
+			, "The last two arguments indicate the stack sizes of the elements."
+			, "The size and initial value are popped from the B and A stacks."
+			]
+		}
+	i_create_array_ =
+		{ zero
+		& aie_instruction = "create_array_"
+		, aie_arguments   = [LABEL, A_OFFSET, B_OFFSET]
+		, aie_description = join " "
+			[ "Creates an array on the A-stack."
+			, "The elements have type `label` (which can be `_` for any A-stack type)."
+			, "The last two arguments indicate the stack sizes of the elements."
+			, "The size is popped from the B-stack; the elements are initialised as `_Nil` regardless of the type."
+			]
+		}
+
+	i_eq_desc =
+		{ zero
+		& aie_instruction = "eq_desc"
+		, aie_arguments   = [LABEL, INT, A_OFFSET]
+		, aie_description = join " "
+			[ "Checks that the indicated node on the A-stack matches the descriptor given by the label."
+			, "The `int` argument is the arity of the descriptor."
+			]
+		}
+	i_eq_desc_b =
+		{ zero
+		& aie_instruction = "eq_desc_b"
+		, aie_arguments   = [LABEL, A_OFFSET]
+		, aie_description = join " "
+			[ "The indicated node on the A-stack is assumed to be an array."
+			, "The instruction checks that the array is of the type indicated by `label`."
+			]
+		}
+	i_eq_nulldesc =
+		{ zero
+		& aie_instruction = "eq_nulldesc"
+		, aie_arguments   = [LABEL, A_OFFSET]
+		, aie_description = "Checks that the indicated node on the A-stack matches the descriptor given by the label, ignoring arity."
 		}
 
 	i_pop_a =
@@ -415,7 +484,9 @@ directives =
 	[ d_d
 	, d_o
 	, d_export
+	, d_inline
 	, d_module
+	, d_depend
 	, d_end
 	, d_endinfo
 	, d_start
@@ -448,12 +519,24 @@ where
 		, aie_arguments   = [LABEL]
 		, aie_description = "Exports a label (allows linking)."
 		}
+	d_inline =
+		{ zero
+		& aie_instruction = ".inline"
+		, aie_arguments   = [LABEL]
+		, aie_description = "Indicates that a label can (should) be inlined (usually for performance reasons)."
+		}
 
 	d_module =
 		{ zero
 		& aie_instruction = ".module"
-		, aie_arguments   = [LABEL]
-		, aie_description = "Indicates the name of the module."
+		, aie_arguments   = [LABEL, STRING]
+		, aie_description = "Indicates the name of the module, and its label in the data segment."
+		}
+	d_depend =
+		{ zero
+		& aie_instruction = ".depend"
+		, aie_arguments   = [STRING]
+		, aie_description = "Indicates a module that this module depends on."
 		}
 	d_end =
 		{ zero
@@ -480,7 +563,6 @@ other_instructions =
 	[ "add_args"
 	, "addLU"
 	, "build"
-	, "buildAC"
 	, "buildF_b"
 	, "buildh"
 	, "build_r"
@@ -491,18 +573,12 @@ other_instructions =
 	, "ceilingR"
 	, "copy_graph"
 	, "code_channelP"
-	, "create_array"
-	, "create_array_"
 	, "create_channel"
 	, "currentP"
 	, "del_args"
 	, "divLU"
 	, "divU"
 	, "eqD_b"
-	, "eqAC_a"
-	, "eq_desc"
-	, "eq_desc_b"
-	, "eq_nulldesc"
 	, "eq_symbol"
 	, "exit_false"
 	, "fill"
@@ -633,14 +709,12 @@ other_instructions =
 	, ".code"
 	, ".comp"
 	, ".a"
-	, ".depend"
 	, ".desc"
 	, ".desc0"
 	, ".descn"
 	, ".descexp"
 	, ".descs"
 	, ".keep"
-	, ".inline"
 	, ".impdesc"
 	, ".implab"
 	, ".implib"

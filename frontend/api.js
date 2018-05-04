@@ -505,6 +505,8 @@ function getResults(str, libs, include_builtins, include_core, include_apps, pag
 					hidden.push([makeDocFieldsHTML('Generic type variable', extra['generic_var_doc'])]);
 				if ('result_doc' in extra && extra['result_doc'].length > 0)
 					hidden.push([makeDocFieldsHTML('Result', extra['result_doc'])]);
+				if ('throws_doc' in extra && extra['throws_doc'].length > 0)
+					hidden.push([makeDocFieldsHTML('Might throw', extra['throws_doc'])]);
 
 				if ('cls' in extra)
 					meta.push('Class: <code>' +

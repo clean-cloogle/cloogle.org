@@ -24,7 +24,7 @@ COPY util /tmp/util
 COPY libs.json /var/libs.json
 RUN apt-get update -qq && apt-get install -qq subversion ca-certificates git jq\
 	&& mkdir -p /opt/clean\
-	&& curl -s http://ftp.cs.ru.nl/Clean/builds/linux-x64/clean-base-linux-x64-latest.tgz\
+	&& curl -Ls https://ftp.cs.ru.nl/Clean/builds/linux-x64/clean-base-linux-x64-latest.tgz\
 		| tar xz -C /opt/clean --strip-components=1\
 	&& cd /tmp/util\
 	&& ln -s /var/libs.json\

@@ -5,7 +5,7 @@ DEST="$1"
 rm -rf "$DEST"
 mkdir -p "$DEST"
 # Fetch Clean distribution
-curl -sSL ftp://ftp.cs.ru.nl/pub/Clean/builds/linux-x64/clean-bundle-complete-linux-x64-latest.tgz |\
+curl -sSL http://ftp.cs.ru.nl/Clean/builds/linux-x64/clean-bundle-complete-linux-x64-latest.tgz |\
 	tar -xz --exclude=exe -C "$DEST" --strip-components=2 clean-bundle-complete/lib
 
 exec 5< <(jq '.[]' < libs.json | jq '.[]' | jq -cMr '.name,.fetch_url[0,1],.path')

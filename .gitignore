@@ -6,6 +6,5 @@ types.json
 typetree.dot
 cloogle.log
 node_modules/
-backend/clean-compiler/
 db/storage/
 cache

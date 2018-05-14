@@ -20,14 +20,6 @@ endif
 
 all: $(BIN) $(DB)
 
-clean-compiler:
-	svn export -r 2838 https://svn.cs.ru.nl/repos/clean-compiler/branches/itask/ clean-compiler
-	cd clean-compiler; for f in ../Cloogle/compiler-patch/*.patch; do patch -p1 < "$$f"; done
-	mkdir -p clean-compiler/main/Unix/Clean\ System\ Files
-	$(MAKE) -j -C clean-compiler/main/Unix
-	$(MAKE) -j -C clean-compiler/backendC/CleanCompilerSources -f Makefile.linux64
-	ln -s ../../backendC/CleanCompilerSources/backend.a clean-compiler/backend/Clean\ System\ Files/backend_library
-
 man: $(MAN)
 
 %.1: %
@@ -39,13 +31,16 @@ CloogleServer:
 	touch **/*.[di]cl
 	$(CLM) $(CLMFLAGS) $@ -o $@
 
-builddb: clean-compiler
+builddb: Cloogle/clean-compiler
 	$(CLM) $(CLMFLAGS) -s 50M -h 750M -gcm\
-		-I clean-compiler/frontend\
-		-I clean-compiler/backend\
-		-I clean-compiler/main\
-		-I clean-compiler/main/Unix\
+		-I Cloogle/clean-compiler/frontend\
+		-I Cloogle/clean-compiler/backend\
+		-I Cloogle/clean-compiler/main\
+		-I Cloogle/clean-compiler/main/Unix\
 		$@ -o $@
+
+Cloogle/clean-compiler:
+	$(MAKE) -C Cloogle clean-compiler
 
 $(DB): builddb
 	./$< > $(DB)

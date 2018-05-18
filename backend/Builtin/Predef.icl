@@ -1,4 +1,4 @@
-implementation module Builtins
+implementation module Builtin.Predef
 
 import StdBool
 import StdEnum
@@ -12,11 +12,11 @@ import Data.List
 import Data.Maybe
 import Text
 
-import Type
+import Clean.Doc
+import Clean.Types
 
-import Cloogle
-import Doc
-import CloogleDB
+import Cloogle.API
+import Cloogle.DB
 
 CLR :: Int String String -> CleanLangReportLocation
 CLR f sec h =

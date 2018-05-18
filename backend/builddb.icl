@@ -3,7 +3,7 @@ module builddb
 import StdArray
 import StdBool
 import StdFile
-from StdFunc import const, id, o
+from StdFunc import const, flip, id, o
 import StdList
 import StdMisc
 import StdString
@@ -21,15 +21,15 @@ import System.File
 from Text import class Text(join,startsWith), instance Text String
 import Text.GenJSON
 
-import CloogleDB
-import Type
-from CloogleDBFactory import :: TemporaryDB, newTemporaryDB, finaliseDB,
+import Clean.Types
+import Cloogle.DB
+from Cloogle.DB.Factory import :: TemporaryDB, newTemporaryDB, finaliseDB,
 	findModules, indexModule, constructor_functions, record_functions,
 	:: IndexItem, :: SourceURL, :: PathPattern
 
-import Builtins
-import BuiltinSyntax
-import BuiltinABCInstructions
+import Builtin.ABC
+import Builtin.Predef
+import Builtin.Syntax
 
 :: CLI =
 	{ help      :: !Bool

@@ -1,4 +1,4 @@
-implementation module Memory
+implementation module Util.Memory
 
 import StdInt
 

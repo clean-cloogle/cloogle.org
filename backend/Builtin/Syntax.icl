@@ -1,4 +1,4 @@
-implementation module BuiltinSyntax
+implementation module Builtin.Syntax
 
 import StdList
 
@@ -6,11 +6,10 @@ from Data.Func import $
 import Data.Maybe
 import Text
 
-import Cloogle
+import Cloogle.API
+import Cloogle.DB
 
-import CloogleDB
-
-import Builtins
+import Builtin.Predef
 
 builtin_syntax :: [SyntaxEntry]
 builtin_syntax =

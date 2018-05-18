@@ -1,4 +1,4 @@
-definition module SimpleTCPServer
+definition module Util.SimpleTCPServer
 
 from StdOverloaded import class zero, class fromString, class toString
 from StdMaybe import :: Maybe

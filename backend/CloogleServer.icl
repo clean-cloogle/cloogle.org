@@ -29,14 +29,18 @@ import System.Time
 from Text import class Text(concat,toLowerCase), instance Text String, <+
 import Text.GenJSON
 
-import Cloogle
-import Type
-import CloogleDB
-import Search
+import Clean.Types
+import Clean.Types.Parse
+import Clean.Types.Unify
+import Clean.Types.Util
 
-import SimpleTCPServer
-import Cache
-import Memory
+import Cloogle.API
+import Cloogle.DB
+import Cloogle.Search
+
+import Util.SimpleTCPServer
+import Util.Cache
+import Util.Memory
 
 MAX_RESULTS        :== 15
 CACHE_PREFETCH     :== 5

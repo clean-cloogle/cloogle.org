@@ -363,8 +363,7 @@ bs_module =
 	, syntax_description   = "The heading of a Clean file. Definition modules describe what things are exported (dcl files), implementation modules how they are implemented (icl files)."
 	, syntax_doc_locations = [CLR 4 "2.2" "_Toc311797983"]
 	, syntax_examples      = map (EX "Function")
-		[ "definition module ..."
-		, "definition module StdList     // Exported definitions of list functions"
+		[ "definition module StdList     // Exported definitions of list functions"
 		, "implementation module StdList // The implementations of the functions"
 		, "module test                   // An implementation module without corresponding dcl"
 		, "system module StdInt          // The definitions of a module that contains foreign code (see section 2.6 of the language report)"

@@ -27,8 +27,8 @@ man: $(MAN)
 
 CloogleServer:
 	$(CLM) $(CLMFLAGS) $@ -o $@
-	#shopt -s globstar
-	#touch **/*.[di]cl
+	shopt -s globstar
+	touch **/*.[di]cl
 	$(CLM) $(CLMFLAGS) $@ -o $@
 
 builddb: Cloogle/clean-compiler

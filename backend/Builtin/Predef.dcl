@@ -1,6 +1,6 @@
-definition module Builtins
+definition module Builtin.Predef
 
-from CloogleDB import :: FunctionEntry, :: ClassEntry, :: TypeDefEntry,
+from Cloogle.DB import :: FunctionEntry, :: ClassEntry, :: TypeDefEntry,
 	:: CleanLangReportLocation
 
 CLR :: Int String String -> CleanLangReportLocation

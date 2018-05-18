@@ -1,4 +1,4 @@
-implementation module SimpleTCPServer
+implementation module Util.SimpleTCPServer
 
 import StdEnv
 import Data.Maybe

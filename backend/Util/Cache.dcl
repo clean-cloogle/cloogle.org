@@ -1,4 +1,4 @@
-definition module Cache
+definition module Util.Cache
 
 from StdOverloaded import class toString
 from Data.Maybe import :: Maybe

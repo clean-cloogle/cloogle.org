@@ -1,4 +1,4 @@
-implementation module BuiltinABCInstructions
+implementation module Builtin.ABC
 
 import _SystemArray
 import StdList
@@ -6,9 +6,8 @@ import StdMisc
 
 import Text
 
-import Cloogle
-
-import CloogleDB
+import Cloogle.API
+import Cloogle.DB
 
 builtin_abc_instructions :: [ABCInstructionEntry]
 builtin_abc_instructions =

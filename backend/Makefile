@@ -10,7 +10,7 @@ CLMFLAGS:=-h 250M -nr -nt -nortsopts\
 	-I $$CLEAN_HOME/lib/Platform/Deprecated/StdLib\
 	-I Cloogle\
 	-I Cloogle/libcloogle\
-	-I Cloogle/CleanTypeUnifier\
+	-I Cloogle/CleanTypes\
 	-I Cloogle/CleanPrettyPrint
 ifeq "$(shell expr `gcc -dumpversion | cut -f1 -d.` \>= 6)" "1"
 	CLMFLAGS+=-l -no-pie
@@ -27,8 +27,8 @@ man: $(MAN)
 
 CloogleServer:
 	$(CLM) $(CLMFLAGS) $@ -o $@
-	shopt -s globstar
-	touch **/*.[di]cl
+	#shopt -s globstar
+	#touch **/*.[di]cl
 	$(CLM) $(CLMFLAGS) $@ -o $@
 
 builddb: Cloogle/clean-compiler

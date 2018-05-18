@@ -657,7 +657,7 @@ function getResults(str, libs, include_builtins, include_core, include_apps, pag
 						'<div class="result-extra">' +
 							meta.join('<br/>') +
 							'<br class="parbreak"/>' +
-							'<a href="https://github.com/clean-cloogle/cloogle.org/blob/master/backend/BuiltinSyntax.icl" target="_blank">Edit this explanation on GitHub.</a>' +
+							'<a href="https://github.com/clean-cloogle/cloogle.org/blob/master/backend/Builtin/Syntax.icl" target="_blank">Edit this explanation on GitHub.</a>' +
 						'</div>' +
 						'<div class="result-extra toggle-container">' +
 							toggler +
@@ -674,7 +674,7 @@ function getResults(str, libs, include_builtins, include_core, include_apps, pag
 						': <code>' + extra['abc_instruction'] + '</code></div>' +
 						'<div class="result-extra">' +
 							meta.join('<br/>') +
-							'<a class="parbreak" href="https://github.com/clean-cloogle/cloogle.org/blob/master/backend/BuiltinABCInstructions.icl" target="_blank">Edit this explanation on GitHub.</a>' +
+							'<a class="parbreak" href="https://github.com/clean-cloogle/cloogle.org/blob/master/backend/Builtin/ABC.icl" target="_blank">Edit this explanation on GitHub.</a>' +
 						'</div>' +
 						'<pre class="result-code">' +
 							highlightFunction(line, null, line[0] == '.' ? 'abc' : 'abcInstruction') +

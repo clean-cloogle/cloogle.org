@@ -1,4 +1,4 @@
-implementation module Cache
+implementation module Util.Cache
 
 import StdFile
 import StdFunc

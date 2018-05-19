@@ -183,7 +183,7 @@ String.prototype.markup = function() {
 			return in_code ? '<pre>' : '</pre>';
 		})
 		.replace(/<pre>([\s\S]*?)<\/pre>/g, function (m,c) {
-			return '<pre>' + highlightFunction(c, highlightCallback) + '</pre>';
+			return '<pre>' + highlightClean(c, highlightCallback) + '</pre>';
 		})
 		.split(/\n\n/).join('<br class="parbreak"/>')
 		.split(/\n\s*-/).join('<br/>-')
@@ -253,7 +253,7 @@ function makeRequiredContext(context) {
 	var html = '<table>';
 	for (var i in context) {
 		html += '<tr><td>' +
-			'<code>' + highlightFunction(context[i][0], highlightCallback) + '</code>' +
+			'<code>' + highlightClean(context[i][0], highlightCallback) + '</code>' +
 			'</td><td>' +
 			(context[i][1].length > 0
 				? makeLocationUrls(context[i][1])
@@ -387,7 +387,7 @@ function getResults(str, libs, include_builtins, include_core, include_apps, pag
 				instances += '<td>';
 				for (var k in list[i][1]) {
 					instances += '<code>' +
-						highlightType(list[i][1][k], highlightCallback) +
+						highlightClean(list[i][1][k], highlightCallback, 'type') +
 						'</code> ';
 				}
 				instances += '</td>';
@@ -513,7 +513,7 @@ function getResults(str, libs, include_builtins, include_core, include_apps, pag
 
 				if ('cls' in extra)
 					meta.push('Class: <code>' +
-							highlightFunction(extra['cls']['cls_name'] +
+							highlightClean(extra['cls']['cls_name'] +
 							' ' + extra['cls']['cls_vars'].join(' '),
 							highlightCallback, 'className') + '</code>');
 
@@ -527,7 +527,7 @@ function getResults(str, libs, include_builtins, include_core, include_apps, pag
 				if ('unifier' in extra) {
 					var synonyms = extra['unifier'].used_synonyms;
 					for (var i in synonyms) {
-						hidden.push(['Used the type synonym <code>' + highlightTypeDef(
+						hidden.push(['Used the type synonym <code>' + highlightClean(
 									':: ' + synonyms[i][0] + ' :== ' + synonyms[i][1],
 									highlightCallback) + '</code>.']);
 					}
@@ -546,13 +546,13 @@ function getResults(str, libs, include_builtins, include_core, include_apps, pag
 				switch (extra['kind'][0]) {
 					case 'Constructor':
 						meta.push('This is a type constructor of <code>' +
-								highlightFunction(':: ' + extra['constructor_of'],
+								highlightClean(':: ' + extra['constructor_of'],
 								highlightCallback) + '</code>.');
 						hl_entry = 'startConstructor';
 						break;
 					case 'RecordField':
 						meta.push('This is a record field of <code>' +
-								highlightFunction(':: ' + extra['recordfield_of'],
+								highlightClean(':: ' + extra['recordfield_of'],
 								highlightCallback) + '</code>.');
 						hl_entry = 'startRecordField';
 						break;
@@ -561,12 +561,12 @@ function getResults(str, libs, include_builtins, include_core, include_apps, pag
 						break;
 				}
 
-				var code = highlightFunction(extra['func'], highlightCallback, hl_entry);
+				var code = highlightClean(extra['func'], highlightCallback, hl_entry);
 				if ('type_doc' in extra) {
 					var lines = extra['func'].split('\n');
 					if (lines.length <= 1 || lines[0].indexOf(' :: ') == -1) {
 						var name = extra['func'].split(' ')[0];
-						var type = highlightFunction(name + ' :: ' + extra['type_doc'], highlightCallback);
+						var type = highlightClean(name + ' :: ' + extra['type_doc'], highlightCallback);
 						code = type + '\r\n' + code;
 					}
 				}
@@ -579,7 +579,7 @@ function getResults(str, libs, include_builtins, include_core, include_apps, pag
 							'Instances',
 							makeInstanceTable(
 								extra['type_instances'],
-								highlightFunction, 'className'),
+								highlightClean, 'className'),
 							pluralise(extra['type_instances'].length, 'instance')]);
 				}
 
@@ -588,7 +588,7 @@ function getResults(str, libs, include_builtins, include_core, include_apps, pag
 							'Derivations',
 							makeInstanceTable(
 								extra['type_derivations'],
-								highlightFunction, 'generic'),
+								highlightClean, 'generic'),
 							pluralise(extra['type_derivations'].length, 'derivation')]);
 				}
 
@@ -611,7 +611,7 @@ function getResults(str, libs, include_builtins, include_core, include_apps, pag
 				}
 
 				return makeGenericResultHTML(basic, meta, hidden,
-						highlightTypeDef(code.join('\n'), highlightCallback));
+						highlightClean(code.join('\n'), highlightCallback));
 
 			case 'ClassResult':
 				if (extra['class_instances'].length > 0)
@@ -620,12 +620,12 @@ function getResults(str, libs, include_builtins, include_core, include_apps, pag
 							makeInstanceTable(extra['class_instances'], highlightType),
 							pluralise(extra['class_instances'].length, 'instance')]);
 
-				var html = highlightFunction(
+				var html = highlightClean(
 						'class ' + extra['class_heading'] +
 						(extra['class_funs'].length > 0 ? ' where' : ''),
 						highlightCallback) + '\n';
 				for (var i in extra['class_funs'])
-					html += highlightFunction(
+					html += highlightClean(
 							'\n    ' + extra['class_funs'][i].replace(/\n/g, '\n    '),
 							highlightCallback, 'macro');
 
@@ -638,7 +638,7 @@ function getResults(str, libs, include_builtins, include_core, include_apps, pag
 							'</span>']);
 
 				return makeGenericResultHTML(basic, meta, hidden,
-						highlightFunction('definition module ' + basic['modul']));
+						highlightClean('definition module ' + basic['modul']));
 
 			case 'SyntaxResult':
 				var toggler = '';
@@ -680,7 +680,7 @@ function getResults(str, libs, include_builtins, include_core, include_apps, pag
 							'<a class="parbreak" href="https://github.com/clean-cloogle/cloogle.org/blob/master/backend/Builtin/ABC.icl" target="_blank">Edit this explanation on GitHub.</a>' +
 						'</div>' +
 						'<pre class="result-code">' +
-							highlightFunction(line, null, line[0] == '.' ? 'abc' : 'abcInstruction') +
+							highlightClean(line, null, line[0] == '.' ? 'abc' : 'abcInstruction') +
 						'</pre>';
 				return res;
 
@@ -730,7 +730,7 @@ function getResults(str, libs, include_builtins, include_core, include_apps, pag
 			}
 			sugstr = sugstr.join(' ');
 			table.innerHTML += '<tr><td><a class="hidden" href="#' + encodeURIComponent(sugstr) + '"><code>' +
-				highlightFunction(sugstr) + '</code></a></td><td>(' +
+				highlightClean(sugstr) + '</code></a></td><td>(' +
 				suggestions[i][1] + ' results)</td></tr>';
 		}
 		suggs.appendChild(table);
@@ -834,10 +834,10 @@ function formsubmit() {
 			var sug = ':: ' + q.replace(/->/g, ' -> ').replace(/  /g, ' ');
 			sug = 'Did you mean to search for ' +
 				'<a class="hidden" href="#' + sug + '"><code>' +
-				highlightFunction(sug) + '</code></a>?';
+				highlightClean(sug) + '</code></a>?';
 			if (q.indexOf(' ') == -1) {
 				sresults.innerHTML += '<p>Searching for the <em>name</em> <code>' +
-					highlightFunction(q) + '</code>. ' + sug + '</p>';
+					highlightClean(q) + '</code>. ' + sug + '</p>';
 			} else {
 				sresults.innerHTML += '<p>Cloogle does not accept spaces in the input. ' + sug + '</p>';
 				return;
@@ -845,8 +845,8 @@ function formsubmit() {
 		} else if (q.indexOf('instance ') == 0) {
 			var qname = q.substr(9);
 			var sug =
-				[ ['class ' + qname, '<span class="keyword">class</span> ' + highlightFunction(qname)]
-				, ['type '  + qname, '<span class="keyword">type</span> '  + highlightFunction(qname)]
+				[ ['class ' + qname, '<span class="keyword">class</span> ' + highlightClean(qname)]
+				, ['type '  + qname, '<span class="keyword">type</span> '  + highlightClean(qname)]
 				];
 			sresults.innerHTML += '<p>' +
 				'Cloogle does not accept spaces in the input. ' +

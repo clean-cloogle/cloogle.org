@@ -63,11 +63,11 @@ function shortenURL(type, url, onUpdate) {
 }
 
 function highlightQuery(query) {
-	var highlighter = highlightFunction;
+	var highlighter = highlightClean;
 	if (query == 'class' || query == 'type' || query == 'using') {
 		return '<span class="keyword">' + query + '</span>';
 	} else if (query.match(/^class\s/)) {
-		highlighter = highlightFunction;
+		highlighter = highlightClean;
 	} else if (query.match(/^type\s/)) {
 		highlighter = function(q) {
 			return '<span class="keyword">type</span><span class="whitespace">' + q.substring(4,5) + '</span>' +

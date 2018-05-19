@@ -147,7 +147,7 @@ bs_exists =
 	, syntax_code          = [":: ... = E. ...: ..."]
 	, syntax_description   = "Existential quantifiers make it possible to define (recursive) objects of the same type with different types of content."
 	, syntax_doc_locations = [CLR 7 "5.1.3" "_Toc311798042"]
-	, syntax_examples      = [EX "Function" ":: List = E.e: Cons e List | Nil\nStart = Cons 5 (Cons 'a' (Cons \"abc\" Nil))"] // TODO highlighting
+	, syntax_examples      = [EX "Function" ":: List = E.e: Cons e List | Nil\nStart = Cons 5 (Cons 'a' (Cons \"abc\" Nil))"]
 	}
 
 bs_forall =

@@ -481,6 +481,8 @@ where
 directives :: [ABCInstructionEntry]
 directives =
 	[ d_d
+	, d_n
+	, d_nu
 	, d_o
 	, d_export
 	, d_inline
@@ -499,6 +501,31 @@ where
 			[ "Indicates how many stack elements are on the stack when a jump follows."
 			, "The first integer is the number of elements on the A-stack; the second that of B-stack elements."
 			, "The optional third argument indicates the type of the B-stack elements, e.g. `bbi` for two booleans and an integer."
+			]
+		}
+	d_n =
+		{ zero
+		& aie_instruction = ".n"
+		, aie_arguments   = [A_OFFSET, LABEL]
+		, aie_description = concat
+			[ "Indicates the arity of node entry labels."
+			, "The label is the label of the corresponding descriptor, or `_` if it does not exist."
+			, "\n\nThere are some special cases:\n\n"
+			, "- An arity of `-1` is for tuple selectors;\n"
+			, "- An arity of `-2` is for indirection nodes;\n"
+			, "- An arity of `-3` is for record selectors of basic types;\n"
+			, "- An arity of `-4` is for record selectors of non-basic types.\n\n"
+			, "See also {{`.nu`}}."
+			]
+		}
+	d_nu =
+		{ zero
+		& aie_instruction = ".nu"
+		, aie_arguments   = [A_OFFSET, B_OFFSET, LABEL]
+		, aie_description = concat
+			[ "Indicates the arity of node entry labels with arguments on the B-stack (otherwise, {{`.n`}} is used)."
+			, "The first integer is the number of A-stack arguments; the second the number of B-stack arguments."
+			, "The label is the label of the corresponding descriptor, or `_` if it does not exist."
 			]
 		}
 	d_o =
@@ -719,8 +746,6 @@ other_instructions =
 	, ".implib"
 	, ".impmod"
 	, ".impobj"
-	, ".n"
-	, ".nu"
 	, ".newlocallabel"
 	, ".n_string"
 	, ".pb"

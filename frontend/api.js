@@ -190,6 +190,9 @@ String.prototype.markup = function() {
 		.split(/\n\s*\*/).join('<br/>*')
 		.replace(/{{`([^`}]+)`}}/g, '`{{$1}}`')
 		.replace(/`([^`]+)`/g, '<code>$1</code>')
+		.replace(/\*\*\*((?=\w)[^*]*\w)\*\*\*/g, '<strong><em>$1</em></strong>')
+		.replace(/\*\*((?=\w)[^*]*\w)\*\*/g, '<strong>$1</strong>')
+		.replace(/\*((?=\w)[^*]*\w)\*/g, '<em>$1</em>')
 		.replace(/{{([^}]+)}}/g, function (m,c) {
 			return '<a class="hidden" title="Search ' + c +
 				'" href="#' + encodeURIComponent(c) + '">' + c + '</a>';

@@ -23,7 +23,7 @@ allCacheKeys :: !CacheType !*World -> (![a], !*World) | JSONDecode{|*|} a
 /**
  * Write for the hash of `a` a JSON file of type `b`.
  */
-writeCache :: CacheType !a !b !*World -> *World | toString, JSONEncode{|*|} a & JSONEncode{|*|} b
+writeCache :: !CacheType !a !b !*World -> *World | toString, JSONEncode{|*|} a & JSONEncode{|*|} b
 
 /**
  * Remove an entry from the cache.

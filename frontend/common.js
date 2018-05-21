@@ -83,6 +83,10 @@ function highlightQuery(query) {
 					]
 				}, q.substring(6));
 		};
+	} else if (query.match(/^::/)) {
+		highlighter = function(q) {
+			return '<span class="punctuation">::</span>' + highlightType(q.substring(2));
+		};
 	}
 	return highlighter(query);
 }

@@ -119,7 +119,10 @@ function highlightCallback(span, cls, str) {
 		return '<a class="hidden" title="Search generic ' + str + '" href="#' +
 			encodeURIComponent(str) + '">' +
 			span + '</a>';
-	} else if (cls == 'funcname funcname-onlyused' ||
+	} else if (cls == 'funcname' ||
+			cls == 'funcname funcname-onlyused' ||
+			cls == 'modulename' ||
+			cls == 'modulename modulename-onlyused' ||
 			cls == 'constructor' ||
 			cls == 'abc-instruction') {
 		return '<a class="hidden" title="Search for ' + str + '" href="#' +
@@ -306,7 +309,7 @@ function highlightSyntaxConstruct(elem) {
 function makeExampleList(examples) {
 	var html = '<ul class="examples">';
 	for (var i in examples)
-		html += '<li><pre class="example">' + highlightExample(examples[i]) + '</pre></li>';
+		html += '<li><pre class="example">' + highlightExample(examples[i], highlightCallback) + '</pre></li>';
 	html += '</ul>';
 	return html;
 }
@@ -638,7 +641,7 @@ function getResults(str, libs, include_builtins, include_core, include_apps, pag
 							'</span>']);
 
 				return makeGenericResultHTML(basic, meta, hidden,
-						highlightClean('definition module ' + basic['modul']));
+						highlightClean('definition module ' + basic['modul'], highlightCallback));
 
 			case 'SyntaxResult':
 				var toggler = '';
@@ -845,8 +848,8 @@ function formsubmit() {
 		} else if (q.indexOf('instance ') == 0) {
 			var qname = q.substr(9);
 			var sug =
-				[ ['class ' + qname, '<span class="keyword">class</span> ' + highlightClean(qname)]
-				, ['type '  + qname, '<span class="keyword">type</span> '  + highlightClean(qname)]
+				[ ['class ' + qname, highlightQuery('class ' + qname)]
+				, ['type '  + qname, highlightQuery('type ' + qname)]
 				];
 			sresults.innerHTML += '<p>' +
 				'Cloogle does not accept spaces in the input. ' +

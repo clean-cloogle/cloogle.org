@@ -21,6 +21,10 @@ td, th {
 	padding-right: 1em;
 }
 
+a.hidden {
+	text-decoration: none;
+}
+
 a.more-info {
 	background: #87aade;
 	border-radius: 50%;

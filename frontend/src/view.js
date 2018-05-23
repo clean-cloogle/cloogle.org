@@ -94,6 +94,7 @@ window.onload = function() {
 		},
 		viewer: viewer,
 		onLoad: function(state) {
+			viewer.innerHTML = highlightClean(viewer.innerText, highlightCallback);
 			viewer.scrollLeft = 0;
 			if (state.line != null) {
 				browser.scrollTo(document.getElementById('line-' + state.line));

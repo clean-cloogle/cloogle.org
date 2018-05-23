@@ -733,7 +733,7 @@ function getResults(str, libs, include_builtins, include_core, include_apps, pag
 			}
 			sugstr = sugstr.join(' ');
 			table.innerHTML += '<tr><td><a class="hidden" href="#' + encodeURIComponent(sugstr) + '"><code>' +
-				highlightClean(sugstr) + '</code></a></td><td>(' +
+				highlightQuery(sugstr) + '</code></a></td><td>(' +
 				suggestions[i][1] + ' results)</td></tr>';
 		}
 		suggs.appendChild(table);

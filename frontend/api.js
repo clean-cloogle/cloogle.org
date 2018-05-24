@@ -695,7 +695,7 @@ function getResults(str, libs, include_builtins, include_core, include_apps, pag
 				res.innerHTML =
 						'<div class="result-basic">Common problem: ' + result.problem_title + '</div>' +
 						'<div class="result-extra">' +
-							result.problem_description +
+							result.problem_description.markup() +
 							'<br class="parbreak"/>Possible solutions:<ul>' + solutions + '</ul>' +
 							'Examples:<ul>' + examples + '</ul>' +
 							'<a href="https://github.com/clean-cloogle/common-problems/blob/master/' + result.problem_key + '.md" target="_blank">Edit this explanation on GitHub.</a>' +

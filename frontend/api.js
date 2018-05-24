@@ -268,15 +268,10 @@ function makeRequiredContext(context) {
 }
 
 function highlightExample(example) {
-	var f = 'highlight' + example.cleanjs_type;
-	if (!(f in window)) {
-		return example.example;
-	} else if ('cleanjs_start' in example) {
-		return window[f](
-				example.example, highlightCallback, example.cleanjs_start);
+	if ('cleanjs_start' in example) {
+		return highlightClean(example.example, highlightCallback, example.cleanjs_start);
 	} else {
-		return window[f](
-				example.example, highlightCallback);
+		return highlightClean(example.example, highlightCallback);
 	}
 }
 

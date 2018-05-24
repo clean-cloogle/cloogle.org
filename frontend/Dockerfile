@@ -37,9 +37,14 @@ RUN apt-get update -qq \
 	&& apt-get install -qq python3.5 python3-pip \
 	&& pip3 install pygments pygments-lexer-clean
 
-COPY frontend/index_common_problems.py .
+# Build common problems index
 RUN apt-get update -qq && apt-get install -qq ca-certificates git\
-	&& ./index_common_problems.py\
+	&& git clone https://github.com/clean-cloogle/common-problems /tmp/common-problems\
+	&& cd /tmp/common-problems\
+	&& ./build_index.py\
+	&& mv common-problems.json /var\
+	&& cd /\
+	&& rm -fr /tmp/common-problems\
 	&& apt-get remove -qq ca-certificates git\
 	&& apt-get autoremove -qq
 

@@ -181,7 +181,7 @@ String.prototype.markup = function() {
 	var in_code = false;
 
 	var s = this
-		.replace(/\n```[^\n]*(?:\n|$)/g, function (m) {
+		.replace(/(^|\n)```[^\n]*(?:\n|$)/g, function (m) {
 			in_code = !in_code;
 			return in_code ? '<pre>' : '</pre>';
 		})

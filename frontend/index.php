@@ -91,7 +91,7 @@
 		</div>
 		<div id="helptext" class="tooltip">
 			<div>
-				<p>Cloogle is the unofficial <a href="http://clean.cs.ru.nl">Clean</a> language search engine.</p>
+				<p>Cloogle is the official <a href="http://clean.cs.ru.nl">Clean</a> language search engine.</p>
 				<p><b>The following search strings are recognised:</b></p>
 				<table>
 					<tr>
@@ -129,6 +129,10 @@
 					<tr>
 						<td class='code'>class Text</td>
 						<td class='description'>The class definition of <code>Text</code></td>
+					</tr>
+					<tr>
+						<td class='code'>stack overflow</td>
+						<td class='description'>A description of runtime (or compiletime) error together with possible causes and solutions</td>
 					</tr>
 				</table>
 				<p><b>Besides this web app, there are other frontends available:</b></p>

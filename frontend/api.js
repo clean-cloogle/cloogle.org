@@ -181,11 +181,11 @@ String.prototype.markup = function() {
 	var in_code = false;
 
 	var s = this
-		.replace(/(^|\n)```[^\n]*(?:\n|$)/g, function (m) {
+		.replace(/(?:^|\n)```([^\n]*)(?:\n|$)/g, function (m, type) {
 			in_code = !in_code;
-			return in_code ? '<pre>' : '</pre>';
+			return in_code ? '<pre class="' + type + '">' : '</pre>';
 		})
-		.replace(/<pre>([\s\S]*?)<\/pre>/g, function (m,c) {
+		.replace(/<pre class="clean">([\s\S]*?)<\/pre>/g, function (m,c) {
 			return '<pre>' + highlightClean(c, highlightCallback) + '</pre>';
 		})
 		.split(/\n\n/).join('<br class="parbreak"/>')

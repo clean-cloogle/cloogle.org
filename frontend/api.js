@@ -700,11 +700,12 @@ function getResults(str, libs, include_builtins, include_core, include_apps, pag
 				res.className = 'result';
 				res.innerHTML =
 						'<div class="result-basic">Common problem: ' + result.problem_title + '</div>' +
-						'<div class="result-extra">' +
+						'<div class="result-extra result-extra-space">' +
 							result.problem_description.markup() +
 							'<br class="parbreak"/>Possible solutions:<ul>' + solutions + '</ul>' +
 							'Examples:<ul>' + examples + '</ul>' +
 							'<a href="https://github.com/clean-cloogle/common-problems/blob/master/' + result.problem_key + '.md" target="_blank">Edit this explanation on GitHub.</a>' +
+							'<span class="problem-license">This text is licensed under <a href="https://github.com/clean-cloogle/common-problems/blob/master/LICENSE" target="_blank">CC-BY-SA-4.0</a>.</span>' +
 						'</div>' +
 						'<div class="result-code"></div>';
 				return res;

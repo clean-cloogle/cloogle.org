@@ -226,7 +226,7 @@ a.hidden {
 	padding: .2em .2em .2em 1em;
 }
 
-.result-basic .usages-link {
+.result-basic .usages-link, .problem-license {
 	float: right;
 	margin-right: 1em;
 	font-size: 85%;
@@ -236,6 +236,10 @@ a.hidden {
 	background-color: #f4f4f4;
 	font-size: 85%;
 	padding-left: 1em;
+}
+
+.result-extra-space {
+	padding-bottom: .5em;
 }
 
 .result-extra code, .result-extra pre {

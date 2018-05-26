@@ -91,7 +91,7 @@
 		</div>
 		<div id="helptext" class="tooltip">
 			<div>
-				<p>Cloogle is the unofficial <a href="http://clean.cs.ru.nl">Clean</a> language search engine.</p>
+				<p>Cloogle is the official <a href="http://clean.cs.ru.nl">Clean</a> language search engine.</p>
 				<p><b>The following search strings are recognised:</b></p>
 				<table>
 					<tr>

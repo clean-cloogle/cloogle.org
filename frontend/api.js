@@ -221,9 +221,12 @@ function makeLocationUrl(loc) {
 	if (loc[4].length > 1)
 		iclUrl += ';line=' + loc[4][1];
 
-	return loc[1] +
-		' (<a target="_blank" href="' + dclUrl + '">dcl' +
-			(loc[3].length > 1 ? ':' + loc[3][1] : '') + '</a>; ' +
+	var dclLink = '<a target="_blank" href="' + dclUrl + '">dcl' +
+			(loc[3].length > 1 ? ':' + loc[3][1] : '') + '</a>; ';
+	if (loc[3] == ['Nothing'])
+		dclLink = '';
+
+	return loc[1] + ' (' + dclLink +
 		'<a target="_blank" href="' + iclUrl + '">icl' +
 			(loc[4].length > 1 ? ':' + loc[4][1] : '') + '</a>) ' +
 		'(' + loc[0] + ')';
@@ -406,10 +409,12 @@ function getResults(str, libs, include_builtins, include_core, include_apps, pag
 		var dclUrl = 'src#' + encodeURIComponent(basic['library'] + '/' + basic['filename'].replace('.icl', ''));
 		var iclUrl = dclUrl + ';icl';
 		var dclLine = '';
+		var dclLink = '';
 		var iclLine = '';
 		if ('dcl_line' in basic) {
 			dclUrl += ';line=' + basic['dcl_line'];
 			dclLine = ':' + basic['dcl_line'];
+			dclLink = '<a href="' + dclUrl + '" target="_blank">dcl' + dclLine + '</a>; ';
 		}
 		if ('icl_line' in basic) {
 			iclUrl += ';line=' + basic['icl_line'];
@@ -417,8 +422,7 @@ function getResults(str, libs, include_builtins, include_core, include_apps, pag
 		}
 
 		var basicText = basic['library'] + ': ' +
-				basic['modul'] + ' (' +
-				'<a href="' + dclUrl + '" target="_blank">dcl' + dclLine + '</a>; ' +
+				basic['modul'] + ' (' + dclLink +
 				'<a href="' + iclUrl + '" target="_blank">icl' + iclLine + '</a>) ' +
 				'<a class="usages-link" href="#using ' + basic['name'] + '" title="Find where this is used">usages &rarr;</a>';
 
@@ -635,8 +639,10 @@ function getResults(str, libs, include_builtins, include_core, include_apps, pag
 							'This is a core module and should usually only be used internally.' +
 							'</span>']);
 
+				var definition = 'dcl_line' in basic ? 'definition ' : '';
+
 				return makeGenericResultHTML(basic, meta, hidden,
-						highlightClean('definition module ' + basic['modul'], highlightCallback));
+						highlightClean(definition + 'module ' + basic['modul'], highlightCallback));
 
 			case 'SyntaxResult':
 				var toggler = '';

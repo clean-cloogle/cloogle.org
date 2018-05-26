@@ -130,10 +130,6 @@
 						<td class='code'>class Text</td>
 						<td class='description'>The class definition of <code>Text</code></td>
 					</tr>
-					<tr>
-						<td class='code'>stack overflow</td>
-						<td class='description'>A description of runtime (or compiletime) error together with possible causes and solutions</td>
-					</tr>
 				</table>
 				<p><b>Besides this web app, there are other frontends available:</b></p>
 				<ul>

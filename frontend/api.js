@@ -943,7 +943,10 @@ window.onhashchange = function () {
 }
 
 var make_content_editable = true;
-if (navigator.userAgent.indexOf(' SEB ') != -1) // Safe exam browser
+if (navigator.userAgent.indexOf(' SEB ') != -1 || // Safe exam browser
+		navigator.userAgent.indexOf('Android') != -1 ||
+		navigator.userAgent.indexOf('iPhone') != -1 ||
+		navigator.userAgent.indexOf('iPad') != -1)
 	make_content_editable = false;
 if (make_content_editable) {
 	var new_form_str = document.createElement('div');

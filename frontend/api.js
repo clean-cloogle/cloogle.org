@@ -230,12 +230,10 @@ String.prototype._markup = function() {
 }
 
 String.prototype.markup = function() {
-	// https://stackoverflow.com/a/8234912/1544337
-	var url_regex = /((([A-Za-z]{3,9}:(?:\/\/)?)(?:[-;:&=\+\$,\w]+@)?[A-Za-z0-9.-]+|(?:www.|[-;:&=\+\$,\w]+@)[A-Za-z0-9.-]+)((?:\/[\+~%\/.\w-_]*)?\??(?:[-\+=&;%@.\w_]*)#?(?:[\w]*))?)/g;
 	return this
 		.replace(/{{`([^`}]+)`}}/g, '`{{$1}}`')
 		._markup()
-		.replace(url_regex, '<a href="$1" target="_blank">$1</a>');
+		.replace(/(https?:\/\/(?:[^\s.]|\.(?!\s|$))+)/g, '<a href="$1" target="_blank">$1</a>');
 }
 
 function makeDocFieldsHTML(name, params) {

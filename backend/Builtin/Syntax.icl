@@ -45,6 +45,7 @@ builtin_syntax =
 	, bs_strict
 	, bs_synonym
 	, bs_synonym_abstract
+	, bs_unique
 	, bs_update_array
 	, bs_update_record
 	, bs_where_class
@@ -488,6 +489,18 @@ bs_synonym_abstract =
 	, syntax_description   = "Defines a new type name for an existing type, while the type behaves as an abstract type for the programmer. This allows compiler optimisations on abstract types."
 	, syntax_doc_locations = [CLR 7 "5.4.1" "_Toc311798054"]
 	, syntax_examples      = [EX ":: Stack a (:== [a])"]
+	}
+
+bs_unique =
+	{ syntax_title         = "uniqueness annotation"
+	, syntax_patterns      = ["\\*"]
+	, syntax_code          = ["*..."]
+	, syntax_description   = "Annotates a type to be unique."
+	, syntax_doc_locations = [CLR 11 "9.1" "_Toc311798093"]
+	, syntax_examples      = map EX
+		[ "Start :: *World -> *World"
+		, "copyArray :: *(a e) -> *(*a e, *a e) | Array a e"
+		]
 	}
 
 bs_update_array =

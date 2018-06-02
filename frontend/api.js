@@ -182,44 +182,43 @@ String.prototype.addLinks = function() {
 		return '<a class="hidden" title="Search ' + link +
 			'" href="#' + encodeURIComponent(link) + '">' + link + '</a>';
 	});
-}
+};
 
-String.prototype.markup = function() {
+String.prototype._markup = function() {
 	return this
-		.replace(/{{`([^`}]+)`}}/g, '`{{$1}}`')
 		.replace(/((?:^|\n)```[^\n]*\n|`` |`|\n\s*-|\n\n|\*{1,3}(?=\w)|\n\s*-)([\s\S]*)/,
 			function(s, m, rest) {
 				switch (m) {
 					case '`':
 						var i = rest.indexOf('`');
 						var code = rest.slice(0,i).addLinks();
-						return '<code>' + code + '</code>' + rest.slice(i+1).markup();
+						return '<code>' + code + '</code>' + rest.slice(i+1)._markup();
 					case '`` ':
 						var i = rest.indexOf(' ``');
 						var code = rest.slice(0,i).addLinks();
-						return '<code>' + code + '</code>' + rest.slice(i+3).markup();
+						return '<code>' + code + '</code>' + rest.slice(i+3)._markup();
 					case '\n\n':
-						return '<br class="parbreak"/>' + rest.markup();
+						return '<br class="parbreak"/>' + rest._markup();
 					case '*':
 						var i = rest.indexOf('*');
-						return '<em>' + rest.slice(0,i) + '</em>' + rest.slice(i+1).markup();
+						return '<em>' + rest.slice(0,i) + '</em>' + rest.slice(i+1)._markup();
 					case '**':
 						var i = rest.indexOf('**');
-						return '<strong>' + rest.slice(0,i) + '</strong>' + rest.slice(i+2).markup();
+						return '<strong>' + rest.slice(0,i) + '</strong>' + rest.slice(i+2)._markup();
 					case '***':
 						var i = rest.indexOf('***');
-						return '<strong><em>' + rest.slice(0,i) + '</em></strong>' + rest.slice(i+3).markup();
+						return '<strong><em>' + rest.slice(0,i) + '</em></strong>' + rest.slice(i+3)._markup();
 				}
 
 				if (m.match(/\n\s*-/))
-					return ('\n<br/>-' + rest).markup();
+					return ('\n<br/>-' + rest)._markup();
 				else if (m.match(/\n\s*-/))
-					return ('\n<br/>*' + rest).markup();
+					return ('\n<br/>*' + rest)._markup();
 
 				if (m.slice(0,3) == '```') {
 					var i = rest.indexOf('\n```');
 					var code = rest.slice(0,i);
-					rest = rest.slice(i+4).trim().markup();
+					rest = rest.slice(i+4).trim()._markup();
 					switch (m.slice(3)) {
 						case 'clean\n':
 							return '<pre>' + highlightClean(code, highlightCallback) + '</pre>' + rest;
@@ -228,6 +227,15 @@ String.prototype.markup = function() {
 					}
 				}
 			});
+}
+
+String.prototype.markup = function() {
+	// https://stackoverflow.com/a/8234912/1544337
+	var url_regex = /((([A-Za-z]{3,9}:(?:\/\/)?)(?:[-;:&=\+\$,\w]+@)?[A-Za-z0-9.-]+|(?:www.|[-;:&=\+\$,\w]+@)[A-Za-z0-9.-]+)((?:\/[\+~%\/.\w-_]*)?\??(?:[-\+=&;%@.\w_]*)#?(?:[\w]*))?)/g;
+	return this
+		.replace(/{{`([^`}]+)`}}/g, '`{{$1}}`')
+		._markup()
+		.replace(url_regex, '<a href="$1" target="_blank">$1</a>');
 }
 
 function makeDocFieldsHTML(name, params) {

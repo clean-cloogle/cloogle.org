@@ -177,32 +177,57 @@ function mergeComments(code, comments) {
 	return code;
 }
 
-String.prototype.markup = function() {
-	var in_code = false;
+String.prototype.addLinks = function() {
+	return this.replace(/{{([^}]+)}}/g, function(s, link) {
+		return '<a class="hidden" title="Search ' + link +
+			'" href="#' + encodeURIComponent(link) + '">' + link + '</a>';
+	});
+}
 
-	var s = this
-		.replace(/(?:^|\n)```([^\n]*)(?:\n|$)/g, function (m, type) {
-			in_code = !in_code;
-			return in_code ? '<pre class="' + type + '">' : '</pre>';
-		})
-		.replace(/<pre class="clean">([\s\S]*?)<\/pre>/g, function (m,c) {
-			return '<pre>' + highlightClean(c, highlightCallback) + '</pre>';
-		})
-		.split(/\n\n/).join('<br class="parbreak"/>')
-		.split(/\n\s*-/).join('<br/>-')
-		.split(/\n\s*\*/).join('<br/>*')
+String.prototype.markup = function() {
+	return this
 		.replace(/{{`([^`}]+)`}}/g, '`{{$1}}`')
-		.replace(/`([^`]+)`/g, '<code>$1</code>')
-		.replace(/\*\*\*((?=\w)[^*]*\w)\*\*\*/g, '<strong><em>$1</em></strong>')
-		.replace(/\*\*((?=\w)[^*]*\w)\*\*/g, '<strong>$1</strong>')
-		.replace(/\*((?=\w)[^*]*\w)\*/g, '<em>$1</em>')
-		.replace(/{{([^}]+)}}/g, function (m,c) {
-			return '<a class="hidden" title="Search ' + c +
-				'" href="#' + encodeURIComponent(c) + '">' + c + '</a>';
-		});
-	if (in_code)
-		s += '</pre>';
-	return s;
+		.replace(/((?:^|\n)```[^\n]*\n|`` |`|\n\s*-|\n\n|\*{1,3}(?=\w)|\n\s*-)([\s\S]*)/,
+			function(s, m, rest) {
+				switch (m) {
+					case '`':
+						var i = rest.indexOf('`');
+						var code = rest.slice(0,i).addLinks();
+						return '<code>' + code + '</code>' + rest.slice(i+1).markup();
+					case '`` ':
+						var i = rest.indexOf(' ``');
+						var code = rest.slice(0,i).addLinks();
+						return '<code>' + code + '</code>' + rest.slice(i+3).markup();
+					case '\n\n':
+						return '<br class="parbreak"/>' + rest.markup();
+					case '*':
+						var i = rest.indexOf('*');
+						return '<em>' + rest.slice(0,i) + '</em>' + rest.slice(i+1).markup();
+					case '**':
+						var i = rest.indexOf('**');
+						return '<strong>' + rest.slice(0,i) + '</strong>' + rest.slice(i+2).markup();
+					case '***':
+						var i = rest.indexOf('***');
+						return '<strong><em>' + rest.slice(0,i) + '</em></strong>' + rest.slice(i+3).markup();
+				}
+
+				if (m.match(/\n\s*-/))
+					return ('\n<br/>-' + rest).markup();
+				else if (m.match(/\n\s*-/))
+					return ('\n<br/>*' + rest).markup();
+
+				if (m.slice(0,3) == '```') {
+					var i = rest.indexOf('\n```');
+					var code = rest.slice(0,i);
+					rest = rest.slice(i+4).trim().markup();
+					switch (m.slice(3)) {
+						case 'clean\n':
+							return '<pre>' + highlightClean(code, highlightCallback) + '</pre>' + rest;
+						default:
+							return '<pre>' + code + '</pre>' + rest;
+					}
+				}
+			});
 }
 
 function makeDocFieldsHTML(name, params) {

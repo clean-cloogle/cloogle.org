@@ -13,9 +13,9 @@ var refresh_on_hash = true;
 var advanced = false;
 var old_str = null;
 var old_libs = null;
-var old_include_builtins = null;
-var old_include_core = null;
-var old_include_apps = null;
+var old_include_builtins = -1;
+var old_include_core = -1;
+var old_include_apps = -1;
 
 // https://stackoverflow.com/a/4812022/1544337
 Element.prototype.getCaretPosition = function() {
@@ -806,7 +806,7 @@ function getResults(str, libs, include_builtins, include_core, include_apps, pag
 				more.id = 'page-' + (page+1);
 				more.innerHTML =
 					'<p id="more" class="remove-at-request">' +
-					'<a href="javascript:getResults(null,null,null,null,null,' + (page+1) +
+					'<a href="javascript:getResults(null,null,-1,-1,-1,' + (page+1) +
 					')">' + responsedata['more_available'] + ' more&#8230;</a></p>';
 				par.appendChild(more);
 			}

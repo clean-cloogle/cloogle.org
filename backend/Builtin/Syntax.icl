@@ -62,9 +62,12 @@ EXs s c = {example=c, cleanjs_start=Just s}
 
 bs_case =
 	{ syntax_title         = "case expression"
-	, syntax_patterns      = ["case", "of", "case of"]
+	, syntax_patterns      = ["case", "of", "case of", "->", "="]
 	, syntax_code          = ["case ... of ..."]
-	, syntax_description   = "Pattern match on an expression and do something depending on the alternative of the matching pattern."
+	, syntax_description   = join " "
+		[ "Pattern match on an expression and do something depending on the alternative of the matching pattern."
+		, "Both `->` and `=` can be used to separate patterns and alternatives, however, they cannot be mixed."
+		]
 	, syntax_doc_locations = [CLR 5 "3.4.2" "_Toc311798001"]
 	, syntax_examples      =
 		[ EXs "macro" "isJust m = case m of\n\tJust _ -> True\n\t_      -> False"

@@ -20,6 +20,7 @@ builtin_syntax =
 	, bs_define_graph
 	, bs_dotdot
 	, bs_exists
+	, bs_extensible_adt
 	, bs_forall
 	, bs_foreign
 	, bs_funcdep
@@ -152,6 +153,24 @@ bs_exists =
 	, syntax_description   = "Existential quantifiers make it possible to define (recursive) objects of the same type with different types of content."
 	, syntax_doc_locations = [CLR 7 "5.1.3" "_Toc311798042"]
 	, syntax_examples      = [EX ":: List = E.e: Cons e List | Nil\nStart = Cons 5 (Cons 'a' (Cons \"abc\" Nil))"]
+	}
+
+bs_extensible_adt =
+	{ syntax_title         = "extensible algebraic data type"
+	, syntax_patterns      = ["..", "|"]
+	, syntax_code          = [":: T | ...", ":: T = ... | ... | .."]
+	, syntax_description   = join " "
+		[ "Extensible algebraic data types are ADTs that can be extended in other modules."
+		, "One module can declare the ADT as extendible by adding the `..` constructor."
+		, "Other modules can then extend it."
+		, "It is not possible to derive functions for EADTs."
+		]
+	, syntax_doc_locations = []
+	, syntax_examples      = map EX
+		[ ":: T = ..      // Declare T as an EADT"
+		, ":: T = C1 | .. // Declare T to be an EADT with at least the constructor C1"
+		, ":: T | C       // Extend the EADT T with constructor C"
+		]
 	}
 
 bs_forall =

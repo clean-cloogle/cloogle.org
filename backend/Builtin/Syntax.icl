@@ -501,6 +501,7 @@ bs_unique =
 		["*..."
 		,". ..." 
 		,"v:.. | [v ..]" 
+		]
 	, syntax_description   = "Annotates a type with its uniqueness. A type can either be unique (`*`), not unique (not annotated), possibly unique (`.`) or relatively unique (identifier and `| [..]`). Note that when using unique types in a function or an ADT the container must also be unique. e.g. `T = T (Int, *File)` has to be `T = T *(Int, *File)`. Functions have to be split up into arity 1 and the sub functions need to be annotated as well. e.g. `T = T (Int *Int -> *Int)` has to be `T = T (Int -> *(*Int -> *Int))`."
 	, syntax_doc_locations = [CLR 11 "9.1" "_Toc311798093"]
 	, syntax_examples      = map EX

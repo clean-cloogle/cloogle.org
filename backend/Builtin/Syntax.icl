@@ -496,11 +496,11 @@ bs_synonym_abstract =
 
 bs_unique =
 	{ syntax_title         = "uniqueness annotation"
-	, syntax_patterns      = ["\\*", "[", "]", ".", ":"]
+	, syntax_patterns      = ["\\*", ".", "%:", "[*<=*]", ","]
 	, syntax_code          =
 		[ "*..."
 		, ". ..."
-		, "...:... | [...<=...]"
+		, "...:... | [...<=...], [...<=...], ..."
 		]
 	, syntax_description   = join " "
 		[ "Annotates a type with its uniqueness."

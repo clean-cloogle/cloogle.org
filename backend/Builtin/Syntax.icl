@@ -515,7 +515,7 @@ bs_synonym_abstract =
 
 bs_unique =
 	{ syntax_title         = "uniqueness annotation"
-	, syntax_patterns      = ["\\*", ".", "%:", "[*<=*]", ","]
+	, syntax_patterns      = ["\\*", ".", "%:", "[*<=*]", ",", "<="]
 	, syntax_code          =
 		[ "*..."
 		, ". ..."
@@ -533,10 +533,10 @@ bs_unique =
 		]
 	, syntax_doc_locations = [CLR 11 "9.1" "_Toc311798093"]
 	, syntax_examples      = map EX
-		[ "Start :: *World -> *World    // World is unique"
-		, "copyArray :: *(a e) -> *(*a e, *a e) | Array a e // Add parenthesis when needed"
-		, "f :: .a -> .a                // f works on unique and non-unique values"
-		, "f :: v:a u:b -> u:b | [v<=u] // f works when a is less unique than b"
+		[ "Start :: *World -> *World   // World is unique"
+		, "copyArray :: *(a e) -> *(*a e, *a e) | Array a e // Add parentheses when needed"
+		, "f :: .a -> .a               // f works on unique and non-unique values"
+		, "f :: v:a u:b -> u:b, [v<=u] // f works when a is less unique than b"
 		]
 	}
 

@@ -519,15 +519,17 @@ bs_unique =
 	, syntax_code          =
 		[ "*..."
 		, ". ..."
-		, "...:... | [...<=...], [...<=...], ..."
+		, "...:..., [...<=...], [...<=...], ..."
 		]
 	, syntax_description   = join " "
 		[ "Annotates a type with its uniqueness."
-		, "A type can either be unique (`*`), not unique (not annotated), possibly unique (`.`) or relatively unique (identifier and `| [...<=...]`)."
-		, "\n\nNote that when using unique types in a function or an ADT the container must also be unique."
-		, "For instance, `T = T (Int, *File)` has to be `T = T *(Int, *File)`."
-		, "\n\nFunctions have to be split up into arity 1 and the sub functions need to be annotated as well."
-		, "For instance, `T = T (Int *Int -> *Int)` has to be `T = T (Int -> *(*Int -> *Int))`."
+		, "A type can either be unique (`*`), not unique (not annotated), possibly unique (`.`) or relatively unique (identifier and `, [...<=...]` after the type context)."
+		, "Because uniqueness is binary, there is only one case where `[u<=v]` is not satisfied; when `u` is unique but `v` is not."
+		, "\n\nOn function types, *uniqueness propagation* is implicit (see section 9.2 of the language report)."
+		, "However, when using unique types in a function or an ADT this has to be made explicit; for instance:"
+		, "`T = T (Int, *File)` has to be `T = T *(Int, *File)`."
+		, "Functions have to be split up into arity 1 and the subfunctions must be annotated as well; for instance:"
+		, "`T = T (Int *Int -> *Int)` has to be `T = T (Int -> *(*Int -> *Int))`."
 		]
 	, syntax_doc_locations = [CLR 11 "9.1" "_Toc311798093"]
 	, syntax_examples      = map EX

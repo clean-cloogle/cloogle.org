@@ -113,12 +113,20 @@ where
 	unprepareTR (Derivation g t) = Derivation g (unprepare t)
 
 :: Options =
-	{ port         :: Int
-	, help         :: Bool
-	, reload_cache :: Bool
+	{ port         :: !Int
+	, help         :: !Bool
+	, reload_cache :: !Bool
+	, test_file    :: !Maybe FilePath
 	}
 
-instance zero Options where zero = {port=31215, help=False, reload_cache=False}
+instance zero Options
+where
+	zero =
+		{ port         = 31215
+		, help         = False
+		, reload_cache = False
+		, test_file    = Nothing
+		}
 
 parseOptions :: Options [String] -> MaybeErrorString Options
 parseOptions opt [] = Ok opt
@@ -129,6 +137,8 @@ parseOptions opt ["-p":p:rest] = case (toInt p, p) of
 parseOptions opt ["-h":rest] = parseOptions {opt & help=True} rest
 parseOptions opt ["--help":rest] = parseOptions {opt & help=True} rest
 parseOptions opt ["--reload-cache":rest] = parseOptions {opt & reload_cache=True} rest
+parseOptions opt ["--test":file:rest] = parseOptions {opt & test_file=Just file} rest
+parseOptions opt ["--test"] = Error "--test requires an argument"
 parseOptions opt [arg:_] = Error $ "Unknown option '" <+ arg <+ "'"
 
 Start w
@@ -151,6 +161,14 @@ Start w
 	# (_,w) = fclose io w
 	= w
 #! db = hyperstrict (fromJust db)
+| isJust opts.test_file
+	# (ok,f,w) = fopen (fromJust opts.test_file) FReadText w
+	| not ok
+		# (io,w) = stdio w
+		# io = io <<< "Could not open test file\n"
+		# (_,w) = fclose io w
+		= w
+	= test f db w
 #! (db,w) = if opts.reload_cache (doInBackground reloadCache) id (db,w)
 #! (_,w) = fclose f w
 = serve
@@ -176,79 +194,79 @@ where
 	# io = io <<< "Could not lock memory (" <<< err <<< "); process may get swapped out\n"
 	= snd $ fclose io w
 
-	handle :: !(Maybe Request) !*CloogleDB !*World -> *(!Response, !(!Maybe CacheKey, !MicroSeconds), !*CloogleDB, !*World)
-	handle Nothing db w = (err InvalidInput "Couldn't parse input", (Nothing,0), db, w)
-	handle (Just request=:{unify,name,page}) db w
-		#! (start,w) = nsTime w
-		//Check cache
-		#! (key,db) = toRequestCacheKey db request
-		#! (mbResponse, w) = readCache key w
-		| isJust mbResponse
-			# r = fromJust mbResponse
-			= respond start Nothing {r & return = if (r.return == 0) 1 r.return} db w
-		| isJust name && size (fromJust name) > 40
-			= respond start Nothing (err InvalidName "Function name too long") db w
-		| isJust name && any isSpace (fromString $ fromJust name)
-			= respond start Nothing (err InvalidName "Name cannot contain spaces") db w
-		| isJust unify && isNothing (parseType $ fromString $ fromJust unify)
-			= respond start Nothing (err InvalidType "Couldn't parse type") db w
-		| all isNothing [unify,name,request.typeName,request.className] && isNothing request.using
-			= respond start Nothing (err InvalidInput "Empty query") db w
-		// Results
-		#! drop_n = fromJust (page <|> pure 0) * MAX_RESULTS
-		#! (res,db) = search request db
-		#! results = drop drop_n res
-		#! more = max 0 (length results - MAX_RESULTS)
-		// Suggestions
-		#! (suggestions,db) = case unify >>= parseType o fromString of
-			Just t -> suggs name t db
-			Nothing -> (Nothing, db)
-		#! (db,w) = seqSt
-			(\(req,res) (db,w) -> let (k,db`) = toRequestCacheKey db req in (db`,cachePages k CACHE_PREFETCH 0 zero res w))
-			(fromMaybe [] suggestions)
-			(db,w)
-		#! suggestions
-			= sortBy (\a b -> snd a > snd b) <$>
-			  filter ((<) (length results) o snd) <$>
-			  map (appSnd length) <$> suggestions
-		#! (results,nextpages) = splitAt MAX_RESULTS results
-		// Response
-		#! response = if (isEmpty results)
-			(err NoResults "No results")
-			{ zero
-		    & data           = results
-		    , more_available = Just more
-		    , suggestions    = suggestions
-		    }
-		// Save page prefetches
-		#! w = cachePages key CACHE_PREFETCH 1 response nextpages w
-		// Save cache file
-		= respond start (Just key) response db w
-	where
-		respond :: !Timespec !(Maybe RequestCacheKey) !Response !*CloogleDB !*World ->
-			*(!Response, !(!Maybe CacheKey, !MicroSeconds), !*CloogleDB, !*World)
-		respond start key r db w
-		#! (end,w) = nsTime w
-		#! duration = 1000000000 * (end.tv_sec - start.tv_sec) + end.tv_nsec - start.tv_nsec
-		#! cache = duration > CACHE_NS_THRESHOLD
-		= (r, (if cache (cacheKey <$> key) Nothing, duration / 1000), db, case (cache,key) of
-			(True,Just k) -> writeCache LongTerm k r w
-			_             -> w)
+handle :: !(Maybe Request) !*CloogleDB !*World -> *(!Response, !(!Maybe CacheKey, !MicroSeconds), !*CloogleDB, !*World)
+handle Nothing db w = (err InvalidInput "Couldn't parse input", (Nothing,0), db, w)
+handle (Just request=:{unify,name,page}) db w
+	#! (start,w) = nsTime w
+	//Check cache
+	#! (key,db) = toRequestCacheKey db request
+	#! (mbResponse, w) = readCache key w
+	| isJust mbResponse
+		# r = fromJust mbResponse
+		= respond start Nothing {r & return = if (r.return == 0) 1 r.return} db w
+	| isJust name && size (fromJust name) > 40
+		= respond start Nothing (err InvalidName "Function name too long") db w
+	| isJust name && any isSpace (fromString $ fromJust name)
+		= respond start Nothing (err InvalidName "Name cannot contain spaces") db w
+	| isJust unify && isNothing (parseType $ fromString $ fromJust unify)
+		= respond start Nothing (err InvalidType "Couldn't parse type") db w
+	| all isNothing [unify,name,request.typeName,request.className] && isNothing request.using
+		= respond start Nothing (err InvalidInput "Empty query") db w
+	// Results
+	#! drop_n = fromJust (page <|> pure 0) * MAX_RESULTS
+	#! (res,db) = search request db
+	#! results = drop drop_n res
+	#! more = max 0 (length results - MAX_RESULTS)
+	// Suggestions
+	#! (suggestions,db) = case unify >>= parseType o fromString of
+		Just t -> suggs name t db
+		Nothing -> (Nothing, db)
+	#! (db,w) = seqSt
+		(\(req,res) (db,w) -> let (k,db`) = toRequestCacheKey db req in (db`,cachePages k CACHE_PREFETCH 0 zero res w))
+		(fromMaybe [] suggestions)
+		(db,w)
+	#! suggestions
+		= sortBy (\a b -> snd a > snd b) <$>
+		  filter ((<) (length results) o snd) <$>
+		  map (appSnd length) <$> suggestions
+	#! (results,nextpages) = splitAt MAX_RESULTS results
+	// Response
+	#! response = if (isEmpty results)
+		(err NoResults "No results")
+		{ zero
+		& data           = results
+		, more_available = Just more
+		, suggestions    = suggestions
+		}
+	// Save page prefetches
+	#! w = cachePages key CACHE_PREFETCH 1 response nextpages w
+	// Save cache file
+	= respond start (Just key) response db w
+where
+	respond :: !Timespec !(Maybe RequestCacheKey) !Response !*CloogleDB !*World ->
+		*(!Response, !(!Maybe CacheKey, !MicroSeconds), !*CloogleDB, !*World)
+	respond start key r db w
+	#! (end,w) = nsTime w
+	#! duration = 1000000000 * (end.tv_sec - start.tv_sec) + end.tv_nsec - start.tv_nsec
+	#! cache = duration > CACHE_NS_THRESHOLD
+	= (r, (if cache (cacheKey <$> key) Nothing, duration / 1000), db, case (cache,key) of
+		(True,Just k) -> writeCache LongTerm k r w
+		_             -> w)
 
-		cachePages :: !RequestCacheKey !Int !Int !Response ![Result] !*World -> *World
-		cachePages key _ _  _ [] w = w
-		cachePages key 0 _  _ _  w = w
-		cachePages key npages i response results w
-		# w = writeCache Brief req` resp` w
-		= cachePages key (npages - 1) (i + 1) response keep w
-		where
-			req` = { key & c_page = key.c_page + i }
-			resp` =
-				{ response
-				& more_available = Just $ max 0 (length results - MAX_RESULTS)
-				, data = give
-				}
-			(give,keep) = splitAt MAX_RESULTS results
+	cachePages :: !RequestCacheKey !Int !Int !Response ![Result] !*World -> *World
+	cachePages key _ _  _ [] w = w
+	cachePages key 0 _  _ _  w = w
+	cachePages key npages i response results w
+	# w = writeCache Brief req` resp` w
+	= cachePages key (npages - 1) (i + 1) response keep w
+	where
+		req` = { key & c_page = key.c_page + i }
+		resp` =
+			{ response
+			& more_available = Just $ max 0 (length results - MAX_RESULTS)
+			, data = give
+			}
+		(give,keep) = splitAt MAX_RESULTS results
 
 	suggs :: !(Maybe String) !Type !*CloogleDB -> *(Maybe [(Request, [Result])], *CloogleDB)
 	suggs n (Func is r cc) db | length is < 3
@@ -258,25 +276,38 @@ where
 			\\ is` <- permutations is | is` <> is]
 	suggs _ _ db = (Nothing, db)
 
-	reloadCache :: !*(!*CloogleDB, !*World) -> *(!*CloogleDB, !*World)
-	reloadCache (db,w)
-	# (ks,w) = allCacheKeys LongTerm w
+reloadCache :: !*(!*CloogleDB, !*World) -> *(!*CloogleDB, !*World)
+reloadCache (db,w)
+# (ks,w) = allCacheKeys LongTerm w
+= loop ks db w
+where
+	loop :: ![RequestCacheKey] !*CloogleDB !*World -> *(!*CloogleDB, !*World)
+	loop [] db w = (db,w)
+	loop [k:ks] db w
+	# w = removeFromCache LongTerm k w
+	# (_,_,db,w) = handle (Just $ fromRequestCacheKey k) db w
+	# db = resetDB db
 	= loop ks db w
-	where
-		loop :: ![RequestCacheKey] !*CloogleDB !*World -> *(!*CloogleDB, !*World)
-		loop [] db w = (db,w)
-		loop [k:ks] db w
-		# w = removeFromCache LongTerm k w
-		# (_,_,db,w) = handle (Just $ fromRequestCacheKey k) db w
-		# db = resetDB db
-		= loop ks db w
 
-	doInBackground :: (*a -> *a) *a -> *a
-	doInBackground f w
-	#! (pid,w) = fork w
-	| pid  < 0 = abort "fork failed\n"
-	| pid  > 0 = w // Parent: return directly
-	| pid == 0 = snd $ exit 0 $ f w // Child: do function
+doInBackground :: (*a -> *a) *a -> *a
+doInBackground f w
+#! (pid,w) = fork w
+| pid  < 0 = abort "fork failed\n"
+| pid  > 0 = w // Parent: return directly
+| pid == 0 = snd $ exit 0 $ f w // Child: do function
+
+test :: !*File !*CloogleDB !*World -> *World
+test queries db w
+# (e,queries) = fend queries
+| e = w
+# (qstring,queries) = freadline queries
+# qstring = {c \\ c <-: qstring | c <> '\n' && c <> '\r'}
+# q = parseSingleLineRequest qstring
+| isError q
+	# w = snd $ fclose (stderr <<< "Warning: could not parse '" <<< qstring <<< "'; " <<< fromError q <<< "\n") w
+	= test queries db w
+# (_,_,db,w) = handle (Just (fromOk q)) db w
+= test queries db w
 
 :: LogMemory =
 	{ mem_ip         :: IPAddress

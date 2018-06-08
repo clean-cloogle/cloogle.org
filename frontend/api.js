@@ -314,7 +314,7 @@ function highlightSyntaxConstruct(elem) {
 		start: [
 			[/(\/\/.*)/, ['comment']],
 			[/(\[)/,     ['punctuation'], 'optional'],
-			[/(\.{3})/,  ['punctuation']],
+			[/(\.{3})/,  ['punctuation punctuation-ellipsis']],
 			[/(\s+)/,    ['whitespace']],
 			[/(\w+)/,    ['keyword']],
 			[/(\S)/,     ['punctuation']]
@@ -322,7 +322,7 @@ function highlightSyntaxConstruct(elem) {
 		optional: [
 			[/(\[)/,     ['punctuation'], 'optional'],
 			[/(\])/,     ['punctuation'], 'pop'],
-			[/(\.{3})/,  ['punctuation']],
+			[/(\.{3})/,  ['punctuation punctuation-ellipsis']],
 			[/(\s+)/,    ['whitespace']],
 			[/(\w+)/,    ['keyword optional']],
 			[/(\S)/,     ['punctuation']]

@@ -117,7 +117,10 @@ where
 	, help         :: !Bool
 	, reload_cache :: !Bool
 	, test_file    :: !Maybe FilePath
+	, test_options :: ![TestOption]
 	}
+
+:: TestOption = NoUnify
 
 instance zero Options
 where
@@ -126,6 +129,7 @@ where
 		, help         = False
 		, reload_cache = False
 		, test_file    = Nothing
+		, test_options = []
 		}
 
 parseOptions :: Options [String] -> MaybeErrorString Options
@@ -134,11 +138,11 @@ parseOptions opt ["-p":p:rest] = case (toInt p, p) of
 	(0, "0") -> Error "Cannot use port 0"
 	(0, p)   -> Error $ "'" <+ p <+ "' is not an integer"
 	(p, _)   -> parseOptions {Options | opt & port=p} rest
-parseOptions opt ["-h":rest] = parseOptions {opt & help=True} rest
 parseOptions opt ["--help":rest] = parseOptions {opt & help=True} rest
 parseOptions opt ["--reload-cache":rest] = parseOptions {opt & reload_cache=True} rest
 parseOptions opt ["--test":file:rest] = parseOptions {opt & test_file=Just file} rest
 parseOptions opt ["--test"] = Error "--test requires an argument"
+parseOptions opt ["--test-no-unify":rest] = parseOptions {opt & test_options=[NoUnify:opt.test_options]} rest
 parseOptions opt [arg:_] = Error $ "Unknown option '" <+ arg <+ "'"
 
 Start w
@@ -168,7 +172,7 @@ Start w
 		# io = io <<< "Could not open test file\n"
 		# (_,w) = fclose io w
 		= w
-	= test f db w
+	= test opts.test_options f db w
 #! (db,w) = if opts.reload_cache (doInBackground reloadCache) id (db,w)
 #! (_,w) = fclose f w
 = serve
@@ -296,8 +300,8 @@ doInBackground f w
 | pid  > 0 = w // Parent: return directly
 | pid == 0 = snd $ exit 0 $ f w // Child: do function
 
-test :: !*File !*CloogleDB !*World -> *World
-test queries db w
+test :: ![TestOption] !*File !*CloogleDB !*World -> *World
+test opts queries db w
 # (e,queries) = fend queries
 | e = w
 # (qstring,queries) = freadline queries
@@ -305,9 +309,16 @@ test queries db w
 # q = parseSingleLineRequest qstring
 | isError q
 	# w = snd $ fclose (stderr <<< "Warning: could not parse '" <<< qstring <<< "'; " <<< fromError q <<< "\n") w
-	= test queries db w
-# (_,_,db,w) = handle (Just (fromOk q)) db w
-= test queries db w
+	= test opts queries db w
+# q = fromOk q
+| excluded opts q
+	= test opts queries db w
+# (_,_,db,w) = handle (Just q) db w
+= test opts queries db w
+where
+	excluded :: ![TestOption] !Request -> Bool
+	excluded []           _ = False
+	excluded [NoUnify:os] r = isJust r.unify || excluded os r
 
 :: LogMemory =
 	{ mem_ip         :: IPAddress

@@ -1,10 +1,18 @@
 implementation module Builtin.Syntax
 
+import StdArray
 import StdList
+import StdString
 
+import Data.Error
 from Data.Func import $
 import Data.Maybe
 import Text
+
+import qualified Regex
+
+compile s = fromOk $ 'Regex'.compile [c \\ c <-: s]
+exact s = compile ("^" +++ s +++ "$")
 
 import Cloogle.API
 import Cloogle.DB
@@ -64,7 +72,7 @@ EXs s c = {example=c, cleanjs_start=Just s}
 
 bs_case =
 	{ syntax_title         = "case expression"
-	, syntax_patterns      = ["case", "of", "case of", "->", "="]
+	, syntax_patterns      = map exact ["case", "of", "case of", "->", "="]
 	, syntax_code          = ["case ... of ..."]
 	, syntax_description   = join " "
 		[ "Pattern match on an expression and do something depending on the alternative of the matching pattern."
@@ -78,7 +86,7 @@ bs_case =
 
 bs_class =
 	{ syntax_title         = "class"
-	, syntax_patterns      = ["class"]
+	, syntax_patterns      = map exact ["class"]
 	, syntax_code          =
 		[ "class ... ... :: ..."
 		, "class ... ... where ..."
@@ -95,7 +103,7 @@ bs_class =
 
 bs_code =
 	{ syntax_title         = "ABC code"
-	, syntax_patterns      = ["code", "inline", "code inline"]
+	, syntax_patterns      = map exact ["code", "inline", "code inline"]
 	, syntax_code          = ["... = code [inline] { ... }"]
 	, syntax_description   =
 		"A code block with raw ABC instructions, which can be used for primitive functions like integer addition, for linking with C, bypassing the type system... welcome down the rabbit hole!\n\n" +
@@ -110,7 +118,7 @@ bs_code =
 
 bs_define_constant =
 	{ syntax_title         = "graph definition"
-	, syntax_patterns      = ["=:"]
+	, syntax_patterns      = map exact ["=:"]
 	, syntax_code          = ["... =: ..."]
 	, syntax_description   =
 		"Defining constants with `=:` at the top level makes sure they are shared through out the program; hence, they are evaluated only once.\n\n" +
@@ -121,7 +129,7 @@ bs_define_constant =
 	}
 bs_define_graph =
 	{ syntax_title         = "constant function definition"
-	, syntax_patterns      = ["=>"]
+	, syntax_patterns      = map exact ["=>"]
 	, syntax_code          = ["... => ..."]
 	, syntax_description   =
 		"Defining constants with `=>` at the top level makes sure they are interpreted as constant functions; hence, they are evaluated every time they are needed.\n\n" +
@@ -133,7 +141,7 @@ bs_define_graph =
 
 bs_dotdot =
 	{ syntax_title         = "dotdot expression"
-	, syntax_patterns      = ["[\\e..]", "[\\e..\e]", "[\\e,\\e..]", "[[\\e,\\e..\\e]", "dotdot", "dot-dot", ".."]
+	, syntax_patterns      = map exact ["\\[\\w\\.\\.\\]", "\\[\\w\\.\\.\\w\\]", "\\[\\w,\\w\\.\\.\\]", "\\[\\w,\\w\\.\\.\\w\\]", "dotdot", "dot-dot", "\\.\\."]
 	, syntax_code          = ["[i..]", "[i..k]", "[i,j..]", "[i,j..k]"]
 	, syntax_description   =
 		"A shorthand for lists of enumerable types.\n\n" +
@@ -149,7 +157,7 @@ bs_dotdot =
 
 bs_exists =
 	{ syntax_title         = "existential quantifier"
-	, syntax_patterns      = ["E", "E.*"]
+	, syntax_patterns      = map exact ["E", "E\\.*"]
 	, syntax_code          = [":: ... = E. ...: ..."]
 	, syntax_description   = "Existential quantifiers make it possible to define (recursive) objects of the same type with different types of content."
 	, syntax_doc_locations = [CLR 7 "5.1.3" "_Toc311798042"]
@@ -158,7 +166,7 @@ bs_exists =
 
 bs_extensible_adt =
 	{ syntax_title         = "extensible algebraic data type"
-	, syntax_patterns      = ["..", "|"]
+	, syntax_patterns      = map exact ["\\.\\.", "\\|"]
 	, syntax_code          = [":: T | ...", ":: T = ... | ... | .."]
 	, syntax_description   = join " "
 		[ "Extensible algebraic data types are ADTs that can be extended in other modules."
@@ -176,7 +184,7 @@ bs_extensible_adt =
 
 bs_forall =
 	{ syntax_title         = "universal quantifier"
-	, syntax_patterns      = ["A", "A.*"]
+	, syntax_patterns      = map exact ["A", "A\\.*"]
 	, syntax_code          = ["A. ...:"]
 	, syntax_description   = "Explicitly marks polymorphic type variables. Clean does not yet allow universal quantifiers on the topmost level."
 	, syntax_doc_locations = [CLR 5 "3.7.4" "_Toc311798013"]
@@ -189,7 +197,7 @@ bs_forall =
 
 bs_foreign =
 	{ syntax_title         = "foreign export"
-	, syntax_patterns      = ["foreign", "export", "ccall", "stdcall"]
+	, syntax_patterns      = map exact ["foreign", "export", "ccall", "stdcall"]
 	, syntax_code          =
 		[ "foreign export [ccall | stdcall] ..."
 		]
@@ -205,7 +213,7 @@ bs_foreign =
 
 bs_funcdep =
 	{ syntax_title         = "functional dependency"
-	, syntax_patterns      = ["~"]
+	, syntax_patterns      = map exact ["~"]
 	, syntax_code          =
 		[ "class ... ~... ..."
 		]
@@ -225,7 +233,7 @@ bs_funcdep =
 
 bs_generic =
 	{ syntax_title         = "generic function definition"
-	, syntax_patterns      = ["generic", "derive", "of", "{|*|}"] // This * matches everything, which is intentional
+	, syntax_patterns      = map exact ["generic", "derive", "of", "\\{\\|.*\\|\\}"]
 	, syntax_code          = ["generic ... ... :: ...", "derive ... ..."]
 	, syntax_description   = "With generics, a function can be defined once and derived for (almost) all possible types, to avoid very similar code snippets."
 	, syntax_doc_locations = [CLR 9 "7.2" "_Toc311798069"]
@@ -240,7 +248,7 @@ bs_generic =
 
 bs_import =
 	{ syntax_title         = "imports"
-	, syntax_patterns      = ["import", "from", "qualified", "as", "=>", "code", "library"]
+	, syntax_patterns      = map exact ["import", "from", "qualified", "as", "=>", "code", "library"]
 	, syntax_code          =
 		[ "import [qualified] ... [as ...]"
 		, "from ... import ..."
@@ -267,7 +275,7 @@ bs_import =
 
 bs_infix =
 	{ syntax_title         = "infix operator"
-	, syntax_patterns      = ["infix", "infixl", "infixr"]
+	, syntax_patterns      = map exact ["infix", "infixl", "infixr"]
 	, syntax_code          = ["infix[l,r] [...]"]
 	, syntax_description   =
 		"Defines a function with arity 2 that can be used in infix position.\n\n" +
@@ -283,7 +291,7 @@ bs_infix =
 
 bs_instance =
 	{ syntax_title         = "instance"
-	, syntax_patterns      = ["instance"]
+	, syntax_patterns      = map exact ["instance"]
 	, syntax_code          = ["instance ... ... where ..."]
 	, syntax_description   = "Defines an instantiation of a {{class}} for a type."
 	, syntax_doc_locations = [CLR 8 "6.1" "_Toc311798056"]
@@ -295,7 +303,7 @@ bs_instance =
 
 bs_lambda =
 	{ syntax_title         = "lambda abstraction"
-	, syntax_patterns      = ["lambda", "\\*", "->", "."]
+	, syntax_patterns      = map exact ["lambda", "=", "->", "\\."]
 	, syntax_code          = ["\\... -> ...", "\\... . ...", "\\... = ..."]
 	, syntax_description   = "An anonymous, inline function."
 	, syntax_doc_locations = [CLR 5 "3.4.1" "_Toc311798000"]
@@ -308,7 +316,7 @@ bs_lambda =
 
 bs_layout_rule =
 	{ syntax_title         = "layout rule"
-	, syntax_patterns      = [";", "{", "}"]
+	, syntax_patterns      = map exact [";", "\\{", "\\}"]
 	, syntax_code          = ["...;", "{ ... }"]
 	, syntax_description   =
 		"Most Clean programs are written using the layout rule, which means that scopes are indicated with indent levels." +
@@ -329,7 +337,7 @@ bs_layout_rule =
 
 bs_let =
 	{ syntax_title         = "let expression"
-	, syntax_patterns      = ["let", "in", "let in"]
+	, syntax_patterns      = map exact ["let", "in", "let in"]
 	, syntax_code          = ["let ... in ..."]
 	, syntax_description   = "An expression that introduces new scope."
 	, syntax_doc_locations = [CLR 5 "3.5.1" "_Toc311798003"]
@@ -340,7 +348,7 @@ bs_let =
 	}
 bs_let_before =
 	{ syntax_title         = "let before"
-	, syntax_patterns      = ["#", "#!"]
+	, syntax_patterns      = map exact ["#", "#!"]
 	, syntax_code          = ["#  ... = ...", "#! ... = ..."]
 	, syntax_description   = "A {{`let`}} expression that can be defined before a guard or function body, which eases the syntax of sequential actions."
 	, syntax_doc_locations = [CLR 5 "3.5.4" "_Toc311798006"]
@@ -351,7 +359,7 @@ bs_let_before =
 
 bs_list_expressions =
 	{ syntax_title         = "list expression"
-	, syntax_patterns      = ["list", "[]", "[:]", ":", "[\\e:\\e]", "['*"]
+	, syntax_patterns      = map exact ["list", "\\[\\]", "\\[:\\]", ":", "\\[\\w:\\w\\]", "\\['.*"]
 	, syntax_code          = ["[]", "[...:...]", "[..., ..., ...]", "['...']"]
 	, syntax_description   =
 		"A list can be composed of individual elements or a head and a tail. Special syntax is available for creating `[{{Char}}]` lists.\n\n" +
@@ -367,7 +375,7 @@ bs_list_expressions =
 
 bs_macro =
 	{ syntax_title         = "macro"
-	, syntax_patterns      = [":==", "macro"]
+	, syntax_patterns      = map exact [":==", "macro"]
 	, syntax_code          = ["... :== ..."]
 	, syntax_description   =
 		"A macro is a compile-time rewrite rule. It can be used for constants, inline subtitutions, renaming functions, conditional compilation, etc.\n\n" +
@@ -382,7 +390,7 @@ bs_macro =
 
 bs_module =
 	{ syntax_title         = "module heading"
-	, syntax_patterns      = ["module", "definition", "implementation", "system", "definition module", "implementation module", "system module"]
+	, syntax_patterns      = map exact ["module", "definition", "implementation", "system", "definition module", "implementation module", "system module"]
 	, syntax_code          = ["[definition,implementation,system] module ..."]
 	, syntax_description   = "The heading of a Clean file. Definition modules describe what things are exported (dcl files), implementation modules how they are implemented (icl files)."
 	, syntax_doc_locations = [CLR 4 "2.2" "_Toc311797983"]
@@ -396,7 +404,7 @@ bs_module =
 
 bs_newtype =
 	{ syntax_title         = "Newtype definition (experimental)"
-	, syntax_patterns      = ["=:", "newtype"]
+	, syntax_patterns      = map exact ["=:", "newtype"]
 	, syntax_code          = [":: ... =: ... ..."]
 	, syntax_description   = "A newtype is a type synonym at run-time but treated as a real type at compile-time.\n"
 	                       + "This allows the creation of separate instances without overhead."
@@ -409,7 +417,7 @@ bs_newtype =
 
 bs_overloaded_type_variable =
 	{ syntax_title         = "Overloaded type variable"
-	, syntax_patterns      = ["^", "a^"]
+	, syntax_patterns      = map exact ["\\^", "\\w\\^"]
 	, syntax_code          = ["... :: ...^"]
 	, syntax_description   = "A pattern match on the type of a dynamic depending on the type of the function."
 	, syntax_doc_locations = [CLR 10 "8.2.5" "_Toc311798087"]
@@ -418,7 +426,7 @@ bs_overloaded_type_variable =
 
 bs_otherwise =
 	{ syntax_title         = "otherwise"
-	, syntax_patterns      = ["otherwise"]
+	, syntax_patterns      = map exact ["otherwise"]
 	, syntax_code          = ["otherwise"]
 	, syntax_description   = "The (optional) last alternative in a guard. It caches all other cases, and makes sure your program does not crash if none of the cases matches."
 	, syntax_doc_locations = [CLR 5 "3.3" "_Toc311797998"]
@@ -430,7 +438,7 @@ bs_otherwise =
 
 bs_pattern_named =
 	{ syntax_title         = "pattern match"
-	, syntax_patterns      = ["=:"]
+	, syntax_patterns      = map exact ["=:"]
 	, syntax_code          = ["...=:(...)"]
 	, syntax_description   = "Give a name to the expression of a pattern to be able to use the whole expression without creating new graphs."
 	, syntax_doc_locations = [CLR 5 "3.2" "_Toc311797997"]
@@ -442,7 +450,7 @@ bs_pattern_named =
 
 bs_pattern_predicate =
 	{ syntax_title         = "pattern predicate"
-	, syntax_patterns      = ["=:"]
+	, syntax_patterns      = map exact ["=:"]
 	, syntax_code          = ["...=:(...)"]
 	, syntax_description   = join " "
 		[ "Check whether an expression matches a certain pattern (undocumented)."
@@ -457,7 +465,7 @@ bs_pattern_predicate =
 
 bs_selection_array =
 	{ syntax_title         = "array selection"
-	, syntax_patterns      = [".[]", ".[\\e]", ".[,*]", ".[\\e,*]"]
+	, syntax_patterns      = map exact ["\\.\\[\\]", "\\.\\[.*\\]", "\\.\\[,.*\\]", "\\.\\[.*,.*\\]"]
 	, syntax_code          = [".[i]", ".[i,j,...]"]
 	, syntax_description   = "Select an element from a (possibly multidimensional) array. The indexes must have the type {{`Int`}}."
 	, syntax_doc_locations = [CLR 6 "4.4.1" "_Toc311798033"]
@@ -468,7 +476,7 @@ bs_selection_array =
 	}
 bs_selection_array_unique =
 	{ syntax_title         = "unique array selection"
-	, syntax_patterns      = ["![]", "![\\e]", "![,*]", "![\\e,*]"]
+	, syntax_patterns      = map exact ["!\\[\\]", "!\\[.*\\]", "!\\[,.*\\]", "!\\[.*,.*\\]"]
 	, syntax_code          = ["![i]", "![i,j,...]"]
 	, syntax_description   = "Select an element from a (possibly multidimensional, possibly unique) array and return both the element and the array. The indexes must have the type {{`Int`}}."
 	, syntax_doc_locations = [CLR 6 "4.4.1" "_Toc311798033"]
@@ -479,7 +487,7 @@ bs_selection_array_unique =
 	}
 bs_selection_record =
 	{ syntax_title         = "record selection"
-	, syntax_patterns      = ["."]
+	, syntax_patterns      = map exact ["\\."]
 	, syntax_code          = ["."]
 	, syntax_description   = "Select a field from a (possibly multilevel) record."
 	, syntax_doc_locations = [CLR 7 "5.2.1" "_Toc311798050"]
@@ -491,7 +499,7 @@ bs_selection_record =
 	}
 bs_selection_record_unique =
 	{ syntax_title         = "unique record selection"
-	, syntax_patterns      = ["!"]
+	, syntax_patterns      = map exact ["!"]
 	, syntax_code          = ["!"]
 	, syntax_description   = "Select a field from a (possibly multilevel, possibly unique) record and return both the field data and the record."
 	, syntax_doc_locations = [CLR 7 "5.2.1" "_Toc311798050"]
@@ -505,7 +513,7 @@ bs_selection_record_unique =
 
 bs_strict =
 	{ syntax_title         = "strictness annotation"
-	, syntax_patterns      = ["strict", "!"]
+	, syntax_patterns      = map exact ["strict", "!"]
 	, syntax_code          = ["!"]
 	, syntax_description   = "Override the lazy evaluation strategy: the argument must be evaluated to head normal form before the function is entered."
 	, syntax_doc_locations = [CLR 5 "3.7.5" "_Toc311798014", CLR 12 "10" "_Toc311798103"]
@@ -514,7 +522,7 @@ bs_strict =
 
 bs_synonym =
 	{ syntax_title         = "synonym type definition"
-	, syntax_patterns      = ["synonym", ":=="]
+	, syntax_patterns      = map exact ["synonym", ":=="]
 	, syntax_code          = [":: ... :== ..."]
 	, syntax_description   = "Defines a new type name for an existing type."
 	, syntax_doc_locations = [CLR 7 "5.3" "_Toc311798052"]
@@ -522,7 +530,7 @@ bs_synonym =
 	}
 bs_synonym_abstract =
 	{ syntax_title         = "abstract synonym type definition"
-	, syntax_patterns      = ["synonym", ":=="]
+	, syntax_patterns      = map exact ["synonym", ":=="]
 	, syntax_code          = [":: ... (:== ...)"]
 	, syntax_description   = "Defines a new type name for an existing type, while the type behaves as an abstract type for the programmer. This allows compiler optimisations on abstract types."
 	, syntax_doc_locations = [CLR 7 "5.4.1" "_Toc311798054"]
@@ -531,7 +539,7 @@ bs_synonym_abstract =
 
 bs_unique =
 	{ syntax_title         = "uniqueness annotation"
-	, syntax_patterns      = ["\\*", ".", "%:", "[*<=*]", ",", "<="]
+	, syntax_patterns      = map exact ["\\*", "\\.", "\\w:", "\\[.*<=.*\\]", ",", "<="]
 	, syntax_code          =
 		[ "*..."
 		, ". ..."
@@ -558,7 +566,7 @@ bs_unique =
 
 bs_update_array =
 	{ syntax_title         = "array update"
-	, syntax_patterns      = ["&", "{*&*[\\e]*=*}"]
+	, syntax_patterns      = map exact ["&", "\\{.*&.*\\[.*].*=.*\\}"]
 	, syntax_code          =
 		[ "{ a & [i]=x, [j]=y, ... }        // Updates a by setting index i to x, j to y, ..."
 		, "# a & [i]=x, [j]=y, ...          // Same as # a = {a & [i]=x, [j]=y, ...}" // See https://clean.cs.ru.nl/Clean_2.3
@@ -570,7 +578,7 @@ bs_update_array =
 	}
 bs_update_record =
 	{ syntax_title         = "record update"
-	, syntax_patterns      = ["&", "{*&*=*}"]
+	, syntax_patterns      = map exact ["&", "\\{.*&.*=.*\\}"]
 	, syntax_code          =
 		[ "{ r & f1=x, f2=y, ... } // Updates r by setting f1 to x, f2 to y, ..."
 		, "# r & f1=x, f2=y, ...   // Same as # r = {r & f1=x, f2=y, ...}" // See https://clean.cs.ru.nl/Clean_2.3
@@ -582,7 +590,7 @@ bs_update_record =
 
 bs_where_class =
 	{ syntax_title         = "where"
-	, syntax_patterns      = ["where"]
+	, syntax_patterns      = map exact ["where"]
 	, syntax_code          = ["where"]
 	, syntax_description   = "Introduces the members of a {{`class`}} definition."
 	, syntax_doc_locations = [CLR 8 "6.1"   "_Toc311798056"]
@@ -590,7 +598,7 @@ bs_where_class =
 	}
 bs_where_instance =
 	{ syntax_title         = "where"
-	, syntax_patterns      = ["where"]
+	, syntax_patterns      = map exact ["where"]
 	, syntax_code          = ["where"]
 	, syntax_description   = "Introduces the implementation of an {{`instance`}}."
 	, syntax_doc_locations = [CLR 8 "6.1"   "_Toc311798056"]
@@ -598,7 +606,7 @@ bs_where_instance =
 	}
 bs_where_local =
 	{ syntax_title         = "where"
-	, syntax_patterns      = ["where"]
+	, syntax_patterns      = map exact ["where"]
 	, syntax_code          = ["where"]
 	, syntax_description   = "Introduces local definitions. For guard-local definitions, see {{`with`}}."
 	, syntax_doc_locations = [CLR 5 "3.5.2" "_Toc311798004"]
@@ -607,7 +615,7 @@ bs_where_local =
 
 bs_with =
 	{ syntax_title         = "with"
-	, syntax_patterns      = ["with"]
+	, syntax_patterns      = map exact ["with"]
 	, syntax_code          = ["with"]
 	, syntax_description   = "Introduces guard-local definitions. For function-local definitions, see {{`where`}}."
 	, syntax_doc_locations = [CLR 5 "3.5.3" "_Toc311798005"]
@@ -616,7 +624,7 @@ bs_with =
 
 bs_zf =
 	{ syntax_title         = "list comprehension"
-	, syntax_patterns      = ["ZF-expression", "ZF", "zf", "*comprehension", "<-", "<|-", "<-:", "\\\\", ",", "&", "|"]
+	, syntax_patterns      = map exact ["ZF-expression", "ZF", "zf", "*comprehension", "<-", "<\\|-", "<-:", "\\\\\\\\", ",", "&", "\\|"]
 	, syntax_code          =
 		[ "[... \\\\ ... <- ...]"
 		, "{... \\\\ ... <- ...}"

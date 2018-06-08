@@ -38,7 +38,8 @@ builtin_syntax =
 	, bs_newtype
 	, bs_overloaded_type_variable
 	, bs_otherwise
-	, bs_pattern
+	, bs_pattern_named
+	, bs_pattern_predicate
 	, bs_selection_array
 	, bs_selection_array_unique
 	, bs_selection_record
@@ -427,17 +428,31 @@ bs_otherwise =
 		]
 	}
 
-bs_pattern =
+bs_pattern_named =
 	{ syntax_title         = "pattern match"
 	, syntax_patterns      = ["=:"]
 	, syntax_code          = ["...=:(...)"]
-	, syntax_description   = "Give a name to the expression of a pattern to be able to use the whole expression without creating new graphs. This can also be used to check if a value (not a function argument) matches a pattern (undocumented and you can not use identifiers). `=:` can not be used in prefix form because it is not an actual operator but a builtin."
+	, syntax_description   = "Give a name to the expression of a pattern to be able to use the whole expression without creating new graphs."
 	, syntax_doc_locations = [CLR 5 "3.2" "_Toc311797997"]
-	, syntax_examples      =
-		[ EXs "macro" "isJustU e=:(Just _) = (True, e) // On an ADT"
-		, EX          ":: Position = {px :: Int, py :: Int}\ngetx p=:{px} = (px, p) // On a record; this has type :: Position -> (Int, Position)"
-		, EX          "isSingleton l = l =: [_] //Match a value with a pattern"
+	, syntax_examples      = map EX
+		[ "isJustU e=:(Just _) = (True, e) // On an ADT"
+		, ":: Position = {px :: Int, py :: Int}\ngetx p=:{px} = (px, p) // On a record; this has type :: Position -> (Int, Position)"
 		]
+	}
+
+bs_pattern_predicate =
+	{ syntax_title         = "pattern predicate"
+	, syntax_patterns      = ["=:"]
+	, syntax_code          = ["...=:(...)"]
+	, syntax_description   = join " "
+		[ "Check whether an expression matches a certain pattern (undocumented)."
+		, "The result has type `Bool`."
+		, "It is not possible to introduce new identifiers this way."
+		, "For instance, one cannot use `if (mbx=:(Just x)) x 0`."
+		, "Also, `=:` can not be used in prefix form because it is not an actual operator but a builtin."
+		]
+	, syntax_doc_locations = []
+	, syntax_examples      = [EX "isSingleton l = l =: [_] // Match a value with a pattern"]
 	}
 
 bs_selection_array =

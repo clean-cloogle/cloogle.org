@@ -600,20 +600,21 @@ bs_with =
 
 bs_zf =
 	{ syntax_title         = "list comprehension"
-	, syntax_patterns      = ["ZF-expression", "ZF", "zf", "comprehension", "<-", "<|-", "<-:", "\\\\", ",", "&", "|"]
+	, syntax_patterns      = ["ZF-expression", "ZF", "zf", "*comprehension", "<-", "<|-", "<-:", "\\\\", ",", "&", "|"]
 	, syntax_code          =
-		["[... \\\\ ... <- ...]"
-		,"{... \\\\ ... <- ...}"]
+		[ "[... \\\\ ... <- ...]"
+		, "{... \\\\ ... <- ...}"
+		]
 	, syntax_description   = "Constructs a list or array composed of elements drawn from other lists or arrays."
-	, syntax_doc_locations = [CLR 6 "4.2.1" "_Toc311798024"]
+	, syntax_doc_locations = [CLR 6 "4.2.1" "_Toc311798024", CLR 6 "4.4.1" "_Toc311798032"]
 	, syntax_examples      = map (EXs "macro")
 		[ "cartesian    = [(x,y) \\\\ x <- [1,2,3], y <- [10,20]] // Cartesian product: (1,10), (1,20), (2,10), (2,20), (3,10), (3,20)"
 		, "zip xs ys    = [(x,y) \\\\ x <- xs & y <- ys]          // Pairwise zip through the lists"
 		, "filter f xs  = [x \\\\ x <- xs | f x]                  // Guard to add conditions"
 		, "catMaybes ms = [x \\\\ Just x <- ms]                   // Pattern matching in the selector"
 		, "triangle     = [(x,y) \\\\ x <- [1,2,3], y <- [1..x]]  // Reusing x in the next generator: (1,1), (2,1), (2,2), (3,1), (3,2), (3,3)"
-		, "arrToList a  = [x \\\\ x <-: a]                        // <-: for arrays"
-		, "listToArr l  = {x \\\\ x <- l}                         // <-: for arrays"
+		, "arrToList a  = [x \\\\ x <-: a]                        // <-: to draw elements from an array"
+		, "listToArr l  = {x \\\\ x <- l}                         // {..} to create an array"
 		, "castList xs  = [|x \\\\ x <|- xs]                      // The two pipe characters make both xs and the result overloaded lists"
 		]
 	}

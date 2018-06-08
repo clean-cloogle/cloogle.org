@@ -544,8 +544,9 @@ bs_update_array =
 	{ syntax_title         = "array update"
 	, syntax_patterns      = ["&", "{*&*[\\e]*=*}"]
 	, syntax_code          =
-		[ "{ a & [i]=x, [j]=y, ... } // Updates a by setting index i to x, j to y, ..."
-		, "# a & [i]=x, [j]=y, ...   // Same as # a = {a & [i]=x, [j]=y, ...}" // See https://clean.cs.ru.nl/Clean_2.3
+		[ "{ a & [i]=x, [j]=y, ... }   // Updates a by setting index i to x, j to y, ..."
+		, "# a & [i]=x, [j]=y, ...     // Same as # a = {a & [i]=x, [j]=y, ...}" // See https://clean.cs.ru.nl/Clean_2.3
+		, "{ a & [i]=i\\i<-[0,2..9] }  // Fancy things can be done if you combine this with a {{ZF}}. E.g. give the first 5 even indices the value of their index"
 		]
 	, syntax_description   = "Updates an array by creating a copy and replacing one or more elements."
 	, syntax_doc_locations = [CLR 6 "4.4.1" "_Toc311798032"]

@@ -9,10 +9,8 @@ from Data.Func import $
 import Data.Maybe
 import Text
 
-import qualified Regex
-
-compile s = fromOk $ 'Regex'.compile [c \\ c <-: s]
-exact s = compile ("^" +++ s +++ "$")
+import Regex
+exact s = regex ("^" +++ s +++ "$")
 
 import Cloogle.API
 import Cloogle.DB

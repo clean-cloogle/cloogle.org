@@ -150,6 +150,7 @@ Contributors:
 
 - [ErinvanderVeen](https://github.com/ErinvanderVeen) (logo and UI design)
 - [KDercksen](https://github.com/KDercksen) (searching on module; help text)
+- [SteffenMichels](https://github.com/SteffenMichels) (ABC documentation)
 
 [cloogle.org]: https://cloogle.org
 [Cloogle]: https://github.com/clean-cloogle/Cloogle

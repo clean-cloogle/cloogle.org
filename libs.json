@@ -78,11 +78,6 @@
 	"Miscellaneous":
 	[
 		{
-			"name": "CleanArchives",
-			"fetch_url": ["Git", "https://github.com/camilstaps/CleanArchives"],
-			"info_url": "https://github.com/camilstaps/CleanArchives"
-		},
-		{
 			"name": "CleanInotify",
 			"fetch_url": ["Git", "https://github.com/camilstaps/CleanInotify"],
 			"info_url": "https://github.com/camilstaps/CleanInotify"
@@ -101,11 +96,6 @@
 			"name": "CleanSerial",
 			"fetch_url": ["Git", "https://gitlab.science.ru.nl/mlubbers/CleanSerial"],
 			"info_url": "https://gitlab.science.ru.nl/mlubbers/CleanSerial"
-		},
-		{
-			"name": "CleanSnappy",
-			"fetch_url": ["Git", "https://github.com/camilstaps/CleanSnappy"],
-			"info_url": "https://github.com/camilstaps/CleanSnappy"
 		},
 		{
 			"name": "CleanTypes",

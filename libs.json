@@ -47,6 +47,32 @@
 	"Official":
 	[
 		{
+			"name": "clean-compiler",
+			"fetch_url": ["SVN", "https://svn.cs.ru.nl/repos/clean-compiler"],
+			"path": "trunk",
+			"info_url": "https://svn.cs.ru.nl/repos/clean-compiler/",
+			"pattern_app": [["PWildcard"]]
+		},
+		{
+			"name": "clean-ide",
+			"fetch_url": ["Git", "https://gitlab.science.ru.nl/clean-and-itasks/clean-ide"],
+			"info_url": "https://gitlab.science.ru.nl/clean-and-itasks/clean-ide/",
+			"pattern_app": [["PWildcard"]],
+			"pattern_exclude": [["PStartsWith","Mac/"],["PStartsWith","MacOSX/"],["PStartsWith","Win/"]]
+		},
+		{
+			"name": "clean-test",
+			"fetch_url": ["Git", "https://gitlab.science.ru.nl/clean-and-itasks/clean-test"],
+			"info_url": "https://gitlab.science.ru.nl/clean-and-itasks/clean-test/",
+			"pattern_app": [["PWildcard"]]
+		},
+		{
+			"name": "clean-test-properties",
+			"fetch_url": ["Git", "https://gitlab.science.ru.nl/clean-and-itasks/clean-test-properties"],
+			"info_url": "https://gitlab.science.ru.nl/clean-and-itasks/clean-test-properties/",
+			"pattern_app": [["PWildcard"]]
+		},
+		{
 			"name": "GraphCopy",
 			"fetch_url": ["CleanDistribution", "GraphCopy"],
 			"info_url": "https://gitlab.science.ru.nl/clean-and-itasks/clean-graph-copy"
@@ -101,21 +127,6 @@
 			"name": "CleanTypes",
 			"fetch_url": ["Git", "https://github.com/clean-cloogle/CleanTypes"],
 			"info_url": "https://github.com/clean-cloogle/CleanTypes"
-		},
-		{
-			"name": "clean-compiler",
-			"fetch_url": ["SVN", "https://svn.cs.ru.nl/repos/clean-compiler"],
-			"path": "trunk",
-			"info_url": "https://svn.cs.ru.nl/repos/clean-compiler/",
-			"pattern_app": [["PWildcard"]]
-		},
-		{
-			"name": "clean-ide",
-			"fetch_url": ["SVN", "https://svn.cs.ru.nl/repos/clean-ide"],
-			"path": "trunk",
-			"info_url": "https://svn.cs.ru.nl/repos/clean-ide/",
-			"pattern_app": [["PWildcard"]],
-			"pattern_exclude": [["PStartsWith","Mac/"],["PStartsWith","MacOSX/"],["PStartsWith","Win/"]]
 		},
 		{
 			"name": "clean-irc",

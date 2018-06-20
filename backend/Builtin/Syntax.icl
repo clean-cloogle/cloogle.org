@@ -170,7 +170,8 @@ bs_extensible_adt =
 		[ "Extensible algebraic data types are ADTs that can be extended in other modules."
 		, "One module can declare the ADT as extendible by adding the `..` constructor."
 		, "Other modules can then extend it."
-		, "It is not possible to derive functions for EADTs."
+		, "However, extensions can not be exported."
+		, "It is also not possible to derive generic functions for EADTs."
 		]
 	, syntax_doc_locations = []
 	, syntax_examples      = map EX

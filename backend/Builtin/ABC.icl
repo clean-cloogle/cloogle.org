@@ -362,6 +362,9 @@ miscellaneous =
 	, i_load_si32
 	, i_load_ui8
 	, i_no_op
+	, i_push_r_arg_t
+	, i_push_t_r_a
+	, i_push_t_r_args
 	]
 where
 	i_ccall =
@@ -478,6 +481,26 @@ where
 			, "}"
 			, "```"
 			]
+		}
+
+	i_push_r_arg_t =
+		{ zero
+		& aie_instruction = "push_r_arg_t"
+		, aie_description = join " "
+			[ "Gets the *n*th element from the type string of a record."
+			, "The type string is on top of the B-stack; *n* below that."
+			]
+		}
+	i_push_t_r_a =
+		{ zero
+		& aie_instruction = "push_t_r_a"
+		, aie_arguments   = [A_OFFSET]
+		, aie_description = "Push the address of the type string of the referenced record to the B-stack."
+		}
+	i_push_t_r_args =
+		{ zero
+		& aie_instruction = "push_t_r_args"
+		, aie_description = "Pops a record from the A-stack, pushes its members in reversed order to both of the stacks, then pushes the address of the type string to the B-stack."
 		}
 
 directives :: [ABCInstructionEntry]
@@ -685,14 +708,11 @@ other_instructions =
 	, "push_node"
 	, "push_node_u"
 	, "push_a_r_args"
-	, "push_t_r_a"
-	, "push_t_r_args"
 	, "push_r_args"
 	, "push_r_args_a"
 	, "push_r_args_b"
 	, "push_r_args_u"
 	, "push_r_arg_D"
-	, "push_r_arg_t"
 	, "push_r_arg_u"
 	, "push_wl_args"
 	, "pushZ"

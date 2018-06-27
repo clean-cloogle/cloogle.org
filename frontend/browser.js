@@ -127,7 +127,7 @@ Element.prototype.browser = function(opts) {
 		},
 		scrollTo: function(element) {
 			if (typeof element == 'undefined') {
-				var to = 0;
+				var to = opts.viewer.documentOffsetTop();
 			} else {
 				var to = element.documentOffsetTop() - window.innerHeight / 4;
 			}

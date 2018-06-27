@@ -83,9 +83,12 @@ function highlightQuery(query) {
 					]
 				}, q.substring(6));
 		};
-	} else if (query.match(/^::/)) {
+	} else if (query.match(/^\s*::/)) {
 		highlighter = function(q) {
-			return '<span class="punctuation">::</span>' + highlightType(q.substring(2));
+			return '<span class="whitespace">' +
+				highlightType(q.substring(0, q.indexOf('::'))) +
+				'</span><span class="punctuation">::</span>' +
+				highlightType(q.substring(q.indexOf('::') + 2));
 		};
 	}
 	return highlighter(query);

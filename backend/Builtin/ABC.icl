@@ -389,9 +389,7 @@ where
 			, "  - [`Rr`] for reals"
 			, "  - `S`    for Clean Strings (`{#Char}`). If used as input type this passes a pointer to the string's length (number of characters). The actual array is at offset 4/8 (32/64 bit). If this is used as output type, the C function has to return a pointer to the string's length, followed by the actual string. A copy of the string will be created in the Clean heap, and this copy will be used by Clean. If the string was allocated in C, for example using malloc, it should be deallocated in C when it no longer used, it is not automatically deallocated by Clean."
 			, "  - `s`    for the characters of a Clean String (handy to use in conjuction with {{`packString`}}, as the string is not null-terminated). The length (number of characters) is at offset -4/-8. (32/64 bit)."
-			, "  - `A`    for A-stack elements, which can be:"
-			, "    * `*World`, which is a boxed integer under the hood"
-			, "    * integer or real arrays (`{#Int}` or `{#Real}`). This passes a pointer to the array. The length (number of integers/reals) is at offset -8/-16 (32/64 bit)."
+			, "  - `A`    for A-stack elements. A pointer to the third block of the node is passed. For arrays, this is a pointer to the elements. The size of the array is one word higher in the block."
 			, "  - [`OF`] for function pointers"
 			, "  - `V`    for `void`, packs the following argument types in a tuple (e.g. `VIR` means `(Int, Real)`)"
 			]

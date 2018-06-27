@@ -118,7 +118,10 @@ window.onload = function() {
 
 	icl.onchange = function() {
 		browser.state.icl = this.checked;
+		browser.state.line = null;
 		browser.triggerChange();
 	};
-	icl.onchange();
+
+	browser.state.icl = icl.checked;
+	browser.triggerChange();
 };

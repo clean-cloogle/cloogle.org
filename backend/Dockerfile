@@ -5,7 +5,7 @@ COPY libs.json /usr/src/cloogle/libs.json
 COPY util/fetch_libs.sh /usr/src/cloogle/fetch_libs.sh
 WORKDIR /usr/src/cloogle
 
-RUN install_clean.sh bundle-complete 2018-05-21 \
+RUN install_clean.sh bundle-complete 2018-06-28 \
 	&& PACKAGES="patch jq" \
 	&& apt-get update -qq\
 	&& apt-get install -qq $PACKAGES --no-install-recommends\

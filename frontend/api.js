@@ -862,7 +862,7 @@ function formsubmit() {
 			var sug = ':: ' + q.replace(/->/g, ' -> ').replace(/  /g, ' ');
 			sug = 'Did you mean to search for ' +
 				'<a class="hidden" href="#' + sug + '"><code>' +
-				highlightClean(sug) + '</code></a>?';
+				highlightQuery(sug) + '</code></a>?';
 			if (q.indexOf(' ') == -1) {
 				sresults.innerHTML += '<p>Searching for the <em>name</em> <code>' +
 					highlightClean(q) + '</code>. ' + sug + '</p>';

@@ -613,7 +613,7 @@ function getResults(str, libs, include_builtins, include_core, include_apps, pag
 				if (extra['type_derivations'].length > 0) {
 					hidden.push([
 							'Derivations',
-							makeInstanceTable(extra['type_derivations'], 'generic');
+							makeInstanceTable(extra['type_derivations'], 'generic'),
 							pluralise(extra['type_derivations'].length, 'derivation')]);
 				}
 

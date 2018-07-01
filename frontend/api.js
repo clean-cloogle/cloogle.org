@@ -858,7 +858,7 @@ function formsubmit() {
 	} else {
 		sresults.innerHTML = '';
 
-		if (q.indexOf('::') == -1 && q.indexOf('->') != -1) {
+		if (q.indexOf('::') == -1 && q.match(/\w.*->.*\w/)) {
 			var sug = ':: ' + q.replace(/->/g, ' -> ').replace(/  /g, ' ');
 			sug = 'Did you mean to search for ' +
 				'<a class="hidden" href="#' + sug + '"><code>' +

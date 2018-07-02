@@ -1,5 +1,6 @@
 <?php
 define('CLEAN_HOME', '/opt/clean');
+header('Content-Type: text/plain');
 
 if (empty($_REQUEST['mod'])) {
 	echo '<p>Select a module on the left.</p>';

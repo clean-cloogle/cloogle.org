@@ -46,7 +46,7 @@ Element.prototype.browser = function(opts) {
 			if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
 				if (opts.viewer != null)
 					opts.viewer.innerHTML = xmlHttp.response;
-				opts.onLoad(state);
+				opts.onLoad(state, xmlHttp.response);
 			}
 		}
 		xmlHttp.open("GET", url, true);

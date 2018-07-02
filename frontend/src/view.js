@@ -93,8 +93,8 @@ window.onload = function() {
 			return url;
 		},
 		viewer: viewer,
-		onLoad: function(state) {
-			viewer.innerHTML = highlightClean(viewer.innerText, highlightCallback);
+		onLoad: function(state, text) {
+			viewer.innerHTML = highlightClean(text, highlightCallback);
 			viewer.scrollLeft = 0;
 			if (state.line != null) {
 				browser.scrollTo(document.getElementById('line-' + state.line));

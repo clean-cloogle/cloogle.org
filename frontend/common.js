@@ -63,17 +63,18 @@ function shortenURL(type, url, onUpdate) {
 }
 
 function highlightCallback(span, cls, str) {
+	var url = window.location.protocol + '//' + window.location.host + '#';
 	if (cls == 'type') {
-		return '<a class="hidden" title="Search type ' + str + '" href="#' +
-			encodeURIComponent('type ' + str) + '">' +
+		return '<a class="hidden" title="Search type ' + str + '" href="' +
+			url+ encodeURIComponent('type ' + str) + '">' +
 			span + '</a>';
 	} else if (cls == 'classname' || cls == 'classname classname-generic') {
-		return '<a class="hidden" title="Search class ' + str + '" href="#' +
-			encodeURIComponent('class ' + str) + '">' +
+		return '<a class="hidden" title="Search class ' + str + '" href="' +
+			url+ encodeURIComponent('class ' + str) + '">' +
 			span + '</a>';
 	} else if (cls == 'generic') {
-		return '<a class="hidden" title="Search generic ' + str + '" href="#' +
-			encodeURIComponent(str) + '">' +
+		return '<a class="hidden" title="Search generic ' + str + '" href="' +
+			url+ encodeURIComponent(str) + '">' +
 			span + '</a>';
 	} else if (cls == 'funcname' ||
 			cls == 'funcname funcname-onlyused' ||
@@ -81,8 +82,8 @@ function highlightCallback(span, cls, str) {
 			cls == 'modulename modulename-onlyused' ||
 			cls == 'constructor' ||
 			cls == 'abc-instruction') {
-		return '<a class="hidden" title="Search for ' + str + '" href="#' +
-			encodeURIComponent(str) + '">' +
+		return '<a class="hidden" title="Search for ' + str + '" href="' +
+			url+ encodeURIComponent(str) + '">' +
 			span + '</a>';
 	} else {
 		return span;

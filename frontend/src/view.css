@@ -4,16 +4,49 @@
 
 #viewer {
 	box-sizing: border-box;
+}
+
+#viewer p {
+	margin: 1em;
+}
+
+table.source-code {
 	font-family: monospace;
-	padding: 1em;
 	-moz-tab-size: 4;
 	-o-tab-size: 4;
 	tab-size: 4;
 	white-space: pre;
 }
 
-#viewer:after {
-	content: '';
-	display: block;
-	height: 10%;
+table.source-code tr:first-child td {
+	padding-top: 1em;
+}
+
+table.source-code tr:last-child td {
+	padding-bottom: 10em;
+}
+
+table.source-code tr td:first-child {
+	background-color: #dbdee3;
+	cursor: pointer;
+	font-size: 90%;
+	padding-left: 1em;
+	padding-right: .6em;
+	text-align: right;
+
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+}
+
+table.source-code tr td:last-child {
+	padding-left: .3em;
+}
+
+.hll {
+	background-color: #eef;
+	outline: 1px solid #dbdee3;
 }

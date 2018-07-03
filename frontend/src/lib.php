@@ -21,8 +21,8 @@ function containsModules($dir) {
 				continue;
 			if ($f->isDir() && containsModules($dir . '/' . $f->getFilename()))
 				return true;
-			else if ($f->isFile() && $f->getExtension() == 'dcl' &&
-					!in_array($f->getBasename('.dcl'), $ignored_files))
+			else if ($f->isFile() && $f->getExtension() == 'icl' &&
+					!in_array($f->getBasename('.icl'), $ignored_files))
 				return true;
 		}
 	} catch (Exception $e) { }
@@ -42,9 +42,9 @@ function getDirsAndModules($dir) {
 				continue;
 			if ($f->isDir() && containsModules($dir . '/' . $f->getFilename()))
 				$ds[] = $f->getFilename();
-			else if ($f->getExtension() == 'dcl' &&
-					!in_array($f->getBasename('.dcl'), $ignored_files))
-				$ms[] = $f->getBasename('.dcl');
+			else if ($f->getExtension() == 'icl' &&
+					!in_array($f->getBasename('.icl'), $ignored_files))
+				$ms[] = $f->getBasename('.icl');
 		}
 
 		natcasesort($ds);

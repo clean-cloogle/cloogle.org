@@ -13,8 +13,12 @@ $fname = CLEAN_HOME . '/lib/' . $mod . '.' . $iclordcl;
 
 if (!is_readable($fname)) {
 	http_response_code(404);
-	echo '<p><code>' . $fname . '</code> does not exist.</p>';
-	echo '<p>If you believe this is an error, please report it <a href="https://github.com/clean-cloogle/cloogle.org/issues/new">on GitHub</a>.';
+	if ($iclordcl == 'dcl' && is_readable(substr_replace($fname, 'icl', strlen($fname)-3))) {
+		echo '<p>There is no definition module. Tick "Show implementation" to see the implementation module.</p>';
+	} else {
+		echo '<p><code>' . $fname . '</code> does not exist.</p>';
+		echo '<p>If you believe this is an error, please report it <a href="https://github.com/clean-cloogle/cloogle.org/issues/new">on GitHub</a>.';
+	}
 	exit();
 }
 

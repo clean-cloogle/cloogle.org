@@ -1,6 +1,13 @@
+body {
+	color: #222;
+	font-family: sans-serif;
+	margin: 0 0 1em;
+}
+
 body.framelike {
 	margin: 0;
 	height: 100vh;
+	overflow: hidden;
 }
 
 body.framelike #logo {
@@ -132,6 +139,10 @@ a.more-info {
 
 #sidebar a, #sidebar h3 {
 	padding-left: .5em;
+}
+
+#sidebar br:last-child, #viewer br:last-child {
+	margin-top: 8em;
 }
 
 #viewer {

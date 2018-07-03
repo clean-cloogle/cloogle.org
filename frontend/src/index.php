@@ -15,6 +15,7 @@
 	<link rel="stylesheet" href="view.css" type="text/css"/>
 </head>
 <body class="framelike">
+	<?php include('../banners.php'); ?>
 	<div id="sidebar">
 		<a href="/"><img id="logo" src="../logo.png" alt="Cloogle logo"/></a>
 		<h3>Library browser</h3>

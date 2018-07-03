@@ -17,5 +17,11 @@
 		"from": "Wed, 2 May 2018 10:30:00 UTC",
 		"until": "Wed, 2 May 2018 13:30:00 UTC",
 		"useragent": "/SEB/"
+	},
+	{
+		"id": "clean.js2018",
+		"text": "We no longer use the unmainted <a href='http://pygments.org' target='_blank'>Pygments</a> library for highlighting and have moved to <a href='https://github.com/clean-cloogle/clean.js' target='_blank'>clean.js</a>. Please <a href='https://github.com/clean-cloogle/clean.js/issues/new' target='_blank'>report</a> any issues you see!",
+		"from": "Tue, 3 Jul 2018 00:00:00 UTC",
+		"until": "Tue, 10 Jul 2018 00:00:00 UTC"
 	}
 ]

@@ -25,7 +25,7 @@
 
 		#sidebar h3 {
 			background: none;
-			font-family: serif;
+			font-family: sans-serif;
 			font-size: 1.17em;
 			font-weight: bold;
 			line-height: 22px;
@@ -43,6 +43,7 @@
 	</style>
 </head>
 <body class="framelike">
+	<?php include('../banners.php'); ?>
 	<div id="sidebar">
 		<a href="/"><img id="logo" src="../logo.png" alt="Cloogle logo"/></a>
 		<h3>Documentation browser</h3>

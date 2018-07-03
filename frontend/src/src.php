@@ -1,18 +1,21 @@
 <?php
-define('CLEANHOME', '/opt/clean');
+define('CLEAN_HOME', '/opt/clean');
 
-if (empty($_REQUEST['mod'])) :
+if (empty($_REQUEST['mod'])) {
+	http_response_code(400);
 	echo '<p>Select a module on the left.</p>';
-else :
+	exit();
+}
 
 $mod = preg_replace('/[^\\w\\/\\. -`]/', '', $_REQUEST['mod']);
-
 $iclordcl = isset($_REQUEST['icl']) ? 'icl' : 'dcl';
-$hl_lines = isset($_REQUEST['line']) ? escapeshellarg($_REQUEST['line']) : '';
+$fname = CLEAN_HOME . '/lib/' . $mod . '.' . $iclordcl;
 
-$fname = CLEANHOME . '/lib/' . $mod . '.' . $iclordcl;
-$efname = escapeshellarg($fname);
+if (!is_readable($fname)) {
+	http_response_code(404);
+	echo '<p><code>' . $fname . '</code> does not exist.</p>';
+	echo '<p>If you believe this is an error, please report it <a href="https://github.com/clean-cloogle/cloogle.org/issues/new">on GitHub</a>.';
+	exit();
+}
 
-system("python3.5 cloogle_pygments.py $efname $hl_lines");
-
-endif;
+echo file_get_contents($fname);

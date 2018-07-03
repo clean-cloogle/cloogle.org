@@ -62,6 +62,34 @@ function shortenURL(type, url, onUpdate) {
 	xmlHttp.send('type=' + type + '&url=' + encodeURIComponent(url));
 }
 
+function highlightCallback(span, cls, str) {
+	var url = window.location.protocol + '//' + window.location.host + '#';
+	if (cls == 'type') {
+		return '<a class="hidden" title="Search type ' + str + '" href="' +
+			url+ encodeURIComponent('type ' + str) + '">' +
+			span + '</a>';
+	} else if (cls == 'classname' || cls == 'classname classname-generic') {
+		return '<a class="hidden" title="Search class ' + str + '" href="' +
+			url+ encodeURIComponent('class ' + str) + '">' +
+			span + '</a>';
+	} else if (cls == 'generic') {
+		return '<a class="hidden" title="Search generic ' + str + '" href="' +
+			url+ encodeURIComponent(str) + '">' +
+			span + '</a>';
+	} else if (cls == 'funcname' ||
+			cls == 'funcname funcname-onlyused' ||
+			cls == 'modulename' ||
+			cls == 'modulename modulename-onlyused' ||
+			cls == 'constructor' ||
+			cls == 'abc-instruction') {
+		return '<a class="hidden" title="Search for ' + str + '" href="' +
+			url+ encodeURIComponent(str) + '">' +
+			span + '</a>';
+	} else {
+		return span;
+	}
+}
+
 function highlightQuery(query) {
 	var highlighter = highlightClean;
 	if (query == 'class' || query == 'type' || query == 'using') {

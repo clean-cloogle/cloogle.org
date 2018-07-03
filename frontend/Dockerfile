@@ -32,20 +32,15 @@ RUN apt-get update -qq && apt-get install -qq subversion ca-certificates git jq\
 	&& apt-get remove -qq subversion ca-certificates git jq\
 	&& apt-get autoremove -qq
 
-# Pygments, for highlighting
-RUN apt-get update -qq \
-	&& apt-get install -qq python3.5 python3-pip \
-	&& pip3 install pygments pygments-lexer-clean
-
 # Build common problems index
-RUN apt-get update -qq && apt-get install -qq ca-certificates git\
+RUN apt-get update -qq && apt-get install -qq python3 ca-certificates git\
 	&& git clone https://github.com/clean-cloogle/common-problems /tmp/common-problems\
 	&& cd /tmp/common-problems\
 	&& ./build_index.py\
 	&& mv common-problems.json /var\
 	&& cd /\
 	&& rm -fr /tmp/common-problems\
-	&& apt-get remove -qq ca-certificates git\
+	&& apt-get remove -qq python3 ca-certificates git\
 	&& apt-get autoremove -qq
 
 COPY frontend/iconv.sh .

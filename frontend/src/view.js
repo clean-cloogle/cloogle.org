@@ -22,41 +22,51 @@ function shareButtonClick() {
 	});
 }
 
+function selectLine(n) {
+	browser.state.line = n;
+
+	if (!isNaN(n)) {
+		var hll = document.getElementsByClassName('hll');
+		for (var i = 0; i < hll.length; i++)
+			hll[i].classList.remove('hll');
+
+		var linespan = document.getElementById('line-' + browser.state.line);
+		if (linespan != null)
+			linespan.classList.add('hll');
+	}
+
+	browser.triggerChange(false);
+}
+
+var tableLineNo = null;
+function tableHighlightCallback(span, cls, str) {
+	var html = '';
+	if (tableLineNo == null) {
+		html = '<tr id="line-1"><td onclick="selectLine(1);">1</td><td>';
+		tableLineNo = 1;
+	}
+	var lines = str.split('\n');
+	for (var i = 0; i < lines.length-1; i++) {
+		tableLineNo++;
+		html += highlightCallback(
+				'<span class="' + cls + '">' + lines[i] + '</span>',
+				cls, lines[i]) +
+			'</td></tr><tr id="line-' + tableLineNo + '"><td onclick="selectLine(' + tableLineNo + ');">'
+				+ tableLineNo + '</td><td>';
+	}
+	html += highlightCallback(
+		'<span class="' + cls + '">' + lines[lines.length-1] + '</span>',
+		cls, lines[lines.length-1]);
+	return html;
+}
+
+var browser = null;
 window.onload = function() {
 	share_button = document.getElementById('share-button');
 	var viewer = document.getElementById('viewer');
 	var icl = document.getElementById('icl');
 
-	var selectLine = function() {
-		var elem = this;
-
-		if (typeof elem != 'number')
-			elem = parseInt(elem.innerText);
-
-		if (isNaN(elem)) {
-			browser.state.line = null;
-			return;
-		}
-
-		browser.state.line = elem;
-
-		var hll = document.getElementsByClassName('hll');
-		for (var i = 0; i < hll.length; i++)
-			hll[i].parentNode.innerHTML = hll[i].innerHTML;
-
-		var linespan = document.getElementById('line-' + browser.state.line);
-		linespan.innerHTML = '<span class="hll">' + linespan.innerHTML + '</span>';
-
-		browser.triggerChange(false);
-	}
-
-	var bindLinenos = function() {
-		var linenos = viewer.getElementsByClassName('special');
-		for (var i = 0; i < linenos.length; i++)
-			linenos[i].onclick = selectLine;
-	}
-
-	var browser = document.getElementsByClassName('browser')[0].browser({
+	browser = document.getElementsByClassName('browser')[0].browser({
 		newPath: function (path) {
 			this.state.mod = path.join('/');
 			this.state.line = null;
@@ -64,6 +74,7 @@ window.onload = function() {
 		},
 		newHash: function (hash) {
 			var hashelems = hash.split(';');
+			var update = this.state.mod != hashelems[0];
 			this.state.mod = hashelems[0];
 			this.state.icl = false;
 			this.state.line = null;
@@ -74,7 +85,11 @@ window.onload = function() {
 					this.state.line = hashelems[i].substring(5);
 			}
 
+			if (this.state.line != null)
+				selectLine(this.state.line);
+
 			browser.openPath(this.state.mod.split('/'));
+			browser.triggerChange(update);
 		},
 		newState: function () {
 			var hash = this.state.mod;
@@ -82,7 +97,8 @@ window.onload = function() {
 				hash += ';icl';
 			if (this.state.line != null)
 				hash += ';line=' + this.state.line;
-			document.location.hash = '#' + hash;
+
+			browser.setHash(hash);
 		},
 		getUrl: function () {
 			var url = 'src.php?mod=' + this.state.mod;
@@ -93,9 +109,14 @@ window.onload = function() {
 			return url;
 		},
 		viewer: viewer,
-		onLoad: function(state) {
+		onLoad: function(state, text) {
+			tableLineNo = null;
+			viewer.innerHTML = '<table class="source-code">' +
+					highlightClean(text, tableHighlightCallback) +
+				'</table>';
 			viewer.scrollLeft = 0;
 			if (state.line != null) {
+				selectLine(state.line);
 				browser.scrollTo(document.getElementById('line-' + state.line));
 			} else {
 				browser.scrollTo();
@@ -107,7 +128,6 @@ window.onload = function() {
 				document.title = modparts.join('.') + ' (' + lib + ') - Cloogle library browser';
 			}
 
-			bindLinenos();
 			restoreShareUI();
 		},
 		state: {

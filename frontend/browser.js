@@ -22,7 +22,8 @@ Element.prototype.browser = function(opts) {
 		newHash:  function (hash) {},
 		newState: function () {},
 		getUrl:   function () { return ''; },
-		onLoad:   function (state) {},
+		onLoad:   function (state, response) {},
+		onError:  function (state, response, code) {},
 		state:    {},
 		viewer:   null
 	});
@@ -43,10 +44,13 @@ Element.prototype.browser = function(opts) {
 
 		var xmlHttp = new XMLHttpRequest();
 		xmlHttp.onreadystatechange = function() { 
-			if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
+			if (xmlHttp.readyState == 4) {
 				if (opts.viewer != null)
 					opts.viewer.innerHTML = xmlHttp.response;
-				opts.onLoad(state);
+				if (xmlHttp.status == 200)
+					opts.onLoad(state, xmlHttp.response);
+				else
+					opts.onError(state, xmlHttp.response, xmlHttp.status);
 			}
 		}
 		xmlHttp.open("GET", url, true);
@@ -86,6 +90,10 @@ Element.prototype.browser = function(opts) {
 		}
 	}
 
+	window.onhashchange = function() {
+		opts.newHash(decodeURIComponent(window.location.hash.substring(1)));
+	};
+
 	return {
 		state: state,
 		triggerChange: triggerChange,
@@ -100,7 +108,7 @@ Element.prototype.browser = function(opts) {
 				for (var k = 0; k < children.length; k++) {
 					if (children[k].dataset.name == path[i]) {
 						if (i < path.length - 1) {
-							toggle(children[k]);
+							toggle(children[k], true);
 							e = children[k].childNodes[1];
 						} else if (!children[k].classList.contains('directory')) {
 							children[k].classList.add('active');
@@ -139,6 +147,9 @@ Element.prototype.browser = function(opts) {
 					window.scrollTo(0, to);
 				}
 			}
+		},
+		setHash: function(hash) {
+			window.location.hash = '#' + hash;
 		}
 	};
 }

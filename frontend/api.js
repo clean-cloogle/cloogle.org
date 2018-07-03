@@ -106,33 +106,6 @@ function toggleAdvanced() {
 	toggleById('advanced');
 }
 
-function highlightCallback(span, cls, str) {
-	if (cls == 'type') {
-		return '<a class="hidden" title="Search type ' + str + '" href="#' +
-			encodeURIComponent('type ' + str) + '">' +
-			span + '</a>';
-	} else if (cls == 'classname' || cls == 'classname classname-generic') {
-		return '<a class="hidden" title="Search class ' + str + '" href="#' +
-			encodeURIComponent('class ' + str) + '">' +
-			span + '</a>';
-	} else if (cls == 'generic') {
-		return '<a class="hidden" title="Search generic ' + str + '" href="#' +
-			encodeURIComponent(str) + '">' +
-			span + '</a>';
-	} else if (cls == 'funcname' ||
-			cls == 'funcname funcname-onlyused' ||
-			cls == 'modulename' ||
-			cls == 'modulename modulename-onlyused' ||
-			cls == 'constructor' ||
-			cls == 'abc-instruction') {
-		return '<a class="hidden" title="Search for ' + str + '" href="#' +
-			encodeURIComponent(str) + '">' +
-			span + '</a>';
-	} else {
-		return span;
-	}
-}
-
 function makeSummary(hidden) {
 	var sumlen = 0;
 	var restore = false;

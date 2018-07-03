@@ -95,10 +95,6 @@ a {
 	font-family: sans-serif;
 }
 
-a.hidden {
-	text-decoration: none;
-}
-
 #searchlinks {
 	display: inline-block;
 	font-size: 90%;

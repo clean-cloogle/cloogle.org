@@ -134,14 +134,13 @@ window.onload = function() {
 			icl: false
 		}
 	});
-	browser.open();
 
+	browser.state.icl = icl.checked;
 	icl.onchange = function() {
 		browser.state.icl = this.checked;
 		browser.state.line = null;
 		browser.triggerChange();
 	};
 
-	browser.state.icl = icl.checked;
-	browser.triggerChange();
+	browser.open();
 };

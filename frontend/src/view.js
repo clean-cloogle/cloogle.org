@@ -49,13 +49,13 @@ function tableHighlightCallback(span, cls, str) {
 	for (var i = 0; i < lines.length-1; i++) {
 		tableLineNo++;
 		html += highlightCallback(
-				'<span class="' + cls + '">' + lines[i] + '</span>',
+				'<span class="' + cls + '">' + escapeHTML(lines[i]) + '</span>',
 				cls, lines[i]) +
 			'</td></tr><tr id="line-' + tableLineNo + '"><td onclick="selectLine(' + tableLineNo + ');">'
 				+ tableLineNo + '</td><td>';
 	}
 	html += highlightCallback(
-		'<span class="' + cls + '">' + lines[lines.length-1] + '</span>',
+		'<span class="' + cls + '">' + escapeHTML(lines[lines.length-1]) + '</span>',
 		cls, lines[lines.length-1]);
 	return html;
 }

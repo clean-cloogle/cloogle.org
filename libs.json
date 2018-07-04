@@ -124,11 +124,6 @@
 			"info_url": "https://gitlab.science.ru.nl/mlubbers/CleanSerial"
 		},
 		{
-			"name": "CleanTypes",
-			"fetch_url": ["Git", "https://github.com/clean-cloogle/CleanTypes"],
-			"info_url": "https://github.com/clean-cloogle/CleanTypes"
-		},
-		{
 			"name": "clean-irc",
 			"fetch_url": ["Git", "https://github.com/clean-cloogle/clean-irc"],
 			"info_url": "https://github.com/clean-cloogle/clean-irc"

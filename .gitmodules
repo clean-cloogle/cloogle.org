@@ -1,6 +1,3 @@
 [submodule "backend/Cloogle"]
 	path = backend/Cloogle
 	url = https://github.com/clean-cloogle/Cloogle
-[submodule "frontend/clean.js"]
-	path = frontend/clean.js
-	url = https://github.com/clean-cloogle/clean.js

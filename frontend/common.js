@@ -145,7 +145,7 @@ for (var i = 0; i < banners.length; i++) {
 	hidelink.setAttribute('title', 'Hide this banner forever');
 	hidelink.onclick = function() {
 		banner.remove();
-		document.cookie = 'hidden_banners=' + hidden + ' ' + id;
+		document.cookie = 'hidden_banners=' + hidden + ' ' + id + ';path=/';
 	}
 	banner.appendChild(hidelink);
 }

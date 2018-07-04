@@ -11,8 +11,7 @@ CLMFLAGS:=-h 250M -nr -nortsopts\
 	-I Cloogle\
 	-I Cloogle/libcloogle\
 	-I Cloogle/CleanPrettyPrint\
-	-I Cloogle/CleanRegex\
-	-I Cloogle/CleanTypes
+	-I Cloogle/CleanRegex
 ifeq "$(shell expr `gcc -dumpversion | cut -f1 -d.` \>= 6)" "1"
 	CLMFLAGS+=-l -no-pie
 endif

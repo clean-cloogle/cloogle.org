@@ -150,6 +150,31 @@ function mergeComments(code, comments) {
 	return code;
 }
 
+Element.prototype.replaceURLs = function() {
+	var childNodes = 'content' in this ? this.content.childNodes : this.childNodes;
+	for (var i = 0; i < childNodes.length; i++) {
+		var node = childNodes[i];
+		if (node.nodeType == Node.TEXT_NODE) {
+			var newValue = node.nodeValue.replace(/(https?:\/\/(?:[^\s.]|\.(?!\s|$))+)/g, '<a href="$1" target="_blank">$1</a>');
+			if (newValue != node.nodeValue) {
+				console.log(newValue != node.nodeValue, newValue, node.nodeValue);
+				var newElement = document.createElement('span');
+				newElement.innerHTML = newValue;
+				if ('content' in this)
+					this.content.replaceChild(newElement, node);
+				else
+					this.replaceChild(newElement, node);
+			}
+		} else {
+			node.replaceURLs();
+		}
+	}
+	if ('content' in this)
+		this.content.childNodes = childNodes;
+	else
+		this.childNodes = childNodes;
+};
+
 String.prototype.addLinks = function() {
 	return this.replace(/{{([^}]+)}}/g, function(s, link) {
 		return '<a class="hidden" title="Search ' + link +
@@ -200,14 +225,14 @@ String.prototype._markup = function() {
 					}
 				}
 			});
-}
+};
 
 String.prototype.markup = function() {
-	return this
-		.replace(/{{`([^`}]+)`}}/g, '`{{$1}}`')
-		._markup()
-		.replace(/(https?:\/\/(?:[^\s.]|\.(?!\s|$))+)/g, '<a href="$1" target="_blank">$1</a>');
-}
+	var template = document.createElement('template');
+	template.innerHTML = this.replace(/{{`([^`}]+)`}}/g, '`{{$1}}`')._markup();
+	template.replaceURLs();
+	return template.innerHTML;
+};
 
 function makeDocFieldsHTML(name, params) {
 	if (params.length == 1)
@@ -311,7 +336,7 @@ function highlightSyntaxConstruct(elem) {
 function makeExampleList(examples) {
 	var html = '<ul class="examples">';
 	for (var i in examples)
-		html += '<li><pre class="example">' + highlightExample(examples[i], highlightCallback) + '</pre></li>';
+		html += '<li><pre class="example">' + highlightExample(examples[i]) + '</pre></li>';
 	html += '</ul>';
 	return html;
 }

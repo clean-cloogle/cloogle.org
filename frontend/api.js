@@ -157,7 +157,6 @@ Element.prototype.replaceURLs = function() {
 		if (node.nodeType == Node.TEXT_NODE) {
 			var newValue = node.nodeValue.replace(/(https?:\/\/(?:[^\s.]|\.(?!\s|$))+)/g, '<a href="$1" target="_blank">$1</a>');
 			if (newValue != node.nodeValue) {
-				console.log(newValue != node.nodeValue, newValue, node.nodeValue);
 				var newElement = document.createElement('span');
 				newElement.innerHTML = newValue;
 				if ('content' in this)

@@ -772,7 +772,18 @@ function getResults(str, libs, include_builtins, include_core, include_apps, pag
 				var p = document.createElement('p');
 				p.innerHTML = 'Return code: ' + responsedata['return'] + ' (' + responsedata['msg'] + ')';
 				elem.appendChild(p);
-				if (responsedata['return'] == 153) {
+				if ([127,129].indexOf(responsedata['return']) >= 0) {
+					var p = document.createElement('p');
+					p.innerHTML = 'If you\'re in trouble, here are some suggestions:' +
+						'<ul>' +
+						'<li>To search for function, type or class names, remove whitespace from your query.</li>' +
+						'<li>If you do not know the name of the function you\'re looking for, consider using unification search (e.g. <code>:: a [a] -> Bool</code>)</li>' +
+						'<li>If you cannot find an error message, it may not be indexed yet. See the index <a href="https://github.com/clean-cloogle/common-problems">on GitHub</a>, where you can also open an issue to have the error message added.</li>' +
+						'<li>Click on "How to use" above for query examples.</li>' +
+						'<li>Open an issue <a href="https://github.com/clean-cloogle/cloogle.org">on GitHub</a>.</li>' +
+						'</ul>'
+					elem.appendChild(p);
+				} else if (responsedata['return'] == 153) {
 					var p = document.createElement('p');
 					p.innerHTML = 'Chances are your request got cached. ' +
 						'Try again in a few seconds to get the cached result. ' +

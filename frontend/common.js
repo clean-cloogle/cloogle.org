@@ -118,6 +118,8 @@ function highlightQuery(query) {
 				'</span><span class="punctuation">::</span>' +
 				highlightType(q.substring(q.indexOf('::') + 2));
 		};
+	} else if (query.match(/\s/) && query.indexOf('::') < 0) {
+		return '<span>' + query + '</span>';
 	}
 	return highlighter(query);
 }

@@ -22,6 +22,7 @@ builtin_syntax =
 	[ bs_case
 	, bs_class
 	, bs_code
+	, bs_comments
 	, bs_context
 	, bs_define_constant
 	, bs_define_graph
@@ -31,7 +32,9 @@ builtin_syntax =
 	, bs_forall
 	, bs_foreign
 	, bs_funcdep
+	, bs_function_definition
 	, bs_generic
+	, bs_hierarchical_modules
 	, bs_import
 	, bs_infix
 	, bs_instance
@@ -54,6 +57,8 @@ builtin_syntax =
 	, bs_strict
 	, bs_synonym
 	, bs_synonym_abstract
+	, bs_type_definition
+	, bs_type_specification
 	, bs_unique
 	, bs_update_array
 	, bs_update_record
@@ -115,8 +120,17 @@ bs_code =
 		]
 	}
 
+bs_comments =
+	{ syntax_title         = "comments"
+	, syntax_patterns      = map exact ["//", "/\\*.*\\*/"]
+	, syntax_code          = ["// ...", "/* ... */"]
+	, syntax_description   = "`//` adds a single-line comment. `/*` and `*/` encapsulate a multi-line comment. Multi-line comments can be nested."
+	, syntax_doc_locations = [CLR 15 "B.2" "_Toc311798132"]
+	, syntax_examples      = []
+	}
+
 bs_context =
-	{ syntax_title         = "Type context"
+	{ syntax_title         = "type context"
 	, syntax_patterns      = map exact ["\\|", "&", ",", "special"]
 	, syntax_code          = [":: ... | ..., ... [special ...=...]", "| ... & ..., ..."]
 	, syntax_description   = join "\n"
@@ -253,6 +267,17 @@ bs_funcdep =
 		]
 	}
 
+bs_function_definition =
+	{ syntax_title         = "function definition"
+	, syntax_patterns      = map exact ["="]
+	, syntax_code          = ["... = ..."]
+	, syntax_description   = "Specifies the implementation of a function."
+	, syntax_doc_locations = [CLR 5 "3" "_Toc311797995"]
+	, syntax_examples      = map EX
+		[ "map :: (a -> b) [a] -> [b]\nmap f []     = []\nmap f [x:xs] = [f x:map f xs]"
+		]
+	}
+
 bs_generic =
 	{ syntax_title         = "generic function definition"
 	, syntax_patterns      = map exact ["generic", "derive", "of", "\\{\\|.*\\|\\}"]
@@ -266,6 +291,15 @@ bs_generic =
 		, EX            "derive gEq []                         // Deriving the gEq generic for type []"
 		, EXs "macro"   "gConsName{|CONS of d|} _ = d.gcd_name // Using type information"
 		]
+	}
+
+bs_hierarchical_modules =
+	{ syntax_title         = "hierarchical module names"
+	, syntax_patterns      = [exact "\\."]
+	, syntax_code          = ["... . ..."]
+	, syntax_description   = "Modules can be structured hierarchically. For instance, module `Control.Monad` can be found in `Control/Monad.[di]cl`."
+	, syntax_doc_locations = []
+	, syntax_examples      = [EX "definition module Control.Monad"]
 	}
 
 bs_import =
@@ -557,6 +591,30 @@ bs_synonym_abstract =
 	, syntax_description   = "Defines a new type name for an existing type, while the type behaves as an abstract type for the programmer. This allows compiler optimisations on abstract types."
 	, syntax_doc_locations = [CLR 7 "5.4.1" "_Toc311798054"]
 	, syntax_examples      = [EX ":: Stack a (:== [a])"]
+	}
+
+bs_type_definition =
+	{ syntax_title         = "type definition"
+	, syntax_patterns      = map exact ["::", "=", "\\|"]
+	, syntax_code          = [":: ..."]
+	, syntax_description   = "Defines a new type. There are too many possibilities to list hear; see the documentation."
+	, syntax_doc_locations = [CLR 7 "5" "_Toc311798038"]
+	, syntax_examples      = map EX
+		[ join "\n\t" [":: Day // An algebraic data type","= Mon","| Tue","| Wed","| Thu","| Fri","| Sat","| Sun"]
+		, ":: Position = // A record type\n\t{ x :: Int\n\t, y :: Int\n\t}"
+		]
+	}
+
+bs_type_specification =
+	{ syntax_title         = "type specification"
+	, syntax_patterns      = map exact ["::"]
+	, syntax_code          = ["... :: ..."]
+	, syntax_description   = "Specifies the type of a function."
+	, syntax_doc_locations = [CLR 5 "3.7" "_Toc311798009"]
+	, syntax_examples      = map EX
+		[ "map :: (a -> b) [a] -> [b] // map has arity 2\nmap f []     = []\nmap f [x:xs] = [f x:map f xs]"
+		, "map :: (a -> b) -> [a] -> [b] // map has arity 1\nmap f = \\xs -> case xs of\n\t[]    -> []\n\t[x:xs] -> [f x:map f xs]"
+		]
 	}
 
 bs_unique =

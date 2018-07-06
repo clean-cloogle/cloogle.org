@@ -22,6 +22,7 @@ builtin_syntax =
 	[ bs_case
 	, bs_class
 	, bs_code
+	, bs_context
 	, bs_define_constant
 	, bs_define_graph
 	, bs_dotdot
@@ -111,6 +112,28 @@ bs_code =
 		[ "add :: !Int !Int -> Int                   // Primitive function\nadd a b = code inline {\n\taddI\n}"
 		, "sleep :: !Int !*World -> *(!Int, !*World) // Linking with C\nsleep n w = code {\n\tccall sleep \"I:I:A\"\n}"
 		, "cast :: !.a -> .b                         // Bypassing the type system\ncast _ = code {\n\tno_op\n}"
+		]
+	}
+
+bs_context =
+	{ syntax_title         = "Type context"
+	, syntax_patterns      = map exact ["\\|", "&", ",", "special"]
+	, syntax_code          = [":: ... | ..., ... [special ...=...]", "| ... & ..., ..."]
+	, syntax_description   = join "\n"
+		[ "A type context indicates what {{class}}es must be instantiated by type variables.\n"
+		, "For function types, the type context starts with `|`."
+		, "Several classes can be given to the same variable with `,`."
+		, "To add multiple restrictions, use `&`.\n"
+		, "In constructors, the type context starts with `&`.\n"
+		, "Uniqueness constraints can be given with `,`. For details, see under {{`,`}}.\n"
+		, "With the `special` keyword, specialised instances for certain type instantiations are exported for efficiency."
+		]
+	, syntax_doc_locations = [CLR 8 "6.2" "_Toc311798057"]
+	, syntax_examples      = map EX
+		[ "add :: a a -> a | + a // a must instantiate +\nadd x y = x + y"
+		, "sum :: [a] -> a | zero, + a // a must instantiate zero and +\nsum []     = zero\nsum [x:xs] = x + sum xs"
+		, "(<+) infixr 5 :: a b -> String | toString a & toString b // a and b must instantiate toString\n(<+) x y = toString x +++ toString y"
+		, "isMember :: a [a] -> Bool special a=Int // specialised instance for integer lists for efficiency"
 		]
 	}
 

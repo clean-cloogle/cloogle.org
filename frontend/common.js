@@ -79,7 +79,6 @@ function highlightCallback(span, cls, str) {
 	} else if (cls == 'funcname' ||
 			cls == 'funcname funcname-onlyused' ||
 			cls == 'modulename' ||
-			cls == 'modulename modulename-onlyused' ||
 			cls == 'constructor' ||
 			cls == 'abc-instruction') {
 		return '<a class="hidden" title="Search for ' + str + '" href="' +

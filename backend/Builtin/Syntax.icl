@@ -50,6 +50,8 @@ builtin_syntax =
 	, bs_overloaded_type_variable
 	, bs_pattern_named
 	, bs_pattern_predicate
+	, bs_qualified_identifier
+	, bs_record_disambiguation
 	, bs_selection_array
 	, bs_selection_array_unique
 	, bs_selection_record
@@ -529,6 +531,31 @@ bs_pattern_predicate =
 	, syntax_examples      = [EX "isSingleton l = l =: [_] // Match a value with a pattern"]
 	}
 
+bs_qualified_identifier =
+	{ syntax_title         = "qualified identifier"
+	, syntax_patterns      = map regex ["^'.+'", "^qualified$"]
+	, syntax_code          = ["'...'. ..."]
+	, syntax_description   = "The identifiers of {{`qualified`}} imports must be prepended with `'...'.`, where `...` is the name of the qualified import."
+	, syntax_doc_locations = []
+	, syntax_examples      = map EX
+		[ "import qualified StdList\nStart = 'StdList'.sum [0..10]"
+		, "import qualified StdList as L\nStart = 'L'.sum [0..10]"
+		]
+	}
+
+bs_record_disambiguation =
+	{ syntax_title         = "record disambiguation"
+	, syntax_patterns      = map exact ["\\|"]
+	, syntax_code          = ["{ ... | ... }"]
+	, syntax_description   = join "\n"
+		[ "Explicitly indicates the type of a record when it cannot be derived from the field names."
+		]
+	, syntax_doc_locations = []
+	, syntax_examples      = map EX
+		[ ":: R1 = {x :: Int, y :: Int}\n:: R2 = {x :: Int, y :: Int}\nStart = {R1 | x=37, y=42}"
+		]
+	}
+
 bs_selection_array =
 	{ syntax_title         = "array selection"
 	, syntax_patterns      = map exact ["\\.\\[\\]", "\\.\\[.*\\]", "\\.\\[,.*\\]", "\\.\\[.*,.*\\]"]
@@ -668,9 +695,10 @@ bs_update_array =
 	}
 bs_update_record =
 	{ syntax_title         = "record update"
-	, syntax_patterns      = map exact ["&", "\\{.*&.*=.*\\}"]
+	, syntax_patterns      = map exact ["&", "\\|", "\\{.*&.*=.*\\}"]
 	, syntax_code          =
 		[ "{ r & f1=x, f2=y, ... } // Updates r by setting f1 to x, f2 to y, ..."
+		, "{ MyRecord | r & f1=x, f2=y, ... } // explicitly stating the type"
 		, "# r & f1=x, f2=y, ...   // Same as # r = {r & f1=x, f2=y, ...}" // See https://clean.cs.ru.nl/Clean_2.3
 		]
 	, syntax_description   = "Updates a record by creating a copy and replacing one or more fields."

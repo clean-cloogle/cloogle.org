@@ -110,10 +110,11 @@ Element.prototype.browser = function(opts) {
 						if (i < path.length - 1) {
 							toggle(children[k], true);
 							e = children[k].childNodes[1];
+							break;
 						} else if (!children[k].classList.contains('directory')) {
 							children[k].classList.add('active');
+							break;
 						}
-						break;
 					}
 				}
 			}

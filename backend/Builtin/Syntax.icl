@@ -33,6 +33,7 @@ builtin_syntax =
 	, bs_foreign
 	, bs_funcdep
 	, bs_function_definition
+	, bs_guard
 	, bs_generic
 	, bs_hierarchical_modules
 	, bs_import
@@ -47,7 +48,6 @@ builtin_syntax =
 	, bs_module
 	, bs_newtype
 	, bs_overloaded_type_variable
-	, bs_otherwise
 	, bs_pattern_named
 	, bs_pattern_predicate
 	, bs_selection_array
@@ -167,7 +167,7 @@ bs_define_graph =
 	, syntax_patterns      = map exact ["=>"]
 	, syntax_code          = ["... => ..."]
 	, syntax_description   =
-		"Defining constants with `=>` at the top level makes sure they are interpreted as constant functions; hence, they are evaluated every time they are needed.\n\n" +
+		"Defining constants with `=>` makes sure they are interpreted as constant functions; hence, they are evaluated every time they are needed.\n\n" +
 		"This is the default understanding of `=` in global scope.\n\n" +
 		"The inverse is {{`=:`}}, which defines an identifier to be a graph."
 	, syntax_doc_locations = [CLR 5 "3.6" "_Toc311798007"]
@@ -271,10 +271,32 @@ bs_function_definition =
 	{ syntax_title         = "function definition"
 	, syntax_patterns      = map exact ["="]
 	, syntax_code          = ["... = ..."]
-	, syntax_description   = "Specifies the implementation of a function."
+	, syntax_description   = join "\n"
+		[ "Specifies the implementation of a function\n."
+		, "Instead of `=`, also {{`=:`}} and {{`=>`}} may be used to separate the pattern from the right-hand side."
+		, "These have different semantics."
+		]
 	, syntax_doc_locations = [CLR 5 "3" "_Toc311797995"]
 	, syntax_examples      = map EX
 		[ "map :: (a -> b) [a] -> [b]\nmap f []     = []\nmap f [x:xs] = [f x:map f xs]"
+		]
+	}
+
+bs_guard =
+	{ syntax_title         = "guard"
+	, syntax_patterns      = map exact ["\\|", "=", "otherwise"]
+	, syntax_code          = ["| ... = ...", "| otherwise = ..."]
+	, syntax_description   = join "\n"
+		[ "Guards let you specify function alternatives with boolean expressions."
+		, "A final `otherwise` guard can be used to ensure the function is total.\n"
+		, "Guards can be nested with indentation."
+		, "However, only the toplevel guards may be partial.\n"
+		, "To separate the guard from the alternative, both {{`=`}} and {{`=>`}} may be used (with different semantics; see {{`=>`}})."
+		, "However, one must be consistent with this throughout the function."
+		]
+	, syntax_doc_locations = [CLR 5 "3.3" "_Toc311797998"]
+	, syntax_examples      = map EX
+		[ "sign :: !Int -> Int\nsign n\n| n  < 0    = -1 // Negative number\n| n == 0    =  0 // Zero\n| otherwise =  1 // Must be positive"
 		]
 	}
 
@@ -478,18 +500,6 @@ bs_overloaded_type_variable =
 	, syntax_description   = "A pattern match on the type of a dynamic depending on the type of the function."
 	, syntax_doc_locations = [CLR 10 "8.2.5" "_Toc311798087"]
 	, syntax_examples      = [EX "unpack :: Dynamic -> Maybe a\nunpack (x :: a^) = Just x // Only values of type a\nunpack _         = Nothing"]
-	}
-
-bs_otherwise =
-	{ syntax_title         = "otherwise"
-	, syntax_patterns      = map exact ["otherwise"]
-	, syntax_code          = ["otherwise"]
-	, syntax_description   = "The (optional) last alternative in a guard. It caches all other cases, and makes sure your program does not crash if none of the cases matches."
-	, syntax_doc_locations = [CLR 5 "3.3" "_Toc311797998"]
-	, syntax_examples      =
-		[ EXs "macrorhs" "| otherwise = ..."
-		, EXs "macro"    "sign :: !Int -> Int\nsign n\n| n  < 0    = -1 // Negative number\n| n == 0    =  0 // Zero\n| otherwise =  1 // Must be positive"
-		]
 	}
 
 bs_pattern_named =

@@ -43,7 +43,6 @@
 	</style>
 </head>
 <body class="framelike">
-	<?php include('../banners.php'); ?>
 	<div id="sidebar">
 		<a href="/"><img id="logo" src="../logo.png" alt="Cloogle logo"/></a>
 		<h3>Documentation browser</h3>

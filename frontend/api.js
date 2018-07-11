@@ -642,14 +642,18 @@ function getResults(str, libs, include_builtins, include_core, include_apps, pag
 							makeInstanceTable(extra['class_instances'], 'type'),
 							pluralise(extra['class_instances'].length, 'instance')]);
 
-				var html = highlightClean(
-						'class ' + extra['class_heading'] +
-						(extra['class_funs'].length > 0 ? ' where' : ''),
-						highlightCallback) + '\n';
-				for (var i in extra['class_funs'])
-					html += highlightClean(
-							'\n    ' + extra['class_funs'][i].replace(/\n/g, '\n    '),
-							highlightCallback, 'macro');
+				var code = 'class ' + extra['class_heading'] +
+						(extra['class_funs'].length > 0 ? '\nwhere\n' : '');
+				for (var i in extra['class_funs']) {
+					if ('class_fun_doc' in extra &&
+							extra['class_fun_doc'].length > i &&
+							extra['class_fun_doc'][i].length == 2)
+						code += '\t' + extra['class_fun_doc'][i][1].replace(/\n/g, '\n\t') + '\n';
+					code += '\t' + extra['class_funs'][i].replace(/\n/g, '\n\t');
+					if (i < extra['class_funs'].length - 1)
+						code += '\n\n';
+				}
+				var html = highlightClean(code, highlightCallback);
 
 				return makeGenericResultHTML(basic, meta, hidden, html);
 

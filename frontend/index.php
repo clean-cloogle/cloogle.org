@@ -7,11 +7,11 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1"/>
 	<meta name="description" content="Cloogle is the unofficial Clean language search engine"/>
 	<meta name="keywords" content="Clean,Clean language,Concurrent Clean,search,functions,search engine,programming language,clean platform,iTasks,cloogle,hoogle"/>
-	<script src="clean.js/clean.js" defer="defer"></script>
+	<script src="clean-highlighter/clean.js" defer="defer"></script>
 	<script src="common.js" defer="defer"></script>
 	<script src="api.js" defer="defer"></script>
 	<link rel="stylesheet" href="common.css" type="text/css"/>
-	<link rel="stylesheet" href="clean.js/clean.css" type="text/css"/>
+	<link rel="stylesheet" href="clean-highlighter/clean.css" type="text/css"/>
 	<link rel="stylesheet" href="frontend.css" type="text/css"/>
 </head>
 <body>

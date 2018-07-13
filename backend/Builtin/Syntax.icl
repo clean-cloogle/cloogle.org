@@ -143,6 +143,8 @@ bs_context =
 		, "In constructors, the type context starts with `&`.\n"
 		, "Uniqueness constraints can be given with `,`. For details, see under {{`,`}}.\n"
 		, "With the `special` keyword, specialised instances for certain type instantiations are exported for efficiency."
+		, "A generic function can only contain a generic context written with a different syntax."
+		, "The generic dependency is written without the kind specification and separated by `,` as seen in the example."
 		]
 	, syntax_doc_locations = [CLR 8 "6.2" "_Toc311798057"]
 	, syntax_examples      = map EX
@@ -150,6 +152,7 @@ bs_context =
 		, "sum :: [a] -> a | zero, + a // a must instantiate zero and +\nsum []     = zero\nsum [x:xs] = x + sum xs"
 		, "(<+) infixr 5 :: a b -> String | toString a & toString b // a and b must instantiate toString\n(<+) x y = toString x +++ toString y"
 		, "isMember :: a [a] -> Bool special a=Int // specialised instance for integer lists for efficiency"
+		, "generic gFun a | gDefault a, gEq a" // Generic dependency
 		]
 	}
 

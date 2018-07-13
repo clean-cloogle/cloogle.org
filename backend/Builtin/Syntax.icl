@@ -152,7 +152,7 @@ bs_context =
 		, "sum :: [a] -> a | zero, + a // a must instantiate zero and +\nsum []     = zero\nsum [x:xs] = x + sum xs"
 		, "(<+) infixr 5 :: a b -> String | toString a & toString b // a and b must instantiate toString\n(<+) x y = toString x +++ toString y"
 		, "isMember :: a [a] -> Bool special a=Int // specialised instance for integer lists for efficiency"
-		, "generic gFun a | gDefault a, gEq a" // Generic dependency
+		, "generic gFun a | gDefault a, gEq a :: a -> Int" // Generic dependency
 		]
 	}
 

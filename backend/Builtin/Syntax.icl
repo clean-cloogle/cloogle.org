@@ -307,16 +307,19 @@ bs_guard =
 
 bs_generic =
 	{ syntax_title         = "generic function definition"
-	, syntax_patterns      = map exact ["generic", "derive", "of", "\\{\\|.*\\|\\}"]
-	, syntax_code          = ["generic ... ... :: ...", "derive ... ..."]
+	, syntax_patterns      = map exact ["generic", "derive", "of", "with", "\\{\\|.*\\|\\}"]
+	, syntax_code          = ["generic ... ... :: ... [| ...]", "derive ... ... [of ... [with ...]]"]
 	, syntax_description   = "With generics, a function can be defined once and derived for (almost) all possible types, to avoid very similar code snippets."
 	, syntax_doc_locations = [CLR 9 "7.2" "_Toc311798069"]
 	, syntax_examples      =
 		[ EX            "generic gEq a :: !a !a -> Bool        // The type of a generic function"
 		, EXs "macro" $ "gEq{|Int|} x y = x == y               // Implementation of a generic\n" +
-		  "gEq{|PAIR|} fx fy (PAIR x1 y1) (PAIR x2 y2) = fx x1 x2 && fy y1 y2" // TODO highlighting
+		  "gEq{|PAIR|} fx fy (PAIR x1 y1) (PAIR x2 y2) = fx x1 x2 && fy y1 y2"
 		, EX            "derive gEq []                         // Deriving the gEq generic for type []"
 		, EXs "macro"   "gConsName{|CONS of d|} _ = d.gcd_name // Using type information"
+		, EX            "gFun{|CONS of {gcd_arity}|}      // Using a specific field of type information, the compiler will only provide this field which makes it a lot faster"
+		, EXs "macro"   $ "generic gFun a :: a -> Int | gDefault a // A generic function with a generic context\n" +
+		  "gFun{|CONS of {gcd_arity}|} with f _ // A derivation that does not use the context and only one field of the generic type descriptor, the compiler can optimize for this."
 		]
 	}
 

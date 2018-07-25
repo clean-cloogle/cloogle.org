@@ -19,7 +19,8 @@ import Builtin.Predef
 
 builtin_syntax :: [SyntaxEntry]
 builtin_syntax =
-	[ bs_case
+	[ bs_basicvalues
+	, bs_case
 	, bs_class
 	, bs_code
 	, bs_comments
@@ -75,6 +76,32 @@ EX :: !String -> SyntaxExample
 EX c = {example=c, cleanjs_start=Nothing}
 EXs :: !String !String -> SyntaxExample
 EXs s c = {example=c, cleanjs_start=Just s}
+
+bs_basicvalues =
+	{ syntax_title         = "basicvalues"
+	, syntax_patterns      = map exact ["'.'", "[+-]?\\d+", "[+-]?0[0-7]+", "[-+]?0x[0-9a-fA-F]+", "'.'", "True", "False", "E"]
+	, syntax_code          = ["0x...", "0...", "True", "False", "'...'", "...E..."]
+	, syntax_description   =
+		"Constant basic values can be of type Int, Char, Real and Bool.\n\n" +
+		"Integers can be either defined in decimal (default), octal (`0` prefix) or hexadecimal (`0x` prefix).\n\n" +
+		"Characters can either be printable characters (except `'`) or an escape sequence.\n\n" +
+		"Reals can be suffixed by a power of ten in the scientific notation.\n\n" +
+		"Boolean values by their only inhabitants {{True}} and {{False}}.\n\n" +
+		"Basic values can also be pattern matched with these notations."
+	, syntax_doc_locations = [CLR 4 "1.1" "_Toc311798017"]
+	, syntax_examples      = map EX
+		[ "(42, -42, +42)          // Tuple with 42, -42 and 42 in decimal"
+		, "(052, -052, +052)       // Tuple with 42, -42 and 42 in octal"
+		, "(0x2a, -0x2a, +0x2A)    // Tuple with 42, -42 and 42 in hexadecimal"
+		, "('a', '\\x2a', '\\052') // Tuple with a normal character, a literal quote and twice the character with ordinal 42"
+		, "['\\n', '\\r', '\\f', '\\b', '\\t', '\\', '\'']\n" +
+		  "                        //All character escapes"
+		, "(True, False)           // All booleans in a tuple"
+		, "(42.0, -42.0, 42E-10, +42.0E+10, -42.0E10)\n" +
+		  "                        //Several reals"
+		]
+	}
+
 
 bs_case =
 	{ syntax_title         = "case expression"
@@ -456,6 +483,7 @@ bs_list_expressions =
 		[ "abc = ['a', 'b', 'c']     // Individual elements"
 		, "abc = ['a':['b':['c':[]]] // Head and tail, ending with the empty list"
 		, "abc = ['abc']             // Special syntax for [Char] lists"
+		, "abc ['abc':rest] = True   // The special syntax can als be used to patternmatch"
 		]
 	}
 

@@ -79,24 +79,23 @@ EXs s c = {example=c, cleanjs_start=Just s}
 
 bs_basicvalues =
 	{ syntax_title         = "basic values"
-	, syntax_patterns      = map exact ["'.'", "[+-]?\\d+", "[+-]?0[0-7]+", "[-+]?0x[0-9a-fA-F]+", "'.'", "True", "False", "E"]
-	, syntax_code          = ["0x...", "0...", "True", "False", "'...'", "...E..."]
+	, syntax_patterns      = map exact ["'.'", "[+-]?\\d+", "[+-]?0[0-7]+", "[-+]?0x[0-9a-fA-F]+", "E"]
+	, syntax_code          = ["0x...", "0...", "'...'", "...E..."]
 	, syntax_description   =
-		"Constant basic values can be of type Int, Char, Real and Bool.\n\n" +
-		"Integers can be either defined in decimal (default), octal (`0` prefix) or hexadecimal (`0x` prefix).\n\n" +
-		"Characters can either be printable characters (except `'`) or an escape sequence.\n\n" +
+		"Constant basic values can be of type {{`Int`}}, {{`Char`}} and {{`Real`}}. See also {{`Bool`}}.\n\n" +
+		"Integers can be specified in decimal (default), octal (`0` prefix) or hexadecimal (`0x` prefix) notation.\n\n" +
+		"Characters can either be printable characters (except `'`) or an escape sequence.\n" +
+		"An escape sequence is a character escape, a hexademical escape (starting with `x`), an octal escape (starting with `0` to `7`) or a decimal escape (starting with `d`).\n\n" +
 		"Reals can be suffixed by a power of ten in the scientific notation.\n\n" +
-		"Boolean values by their only inhabitants {{`True`}} and {{`False`}}.\n\n" +
 		"Basic values can also be pattern matched with these notations."
-	, syntax_doc_locations = [CLR 4 "4.1.1" "_Toc311798017"]
-	, syntax_examples      = map EX
-		[ "(42, -42, +42)          // Tuple with 42, -42 and 42 in decimal"
-		, "(052, -052, +052)       // Tuple with 42, -42 and 42 in octal"
-		, "(0x2a, -0x2a, +0x2A)    // Tuple with 42, -42 and 42 in hexadecimal"
-		, "('a', '\\x2a', '\\052')  // Tuple with a normal character, a literal quote and twice the character with ordinal 42"
-		, "['\\n', '\\r', '\\f', '\\b', '\\t', '\\', '\'']\n" +
+	, syntax_doc_locations = [CLR 6 "4.1.1" "_Toc311798017"]
+	, syntax_examples      = map (EXs "rhs")
+		[ "(42, -42, +42)          // Tuple with 42, -42 and 42 in decimal notation"
+		, "(052, -052, +052)       // Tuple with 42, -42 and 42 in octal notation"
+		, "(0x2a, -0x2a, +0x2A)    // Tuple with 42, -42 and 42 in hexadecimal notation"
+		, "('a', '\\x2a', '\\052')   // Tuple with a normal character and twice the character with ASCII value 42"
+		, "['\\n', '\\r', '\\f', '\\b', '\\t', '\\v', '\\', '\\'', '\\\"']\n" +
 		  "                        // All character escapes"
-		, "(True, False)           // All booleans in a tuple"
 		, "(42.0, -42.0, 42E-10, +42.0E+10, -42.0E10)\n" +
 		  "                        // Several reals"
 		]

@@ -619,7 +619,7 @@ function getResults(str, libs, include_builtins, include_core, include_apps, pag
 					var comments = [''];
 					for (var i in extra['type_field_doc'])
 						comments.push(extra['type_field_doc'][i].length > 1
-								? '//* ' + extra['type_field_doc'][i][1]
+								? '//* ' + extra['type_field_doc'][i][1].replace('\n', ' ')
 								: '');
 					code = mergeComments(code, comments)
 				}
@@ -627,7 +627,7 @@ function getResults(str, libs, include_builtins, include_core, include_apps, pag
 					var comments = [''];
 					for (var i in extra['type_constructor_doc'])
 						comments.push(extra['type_constructor_doc'][i].length > 1
-								? '//* ' + extra['type_constructor_doc'][i][1]
+								? '//* ' + extra['type_constructor_doc'][i][1].replace('\n', ' ')
 								: '');
 					code = mergeComments(code, comments)
 				}
@@ -714,7 +714,7 @@ function getResults(str, libs, include_builtins, include_core, include_apps, pag
 
 			case 'ProblemResult':
 				result = result[1];
-				var solutions = '', examples = [];
+				var solutions = '', examples = '';
 				for (var i in result.problem_solutions)
 					solutions += '<li>' + result.problem_solutions[i].markup() + '</li>';
 				for (var i in result.problem_examples)
@@ -727,7 +727,7 @@ function getResults(str, libs, include_builtins, include_core, include_apps, pag
 						'<div class="result-extra result-extra-space">' +
 							result.problem_description.markup() +
 							'<br class="parbreak"/>Possible solutions:<ul>' + solutions + '</ul>' +
-							'Examples:<ul>' + examples + '</ul>' +
+							(examples != '' ? ('Examples:<ul>' + examples + '</ul>') : '') +
 							'<a href="https://github.com/clean-cloogle/common-problems/blob/master/' + result.problem_key + '.md" target="_blank">Edit this explanation on GitHub.</a>' +
 							'<span class="problem-license">This text is licensed under <a href="https://github.com/clean-cloogle/common-problems/blob/master/LICENSE" target="_blank">CC-BY-SA-4.0</a>.</span>' +
 						'</div>' +

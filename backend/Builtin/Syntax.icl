@@ -19,7 +19,8 @@ import Builtin.Predef
 
 builtin_syntax :: [SyntaxEntry]
 builtin_syntax =
-	[ bs_case
+	[ bs_basicvalues
+	, bs_case
 	, bs_class
 	, bs_code
 	, bs_comments
@@ -75,6 +76,31 @@ EX :: !String -> SyntaxExample
 EX c = {example=c, cleanjs_start=Nothing}
 EXs :: !String !String -> SyntaxExample
 EXs s c = {example=c, cleanjs_start=Just s}
+
+bs_basicvalues =
+	{ syntax_title         = "basic values"
+	, syntax_patterns      = map exact ["'.'", "[+-]?\\d+", "[+-]?0[0-7]+", "[-+]?0x[0-9a-fA-F]+", "E"]
+	, syntax_code          = ["0x...", "0...", "'...'", "...E..."]
+	, syntax_description   =
+		"Constant basic values can be of type {{`Int`}}, {{`Char`}} and {{`Real`}}. See also {{`Bool`}}.\n\n" +
+		"Integers can be specified in decimal (default), octal (`0` prefix) or hexadecimal (`0x` prefix) notation.\n\n" +
+		"Characters can either be printable characters (except `'`) or an escape sequence.\n" +
+		"An escape sequence is a character escape, a hexademical escape (starting with `x`), an octal escape (starting with `0` to `7`) or a decimal escape (starting with `d`).\n\n" +
+		"Reals can be suffixed by a power of ten in the scientific notation.\n\n" +
+		"Basic values can also be pattern matched with these notations."
+	, syntax_doc_locations = [CLR 6 "4.1.1" "_Toc311798017"]
+	, syntax_examples      = map (EXs "rhs")
+		[ "(42, -42, +42)          // Tuple with 42, -42 and 42 in decimal notation"
+		, "(052, -052, +052)       // Tuple with 42, -42 and 42 in octal notation"
+		, "(0x2a, -0x2a, +0x2A)    // Tuple with 42, -42 and 42 in hexadecimal notation"
+		, "('a', '\\x2a', '\\052')   // Tuple with a normal character and twice the character with ASCII value 42"
+		, "['\\n', '\\r', '\\f', '\\b', '\\t', '\\v', '\\', '\\'', '\\\"']\n" +
+		  "                        // All character escapes"
+		, "(42.0, -42.0, 42E-10, +42.0E+10, -42.0E10)\n" +
+		  "                        // Several reals"
+		]
+	}
+
 
 bs_case =
 	{ syntax_title         = "case expression"
@@ -142,7 +168,9 @@ bs_context =
 		, "To add multiple restrictions, use `&`.\n"
 		, "In constructors, the type context starts with `&`.\n"
 		, "Uniqueness constraints can be given with `,`. For details, see under {{`,`}}.\n"
-		, "With the `special` keyword, specialised instances for certain type instantiations are exported for efficiency."
+		, "With the `special` keyword, specialised instances for certain type instantiations are exported for efficiency.\n"
+		, "The context of a generic function can only contain other generic functions."
+		, "The generic context is written without kinds and separated by `,` as seen in the example."
 		]
 	, syntax_doc_locations = [CLR 8 "6.2" "_Toc311798057"]
 	, syntax_examples      = map EX
@@ -150,6 +178,7 @@ bs_context =
 		, "sum :: [a] -> a | zero, + a // a must instantiate zero and +\nsum []     = zero\nsum [x:xs] = x + sum xs"
 		, "(<+) infixr 5 :: a b -> String | toString a & toString b // a and b must instantiate toString\n(<+) x y = toString x +++ toString y"
 		, "isMember :: a [a] -> Bool special a=Int // specialised instance for integer lists for efficiency"
+		, "generic gFun a | gDefault a, gEq a :: a -> Int // generic context"
 		]
 	}
 
@@ -304,16 +333,20 @@ bs_guard =
 
 bs_generic =
 	{ syntax_title         = "generic function definition"
-	, syntax_patterns      = map exact ["generic", "derive", "of", "\\{\\|.*\\|\\}"]
-	, syntax_code          = ["generic ... ... :: ...", "derive ... ..."]
+	, syntax_patterns      = map exact ["generic", "derive", "of", "with", "\\{\\|.*\\|\\}"]
+	, syntax_code          = ["generic ... ... [| ...] :: ... ", "derive ... ... [of ...] [with ...]"]
 	, syntax_description   = "With generics, a function can be defined once and derived for (almost) all possible types, to avoid very similar code snippets."
 	, syntax_doc_locations = [CLR 9 "7.2" "_Toc311798069"]
-	, syntax_examples      =
-		[ EX            "generic gEq a :: !a !a -> Bool        // The type of a generic function"
-		, EXs "macro" $ "gEq{|Int|} x y = x == y               // Implementation of a generic\n" +
-		  "gEq{|PAIR|} fx fy (PAIR x1 y1) (PAIR x2 y2) = fx x1 x2 && fy y1 y2" // TODO highlighting
-		, EX            "derive gEq []                         // Deriving the gEq generic for type []"
-		, EXs "macro"   "gConsName{|CONS of d|} _ = d.gcd_name // Using type information"
+	, syntax_examples      = map EX
+		[ "generic gEq a :: !a !a -> Bool        // The type of a generic function"
+		, "gEq{|Int|} x y = x == y               // Implementation of a generic\n" +
+		  "gEq{|PAIR|} fx fy (PAIR x1 y1) (PAIR x2 y2) = fx x1 x2 && fy y1 y2"
+		, "derive gEq []                         // Deriving the gEq generic for type []"
+		, "gConsName{|CONS of d|} _ = d.gcd_name // Using type information"
+		, "gFun{|CONS of {gcd_arity}|}           // Using a specific field of type information, the compiler will only provide this field which makes it a lot faster"
+		, "generic gFun a :: a -> Int | gDefault a  // A generic function with a generic context. The context will become an argument.\n" +
+		  "derive gFun CONS of {gcd_arity} with f _ // A derivation that does not use all arguments. The ompiler can optimize even more\n" +
+		  "gFun{|CONS of {gcd_arity}|} f _ =        // A derivation that does not use the context and only one field of the generic type descriptor, the compiler can optimize for this."
 		]
 	}
 
@@ -450,6 +483,7 @@ bs_list_expressions =
 		[ "abc = ['a', 'b', 'c']     // Individual elements"
 		, "abc = ['a':['b':['c':[]]] // Head and tail, ending with the empty list"
 		, "abc = ['abc']             // Special syntax for [Char] lists"
+		, "abc ['abc':rest] = True   // The special syntax can als be used to patternmatch"
 		]
 	}
 

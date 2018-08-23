@@ -49,7 +49,7 @@
 		{
 			"name": "clean-compiler",
 			"fetch_url": ["SVN", "https://svn.cs.ru.nl/repos/clean-compiler"],
-			"path": "trunk",
+			"path": "branches/itask",
 			"info_url": "https://svn.cs.ru.nl/repos/clean-compiler/",
 			"pattern_app": [["PWildcard"]]
 		},
@@ -107,11 +107,6 @@
 			"name": "CleanInotify",
 			"fetch_url": ["Git", "https://github.com/camilstaps/CleanInotify"],
 			"info_url": "https://github.com/camilstaps/CleanInotify"
-		},
-		{
-			"name": "CleanPrettyPrint",
-			"fetch_url": ["Git", "https://github.com/clean-cloogle/CleanPrettyPrint"],
-			"info_url": "https://github.com/clean-cloogle/CleanPrettyPrint"
 		},
 		{
 			"name": "CleanRegex",

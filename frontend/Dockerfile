@@ -46,9 +46,9 @@ RUN apt-get update -qq && apt-get install -qq python3 ca-certificates git\
 	&& apt-get remove -qq python3 ca-certificates git\
 	&& apt-get autoremove -qq
 
-RUN apt-get update -qq && apt-get install -qq ca-certificates\
-	&& mkdir /var/www/clean.js\
-	&& curl -L $(curl -s https://api.github.com/repos/clean-cloogle/clean.js/releases/latest | grep browser_ | cut -d'"' -f4)\
-		| tar xzv --strip-components=1 --directory=/var/www/clean.js\
-	&& apt-get remove -qq ca-certificates\
+RUN apt-get update -qq && apt-get install -qq ca-certificates jq\
+	&& mkdir /var/www/clean-highlighter\
+	&& curl $(curl https://registry.npmjs.org/clean-highlighter/ | jq -r '.versions[."dist-tags".latest].dist.tarball')\
+		| tar xzv --strip-components=1 --directory=/var/www/clean-highlighter\
+	&& apt-get remove -qq ca-certificates jq\
 	&& apt-get autoremove -qq

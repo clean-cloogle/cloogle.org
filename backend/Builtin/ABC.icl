@@ -190,6 +190,7 @@ stack_operations =
 	, i_pop_b
 	, i_push_a
 	, i_push_b
+	, i_push_a_b
 	]
 where
 	push :: !String !ABCArgument -> ABCInstructionEntry
@@ -302,6 +303,12 @@ where
 		& aie_instruction = "push_b"
 		, aie_arguments   = [B_OFFSET]
 		, aie_description = "Pushes the referenced B-stack element on the B-stack."
+		}
+	i_push_a_b =
+		{ zero
+		& aie_instruction = "push_a_b"
+		, aie_arguments   = [A_OFFSET, B_OFFSET]
+		, aie_description = "Pushes the A-stack element as an integer (i.e., a pointer to the heap) on the B-stack."
 		}
 
 branches :: [ABCInstructionEntry]
@@ -695,7 +702,6 @@ other_instructions =
 	, "pushL"
 	, "pushLc"
 	, "pushzs"
-	, "push_a_b"
 	, "push_arg"
 	, "push_arg_b"
 	, "push_args"

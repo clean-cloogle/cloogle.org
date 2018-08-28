@@ -23,6 +23,9 @@ import System.Options
 from Text import class Text(join,startsWith), instance Text String
 import Text.GenJSON
 
+import Regex.Match
+import Regex.Parse
+
 import Cloogle.DB
 from Cloogle.DB.Factory import :: TemporaryDB, newTemporaryDB, finaliseDB,
 	findModules, indexModule, constructor_functions, record_functions,
@@ -33,8 +36,10 @@ import Builtin.Predef
 import Builtin.Syntax
 
 :: Options =
-	{ root      :: !String
-	, libs_file :: !String
+	{ root             :: !String
+	, libs_file        :: !String
+	, module_filter    :: !Maybe Regex
+	, include_builtins :: !Bool
 	}
 
 derive JSONDecode IndexItem, SourceURL, PathPattern
@@ -42,8 +47,10 @@ derive JSONDecode IndexItem, SourceURL, PathPattern
 instance zero Options
 where
 	zero =
-		{ root      = "/opt/clean/lib/"
-		, libs_file = "libs.json"
+		{ root             = "/opt/clean/lib/"
+		, libs_file        = "libs.json"
+		, module_filter    = Nothing
+		, include_builtins = True
 		}
 
 optionDescription :: Option Options
@@ -58,16 +65,26 @@ optionDescription = WithHelp True $ Options
 		(\file opts -> Ok {opts & libs_file=file})
 		"FILE"
 		"Use FILE for a list of libraries to index (default: libs.json)"
+	, Option
+		"--module-filter"
+		(\filter opts -> case compile filter of
+			Error e -> Error ["Regex parsing failed: " +++ e]
+			Ok rgx  -> Ok {opts & module_filter=Just rgx})
+		"REGEX"
+		"Only index modules matching the regular expression REGEX"
+	, Flag
+		"--exclude-builtins"
+		(\opts -> Ok {opts & include_builtins=False})
+		"Exclude builtins from the index"
 	]
 
 Start :: *World -> *World
 Start w
-# (f, w) = stdio w
 # ([prog:args], w) = getCommandLine w
 # opts = parseOptions optionDescription args zero
 | isError opts
-	# f = f <<< join "\n" (fromError opts) <<< "\n"
-	# (_,w) = fclose f w
+	# err = stderr <<< join "\n" (fromError opts) <<< "\n"
+	# (_,w) = fclose err w
 	= w
 # opts = fromOk opts
 # (libsf, w) = readFile opts.libs_file w
@@ -78,17 +95,20 @@ Start w
 | isError libsf || isNothing libs
 	# err = stderr <<< "Could not read " <<< opts.libs_file <<< "\n"
 	# (_,w) = fclose err w
-	# (_,w) = fclose f w
 	= w
 # libs       = fromJust libs
 # (mods, w)  = mapSt (flip (findModules opts.root) "") libs w
 # mods       = flatten mods
+# mods       = case opts.module_filter of
+	Just ftr -> filter (\m -> not $ isEmpty $ match ftr $ fromString $ getName m.me_loc) mods
+	Nothing  -> mods
 #! (db, w)   = loop opts.root mods newTemporaryDB w
 #! (ok,w)    = fclose (stderr <<< "Linking database entries; this may take up to 10 minutes...\n") w
 | not ok     = abort "Couldn't close stderr\n"
-#! db        = finaliseDB builtins db
+#! db        = finaliseDB (if opts.include_builtins builtins []) db
 #! (db,err)  = printStats db stderr
 #! (ok1,w)   = fclose err w
+#! (f, w)    = stdio w
 #! (db,f)    = saveDB db f
 #! (ok2,w)   = fclose f w
 #! (_,dbg,w) = fopen "typetree.dot" FWriteText w

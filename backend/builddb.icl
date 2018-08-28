@@ -9,6 +9,7 @@ import StdMisc
 import StdString
 import StdTuple
 
+import Clean.Types
 import Control.Monad => qualified join
 import Data.Either
 import Data.Error
@@ -18,10 +19,10 @@ import Data.List
 import Data.Maybe
 import System.CommandLine
 import System.File
+import System.Options
 from Text import class Text(join,startsWith), instance Text String
 import Text.GenJSON
 
-import Clean.Types
 import Cloogle.DB
 from Cloogle.DB.Factory import :: TemporaryDB, newTemporaryDB, finaliseDB,
 	findModules, indexModule, constructor_functions, record_functions,
@@ -31,65 +32,68 @@ import Builtin.ABC
 import Builtin.Predef
 import Builtin.Syntax
 
-:: CLI =
-	{ help      :: !Bool
-	, root      :: !String
+:: Options =
+	{ root      :: !String
 	, libs_file :: !String
 	}
 
 derive JSONDecode IndexItem, SourceURL, PathPattern
 
-instance zero CLI
+instance zero Options
 where
 	zero =
-		{ help      = False
-		, root      = "/opt/clean/lib/"
+		{ root      = "/opt/clean/lib/"
 		, libs_file = "libs.json"
 		}
 
-
-USAGE :== join "\n"
-	[ "Cloogle builddb\n"
-	, "Usage: ./builddb [opts] > types.json\n"
-	, "Options:"
-	, "  --help    Show this help"
-	, "  -r PATH   Change the library root to PATH (default: /opt/clean/lib)"
-	, "  -l PATH   Use PATH for a list of libraries to index (default: libs.json)"
-	, ""]
+optionDescription :: Option Options
+optionDescription = WithHelp True $ Options
+	[ Shorthand "-r" "--root" $ Option
+		"--root"
+		(\dir opts -> Ok {opts & root=dir})
+		"PATH"
+		"Use PATH as the root directory for libraries (default: /opt/clean/lib)"
+	, Shorthand "-l" "--libraries" $ Option
+		"--libraries"
+		(\file opts -> Ok {opts & libs_file=file})
+		"FILE"
+		"Use FILE for a list of libraries to index (default: libs.json)"
+	]
 
 Start :: *World -> *World
 Start w
-# (args, w) = getCommandLine w
 # (f, w) = stdio w
-# (ok, w) = case parseCLI (tl args) of
-	(Left e) = fclose (f <<< e) w
-	(Right cli)
-	| cli.help    = fclose (f <<< USAGE) w
-	# (libsf, w)  = readFile cli.libs_file w
-	# libsjson    = fromString $ fromOk libsf
-	# libs        = case libsjson of
-		JSONObject groups -> sequence $ [fromJSON i \\ (_,JSONArray g) <- groups, i <- g]
-		_                 -> Nothing
-	| isError libsf || isNothing libs
-		# err = stderr <<< "Could not read " <<< cli.libs_file <<< "\n"
-		# (_,w) = fclose err w
-		= fclose f w
-	# libs        = fromJust libs
-	# (mods, w)   = mapSt (flip (findModules cli.root) "") libs w
-	# mods        = flatten mods
-	#! (db, w)    = loop cli.root mods newTemporaryDB w
-	#! (ok,w)     = fclose (stderr <<< "Linking database entries; this may take up to 10 minutes...\n") w
-	| not ok      = abort "Couldn't close stderr\n"
-	#! db         = finaliseDB builtins db
-	#! (db,err)   = printStats db stderr
-	#! (ok1,w)    = fclose err w
-	#! (db,f)     = saveDB db f
-	#! (ok2,w)    = fclose f w
-	#! (_,dbg,w)  = fopen "typetree.dot" FWriteText w
-	#! (db,dbg)   = writeTypeTree db dbg
-	#! (_,w)      = fclose dbg w
-	= (ok1 && ok2,w)
-| not ok = abort "Couldn't close stdio\n"
+# ([prog:args], w) = getCommandLine w
+# opts = parseOptions optionDescription args zero
+| isError opts
+	# f = f <<< join "\n" (fromError opts) <<< "\n"
+	# (_,w) = fclose f w
+	= w
+# opts = fromOk opts
+# (libsf, w) = readFile opts.libs_file w
+# libsjson   = fromString $ fromOk libsf
+# libs       = case libsjson of
+	JSONObject groups -> sequence $ [fromJSON i \\ (_,JSONArray g) <- groups, i <- g]
+	_                 -> Nothing
+| isError libsf || isNothing libs
+	# err = stderr <<< "Could not read " <<< opts.libs_file <<< "\n"
+	# (_,w) = fclose err w
+	# (_,w) = fclose f w
+	= w
+# libs       = fromJust libs
+# (mods, w)  = mapSt (flip (findModules opts.root) "") libs w
+# mods       = flatten mods
+#! (db, w)   = loop opts.root mods newTemporaryDB w
+#! (ok,w)    = fclose (stderr <<< "Linking database entries; this may take up to 10 minutes...\n") w
+| not ok     = abort "Couldn't close stderr\n"
+#! db        = finaliseDB builtins db
+#! (db,err)  = printStats db stderr
+#! (ok1,w)   = fclose err w
+#! (db,f)    = saveDB db f
+#! (ok2,w)   = fclose f w
+#! (_,dbg,w) = fopen "typetree.dot" FWriteText w
+#! (db,dbg)  = writeTypeTree db dbg
+#! (_,w)     = fclose dbg w
 = w
 where
 	loop :: String [ModuleEntry] !TemporaryDB !*World -> *(!TemporaryDB, !*World)
@@ -111,16 +115,6 @@ where
 		map FunctionEntry (concatMap record_functions builtin_types) ++
 		map SyntaxEntry builtin_syntax ++
 		map ABCInstructionEntry builtin_abc_instructions
-
-	parseCLI :: [String] -> Either String CLI
-	parseCLI [] = Right zero
-	parseCLI [x:a] = case (x,a) of
-		("--help", xs) = (\c->{c & help=True}) <$> parseCLI xs
-		("-r", []) = Left "'-r' requires an argument"
-		("-r", [x:xs]) = (\c->{c & root=x}) <$> parseCLI xs
-		("-l", []) = Left "'-l' requires an argument"
-		("-l", [x:xs]) = (\c->{c & libs_file=x}) <$> parseCLI xs
-		(x, _) = Left $ "Unknown option '" +++ x +++ "'"
 
 	printStats :: !*CloogleDB !*File -> *(*CloogleDB, *File)
 	printStats db f

@@ -13,8 +13,12 @@ import StdTuple
 
 from TCPIP import :: IPAddress, :: Port, instance toString IPAddress
 
+import Clean.Types
+import Clean.Types.Parse
+import Clean.Types.Unify
+import Clean.Types.Util
 import Control.Applicative
-import Control.Monad
+import Control.Monad => qualified join
 import Data.Error
 import qualified Data.Foldable as Foldable
 from Data.Foldable import class Foldable
@@ -25,14 +29,10 @@ import Data.Maybe
 import Data.Tuple
 import System._Posix
 import System.CommandLine
+import System.Options
 import System.Time
-from Text import class Text(concat,toLowerCase), instance Text String, <+
+from Text import class Text(concat,join,toLowerCase), instance Text String, <+
 import Text.GenJSON
-
-import Clean.Types
-import Clean.Types.Parse
-import Clean.Types.Unify
-import Clean.Types.Util
 
 import Cloogle.API
 import Cloogle.DB
@@ -114,7 +114,6 @@ where
 
 :: Options =
 	{ port         :: !Int
-	, help         :: !Bool
 	, reload_cache :: !Bool
 	, test_file    :: !Maybe FilePath
 	, test_options :: ![TestOption]
@@ -126,35 +125,45 @@ instance zero Options
 where
 	zero =
 		{ port         = 31215
-		, help         = False
 		, reload_cache = False
 		, test_file    = Nothing
 		, test_options = []
 		}
 
-parseOptions :: Options [String] -> MaybeErrorString Options
-parseOptions opt [] = Ok opt
-parseOptions opt ["-p":p:rest] = case (toInt p, p) of
-	(0, "0") -> Error "Cannot use port 0"
-	(0, p)   -> Error $ "'" <+ p <+ "' is not an integer"
-	(p, _)   -> parseOptions {Options | opt & port=p} rest
-parseOptions opt ["--help":rest] = parseOptions {opt & help=True} rest
-parseOptions opt ["--reload-cache":rest] = parseOptions {opt & reload_cache=True} rest
-parseOptions opt ["--test":file:rest] = parseOptions {opt & test_file=Just file} rest
-parseOptions opt ["--test"] = Error "--test requires an argument"
-parseOptions opt ["--test-no-unify":rest] = parseOptions {opt & test_options=[NoUnify:opt.test_options]} rest
-parseOptions opt [arg:_] = Error $ "Unknown option '" <+ arg <+ "'"
+optionDescription :: Option Options
+optionDescription = WithHelp True $ Options
+	[ Shorthand "-p" "--port" $ Option
+		"--port"
+		(\port opts -> case (toInt port, port) of
+			(0, "0") -> Error ["Cannot use port 0"]
+			(0, p)   -> Error ["'" <+ p <+ "' is not an integer"]
+			(p, _)   -> Ok {Options | opts & port=p})
+		"PORT"
+		"Listen on port PORT (default: 31215)"
+	, Flag
+		"--reload-cache"
+		(\opts -> Ok {opts & reload_cache=True})
+		"Reload the cache in the background"
+	, Option
+		"--test"
+		(\file opts -> Ok {opts & test_file=Just file})
+		"FILE"
+		"Load queries from FILE and execute them (do not start a TCP server)"
+	, Flag
+		"--test-no-unify"
+		(\opts -> Ok {opts & test_options=[NoUnify:opts.test_options]})
+		"Do not test queries that require unification (only used with --test)"
+	]
 
 Start w
-# (cmdline, w) = getCommandLine w
-# opts = parseOptions zero (tl cmdline)
+# ([prog:args], w) = getCommandLine w
+# opts = parseOptions optionDescription args zero
 | isError opts
 	# (io,w) = stdio w
-	# io = io <<< fromError opts <<< "\n"
+	# io = io <<< join "\n" (fromError opts) <<< "\n"
 	# (_,w) = fclose io w
 	= w
 # opts = fromOk opts
-| opts.help = help (hd cmdline) w
 # w = disableSwap w
 #! (_,f,w) = fopen "types.json" FReadText w
 #! (db,f) = openDB f
@@ -183,12 +192,6 @@ Start w
 	, keepalive_timeout = Just 5000    // 5s
 	} db w
 where
-	help :: String *World -> *World
-	help pgm w
-	# (io, w) = stdio w
-	# io = io <<< "Usage: " <<< pgm <<< " [--reload-cache] [-p <port>] [-h] [--help]\n"
-	= snd $ fclose io w
-
 	disableSwap :: *World -> *World
 	disableSwap w
 	# (ok,w) = mlockall (MCL_CURRENT bitor MCL_FUTURE) w

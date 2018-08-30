@@ -867,6 +867,9 @@ function formsubmit() {
 	var q = form_str.getInputOrContentEditableValue().replace(/\u00a0/g, ' ');
 	if (q === '') {
 		sresults.innerHTML = '<p>Can\'t search for the empty string</p>';
+	} else if (q.match(/how to use/i)) {
+		document.getElementById('helptext').classList.add('visible');
+		document.getElementById('searchlinks').children[2].classList.add('active');
 	} else {
 		sresults.innerHTML = '';
 

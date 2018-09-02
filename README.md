@@ -28,13 +28,16 @@ These frontends to Cloogle are currently known to us:
 
 - The web app at [cloogle.org][].
 - The `!cloogle` bang on DuckDuckGo.
-- [@CloogleBot][] on Telegram (see [CloogleBot][]).
-- [cloogle-cli][], a command line interface to the API.
 - The `:Cloogle` command or `<LocalLeader>c`in [vim-clean][].
 - An email to `query@cloogle.org` with the query in the subject
   (see [cloogle-mail][]).
-- The IRC bot which often resides on the `#cloogle` channel and the general
-  Clean channel `#cleanlang` on [freenode][] (see [clean-irc][]).
+- The `!query` command of the IRC bot `clooglebot` which often resides on the
+  `#cloogle` and `#cleanlang` channels on [freenode][] (see [clean-irc][]).
+
+Old frontends:
+
+- [@CloogleBot][] on Telegram (see [CloogleBot][]).
+- [cloogle-cli][], a command line interface to the API.
 
 ## Auxiliary tools
 Several tools used in Cloogle are available as separate libraries from

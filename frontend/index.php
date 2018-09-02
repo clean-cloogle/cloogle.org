@@ -75,7 +75,7 @@
 		<div id="helptext" class="tooltip">
 			<div>
 				<p>Cloogle is the official <a href="http://clean.cs.ru.nl">Clean</a> language search engine.</p>
-				<p><b>The following search strings are recognised:</b></p>
+				<p>The following search strings are recognised:</p>
 				<table>
 					<tr>
 						<td class='code'>hd</td>
@@ -114,15 +114,8 @@
 						<td class='description'>The class definition of <code>Text</code></td>
 					</tr>
 				</table>
-				<p><b>Besides this web app, there are other frontends available:</b></p>
-				<ul>
-					<li>The <code>!cloogle</code> bang on <a href="https://duckduckgo.com/">DuckDuckGo</a></li>
-					<li><a href="https://telegram.me/CloogleBot">@CloogleBot</a> on Telegram</li>
-					<li><a href="https://github.com/clean-cloogle/cloogle-cli">cloogle-cli</a>, a command line application</li>
-					<li>The <code>:Cloogle</code> command in Vim, if you use <a href="https://github.com/camilstaps/vim-clean">vim-clean</a></li>
-					<li>An email to <a href="mailto:query@cloogle.org">query@cloogle.org</a>, with the query in the subject</li>
-				</ul>
-				<p>You can also <b>browse the <a href="src">index</a></b> and <b>read the <a href="doc">documentation</a></b>.</p>
+				<p>Besides this web app, there are <a href="https://github.com/clean-cloogle/cloogle.org/#frontends">other frontends</a> available.</p>
+				<p>You can also <a href="src">browse the index</a> and <a href="doc">read the documentation</a>.</p>
 			</div>
 		</div>
 		<div id="contributetext" class="tooltip">

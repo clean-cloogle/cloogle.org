@@ -22,7 +22,7 @@ import Control.Monad => qualified join
 import Data.Error
 import qualified Data.Foldable as Foldable
 from Data.Foldable import class Foldable
-from Data.Func import $, hyperstrict, instance Functor ((->) r), mapSt, seqSt
+from Data.Func import $, hyperstrict, instance Functor ((->) r), mapSt, seqSt, on, `on`
 import Data.Functor
 from Data.List import permutations
 import Data.Maybe
@@ -229,13 +229,15 @@ handle (Just request=:{unify,name,page}) db w
 		Just t -> suggs name t db
 		Nothing -> (Nothing, db)
 	#! (db,w) = seqSt
-		(\(req,res) (db,w) -> let (k,db`) = toRequestCacheKey db req in (db`,cachePages k CACHE_PREFETCH 0 zero res w))
+		(\(_,req,res) (db,w) -> let (k,db`) = toRequestCacheKey db req in (db`,cachePages k CACHE_PREFETCH 0 zero res w))
 		(fromMaybe [] suggestions)
 		(db,w)
 	#! suggestions
-		= sortBy (\a b -> snd a > snd b) <$>
-		  filter ((<) (length results) o snd) <$>
-		  map (appSnd length) <$> suggestions
+		= sortBy ((<) `on` snd) <$>
+			map (\(_,req,reslen) -> (req,reslen)) <$>
+			filter (\(always,_,sugres) -> always || sugres >= reslen) <$>
+			map (appThd3 length) <$> suggestions
+		with reslen = length results
 	#! (results,nextpages) = splitAt MAX_RESULTS results
 	// Response
 	#! response = if (isEmpty results)
@@ -275,13 +277,38 @@ where
 			}
 		(give,keep) = splitAt MAX_RESULTS results
 
-	suggs :: !(Maybe String) !Type !*CloogleDB -> *(Maybe [(Request, [Result])], *CloogleDB)
-	suggs n (Func is r cc) db | length is < 3
-	= appFst Just $ mapSt (\r -> appFst (tuple r) o search r o resetDB) reqs db
+	suggs :: !(Maybe String) !Type !*CloogleDB -> *(Maybe [(Bool, Request, [Result])], *CloogleDB)
+	suggs n t db
+	# (swapped, db)     = swap db
+	# (capitalized, db) = capitalize db
+	# suggestions = case fromMaybe [] swapped ++ [c \\ Just c <- [capitalized]] of
+		[] -> Nothing
+		ss -> Just ss
+	= (suggestions, db)
 	where
-		reqs = [{zero & name=n, unify=Just $ concat $ print False $ Func is` r cc}
-			\\ is` <- permutations is | is` <> is]
-	suggs _ _ db = (Nothing, db)
+		swap db = case t of
+			Func is r cc | length is < 3
+				-> appFst Just $ mapSt (\r -> appFst (tuple3 False r) o search r o resetDB) reqs db
+				with
+					reqs = [{zero & name=n, unify=Just $ concat $ print False $ Func is` r cc}
+						\\ is` <- permutations is | is` <> is]
+			_ -> (Nothing, db)
+
+		capitalize db = case t` of
+			Just t` | t <> t` -> appFst (Just o tuple3 True req) $ search req db
+				with req = {zero & name=n, unify=Just $ concat $ print False t`}
+			_                 -> (Nothing, db)
+		where
+			t` = assignAll
+				[ ("int",     Type "Int" [])
+				, ("bool",    Type "Bool" [])
+				, ("char",    Type "Char" [])
+				, ("real",    Type "Real" [])
+				, ("file",    Type "File" [])
+				, ("string",  Type "String" [])
+				, ("dynamic", Type "Dynamic" [])
+				, ("world",   Uniq (Type "World" []))
+				] t
 
 reloadCache :: !*(!*CloogleDB, !*World) -> *(!*CloogleDB, !*World)
 reloadCache (db,w)

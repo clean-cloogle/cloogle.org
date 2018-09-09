@@ -150,7 +150,7 @@ bs_code =
 
 bs_comments =
 	{ syntax_title         = "comments"
-	, syntax_patterns      = map exact ["//", "/\\*.*\\*/"]
+	, syntax_patterns      = map exact ["//", "/\\*.*\\*/", "comments?"]
 	, syntax_code          = ["// ...", "/* ... */"]
 	, syntax_description   = "`//` adds a single-line comment. `/*` and `*/` encapsulate a multi-line comment. Multi-line comments can be nested."
 	, syntax_doc_locations = [CLR 15 "B.2" "_Toc311798132"]

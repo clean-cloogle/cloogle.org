@@ -225,19 +225,15 @@ handle (Just request=:{unify,name,page}) db w
 	#! results = drop drop_n res
 	#! more = max 0 (length results - MAX_RESULTS)
 	// Suggestions
+	#! reslen = length results
 	#! (suggestions,db) = case unify >>= parseType o fromString of
-		Just t -> suggs name t db
+		Just t -> suggs name reslen t db
 		Nothing -> (Nothing, db)
 	#! (db,w) = seqSt
-		(\(_,req,res) (db,w) -> let (k,db`) = toRequestCacheKey db req in (db`,cachePages k CACHE_PREFETCH 0 zero res w))
+		(\(req,res) (db,w) -> let (k,db`) = toRequestCacheKey db req in (db`,cachePages k CACHE_PREFETCH 0 zero res w))
 		(fromMaybe [] suggestions)
 		(db,w)
-	#! suggestions
-		= sortBy ((<) `on` snd) <$>
-			map (\(_,req,reslen) -> (req,reslen)) <$>
-			filter (\(always,_,sugres) -> always || sugres >= reslen) <$>
-			map (appThd3 length) <$> suggestions
-		with reslen = length results
+	#! suggestions = sortBy ((<) `on` snd) <$> map (appSnd length) <$> suggestions
 	#! (results,nextpages) = splitAt MAX_RESULTS results
 	// Response
 	#! response = if (isEmpty results)
@@ -277,27 +273,27 @@ where
 			}
 		(give,keep) = splitAt MAX_RESULTS results
 
-	suggs :: !(Maybe String) !Type !*CloogleDB -> *(Maybe [(Bool, Request, [Result])], *CloogleDB)
-	suggs n t db
+	suggs :: !(Maybe String) !Int !Type !*CloogleDB -> *(Maybe [(Request, [Result])], *CloogleDB)
+	suggs n nresults t db
 	# (swapped, db)     = swap db
 	# (capitalized, db) = capitalize db
-	# suggestions = case fromMaybe [] swapped ++ [c \\ Just c <- [capitalized]] of
+	# suggestions = case swapped ++ capitalized of
 		[] -> Nothing
 		ss -> Just ss
 	= (suggestions, db)
 	where
 		swap db = case t of
 			Func is r cc | length is < 3
-				-> appFst Just $ mapSt (\r -> appFst (tuple3 False r) o search r o resetDB) reqs db
+				-> appFst (filter enough) $ mapSt (\r -> appFst (tuple r) o search r o resetDB) reqs db
 				with
 					reqs = [{zero & name=n, unify=Just $ concat $ print False $ Func is` r cc}
 						\\ is` <- permutations is | is` <> is]
-			_ -> (Nothing, db)
+			_ -> ([], db)
 
 		capitalize db = case t` of
-			Just t` | t <> t` -> appFst (Just o tuple3 True req) $ search req db
+			Just t` | t <> t` -> appFst (\res -> [(req,res)]) $ search req db
 				with req = {zero & name=n, unify=Just $ concat $ print False t`}
-			_                 -> (Nothing, db)
+			_                 -> ([], db)
 		where
 			t` = assignAll
 				[ ("int",     Type "Int" [])
@@ -309,6 +305,13 @@ where
 				, ("dynamic", Type "Dynamic" [])
 				, ("world",   Uniq (Type "World" []))
 				] t
+
+		enough :: (Request, [Result]) -> Bool
+		enough (_, res) = enough` nresults res
+		where
+			enough` 0 _      = True
+			enough` _ []     = False
+			enough` n [_:xs] = enough` (n-1) xs
 
 reloadCache :: !*(!*CloogleDB, !*World) -> *(!*CloogleDB, !*World)
 reloadCache (db,w)

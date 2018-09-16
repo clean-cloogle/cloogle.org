@@ -144,8 +144,8 @@ where
 	eq_arg type arg stack =
 		{ zero
 		& aie_instruction = {'e','q',type.[0],'_',toLower stack}
-		, aie_arguments   = [if (stack == 'A') A_OFFSET B_OFFSET, arg]
-		, aie_description = "Checks equality between the " + {stack} + "-stack element and the second argument."
+		, aie_arguments   = [arg, if (stack == 'A') A_OFFSET B_OFFSET]
+		, aie_description = "Checks equality between the first argument and the " + {stack} + "-stack element."
 		}
 
 	convert :: !String !String !String -> ABCInstructionEntry

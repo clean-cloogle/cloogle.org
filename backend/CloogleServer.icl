@@ -227,7 +227,7 @@ handle (Just request=:{unify,name,page}) db w
 	// Suggestions
 	#! reslen = length results
 	#! (suggestions,db) = case unify >>= parseType o fromString of
-		Just t -> suggs name reslen t db
+		Just t -> suggs request reslen t db
 		Nothing -> (Nothing, db)
 	#! (db,w) = seqSt
 		(\(req,res) (db,w) -> let (k,db`) = toRequestCacheKey db req in (db`,cachePages k CACHE_PREFETCH 0 zero res w))
@@ -273,8 +273,9 @@ where
 			}
 		(give,keep) = splitAt MAX_RESULTS results
 
-	suggs :: !(Maybe String) !Int !Type !*CloogleDB -> *(Maybe [(Request, [Result])], *CloogleDB)
-	suggs n nresults t db
+	suggs :: !Request !Int !Type !*CloogleDB -> *(Maybe [(Request, [Result])], *CloogleDB)
+	suggs {page=Just n} _ _ db | n > 0 = (Nothing, db)
+	suggs orgreq nresults t db
 	# (swapped, db)     = swap db
 	# (capitalized, db) = capitalize db
 	# suggestions = case swapped ++ capitalized of
@@ -286,13 +287,13 @@ where
 			Func is r cc | length is < 3
 				-> appFst (filter enough) $ mapSt (\r -> appFst (tuple r) o search r o resetDB) reqs db
 				with
-					reqs = [{zero & name=n, unify=Just $ concat $ print False $ Func is` r cc}
+					reqs = [{orgreq & unify=Just $ concat $ print False $ Func is` r cc}
 						\\ is` <- permutations is | is` <> is]
 			_ -> ([], db)
 
 		capitalize db = case t` of
 			Just t` | t <> t` -> appFst (\res -> [(req,res)]) $ search req db
-				with req = {zero & name=n, unify=Just $ concat $ print False t`}
+				with req = {orgreq & unify=Just $ concat $ print False t`}
 			_                 -> ([], db)
 		where
 			t` = assignAll

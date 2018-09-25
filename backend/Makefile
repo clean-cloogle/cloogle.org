@@ -7,7 +7,6 @@ CLMFLAGS:=-h 250M -nr -nortsopts\
 	-IL TCPIP\
 	-IL Platform\
 	-IL Platform/Deprecated/ArgEnv\
-	-IL Platform/Deprecated/StdLib\
 	-I Cloogle\
 	-I Cloogle/libcloogle\
 	-I Cloogle/CleanRegex

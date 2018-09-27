@@ -1005,7 +1005,11 @@ if (make_content_editable) {
 			// add a space at the start.
 			caret = 0;
 		}
-		var val = this.innerText.replace(/^\s+|\n\n$/g, '').replace(/\n$/, '\u00a0').replace(/\n/g, '');
+		var val = this.innerText
+			.replace(/^\s+|\n\n$/g, '')
+			.replace(/\n$/, '\u00a0')
+			.replace(/\n/g, navigator.userAgent.indexOf('Firefox') != -1 ? ' ' : '');
+				// Behaviour of pressing enter after a space differs from browser to browser
 		var html = highlightQuery(val);
 		if (html == '') {
 			html = '<span id="caret-spacer"></span>';

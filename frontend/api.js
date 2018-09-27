@@ -588,14 +588,6 @@ function getResults(str, libs, include_builtins, include_core, include_apps, pag
 				}
 
 				var code = highlightClean(extra['func'], highlightCallback, hl_entry);
-				if ('type_doc' in extra) {
-					var lines = extra['func'].split('\n');
-					if (lines.length <= 1 || lines[0].indexOf(' :: ') == -1) {
-						var name = extra['func'].split(' ')[0];
-						var type = highlightClean(name + ' :: ' + extra['type_doc'], highlightCallback);
-						code = type + '\r\n' + code;
-					}
-				}
 
 				return makeGenericResultHTML(basic, meta, hidden, code);
 

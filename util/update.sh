@@ -82,6 +82,7 @@ if [[ "$HUGINN" != "" ]]; then
 fi
 if [[ "$RELEASE_REPO" != "" ]]; then
 	timeout -k 10 10 sudo docker-compose exec -T backend cat types.json > /tmp/types.json
+	timeout -k 10 10 sudo docker-compose exec -T backend cat typetree.dot > /tmp/typetree.dot
 	DATE="$(date +%Y-%m-%d)"
 	ID="$(curl -s -X POST \
 		-H "Content-Type:application/json" \
@@ -94,6 +95,10 @@ if [[ "$RELEASE_REPO" != "" ]]; then
 			-H "Content-Type:text/json" \
 			--data-binary @/tmp/types.json \
 			"https://uploads.github.com/repos/$RELEASE_REPO/releases/$ID/assets?name=types.json&access_token=$GITHUB_TOKEN"
+		curl -X POST \
+			-H "Content-Type:text/plain" \
+			--data-binary @/tmp/typetree.dot \
+			"https://uploads.github.com/repos/$RELEASE_REPO/releases/$ID/assets?name=typetree.dot&access_token=$GITHUB_TOKEN"
 		echo
 	fi
 fi

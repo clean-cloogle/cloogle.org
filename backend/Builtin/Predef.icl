@@ -1,5 +1,6 @@
 implementation module Builtin.Predef
 
+import StdArray
 import StdBool
 import StdEnum
 import StdInt
@@ -46,10 +47,10 @@ builtin_classes =
 	  , ce_is_meta=False
 	  , ce_context=[]
 	  , ce_documentation=Nothing
-	  , ce_members=[]
-	  , ce_instances=[]
-	  , ce_derivations=[]
-	  , ce_usages=[]
+	  , ce_members={}
+	  , ce_instances={}
+	  , ce_derivations={}
+	  , ce_usages={}
 	  }
 	]
 
@@ -113,9 +114,9 @@ where
 			, td_rhs=TDRAbstract Nothing
 			}
 		, tde_doc=Nothing
-		, tde_instances=[]
-		, tde_derivations=[]
-		, tde_usages=[]
+		, tde_instances={}
+		, tde_derivations={}
+		, tde_usages={}
 		}
 	defc =
 		{ cons_name=""

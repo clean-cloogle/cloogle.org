@@ -1013,7 +1013,8 @@ if (make_content_editable) {
 			formsubmit();
 			return false;
 		} else if (e.keyCode == 46 || e.keyCode == 8) { /* delete / backspace */
-			if (window.getSelection().toString() == this.innerText) {
+			/* Weird Edge behaviour causes the input field to disappear when all text is deleted */
+			if (window.getSelection().toString().length >= this.innerText.length) {
 				this.innerText = '';
 				this.oninput();
 				return false;

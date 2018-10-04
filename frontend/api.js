@@ -104,6 +104,7 @@ function toggleLibSelection(className) {
 function toggleAdvanced() {
 	advanced = !advanced;
 	toggleById('advanced');
+	document.getElementById('searchlinks').children[0].classList.toggle('active');
 }
 
 function makeSummary(hidden) {
@@ -751,7 +752,7 @@ function getResults(str, libs, include_builtins, include_core, include_apps, pag
 			if ('unify' in sug) {
 				sugstr.push(':: ' + sug.unify);
 			}
-			if ('include_apps' in sug) {
+			if ('include_apps' in sug && sug['include_apps'] != include_apps) {
 				query.push('include_apps=' + sug['include_apps']);
 				sugstrmeta.push((sug['include_apps'] ? '' : 'not ') + 'including apps');
 			}

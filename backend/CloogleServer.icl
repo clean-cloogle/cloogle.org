@@ -225,15 +225,12 @@ handle (Just request=:{unify,name,page}) db w
 	#! results = drop drop_n res
 	#! more = max 0 (length results - MAX_RESULTS)
 	// Suggestions
-	#! reslen = length results
-	#! (suggestions,db) = case unify >>= parseType o fromString of
-		Just t -> suggs request reslen t db
-		Nothing -> (Nothing, db)
+	#! (suggs,db) = suggestions request results db
 	#! (db,w) = seqSt
 		(\(req,res) (db,w) -> let (k,db`) = toRequestCacheKey db req in (db`,cachePages k CACHE_PREFETCH 0 zero res w))
-		(fromMaybe [] suggestions)
+		(fromMaybe [] suggs)
 		(db,w)
-	#! suggestions = sortBy ((<) `on` snd) <$> map (appSnd length) <$> suggestions
+	#! suggs = sortBy ((<) `on` snd) <$> map (appSnd length) <$> suggs
 	#! (results,nextpages) = splitAt MAX_RESULTS results
 	// Response
 	#! response = if (isEmpty results)
@@ -241,7 +238,7 @@ handle (Just request=:{unify,name,page}) db w
 		{ zero
 		& data           = results
 		, more_available = Just more
-		, suggestions    = suggestions
+		, suggestions    = suggs
 		}
 	// Save page prefetches
 	#! w = cachePages key CACHE_PREFETCH 1 response nextpages w
@@ -273,27 +270,38 @@ where
 			}
 		(give,keep) = splitAt MAX_RESULTS results
 
-	suggs :: !Request !Int !Type !*CloogleDB -> *(Maybe [(Request, [Result])], *CloogleDB)
-	suggs {page=Just n} _ _ db | n > 0 = (Nothing, db)
-	suggs orgreq nresults t db
+	suggestions :: !Request ![Result] !*CloogleDB -> *(Maybe [(Request, [Result])], *CloogleDB)
+	suggestions {page=Just n} _ db | n > 0 = (Nothing, db)
+	suggestions orgreq orgresults db
 	# (swapped, db)     = swap db
 	# (capitalized, db) = capitalize db
-	# suggestions = case swapped ++ capitalized of
+	# (withapps, db)    = addapps db
+	# suggs = case flatten [swapped, capitalized, withapps] of
 		[] -> Nothing
 		ss -> Just ss
-	= (suggestions, db)
+	= (suggs, db)
 	where
-		swap db = case t of
-			Func is r cc | length is < 3
+		orgtype = orgreq.unify >>= parseType o fromString
+
+		swap db = case orgtype of
+			Just (Func is r cc) | length is < 3
 				-> appFst (filter enough) $ mapSt (\r -> appFst (tuple r) o search r o resetDB) reqs db
 				with
 					reqs = [{orgreq & unify=Just $ concat $ print False $ Func is` r cc}
 						\\ is` <- permutations is | is` <> is]
 			_ -> ([], db)
+		where
+			enough :: (Request, [Result]) -> Bool
+			enough (_, res) = enough` (length orgresults) res
+			where
+				enough` 0 _      = True
+				enough` _ []     = False
+				enough` n [_:xs] = enough` (n-1) xs
 
 		capitalize db = case t` of
-			Just t` | t <> t` -> appFst (\res -> [(req,res)]) $ search req db
-				with req = {orgreq & unify=Just $ concat $ print False t`}
+			Just t` | fromJust orgtype <> t`
+				-> appFst (\res -> [(req,res)]) $ search req $ resetDB db
+					with req = {orgreq & unify=Just $ concat $ print False t`}
 			_                 -> ([], db)
 		where
 			t` = assignAll
@@ -305,14 +313,19 @@ where
 				, ("string",  Type "String" [])
 				, ("dynamic", Type "Dynamic" [])
 				, ("world",   Uniq (Type "World" []))
-				] t
+				] =<< orgtype
 
-		enough :: (Request, [Result]) -> Bool
-		enough (_, res) = enough` nresults res
-		where
-			enough` 0 _      = True
-			enough` _ []     = False
-			enough` n [_:xs] = enough` (n-1) xs
+		addapps db
+		| fromMaybe DEFAULT_INCLUDE_APPS orgreq.include_apps == DEFAULT_INCLUDE_APPS
+			# req = {orgreq & include_apps=Just (not DEFAULT_INCLUDE_APPS)}
+			# (res,db) = search req $ resetDB db
+			| isEmpty res = ([], db)
+			| isEmpty orgresults = ([(req,res)], db)
+			# orghddistance = (fromJust (getBasicResult (hd orgresults))).distance
+			| all (\r -> (fromJust (getBasicResult r)).distance < orghddistance) $ take 3 res
+				= ([(req,res)], db)
+				= ([], db)
+		| otherwise = ([], db)
 
 reloadCache :: !*(!*CloogleDB, !*World) -> *(!*CloogleDB, !*World)
 reloadCache (db,w)

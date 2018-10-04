@@ -742,16 +742,25 @@ function getResults(str, libs, include_builtins, include_core, include_apps, pag
 		var table = document.createElement('table');
 		for (i in suggestions) {
 			var sug = suggestions[i][0];
+			var query = [];
 			var sugstr = [];
+			var sugstrmeta = [];
 			if ('name' in sug) {
 				sugstr.push(sug.name);
 			}
 			if ('unify' in sug) {
 				sugstr.push(':: ' + sug.unify);
 			}
+			if ('include_apps' in sug) {
+				query.push('include_apps=' + sug['include_apps']);
+				sugstrmeta.push((sug['include_apps'] ? '' : 'not ') + 'including apps');
+			}
 			sugstr = sugstr.join(' ');
-			table.innerHTML += '<tr><td><a class="hidden" href="#' + encodeURIComponent(sugstr) + '"><code>' +
-				highlightQuery(sugstr) + '</code></a></td><td>(' +
+			query.unshift(encodeURIComponent(sugstr));
+			query = query.join('%0A');
+			sugstrmeta = sugstrmeta.length > 0 ? (' (' + sugstrmeta.join('; ') + ')') : '';
+			table.innerHTML += '<tr><td><a class="hidden" href="#' + query + '"><code>' +
+				highlightQuery(sugstr) + '</code>' + sugstrmeta + '</a></td><td>(' +
 				suggestions[i][1] + ' results)</td></tr>';
 		}
 		suggs.appendChild(table);

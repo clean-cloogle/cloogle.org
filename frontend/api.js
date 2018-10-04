@@ -1009,9 +1009,15 @@ if (make_content_editable) {
 		this.setCaretPosition(caret);
 	};
 	form_str.onkeydown = function(e) {
-		if (e.keyCode == 13) {
+		if (e.keyCode == 13) { /* enter */
 			formsubmit();
 			return false;
+		} else if (e.keyCode == 46 || e.keyCode == 8) { /* delete / backspace */
+			if (window.getSelection().toString() == this.innerText) {
+				this.innerText = '';
+				this.oninput();
+				return false;
+			}
 		}
 	};
 	form_str.oninput();

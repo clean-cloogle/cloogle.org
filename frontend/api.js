@@ -997,7 +997,7 @@ if (make_content_editable) {
 			// add a space at the start.
 			caret = 0;
 		}
-		var val = this.innerText.replace(/^\s+/, '');
+		var val = this.innerText.replace(/^\s+/, '').replace(/\n/g, '\u00a0');
 		var html = highlightQuery(val);
 		if (html == '') {
 			html = '<span id="caret-spacer"></span>';

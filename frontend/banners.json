@@ -23,5 +23,11 @@
 		"text": "We no longer use the unmainted <a href='http://pygments.org' target='_blank'>Pygments</a> library for highlighting and have moved to <a href='https://github.com/clean-cloogle/clean.js' target='_blank'>clean.js</a>. Please <a href='https://github.com/clean-cloogle/clean.js/issues/new' target='_blank'>report</a> any issues you see!",
 		"from": "Tue, 3 Jul 2018 00:00:00 UTC",
 		"until": "Tue, 10 Jul 2018 00:00:00 UTC"
+	},
+	{
+		"id": "soccerfun2018",
+		"text": "<b>SoccerFun</b> users: be aware that to search for things in SoccerFun you need to enable '<b>include apps</b>' in the advanced search options.",
+		"from": "Thu, 4 Oct 2018 00:00:00 UTC",
+		"until": "Thu, 25 Oct 2018 00:00:00 UTC"
 	}
 ]

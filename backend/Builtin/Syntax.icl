@@ -101,7 +101,6 @@ bs_basicvalues =
 		]
 	}
 
-
 bs_case =
 	{ syntax_title         = "case expression"
 	, syntax_patterns      = map exact ["case", "of", "case of", "->", "="]
@@ -333,9 +332,9 @@ bs_guard =
 
 bs_generic =
 	{ syntax_title         = "generic function definition"
-	, syntax_patterns      = map exact ["generic", "derive", "of", "with", "\\{\\|.*\\|\\}"]
-	, syntax_code          = ["generic ... ... [| ...] :: ... ", "derive ... ... [of ...] [with ...]"]
-	, syntax_description   = "With generics, a function can be defined once and derived for (almost) all possible types, to avoid very similar code snippets."
+	, syntax_patterns      = map exact ["generic", "derive", "of", "with", "\\{\\|.*\\|\\}", "*!"]
+	, syntax_code          = ["generic ... ... [| ...] [*!] :: ... ", "derive ... ... [of ...] [with ...]"]
+	, syntax_description   = "With generics, a kind indexed function can be defined once and derived for (almost) all possible types, to avoid very similar code snippets."
 	, syntax_doc_locations = [CLR 9 "7.2" "_Toc311798069"]
 	, syntax_examples      = map EX
 		[ "generic gEq a :: !a !a -> Bool        // The type of a generic function"
@@ -345,8 +344,9 @@ bs_generic =
 		, "gConsName{|CONS of d|} _ = d.gcd_name // Using type information"
 		, "gFun{|CONS of {gcd_arity}|}           // Using a specific field of type information, the compiler will only provide this field which makes it a lot faster"
 		, "generic gFun a :: a -> Int | gDefault a  // A generic function with a generic context. The context will become an argument.\n" +
-		  "derive gFun CONS of {gcd_arity} with f _ // A derivation that does not use all arguments. The ompiler can optimize even more\n" +
+		  "derive gFun CONS of {gcd_arity} with f _ // A derivation that does not use all arguments. The compiler can optimize even more.\n" +
 		  "gFun{|CONS of {gcd_arity}|} f _ =        // A derivation that does not use the context and only one field of the generic type descriptor, the compiler can optimize for this."
+		, "generic gShared a *! :: ...           // Derive a generic function using a shared bimap (very experimental, see https://gitlab.science.ru.nl/clean-and-itasks/clean-language-report/blob/master/experimental/binumap.md).\n"
 		]
 	}
 

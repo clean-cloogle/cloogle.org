@@ -221,11 +221,11 @@ handle (Just request=:{unify,name,page}) db w
 		= respond start Nothing (err InvalidInput "Empty query") db w
 	// Results
 	#! drop_n = fromJust (page <|> pure 0) * MAX_RESULTS
-	#! (res,db) = search request db
+	#! (res,suggs,db) = searchWithSuggestions request db
+	#! suggs = if (isEmpty suggs) Nothing (Just suggs)
 	#! results = drop drop_n res
 	#! more = max 0 (length results - MAX_RESULTS)
 	// Suggestions
-	#! (suggs,db) = suggestions request results db
 	#! (db,w) = seqSt
 		(\(req,res) (db,w) -> let (k,db`) = toRequestCacheKey db req in (db`,cachePages k CACHE_PREFETCH 0 zero res w))
 		(fromMaybe [] suggs)
@@ -269,63 +269,6 @@ where
 			, data = give
 			}
 		(give,keep) = splitAt MAX_RESULTS results
-
-	suggestions :: !Request ![Result] !*CloogleDB -> *(Maybe [(Request, [Result])], *CloogleDB)
-	suggestions {page=Just n} _ db | n > 0 = (Nothing, db)
-	suggestions orgreq orgresults db
-	# (swapped, db)     = swap db
-	# (capitalized, db) = capitalize db
-	# (withapps, db)    = addapps db
-	# suggs = case flatten [swapped, capitalized, withapps] of
-		[] -> Nothing
-		ss -> Just ss
-	= (suggs, db)
-	where
-		orgtype = orgreq.unify >>= parseType o fromString
-
-		swap db = case orgtype of
-			Just (Func is r cc) | length is < 3
-				-> appFst (filter enough) $ mapSt (\r -> appFst (tuple r) o search r o resetDB) reqs db
-				with
-					reqs = [{orgreq & unify=Just $ concat $ print False $ Func is` r cc}
-						\\ is` <- permutations is | is` <> is]
-			_ -> ([], db)
-		where
-			enough :: (Request, [Result]) -> Bool
-			enough (_, res) = enough` (length orgresults) res
-			where
-				enough` 0 _      = True
-				enough` _ []     = False
-				enough` n [_:xs] = enough` (n-1) xs
-
-		capitalize db = case t` of
-			Just t` | fromJust orgtype <> t`
-				-> appFst (\res -> [(req,res)]) $ search req $ resetDB db
-					with req = {orgreq & unify=Just $ concat $ print False t`}
-			_                 -> ([], db)
-		where
-			t` = assignAll
-				[ ("int",     Type "Int" [])
-				, ("bool",    Type "Bool" [])
-				, ("char",    Type "Char" [])
-				, ("real",    Type "Real" [])
-				, ("file",    Type "File" [])
-				, ("string",  Type "String" [])
-				, ("dynamic", Type "Dynamic" [])
-				, ("world",   Uniq (Type "World" []))
-				] =<< orgtype
-
-		addapps db
-		| fromMaybe DEFAULT_INCLUDE_APPS orgreq.include_apps == DEFAULT_INCLUDE_APPS
-			# req = {orgreq & include_apps=Just (not DEFAULT_INCLUDE_APPS)}
-			# (res,db) = search req $ resetDB db
-			| isEmpty res = ([], db)
-			| isEmpty orgresults = ([(req,res)], db)
-			# orghddistance = (fromJust (getBasicResult (hd orgresults))).distance
-			| all (\r -> (fromJust (getBasicResult r)).distance < orghddistance) $ take 3 res
-				= ([(req,res)], db)
-				= ([], db)
-		| otherwise = ([], db)
 
 reloadCache :: !*(!*CloogleDB, !*World) -> *(!*CloogleDB, !*World)
 reloadCache (db,w)

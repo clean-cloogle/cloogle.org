@@ -50,5 +50,8 @@ RUN apt-get update -qq && apt-get install -qq ca-certificates jq\
 	&& mkdir /var/www/clean-highlighter\
 	&& curl $(curl https://registry.npmjs.org/clean-highlighter/ | jq -r '.versions[."dist-tags".latest].dist.tarball')\
 		| tar xzv --strip-components=1 --directory=/var/www/clean-highlighter\
+	&& mkdir /var/www/clean-doc-markup\
+	&& curl $(curl https://registry.npmjs.org/clean-doc-markup/ | jq -r '.versions[."dist-tags".latest].dist.tarball')\
+		| tar xzv --strip-components=1 --directory=/var/www/clean-doc-markup\
 	&& apt-get remove -qq ca-certificates jq\
 	&& apt-get autoremove -qq

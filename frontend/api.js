@@ -151,94 +151,18 @@ function mergeComments(code, comments) {
 	return code;
 }
 
-Element.prototype.replaceURLs = function() {
-	var childNodes = 'content' in this ? this.content.childNodes : this.childNodes;
-	for (var i = 0; i < childNodes.length; i++) {
-		var node = childNodes[i];
-		if (node.nodeType == Node.TEXT_NODE) {
-			var newValue = node.nodeValue.replace(/(https?:\/\/(?:[^\s.]|\.(?!\s|$))+)/g, '<a href="$1" target="_blank">$1</a>');
-			if (newValue != node.nodeValue) {
-				var newElement = document.createElement('span');
-				newElement.innerHTML = newValue;
-				if ('content' in this)
-					this.content.replaceChild(newElement, node);
-				else
-					this.replaceChild(newElement, node);
-			}
-		} else {
-			node.replaceURLs();
-		}
-	}
-	if ('content' in this)
-		this.content.childNodes = childNodes;
-	else
-		this.childNodes = childNodes;
-};
-
-String.prototype.addLinks = function() {
-	return this.replace(/{{([^}]+)}}/g, function(s, link) {
+String.prototype.cloogleMarkup = function() {
+	return this.markup(highlightCallback, function(link) {
 		return '<a class="hidden" title="Search ' + link +
 			'" href="#' + encodeURIComponent(link) + '">' + link + '</a>';
 	});
 };
 
-String.prototype._markup = function() {
-	return this
-		.replace(/((?:^|\n)```[^\n]*\n|`` |`|\n\s*-|\n\n|\*{1,3}(?=\w)|\n\s*-)([\s\S]*)/,
-			function(s, m, rest) {
-				switch (m) {
-					case '`':
-						var i = rest.indexOf('`');
-						var code = rest.slice(0,i).addLinks();
-						return '<code>' + code + '</code>' + rest.slice(i+1)._markup();
-					case '`` ':
-						var i = rest.indexOf(' ``');
-						var code = rest.slice(0,i).addLinks();
-						return '<code>' + code + '</code>' + rest.slice(i+3)._markup();
-					case '\n\n':
-						return '<br class="parbreak"/>' + rest._markup();
-					case '*':
-						var i = rest.indexOf('*');
-						return '<em>' + rest.slice(0,i) + '</em>' + rest.slice(i+1)._markup();
-					case '**':
-						var i = rest.indexOf('**');
-						return '<strong>' + rest.slice(0,i) + '</strong>' + rest.slice(i+2)._markup();
-					case '***':
-						var i = rest.indexOf('***');
-						return '<strong><em>' + rest.slice(0,i) + '</em></strong>' + rest.slice(i+3)._markup();
-				}
-
-				if (m.match(/\n\s*-/))
-					return ('\n<br/>-' + rest)._markup();
-				else if (m.match(/\n\s*-/))
-					return ('\n<br/>*' + rest)._markup();
-
-				if (m.slice(0,3) == '```') {
-					var i = rest.indexOf('\n```');
-					var code = rest.slice(0,i);
-					rest = rest.slice(i+4).trim()._markup();
-					switch (m.slice(3)) {
-						case 'clean\n':
-							return '<pre>' + highlightClean(code, highlightCallback) + '</pre>' + rest;
-						default:
-							return '<pre>' + code + '</pre>' + rest;
-					}
-				}
-			});
-};
-
-String.prototype.markup = function() {
-	var template = document.createElement('template');
-	template.innerHTML = this.replace(/{{`([^`}]+)`}}/g, '`{{$1}}`')._markup();
-	template.replaceURLs();
-	return template.innerHTML;
-};
-
 function makeDocFieldsHTML(name, params) {
 	if (params.length == 1)
-		return name + ': ' + params[0].markup();
+		return name + ': ' + params[0].cloogleMarkup();
 	else
-		return name + 's:<ul><li>' + params.join('</li><li>').markup() + '</li></ul>';
+		return name + 's:<ul><li>' + params.join('</li><li>').cloogleMarkup() + '</li></ul>';
 }
 
 function makeLocationUrl(loc) {
@@ -527,7 +451,7 @@ function getResults(str, libs, include_builtins, include_core, include_apps, pag
 		}
 
 		if (typeof basic != 'undefined' && 'documentation' in basic)
-			meta.push(basic['documentation'].markup());
+			meta.push(basic['documentation'].cloogleMarkup());
 
 		switch (kind) {
 			case 'FunctionResult':
@@ -709,16 +633,16 @@ function getResults(str, libs, include_builtins, include_core, include_apps, pag
 				result = result[1];
 				var solutions = '', examples = '';
 				for (var i in result.problem_solutions)
-					solutions += '<li>' + result.problem_solutions[i].markup() + '</li>';
+					solutions += '<li>' + result.problem_solutions[i].cloogleMarkup() + '</li>';
 				for (var i in result.problem_examples)
-					examples += '<li>' + result.problem_examples[i].markup() + '</li>';
+					examples += '<li>' + result.problem_examples[i].cloogleMarkup() + '</li>';
 
 				var res = document.createElement('div');
 				res.className = 'result';
 				res.innerHTML =
 						'<div class="result-basic">Common problem: ' + result.problem_title + '</div>' +
 						'<div class="result-extra result-extra-space">' +
-							result.problem_description.markup() +
+							result.problem_description.cloogleMarkup() +
 							'<br class="parbreak"/>Possible solutions:<ul>' + solutions + '</ul>' +
 							(examples != '' ? ('Examples:<ul>' + examples + '</ul>') : '') +
 							'<a href="https://github.com/clean-cloogle/common-problems/blob/master/' + result.problem_key + '.md" target="_blank">Edit this explanation on GitHub.</a>' +

@@ -124,13 +124,12 @@ function highlightQuery(query) {
 }
 
 var banners = document.getElementsByClassName('banner');
-for (var i = 0; i < banners.length; i++) {
-	var banner = banners[i];
+for (let i = 0; i < banners.length; i++) {
+	let banner = banners[i];
 	banner.dataset.index = i;
 
-	var id = banner.dataset.id;
-	var hidden = document.cookie.replace(/(?:(?:^|.*;\s*)hidden_banners\s*\=\s*([^;]*).*$)|^.*$/, "$1");
-	if (hidden.split(' ').indexOf(id) >= 0)
+	let id = banner.dataset.id;
+	if (window.localStorage['banner-' + id] == 'hidden')
 		continue;
 
 	var from = new Date(banner.dataset.from);
@@ -144,9 +143,9 @@ for (var i = 0; i < banners.length; i++) {
 	hidelink.innerHTML = '&times;';
 	hidelink.setAttribute('href', '#');
 	hidelink.setAttribute('title', 'Hide this banner forever');
-	hidelink.onclick = function() {
+	hidelink.onclick = function () {
 		banner.remove();
-		document.cookie = 'hidden_banners=' + hidden + ' ' + id;
+		window.localStorage['banner-' + id] = 'hidden';
 	}
 	banner.appendChild(hidelink);
 }

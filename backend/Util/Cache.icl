@@ -1,7 +1,8 @@
 implementation module Util.Cache
 
 import StdFile
-import StdFunc
+from StdFunc import seqList, :: St
+import StdFunctions
 import StdList
 import StdOrdList
 import StdString

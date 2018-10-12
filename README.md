@@ -147,7 +147,7 @@ Or the following apache2 virtualhost (be sure to enable `mod_proxy`).
 ```
 
 ## Authors, copyright &amp; license
-Copyright &copy; 2016-present Mart Lubbers and Camil Staps.
+Copyright &copy; 2016&ndash;present Mart Lubbers and Camil Staps.
 Licensed under MIT; See the [LICENSE](/LICENSE) file.
 
 Maintainers:

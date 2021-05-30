@@ -1,7 +1,6 @@
 # cloogle.org
 
-**This project has been moved to
-https://gitlab.science.ru.nl/cloogle/cloogle-org.**
+**This project has been moved to https://gitlab.com/cloogle/cloogle.org.**
 
 ---
 
